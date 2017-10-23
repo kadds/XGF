@@ -132,7 +132,7 @@ void Shader::SetShaderParameter(const WVPMatrix & Matrix)
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
     auto d3dDeviceContext = mGDI->GetDeviceContext();
 	//锁定常量缓存,这时候常量缓存和子资源关联在一起,动态常量缓存才能使用
-	d3dDeviceContext->Map(mCBMatrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	d3dDeviceContext->Map(mCBMatrixBuffer, 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &mappedResource);
 	//获取指向常量缓存数据的指针
 	memcpy_s(mappedResource.pData, sizeof(WVPMatrix), &Matrix,sizeof(WVPMatrix));
 	//解锁常量缓存

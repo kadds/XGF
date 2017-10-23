@@ -4,6 +4,9 @@
 #include "../../Include/Shader.hpp"
 #include "../../Include/ShaderConst.hpp"
 #include "../../Include/Layer.hpp"
+#include "../../Include/XGFramework.hpp"
+#include "../../Include/GDI.hpp"
+#include "..\..\Include\Scene.hpp"
 Scene::Scene()
 {
 }
@@ -30,6 +33,14 @@ void Scene::RenderLayer(Batches & batches)
 void Scene::SwitchScene(Scene * scene)
 {
 	static_cast<SceneFramework *>(GetFramework())->SwitchScene(scene);
+}
+void Scene::Clear(Color & c)
+{
+	mFramework->GetGDI()->Clear(c);
+}
+void Scene::ClearDepthStencilBuffer()
+{
+	mFramework->GetGDI()->ClearDepthStencilBuffer();
 }
 void Scene::OnSwitchIn()
 {

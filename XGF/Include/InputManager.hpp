@@ -16,7 +16,7 @@ public:
 	void SetExclusiveMouseMode();
 	void SetNoExclusiveMouseMode();
 	bool IskeyDowm(Key k);
-	void CleanForce(TextInputInterface * tei);
+	void ClearForce(TextInputInterface * tei);
 	void SetForce(TextInputInterface * tei);
 
 	void StartForForce();

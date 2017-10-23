@@ -17,5 +17,8 @@ private:
 	float mRadius;
 };
 }
+//获取精度
+//参数一：半径大小
+//参数二：三角形个数
 #define GetPrecision(radius,arclen) DirectX::XM_PI/arclen * radius 
 

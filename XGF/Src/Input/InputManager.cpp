@@ -74,7 +74,7 @@ void InputManager::OnActivate(bool isActivate)
 	dinput.OnActivate(isActivate);
 }
 
-void InputManager::CleanForce(TextInputInterface * tei)
+void InputManager::ClearForce(TextInputInterface * tei)
 {
 	auto ret = std::find(std::begin(mInputs), std::end(mInputs), tei);
 	if (ret != std::end(mInputs))

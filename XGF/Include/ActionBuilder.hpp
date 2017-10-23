@@ -4,6 +4,9 @@
 class CompositeAction;
 class Action;
 class Interpolator;
+/*
+
+*/
 class ActionBuilder
 {
 public:
@@ -24,11 +27,12 @@ public:
 	ActionBuilder & ChangeColorBy(float x, float y, float z, float a, float time,std::shared_ptr<Interpolator> interpolator);
 	ActionBuilder & AlphaTo(float a, float time,std::shared_ptr<Interpolator> interpolator);
 	ActionBuilder & AlphaBy(float a, float time,std::shared_ptr<Interpolator> interpolator);
-
+	//下面函数会改变Action包含结构
 	ActionBuilder & ParallelActionTo();
 	ActionBuilder & SequenceActionTo();
 	ActionBuilder & RepeatActionTo(int num);
 	ActionBuilder & DelayActionTo(float time);
+	//返回当前Actiojn结构的上一级
 	ActionBuilder & BackUp();
 
 	static ActionBuilder & Builder();

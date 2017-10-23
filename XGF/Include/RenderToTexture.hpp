@@ -15,8 +15,8 @@ public:
 	void Shutdown();
 	//把图像绘制到Texture
 	void SetRenderTarget();
-	void Clean(float color[]);
-	void Clean(Color & c);
+	void Clear(float color[]);
+	void Clear(Color & c);
 	//恢复原RenderTagetView
 	void SetDefaultRenderTarget();
 	ID3D11ShaderResourceView* GetShaderResourceView();

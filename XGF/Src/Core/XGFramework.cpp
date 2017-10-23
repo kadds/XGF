@@ -167,9 +167,19 @@ void XGFramework::_OnClose()
 		Exit(0);
 }
 
-void XGFramework::Clean(float color[])
+void XGFramework::Clear(float color[])
 {
-	mGDI->Clean(color);
+	mGDI->Clear(color);
+}
+
+void XGFramework::Clear(Color & color)
+{
+	mGDI->Clear(color);
+}
+
+void XGFramework::ClearDepthStencilBuffer()
+{
+	mGDI->ClearDepthStencilBuffer();
 }
 
 void XGFramework::Present(bool isVsync)

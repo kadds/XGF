@@ -23,7 +23,6 @@ private:
 	PerspectiveCamera mCamera;
 	OrthoCamera mCamera2D;
 	AxisRenderer mAxisRenderer;
-	FPS mFPS;
 	UILayer mUILayer;
 
 	Batch mBatch3D;
@@ -40,6 +39,7 @@ private:
 	Lable mLb;
 	Lable mLxb;
 	EditText mEdit;
+	EditText mEdit2;
 
 	Texture btNormal;
 	Texture btPress;

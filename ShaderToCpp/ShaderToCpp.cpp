@@ -181,7 +181,7 @@ void TransformAShader(std::ofstream & os, std::ofstream & osh, string file,strin
 void split(string str, string pattern, std::vector<string> & output)
 {
 	std::wstring::size_type pos;
-	str += pattern;//扩展字符串以方便操作
+	str += pattern;
 	size_t size = str.size();
 
 	for (size_t i = 0; i<size; i++)

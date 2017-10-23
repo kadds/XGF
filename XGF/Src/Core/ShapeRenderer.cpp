@@ -45,7 +45,7 @@ void ShapeRenderer::DrawRectangle(float x, float y, float w, float h, Color & co
 {
 	Shape::Rectangle rc;
 	rc.SetPositionAndSize(x, y, w, h);
-	rc.mPolygon.Transform(Batch::GetClientWidth() / 2, Batch::GetClientHeight() / 2);
+	rc.mPolygon.Transform(Batch::GetClientWidthD2(), Batch::GetClientHeightD2());
 	PolygonPleConstantColorBinder cb(color ,rc.mPolygon.mCount);
 	BindingBridge bb;
 	bb.AddBinder(cb);
@@ -57,7 +57,7 @@ void ShapeRenderer::DrawRectangleB(float x, float y, float w, float h, Color & b
 	Shape::RectangleB rc;
 	rc.SetPositionAndSize(x, y, w, h);
 	rc.SetBorderSize(borderWidth);
-	rc.mPolygon.Transform(Batch::GetClientWidth() / 2, Batch::GetClientHeight() / 2);
+	rc.mPolygon.Transform(Batch::GetClientWidthD2(), Batch::GetClientHeightD2());
 	int layer[3];
 	PolygonPleConstantExColorBinder cb(layer, rc.GetBorderLayer(layer));
 	cb.SetLayerColor(0, boderOuterColor);
@@ -73,7 +73,7 @@ void ShapeRenderer::DrawCircle(float x, float y, float r, int precision, Color &
 {
 	Shape::Circle ce(precision);
 	ce.SetPosiotionAndRadius(x, y, r);
-	ce.mPolygon.Transform(Batch::GetClientWidth() / 2, Batch::GetClientHeight() / 2);
+	ce.mPolygon.Transform(Batch::GetClientWidthD2(), Batch::GetClientHeightD2());
 	PolygonPleConstantColorBinder cb(color, ce.mPolygon.mCount);
 	BindingBridge bb;
 	bb.AddBinder(cb);
@@ -85,7 +85,7 @@ void ShapeRenderer::DrawCircle(float x, float y, float r, int precision, Color &
 {
 	Shape::Circle ce(precision);
 	ce.SetPosiotionAndRadius(x, y, r);
-	ce.mPolygon.Transform(Batch::GetClientWidth() / 2, Batch::GetClientHeight() / 2);
+	ce.mPolygon.Transform(Batch::GetClientWidthD2(), Batch::GetClientHeightD2());
 	int layer[2];
 	PolygonPleConstantExColorBinder cb(layer,ce.GetLayer(layer));
 	cb.SetLayerColor(0, centerColor);

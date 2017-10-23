@@ -34,6 +34,9 @@ public:
 	void SetFramework(XGFramework * framework);
 	void AddLayer(Layer * layer);
 	void SwitchScene(Scene * scene);
+	void Clear(Color & c);
+	void ClearDepthStencilBuffer();
+
 protected:
 	
 	vector<Layer *> mLayerList;

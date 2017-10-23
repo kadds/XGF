@@ -1,6 +1,4 @@
-
 #include "SecondScene.hpp"
-
 
 
 SecondScene::SecondScene()
@@ -33,8 +31,8 @@ void SecondScene::OnCreate()
 		this->GetFramework()->GetGDI()->SetFullScreen(false);
 	});
 	mUILayer.Add(&mLable2);
-
-	mFont.Initialize(mFramework->GetGDI(), GetFilePath("msyh.ttf", cbuffer, MAX_PATH + 1), 16);
+	Tools::GetInstance()->GetFontPath("Dengb.ttf", cbuffer, MAX_PATH);
+	mFont.Initialize(mFramework->GetGDI(), cbuffer, 16);
 	mTextRenderer.Initialize(mFramework->GetGDI(), &mFont, 140);
 	mUIBatches.Initialize(mFramework->GetGDI(), mBatches);
 }
@@ -48,14 +46,14 @@ void SecondScene::OnDestory()
 
 void SecondScene::Render(float deltaTime)
 {
-	mFPS.Tick(deltaTime);
+	Clear(Color(0.5f, 0.5f, 0.5f, 0.0f));
 	WVPMatrix wvp;
 	mCamera.GetCameraMatrix(wvp);
 
-
+	auto debug = DebugInscriber::GetInstance();
 	mUIBatches.Begin();
 	mTextRenderer.Begin(wvp);
-	mFPS.RenderFPS(mTextRenderer, Color(1.f, 1.f, 0.4f, 1.f), 4, 4);
+	mTextRenderer.DrawStringEx(4, 4, L"FPS:%.1f", debug->GetAverageFPS());
 	UpdataLayer(deltaTime);
 	RenderLayer(mBatches);
 	mTextRenderer.End();

@@ -10,7 +10,7 @@ EditText::EditText():mTextColor(Color(0.f,0.f,0.f,1.f)),mBoderColor(0.5f,0.7f,0.
 
 EditText::~EditText()
 {
-	mLayer->GetParent()->GetFramework()->GetInputManager()->CleanForce(this);
+	mLayer->GetParent()->GetFramework()->GetInputManager()->ClearForce(this);
 }
 
 void EditText::Render(const XMMATRIX * matrix, const Batches & batches)

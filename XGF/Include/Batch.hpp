@@ -102,6 +102,14 @@ public:
     static int GetClientHeight() {
         return mClientHeight;
     }
+
+	static float GetClientWidthD2() {
+		return mClientWidth / 2.f;
+	}
+	static float GetClientHeightD2() {
+		return mClientHeight / 2.f;
+	}
+
 	static void SetClientSize(SIZE size) { mClientHeight = size.cy; mClientWidth = size.cx; }
 protected:
     static int mClientWidth;

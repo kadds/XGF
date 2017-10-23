@@ -10,18 +10,20 @@
 底层图形接口
 调整窗口尺寸请使用ResizeTarget函数，而不是Win API
 使用全屏模式先选择一个DisplayMode(DXGI_MODE)：call SetFullScreenDisplayMode（pos）；再call SetFullScreen（true）
+目前全屏模式有BUG，请暂时不要使用
 */
 class GDI
 {
 public:
-	GDI() {};
+	explicit GDI() {};
 	~GDI() {};
 	//框架调用
 	void Create();
 	//框架调用
 	void Destory();
-	void Clean(float color[]);
-	void Clean(Color & c);
+	void Clear(float color[]);
+	void Clear(Color & c); 
+	void ClearDepthStencilBuffer();
 	void Present(bool isVsync);
 	//初始化函数，必须是该类第一个调用的函数
 	//用户调用

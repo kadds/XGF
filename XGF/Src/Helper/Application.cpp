@@ -116,6 +116,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_IME_NOTIFY:
 	case WM_CHAR:
 	case WM_KEYDOWN:
+		//把消息交给InputManage处理
 		app = WndAppMap.find(hWnd)->second;
 		if (app != nullptr && app->GetFramework() != nullptr)
 		{

@@ -109,6 +109,7 @@ protected:
 
     DirectX::XMFLOAT4X4 mMatrix;
 
+	//¼àÌıÆ÷±äÁ¿
     OnMouseDowmListener onMouseDowmListener;
     OnMouseUpListener onMouseUpListener;
     OnMouseMoveListener onMouseMoveListener;

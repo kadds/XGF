@@ -38,7 +38,7 @@ void OutputDebugStringEx(const char *strOutputString, ...);
 #endif
 
 #define ERROR_SHADER_FILE_NOT_FIND_STRING "Shader file not find!"
-#define ERROR_BATCH_MEM_OUT_OF_RANGE "Shader file not find!"
+#define ERROR_BATCH_MEM_OUT_OF_RANGE "batch out of mem"
 
 #ifdef _DEBUG
 #define _USE_FUNCTION_NAME

@@ -201,7 +201,7 @@ void Batch::SetBlend(bool Open)
 	}
 	mUsingBlend = Open;
 }
-Batch::Batch() :mIsBegin(false), mIsMap(false), mTextureResource(nullptr),mMapMode(Discard), mDisabledBlend(false), mNullTexture(true),mUsingBlend(false)
+Batch::Batch() :mIsBegin(false), mIsMap(false), mTextureResource(nullptr),mMapMode(MapMode::Overwrite), mDisabledBlend(false), mNullTexture(true),mUsingBlend(false)
 {
 }
 void Batch::SetTexture(const Texture & tex)
@@ -263,11 +263,16 @@ void Batch::PrepareForRender()
 {
     auto gdi = mGDI;
     unsigned int* stride = mShader->GetSizePreSlot();
-    unsigned int offset[16]{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    unsigned int offset[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT]{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     unsigned int ct = mVertexBufferCount;
+	unsigned int stride2[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
+	ID3D11Buffer *mbuffer[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
+	memset(mbuffer, 0, sizeof(mbuffer));
+	memset(stride2, 0, sizeof(stride2));
     mShader->SetShaderParameter(*mMatrix);
     mShader->SetShaderAndInputLayout();
     gdi->GetDeviceContext()->IASetVertexBuffers(0, ct, mVertexBuffer, stride, offset);
+	gdi->GetDeviceContext()->IASetVertexBuffers(ct , D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT - ct, mbuffer, stride2, offset);
     gdi->GetDeviceContext()->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
     gdi->GetDeviceContext()->IASetPrimitiveTopology(mTopologyMode);
 	if (mTextureResource)

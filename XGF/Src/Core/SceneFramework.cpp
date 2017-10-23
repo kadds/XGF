@@ -29,6 +29,11 @@ void SceneFramework::RenderScene()
 	mScene->Render(mDeltaTime);
 }
 
+void SceneFramework::Clear(Color & c)
+{
+	mGDI->Clear(c);
+}
+
 SceneFramework::SceneFramework()
 {
 }
@@ -52,8 +57,6 @@ void SceneFramework::OnActivate(bool isActivate)
 
 void SceneFramework::Render()
 {
-	float color[] = { 0.48f,0.48f,0.48f,1.0f };
-	mGDI->Clean(color);
 	if (mScene != nullptr)
 		mScene->Render(mDeltaTime);
 	mGDI->Present(mIsVsync);

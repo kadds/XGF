@@ -67,7 +67,7 @@ void RenderToTexture::SetRenderTarget()
 	mGDI->GetDeviceContext()->OMSetRenderTargets(1, &mRenderTargetView, mGDI->GetDepthStencilView());
 }
 
-void RenderToTexture::Clean(float color[])
+void RenderToTexture::Clear(float color[])
 {
 	mGDI->GetDeviceContext()->ClearRenderTargetView(mRenderTargetView, color);
 	//清除深度缓存和模板缓存  
@@ -75,14 +75,14 @@ void RenderToTexture::Clean(float color[])
 	ID3D11ShaderResourceView *const pSRV[1] = { nullptr };
 	mGDI->GetDeviceContext()->PSSetShaderResources(0, 1, pSRV);
 }
-void RenderToTexture::Clean(Color & c)
+void RenderToTexture::Clear(Color & c)
 {
 	float color[4];
 	color[0] = c.x;
 	color[1] = c.y;
 	color[2] = c.z;
 	color[3] = c.w;
-	Clean(color);
+	Clear(color);
 }
 void RenderToTexture::SetDefaultRenderTarget()
 {

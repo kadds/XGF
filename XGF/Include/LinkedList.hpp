@@ -86,7 +86,7 @@ public:
             return it->prev;
         return it;
     }
-    void Clean()
+    void Clear()
     {
         auto it = Begin();
         Node <T> force;

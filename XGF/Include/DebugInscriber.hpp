@@ -26,7 +26,7 @@ public:
     float GetAverageCallBatch();
     float GetCallBatchPerSecond() { return mCallBatchPerSecond; }
     float GetCallBatchPerFrame() { return mCallBatchPerFrame; }
-
+	//获得在每mUpdateTime时间内平均fps
     float GetAverageFPS();
     float GetFPSPerSecond();
     float GetVerticesRenderCountPerSecond() { return mRenderVerticesPerSecond; }
@@ -57,7 +57,7 @@ private:
     float mRenderVerticesPerFrame;
     float mRenderIndicesPerFrame;
     float mRenderPolyonPerFrame;
-
+	float mFpsAverage;
 
     int mAllCallBatch;
     int mAllVertices;

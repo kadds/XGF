@@ -31,7 +31,6 @@ void GDI::Create()
 	//多重采样描述
 	//每像素多重采样个数
 	sd.SampleDesc.Count = 1;
-	//图像质量等级，可选范围为0到ID3D11Device::CheckMultisampleQualityLevels
 	sd.SampleDesc.Quality = 0;
 	//CPU访问后台缓冲区的选项
 	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
@@ -55,7 +54,8 @@ void GDI::Create()
 		D3D_DRIVER_TYPE_HARDWARE,
 		0,
 		flag,
-		featureLevels, 4,
+		featureLevels, 
+		sizeof(featureLevels) / sizeof(featureLevels[0]),
 		D3D11_SDK_VERSION,
 		&mD3dDevice,
 		&curLevel,
@@ -63,18 +63,27 @@ void GDI::Create()
 	UINT  m4xMsaaQuality;
 	Check(mD3dDevice->CheckMultisampleQualityLevels(
 		DXGI_FORMAT_R8G8B8A8_UNORM, 4, &m4xMsaaQuality));
-	sd.SampleDesc.Quality = m4xMsaaQuality;
-	OutputDebugStringEx(L"Level:%d\n",curLevel);
-	OutputDebugStringEx(L"m4xMsaaQuality:%d\n", m4xMsaaQuality);
-
+	sd.SampleDesc.Quality = m4xMsaaQuality - 1;
+	char const *levelstr[] = {"11.1","11","10.1","10" };
+	for (size_t i = 0; i < sizeof(featureLevels) / sizeof(featureLevels[0]); i++)
+	{
+		if (curLevel == featureLevels[i])
+		{
+			OutputDebugStringEx(L"Level:%s\n", levelstr[i]);
+			break;
+		}
+	}
+	
+	OutputDebugStringEx(L"4xMsaaQuality:%d\n", m4xMsaaQuality);
+	//获取Factory创建SwapChain
 	IDXGIDevice * pDXGIDevice = nullptr;
 	mD3dDevice->QueryInterface(__uuidof(IDXGIDevice), (void **)&pDXGIDevice);
 	IDXGIAdapter * pDXGIAdapter = nullptr;
 	pDXGIDevice->GetAdapter(&pDXGIAdapter);
 	IDXGIFactory * pIDXGIFactory = nullptr;
 	pDXGIAdapter->GetParent(__uuidof(IDXGIFactory), (void **)&pIDXGIFactory);
-	pIDXGIFactory->CreateSwapChain(mD3dDevice, &sd, &mSwapChain);
-	pIDXGIFactory->MakeWindowAssociation(mHwnd, DXGI_MWA_NO_ALT_ENTER);
+	Check(pIDXGIFactory->CreateSwapChain(mD3dDevice, &sd, &mSwapChain));
+	Check(pIDXGIFactory->MakeWindowAssociation(mTopHwnd, DXGI_MWA_NO_ALT_ENTER));
 
 	IDXGIAdapter * eDXGIAdapter = nullptr;
 	int i = 0;
@@ -91,7 +100,7 @@ void GDI::Create()
 	i = 0;
 	while (pDXGIAdapter->EnumOutputs(i, &output) != DXGI_ERROR_NOT_FOUND)
 	{
-		OutputDebugStringEx(L"OutPut:%d\n"
+		OutputDebugStringEx(L"显示器 OutPut:%d\n"
 			, i);
 
 		mOutputs.push_back(output);
@@ -156,7 +165,7 @@ void GDI::Create()
 	Check(mD3dDevice->CreateRasterizerState(&rasterDesc, &mFrameRasterState));
 	PutDebugString(mRasterState);
 	PutDebugString(mFrameRasterState);
-
+	//创建两个Blend
 	D3D11_BLEND_DESC blendDesc;
 	ZeroMemory(&blendDesc, sizeof(blendDesc));
 	blendDesc.RenderTarget[0].BlendEnable = TRUE;
@@ -167,12 +176,12 @@ void GDI::Create()
 	blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
 	blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-	//创建ID3D11BlendState接口  
 	mD3dDevice->CreateBlendState(&blendDesc, &mBlendState);
 	PutDebugString(mBlendState);
 	blendDesc.RenderTarget[0].BlendEnable = FALSE;
 	mD3dDevice->CreateBlendState(&blendDesc, &mDisableBlendState);
 	PutDebugString(mDisableBlendState);
+	//设置取样器
 	D3D11_SAMPLER_DESC samplerDesc;
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;  //线性插值(三种方式,点过滤,线性过滤,异性过滤)
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -276,23 +285,32 @@ void GDI::Destory()
 
 }
 
-void GDI::Clean(float color[])
+void GDI::Clear(float color[])
 {
 	mDeviceContext->ClearRenderTargetView(mRenderTargetView, color);
 	//清除深度缓冲.  
 	mDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	//把ShaderView置空
+	//Warming：多slot
 	ID3D11ShaderResourceView *const pSRV[1] = { nullptr };
+	
 	mDeviceContext->PSSetShaderResources(0, 1, pSRV);
 }
-void GDI::Clean(Color & c)
+void GDI::Clear(Color & c)
 {
 	float color[4];
 	color[0] = c.x;
 	color[1] = c.y;
 	color[2] = c.z;
 	color[3] = c.w;
-	Clean(color);
+	Clear(color);
 }
+void GDI::ClearDepthStencilBuffer()
+{
+	mDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+}
+
 void GDI::Present(bool isVsync)
 {
 	mSwapChain->Present(isVsync,0);
@@ -334,26 +352,22 @@ void GDI::SizeChanged(UINT ClientWidth, UINT ClientHeight)
 		mDepthStencilBuffer->Release();
 		mDepthStencilBuffer = 0;
 	}
-	//QueryInterface();
-	//改变交换链中后后缓冲大小后，重新创建渲染目标视图 
+	//重新创建渲染目标视图 
 	Check(mSwapChain->ResizeBuffers(1, ClientWidth, ClientHeight, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
 	PutDebugString(mSwapChain);
 	// 得到交换链中的后缓冲指针. 
 	ID3D11Texture2D* backBufferPtr;
 	Check(mSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBufferPtr));
 
-	// 用后缓冲创建渲染目标视图. 
 	Check(mD3dDevice->CreateRenderTargetView(backBufferPtr, NULL, &mRenderTargetView));
-	//释放后缓冲.(引用计数减1) 
+
 	backBufferPtr->Release();
 	backBufferPtr = 0;
 	PutDebugString(mRenderTargetView);
 
 	D3D11_TEXTURE2D_DESC depthBufferDesc;
 	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
-	//创建深度模版视图 
-	// 初始化深度缓冲描述. 
-	// 初始化深度缓冲描述. 
+
 	ZeroMemory(&depthBufferDesc, sizeof(depthBufferDesc));
 	//设置深度缓冲描述 
 	depthBufferDesc.Width = ClientWidth;
@@ -379,13 +393,12 @@ void GDI::SizeChanged(UINT ClientWidth, UINT ClientHeight)
 	// 创建深度模版视图. 
 	Check(mD3dDevice->CreateDepthStencilView(mDepthStencilBuffer,
 		&depthStencilViewDesc, &mDepthStencilView));
-	// 绑定渲染目标视图和深度缓冲到渲染管线. 
+ 
 	PutDebugString(mDepthStencilView);
 	mDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
 
-	//设置光栅化状态，使其生效 
 	SetFillMode(mIsOpenFillSold);
-
+	//重新设置 viewPort
 	D3D11_VIEWPORT view;
 	view.MinDepth = 0.0f;
 	view.MaxDepth = 1.0f;
@@ -410,25 +423,7 @@ void GDI::ResizeTarget(UINT x, UINT y)
 
 void GDI::SetFullScreen(bool isFullscreen)
 {
-	/*
-	if (isFullscreen)
-	{
-		DEVMODE dmScrrenSettings;
-		int ScrrenWidth = GetSystemMetrics(SM_CXSCREEN);
-		int ScrrenHeight = GetSystemMetrics(SM_CYSCREEN);
-			//如果为全屏幕,则设定屏幕为用户桌面的最大化并且为32bit
-			memset(&dmScrrenSettings, 0, sizeof(dmScrrenSettings));
-			dmScrrenSettings.dmSize = sizeof(dmScrrenSettings);
-			dmScrrenSettings.dmPelsWidth = (unsigned long)ScrrenWidth;
-			dmScrrenSettings.dmPelsHeight = (unsigned long)ScrrenHeight;
-			dmScrrenSettings.dmBitsPerPel = 32;
-			dmScrrenSettings.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
-			//改变显示设定,设置为全屏幕
-			ChangeDisplaySettings(&dmScrrenSettings, CDS_FULLSCREEN);
-	}
-	else
-		ChangeDisplaySettings(NULL, 0);
-		*/
+	//未完成的功能
 	if (isFullscreen)
 	{
 		mSwapChain->SetFullscreenState(isFullscreen, 0);

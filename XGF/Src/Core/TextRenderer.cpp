@@ -37,21 +37,21 @@ void TextRenderer::Shutdown()
         delete[] mTemporarybuffer;
 }
 
-void TextRenderer::DrawString(const wchar_t * str, int x, int y)
+void TextRenderer::DrawString(const wchar_t * str, float x, float y)
 {
     Shape::Rectangle rc;
-    rc.SetPositionAndSize(static_cast<float>(x), static_cast<float>(y), 1000.f, 1000.f);
+    rc.SetPositionAndSize(x, y, 1000.f, 1000.f);
     DrawString(str, -1, -1, Color(1.0f,1.0f,1.0f,1.0f),&rc, nullptr);
 }
 
-void TextRenderer::DrawString(const wchar_t * str, Color color, int x, int y)
+void TextRenderer::DrawString(const wchar_t * str, Color color, float x, float y)
 {
     Shape::Rectangle rc;
     rc.SetPositionAndSize(static_cast<float>(x), static_cast<float>(y), 1000.0f, 1000.0f);
     DrawString(str, -1, -1, color, &rc, nullptr);
 }
 
-void TextRenderer::DrawStringEx(int x, int y, const wchar_t * str, ...)
+void TextRenderer::DrawStringEx(float x, float y, const wchar_t * str, ...)
 {
     va_list vlArgs = NULL;
     va_start(vlArgs, str);
@@ -63,7 +63,7 @@ void TextRenderer::DrawStringEx(int x, int y, const wchar_t * str, ...)
     DrawString(mTemporarybuffer, Color(1.0f,1.0f,1.0f,1.0f), x, y);
 }
 
-void TextRenderer::DrawStringEx(int x, int y, Color color, const wchar_t * str, ...)
+void TextRenderer::DrawStringEx(float x, float y, Color color, const wchar_t * str, ...)
 {
     va_list vlArgs = NULL;
     va_start(vlArgs, str);
@@ -83,7 +83,6 @@ Position TextRenderer::DrawString(const wchar_t * str, int start, int end, Color
     PosSize *ps;
     int posLeft = 0;
     int posTop = 0;
-    int pt = 0;
     Shape::Rectangle py;
     PolygonPleTextureBinder textureBinder(4);
     PolygonPleConstantColorBinder colorBinder(color,4);
@@ -97,7 +96,8 @@ Position TextRenderer::DrawString(const wchar_t * str, int start, int end, Color
     while (c != L'\0')
     {
 		ps = mFont->GetCharGlyph(c);
-		pt = mFont->ResizeFontSize(c, lastc);
+		//不进行微调
+		//pt = mFont->ResizeFontSize(c, lastc);
 		if (start <= i && end >= i)
 		{
 			if (ps == nullptr) 
@@ -112,15 +112,14 @@ Position TextRenderer::DrawString(const wchar_t * str, int start, int end, Color
 			}
 			else
 			{
-				if (!ppe->SubRectangle(&py, static_cast<float>(posLeft + ps->metrics.xwidth + pt), static_cast<float>(ps->metrics.xheight + posTop),
+				if (!ppe->SubRectangle(&py, static_cast<float>(posLeft + ps->metrics.xwidth), static_cast<float>(ps->metrics.xheight + posTop),
 					static_cast<float>(ps->metrics.width), static_cast<float>(ps->metrics.height)))
 				{
 					posLeft = 0;
 					posTop += mFont->GetFontSize();
-					if (!ppe->SubRectangle(&py, static_cast<float>(posLeft + ps->metrics.xwidth + pt), static_cast<float>(ps->metrics.xheight + posTop),
+					if (!ppe->SubRectangle(&py, static_cast<float>(posLeft + ps->metrics.xwidth), static_cast<float>(ps->metrics.xheight + posTop),
 						static_cast<float>(ps->metrics.width), static_cast<float>(ps->metrics.height)))
 					{
-						posLeft -= pt;
 						posLeft += ps->metrics.advanceX;
 						lastc = c;
 						i++;
@@ -130,29 +129,20 @@ Position TextRenderer::DrawString(const wchar_t * str, int start, int end, Color
 				}
 				if (matrix != nullptr)
 					py.mPolygon.Mul(*matrix);
-				py.mPolygon.Transform(static_cast<float>(mBatch.GetClientWidth() / 2), static_cast<float>(mBatch.GetClientHeight() / 2));
+				py.mPolygon.Transform(Batch::GetClientWidthD2(), Batch::GetClientHeightD2());
 				mBatch.DrawPolygon(py.mPolygon, py.GetIndex(), bbridge);
 			}
 		}
-        posLeft -= pt;
         posLeft += ps->metrics.advanceX;
         lastc = c;
 		i++;
         c = *(str + i);
-        //OutputDebugStringEx("\n");
     }
 	return Position(posLeft,posTop);
 }
 
 void TextRenderer::Begin(const WVPMatrix & matrix)
 {
-    //for each (auto var in map)
-    //{
-    //    for (auto i = var.second->begin(); i != var.second->end(); ++i)
-    //    {
-    //        i->second = false;
-    //    }
-    //
     mBatch.Begin(matrix);
 	mBatch.SetTexture(mFont->GetShaderResourceView());
 }

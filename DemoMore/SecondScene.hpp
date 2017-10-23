@@ -14,7 +14,6 @@ public:
 	virtual void OnSize(int ClientX, int ClientY) override;
 	virtual void OnActivate(bool isActivate) override;
 private:
-	FPS mFPS;
 	Font mFont;
 	TextRenderer mTextRenderer;
 

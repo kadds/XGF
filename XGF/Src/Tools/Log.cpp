@@ -95,7 +95,7 @@ void Log::Error(const char * str, const char * file, int line, const char * funN
 		buffer = new char[len];
 		sprintf_s(buffer, len, "Error: %s\nSource File:%s\nLine:%d\nNo function name", str, file, line);
 	}
-	mLogfile << buffer << std::endl << std::flush;
+	mLogfile << buffer << std::endl << std::fflush;
 	if(msgbox)
 		MessageBoxA(GetForegroundWindow(), buffer, "Error", MB_ICONERROR);
 	exit(-3);

@@ -53,7 +53,9 @@ public:
 	//Application¿ò¼Üµ÷ÓÃ
 	void _OnClose();
 	
-	void Clean(float color[]);
+	void Clear(float color[]);
+	void Clear(Color &color);
+	void ClearDepthStencilBuffer();
 	void Present(bool isVsync);
 
 	HWND GetTopHwnd();
