@@ -17,7 +17,7 @@ void GridRenderer::Initialize(GDI * gdi, unsigned width, unsigned height, unsign
 	auto p = DirectX::XMMatrixIdentity();
 	InputType inputype[2] = { SHADER_INPUTLAYOUT_POSITION, SHADER_INPUTLAYOUT_TEXTURE };
 	mShader.Initialize(gdi, ShaderConst::shaderPTVS, ShaderConst::shaderPTVSSize, ShaderConst::shaderPTPS, ShaderConst::shaderPTPSSize, inputype, 2);
-	mBatch.Initialize(gdi, &mShader, (max + 1)*(max + 1), max * max * 2 * 3, RenderMode::RealTime);
+	mBatch.Initialize(gdi, &mShader, (max + 1)*(max + 1), max * max * 2 * 3, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 	mHeight = height;
 	mWidth = width;
 	mMeshData = new MeshData(max);

@@ -19,7 +19,6 @@ public:
 private:
 	ShapeRenderer mShapeRenderer;
 	OrthoCamera mCamera;
-	FPS mFPS;
 	RenderToTexture mRenderToTexture;
 
 	Font mFont;

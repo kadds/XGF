@@ -47,10 +47,10 @@ void RectangleB::SetPositionAndSize(float x, float y, float width, float height)
 	shapePos[10].x = shapePos[11].x = shapePos[2].x = shapePos[3].x = shapePos[7].x = shapePos[6].x = x + width;
 	shapePos[10].y = shapePos[9].y = shapePos[1].y = shapePos[2].y = shapePos[5].y = shapePos[6].y = y + height;
 
-	shapePos[0].z = shapePos[1].z = shapePos[2].z = shapePos[3].z = 0.2f;
-	shapePos[4].z = shapePos[5].z = shapePos[6].z = shapePos[7].z = 0.2f;
+	shapePos[0].z = shapePos[1].z = shapePos[2].z = shapePos[3].z = 0.0f;
+	shapePos[4].z = shapePos[5].z = shapePos[6].z = shapePos[7].z = 0.0f;
 
-	shapePos[8].z = shapePos[9].z = shapePos[10].z = shapePos[11].z = 0.2f;
+	shapePos[8].z = shapePos[9].z = shapePos[10].z = shapePos[11].z = 0.0f;
 
 }
 

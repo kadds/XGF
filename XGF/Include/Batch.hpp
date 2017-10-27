@@ -15,7 +15,6 @@ class Shader;
 class Texture;
 class BindingBridge;
 typedef char* VertexDate;
-enum RenderMode {Buffer = 0, RealTime};
 
 typedef D3D_PRIMITIVE_TOPOLOGY TopologyMode;
 
@@ -63,13 +62,9 @@ enum MapMode
 };
 /*
 渲染批次类
-两种渲染模式：实时模式和缓冲模式
-实时模式使用DrawPolygon渲染图形
-缓冲模式使用GetFreePosition获取一个可用的顶点缓存， 可以调用WriteToVertexBuffer 更新顶点缓存，每帧必须调用 WriteToIndexBuffer 更新索引
-缓冲模式有BUG，不建议使用
+使用DrawPolygon渲染图形
 所有导致状态改变的函数可能间接调用Flush函数，从而增加Call Batch的机会
 请搭配Begin End 使用
-每个Bach不能动态改变TopologyMode类型和RenderMode类型
 */
 class Batch
 {
@@ -80,21 +75,22 @@ public:
 	//使状态改变
     void SetTexture(ID3D11ShaderResourceView* rv);
 
-    int GetFreePosition(int len);
-    int WriteToVertexBuffer(int slot, int pos, void * buffer, int len, VertexTransfrom transfrom);
-    int WriteToIndexBuffer(index * buffer, int len, int off);
+    
 	void DrawPolygon(const PolygonPle & polygon, const PolygonPleIndex & pindex, const BindingBridge & bbridge);
 	//提前提交图形
 	void Flush();
 	Shader * GetShader() const{ return mShader; }
-	void Initialize(GDI * gdi, Shader * shader, int MaxVertices, int MaxIndexCount, RenderMode em = RenderMode::RealTime, bool UsingZBuffer = true, TopologyMode tm = TopologyMode::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	void Initialize(GDI * gdi, Shader * shader, int MaxVertices, int MaxIndexCount, TopologyMode tm = TopologyMode::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	void Shutdown();
 	
 	void Begin(const WVPMatrix & Matrix);
 	void End();
 	//使状态改变
 	void SetBlend(bool isOpen);
-	
+	//改变拓扑模式，会导致Flush
+	void ChangeTopologyMode(TopologyMode tm);
+	void SetZBufferRender(bool open);
+	TopologyMode GetTopologyMode();
 	void SetMapMode(MapMode md) { mMapMode = md; };
     static int GetClientWidth() {
         return mClientWidth;
@@ -114,6 +110,7 @@ public:
 protected:
     static int mClientWidth;
     static int mClientHeight;
+	static unsigned int mMaxPreRenderFrameCount;
 protected:
 	//保存上一次渲染的纹理，便于合并Batch
     ID3D11ShaderResourceView* mTextureResource;
@@ -142,13 +139,16 @@ protected:
 	bool mUsingBlend;
 
 	MapMode mMapMode;
-	RenderMode mUsingMode;
 	TopologyMode mTopologyMode;
 
     index *mIndexData;
+	int mLastFrameVBStart;
+	int mLastFrameIBStart;
+	int mFramePosition;
 protected:
     void CreateIndexBuffer();
     void CreateVertexBuffer(unsigned len, ID3D11Buffer ** buffer);
+	void EndWithoutFrame();
 private:
 	WVPMatrix* mMatrix;
 	void Map(bool discard);
@@ -156,5 +156,5 @@ private:
     void PrepareForRender();
 	DISALLOW_COPY_AND_ASSIGN(Batch);
 	//保存未使用的顶点缓存信息
-    LinkedList<BufferInformation> mBufferState;
+    //LinkedList<BufferInformation> mBufferState;
 };

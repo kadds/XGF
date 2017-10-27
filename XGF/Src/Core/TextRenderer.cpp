@@ -21,8 +21,9 @@ void TextRenderer::Initialize(GDI * gdi, Font * font, int MaxCount)
 	mFont = font;
     InputType inputype[3] = { SHADER_INPUTLAYOUT_POSITION,SHADER_INPUTLAYOUT_COLOR,SHADER_INPUTLAYOUT_TEXTURE };
     mShader.Initialize(gdi, ShaderConst::fontVS, ShaderConst::fontVSSize, ShaderConst::fontPS, ShaderConst::fontPSSize,inputype, 3);
-    mBatch.Initialize(gdi, &mShader, MaxCount * 4, MaxCount * 6,RealTime,false);
+    mBatch.Initialize(gdi, &mShader, MaxCount * 4, MaxCount * 6, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	mBatch.SetBlend(true);
+	mBatch.SetZBufferRender(false);
 }
 
 void TextRenderer::Shutdown()
@@ -107,20 +108,20 @@ Position TextRenderer::DrawString(const wchar_t * str, int start, int end, Color
 				;
 			else if (c == L'\n')
 			{
-				posLeft = -ps->metrics.advanceX;
+				posLeft = -ps->advanceX;
 				posTop += mFont->GetFontSize();
 			}
 			else
 			{
-				if (!ppe->SubRectangle(&py, static_cast<float>(posLeft + ps->metrics.xwidth), static_cast<float>(ps->metrics.xheight + posTop),
+				if (!ppe->SubRectangle(&py, static_cast<float>(posLeft + ps->vx), static_cast<float>( posTop + ps->vy),
 					static_cast<float>(ps->metrics.width), static_cast<float>(ps->metrics.height)))
 				{
 					posLeft = 0;
 					posTop += mFont->GetFontSize();
-					if (!ppe->SubRectangle(&py, static_cast<float>(posLeft + ps->metrics.xwidth), static_cast<float>(ps->metrics.xheight + posTop),
+					if (!ppe->SubRectangle(&py, static_cast<float>(ps->vx), static_cast<float>(posTop + ps->vy),
 						static_cast<float>(ps->metrics.width), static_cast<float>(ps->metrics.height)))
 					{
-						posLeft += ps->metrics.advanceX;
+						posLeft += ps->advanceX;
 						lastc = c;
 						i++;
 						c = *(str + i);
@@ -133,7 +134,7 @@ Position TextRenderer::DrawString(const wchar_t * str, int start, int end, Color
 				mBatch.DrawPolygon(py.mPolygon, py.GetIndex(), bbridge);
 			}
 		}
-        posLeft += ps->metrics.advanceX;
+        posLeft += ps->advanceX;
         lastc = c;
 		i++;
         c = *(str + i);

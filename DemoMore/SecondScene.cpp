@@ -1,5 +1,5 @@
 #include "SecondScene.hpp"
-
+#include <iomanip>
 
 SecondScene::SecondScene()
 {
@@ -53,7 +53,10 @@ void SecondScene::Render(float deltaTime)
 	auto debug = DebugInscriber::GetInstance();
 	mUIBatches.Begin();
 	mTextRenderer.Begin(wvp);
-	mTextRenderer.DrawStringEx(4, 4, L"FPS:%.1f", debug->GetAverageFPS());
+	std::wstringstream str;
+	str << std::fixed << std::setprecision(1) << L"FPS:" << debug->GetAverageFPS() <<"\n"<< L"FC:" << std::setprecision(4) <<debug->GetFrameCost() << "ms";
+	mTextRenderer.DrawString(str.str().c_str(), 4, 4);
+	//mTextRenderer.DrawString(str.str().c_str(), 4, 20);
 	UpdataLayer(deltaTime);
 	RenderLayer(mBatches);
 	mTextRenderer.End();

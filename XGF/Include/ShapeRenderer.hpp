@@ -21,6 +21,7 @@ public:
 	void DrawRectangleB(float x, float y, float w, float h, Color & bkcolor, float borderWidth, Color & boderColor, Color & boderOuterColor);
 	void DrawCircle(float x, float y, float r, int precision,Color & color);
 	void DrawCircle(float x, float y, float r, int precision, Color & color, Color & centerColor);
+	void DrawLine(float x, float y, float endx, float endy, Color & color);
 private:
 	Batch mBatch;
 	Shader mShader;

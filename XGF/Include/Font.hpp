@@ -27,9 +27,6 @@
 struct FontMetrics {
 	int height;
 	int width;
-	int advanceX;//步进距离
-	int xheight;
-	int xwidth;
 };
 class GDI;
 struct PosSize
@@ -38,7 +35,10 @@ struct PosSize
 	float right;
 	float top;
 	float bottom;
+	int advanceX;//步进距离
 	int n;
+	int vx;
+	int vy;
 	FontMetrics metrics;
 };
 class Font

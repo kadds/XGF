@@ -69,7 +69,7 @@ void GDI::Create()
 	{
 		if (curLevel == featureLevels[i])
 		{
-			OutputDebugStringEx(L"Level:%s\n", levelstr[i]);
+			OutputDebugStringEx("Level:%s\n", levelstr[i]);
 			break;
 		}
 	}

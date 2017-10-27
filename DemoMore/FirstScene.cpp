@@ -159,16 +159,7 @@ void FirstScene::Render(float deltaTime)
 	
     auto debug = DebugInscriber::GetInstance();
 	mTextRenderer_s.Begin(wvp2D);
-	/*
-	mTextRenderer_s.DrawStringWithNum(L"IndicesRenderCountPerFrame: ", debug->GetIndicesRenderCountPerFrame(), 2, mFramework->GetWindowsHeight() - 80);
-	mTextRenderer_s.DrawStringWithNum(L"IndicesRenderCountPerSecond: ", debug->GetIndicesRenderCountPerSecond(), 300, mFramework->GetWindowsHeight() - 80);
-	mTextRenderer_s.DrawStringWithNum(L"VerticesRenderCountPerFrame: ", debug->GetVerticesRenderCountPerFrame(), 2, mFramework->GetWindowsHeight() - 60);
-	mTextRenderer_s.DrawStringWithNum(L"VerticesRenderCountPerSecond: ", debug->GetVerticesRenderCountPerSecond(), 300, mFramework->GetWindowsHeight() - 60);
-	mTextRenderer_s.DrawStringWithNum(L"CallBatchPerFrame: ", debug->GetCallBatchPerFrame(), 2, mFramework->GetWindowsHeight() - 40);
-	mTextRenderer_s.DrawStringWithNum(L"CallBatchPerSecond: ", debug->GetCallBatchPerSecond(), 300, mFramework->GetWindowsHeight() - 40);
-	mTextRenderer_s.DrawStringWithNum(L"PolygonRenderCountPerFrame: ", debug->GetPolygonRenderCountPerFrame(), 2, mFramework->GetWindowsHeight() - 20);
-	mTextRenderer_s.DrawStringWithNum(L"PolygonRenderCountPerSecond: ", debug->GetPolygonRenderCountPerSecond(), 300, mFramework->GetWindowsHeight() - 20);
-	*/
+
 	std::wstringstream str;
 	str << std::fixed << std::setprecision(1);
 	str << L"IndicesRenderCountPerFrame:" << debug->GetIndicesRenderCountPerFrame();
@@ -202,18 +193,6 @@ void FirstScene::Render(float deltaTime)
 	str << L"PolygonRenderCountPerFrame:" << debug->GetPolygonRenderCountPerFrame();
 	mTextRenderer_s.DrawString(str.str().c_str(), 2, mFramework->GetWindowsHeight() - 20);
 
-
-	/*
-
-    mTextRenderer_s.DrawStringEx(2,mFramework->GetWindowsHeight() - 80,L"IndicesRenderCountPerFrame: %.1f", debug->GetIndicesRenderCountPerFrame());
-	mTextRenderer_s.DrawStringEx(300, mFramework->GetWindowsHeight() - 80, L"IndicesRenderCountPerSecond: %.1f", debug->GetIndicesRenderCountPerSecond());
-    mTextRenderer_s.DrawStringEx(2, mFramework->GetWindowsHeight() - 60, L"VerticesRenderCountPerFrame: %.1f", debug->GetVerticesRenderCountPerFrame());
-	mTextRenderer_s.DrawStringEx(300, mFramework->GetWindowsHeight() - 60, L"VerticesRenderCountPerSecond: %.1f", debug->GetVerticesRenderCountPerSecond());
-    mTextRenderer_s.DrawStringEx(2, mFramework->GetWindowsHeight() - 40, L"CallBatchPerFrame: %.1f", debug->GetCallBatchPerFrame());
-    mTextRenderer_s.DrawStringEx(300, mFramework->GetWindowsHeight() - 40, L"CallBatchPerSecond: %.1f", debug->GetCallBatchPerSecond());
-    mTextRenderer_s.DrawStringEx(2, mFramework->GetWindowsHeight() - 20, L"PolygonRenderCountPerFrame: %.1f", debug->GetPolygonRenderCountPerFrame());
-    mTextRenderer_s.DrawStringEx(300, mFramework->GetWindowsHeight() - 20, L"PolygonRenderCountPerSecond: %.1f", debug->GetPolygonRenderCountPerSecond());
-	*/
 	mTextRenderer_s.End();
 	
 	mAxisRenderer.Begin(wvp3D);
@@ -248,7 +227,7 @@ void FirstScene::Render(float deltaTime)
 	RenderLayer(mBatches);
 	str.clear();
 	str.str(L"");
-	str << L"FPS:" << debug->GetAverageFPS();
+	str << std::fixed << std::setprecision(1) << L"FPS:" << debug->GetAverageFPS() << "\n" << L"FC:" << std::setprecision(4) << debug->GetFrameCost() << "ms";
 	mTextRenderer.DrawString(str.str().c_str(), 4, 4);
 	mTextRenderer.End();
 	mTextRenderer_b.End();

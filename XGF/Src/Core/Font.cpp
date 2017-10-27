@@ -114,6 +114,7 @@ PosSize * Font::GetCharGlyph(wchar_t ch) {
 	{
 		return cg->second;
 	}
+	int ascender = pFTFace->size->metrics.ascender >> 6;
 	FT_Glyph glyph;
 	auto device = ((GDI *)(mGDI))->GetDevice();
 	FT_Load_Glyph(pFTFace, FT_Get_Char_Index(pFTFace, ch), FT_LOAD_DEFAULT);
@@ -145,9 +146,9 @@ PosSize * Font::GetCharGlyph(wchar_t ch) {
 	result->bottom = bottom / static_cast<float>(mBufferHeight);
 	result->metrics.width = slot->metrics.width >> 6;
 	result->metrics.height = slot->metrics.height >> 6;
-	result->metrics.xwidth = (slot->metrics.horiBearingX >> 6) - slot->bitmap_left;
-	result->metrics.xheight = pFTFace->size->metrics.y_ppem - slot->bitmap_top;
-	result->metrics.advanceX = slot->advance.x >> 6;
+	result->advanceX = slot->advance.x >> 6;
+	result->vx = slot->bitmap_left;
+	result->vy = ( -slot->bitmap_top + ascender);
 	map.insert(std::pair<wchar_t, PosSize  *>(ch, result));
 	FT_Done_Glyph(glyph);
     mGDI->GetDeviceContext()->UpdateSubresource(mTexture,0, NULL,mBuffer, mBufferWidth, 0);

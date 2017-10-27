@@ -5,7 +5,7 @@ DebugInscriber DebugInscriber::mInstance;
 
 DebugInscriber::DebugInscriber() :mPassTime(0), mPassCount(0), 
 mAllTime(0.0f),mAllFrameCount(0),mAllVertices(0),mAllIndices(0), mAllPolygon(0), mAllCallBatch(0),
-mPolygon(0),mVertices(0),mIndices(0), mCallBatch(0),mUpdateTime(1.0f),mFpsAverage(0.f)
+mPolygon(0),mVertices(0),mIndices(0), mCallBatch(0),mUpdateTime(1.0f),mFpsAverage(0.f), mFrameCost(0.f)
 {
 }
 
@@ -33,6 +33,7 @@ void DebugInscriber::BeginInscriber(float tick)
         mRenderVerticesPerFrame = static_cast<float>(mVertices) / mPassCount;
         mRenderPolyonPerFrame = static_cast<float>(mPolygon) / mPassCount;
 		mFpsAverage = mPassCount / static_cast<float>(mPassTime);
+		mFrameCost = mPassTime * 1000 / static_cast<float>(mPassCount);
 		mCallBatch = 0;
 		mPassCount = 0;
 		mPassTime = 0.f;
@@ -59,6 +60,11 @@ float DebugInscriber::GetAverageCallBatch()
 float DebugInscriber::GetAverageFPS()
 {
 	return mFpsAverage;
+}
+
+float DebugInscriber::GetFrameCost()
+{
+	return mFrameCost;
 }
 
 float DebugInscriber::GetFPSPerSecond()

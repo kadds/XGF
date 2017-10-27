@@ -3,6 +3,7 @@
 #include "..\..\Include\Rectangle.hpp"
 #include "..\..\Include\RectangleB.hpp"
 #include "..\..\Include\Circle.hpp"
+#include "..\..\Include\Line.hpp"
 ShapeRenderer::ShapeRenderer()
 {
 }
@@ -16,8 +17,9 @@ void ShapeRenderer::Initialize(GDI * gdi, unsigned int MaxVetices, unsigned int 
 {
 	InputType inputtype[2] = { SHADER_INPUTLAYOUT_POSITION, SHADER_INPUTLAYOUT_COLOR };
 	mShader.Initialize(gdi, ShaderConst::shaderPCVS, ShaderConst::shaderPCVSSize, ShaderConst::shaderPCPS, ShaderConst::shaderPCPSSize, inputtype, 2);
-	mBatch.Initialize(gdi, &mShader, MaxVetices, MaxIndices,RealTime,false);
-
+	mBatch.Initialize(gdi, &mShader, MaxVetices, MaxIndices, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	mBatch.SetBlend(true);
+	mBatch.SetZBufferRender(false);
 }
 
 void ShapeRenderer::Shutdown()
@@ -49,6 +51,7 @@ void ShapeRenderer::DrawRectangle(float x, float y, float w, float h, Color & co
 	PolygonPleConstantColorBinder cb(color ,rc.mPolygon.mCount);
 	BindingBridge bb;
 	bb.AddBinder(cb);
+	mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	mBatch.DrawPolygon(rc.mPolygon, rc.mPolygonPleIndex, bb);
 }
 
@@ -66,6 +69,7 @@ void ShapeRenderer::DrawRectangleB(float x, float y, float w, float h, Color & b
 	BindingBridge bb;
 	bb.AddBinder(cb);
 	mBatch.SetTexture(nullptr);
+	mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	mBatch.DrawPolygon(rc.mPolygon, rc.mPolygonPleIndex, bb);
 }
 
@@ -78,6 +82,7 @@ void ShapeRenderer::DrawCircle(float x, float y, float r, int precision, Color &
 	BindingBridge bb;
 	bb.AddBinder(cb);
 	mBatch.SetTexture(nullptr);
+	mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	mBatch.DrawPolygon(ce.mPolygon, ce.mPolygonPleIndex, bb);
 }
 
@@ -93,5 +98,20 @@ void ShapeRenderer::DrawCircle(float x, float y, float r, int precision, Color &
 	BindingBridge bb;
 	bb.AddBinder(cb);
 	mBatch.SetTexture(nullptr);
+	mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	mBatch.DrawPolygon(ce.mPolygon, ce.mPolygonPleIndex, bb);
+}
+
+void ShapeRenderer::DrawLine(float x, float y, float ex, float ey, Color & color)
+{
+	Shape::Line line;
+	line.SetPosition(Point(x, y, 0.f));
+	line.SetEndPosition(Point(ex, ey, 0.f));
+	line.mPolygon.Transform(Batch::GetClientWidthD2(), Batch::GetClientHeightD2());
+	PolygonPleConstantColorBinder cb(color, 4);
+	BindingBridge bb;
+	bb.AddBinder(cb);
+	mBatch.SetTexture(nullptr);
+	mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+	mBatch.DrawPolygon(line.mPolygon, line.mPolygonPleIndex, bb);
 }

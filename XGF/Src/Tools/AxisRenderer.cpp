@@ -15,7 +15,9 @@ void AxisRenderer::Initialize(GDI * gdi)
 	auto p = DirectX::XMMatrixIdentity();
 	InputType inputype[2] = { SHADER_INPUTLAYOUT_POSITION, SHADER_INPUTLAYOUT_COLOR};
 	mShader.Initialize(gdi, ShaderConst::shaderPCVS, ShaderConst::shaderPCVSSize, ShaderConst::shaderPCPS, ShaderConst::shaderPCPSSize, inputype, 2);
-	mBatch.Initialize(gdi, &mShader,  2 * 3 * 2,  2 * 3 * 2, RenderMode::RealTime, true,TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST );
+	mBatch.Initialize(gdi, &mShader,  2 * 3 * 2,  2 * 3 * 2, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST );
+	mBatch.SetBlend(true);
+	mBatch.SetZBufferRender(false);
 	Color c = Color(0.f, 0.f, 0.f, 1.f);
 	auto fun = [&](float x, float y, float z) {
 		
@@ -26,13 +28,13 @@ void AxisRenderer::Initialize(GDI * gdi)
 		//mBatch.WriteToVertexBuffer(0, pos, line->mPolygon.mPoint, 2, VertexTransfrom::None);
 		//mBatch.WriteToVertexBuffer(1, pos, &c,  2, VertexTransfrom::Constant);
 	};
-	fun(1000.f,0.f,0.f);
-	fun(-1000.f, 0.f, 0.f);
-	fun(0.f, 1000.f, 0.f);
+	fun(1e8f,0.f,0.f);
+	fun(-1e8f, 0.f, 0.f);
+	fun(0.f, 1e8f, 0.f);
 
-	fun(0.f, -1000.f, 0.f);
-	fun(0.f, 0.f, 1000.f);
-	fun(0.f, 0.f, -1000.f);
+	fun(0.f, -1e8f, 0.f);
+	fun(0.f, 0.f, 1e8f);
+	fun(0.f, 0.f, -1e8f);
 }
 
 void AxisRenderer::SetAxisXColor(Color color, Color colorb)

@@ -9,103 +9,12 @@
 #include <algorithm>
 int Batch::mClientWidth;
 int Batch::mClientHeight;
+unsigned int Batch::mMaxPreRenderFrameCount = 3;
 
-int Batch::GetFreePosition(int len)
-{
-	if (mUsingMode != RenderMode::Buffer) {
-		ReportWarning("Batch Error Render Mode");
-		return -1;
-	}
-    auto it = mBufferState.Begin();
-    int pos = -1;
-    while (it != mBufferState.End())
-    {
-        if (it->data.len >= len)
-        {
-            pos = it->data.start;
-            it->data.len -= len;
-            it->data.start += len;
-            if (it->data.len <= 0)
-                mBufferState.Delete(it);
-            else
-                mBufferState.Combine(it);
-            break;
-        }
-    }
-	if (pos == -1)
-		ReportWarning(ERROR_BATCH_MEM_OUT_OF_RANGE);
-    return pos;
-}
-int Batch::WriteToVertexBuffer(int slot, int pos , void * buffer, int len, VertexTransfrom transfrom)
-{
-	if (mUsingMode != RenderMode::Buffer) {
-		ReportWarning("Batch Error Render Mode");
-		return -1;
-	}
-    if (!mIsMap) {
-		if (mMapMode == Discard)
-			Map(true);
-		else
-			Map(false);
-        mIsMap = true;
-    }
-    float*  bf = (float*) buffer;
-    VertexDate vd = mVertexData[slot];
-    unsigned slotSize = mShader->GetSizeInSlot(slot);
-    float * posiv = ((float *) ((vd + (pos) * slotSize)));
-    switch (transfrom)
-    {
-    case VertexTransfrom::None:
-        memcpy(posiv, buffer, len * slotSize);
-        break;
-    case VertexTransfrom::Constant:
-        for (int i = 0; i < len; i++)
-        {
-            bf = (float *)buffer;
-            for (unsigned j = 0; j < slotSize / sizeof(float); j++)
-            {
-                *posiv = *bf;
-                posiv ++;
-                bf++;
-            }
-        }
-        break;
-    default:
-        break;
-    } 
-    
-	return pos;
-}
-int Batch::WriteToIndexBuffer(index * buffer, int len, int off)
-{
-	if (mUsingMode != RenderMode::Buffer) {
-		ReportWarning("Batch Error Render Mode");
-		return -1;
-	}
-
-    if (!mIsMap) {
-		if(mMapMode == Discard)
-			Map(true);
-		else
-			Map(false);
-        mIsMap = true;
-    }
-	
-    for (int i = 0; i < len; i++)
-    {
-        mIndexData[mPosInIndices + i] = buffer[i] + off;
-    }
-    mPosInIndices += len;
-    DebugInscriber_CallAPolygon();
-     return mPosInIndices - len;
-}
 
 void Batch::DrawPolygon(const PolygonPle & polygon, const PolygonPleIndex & pindex, const BindingBridge & bbridge)
 {
-	if (mUsingMode != RenderMode::RealTime) {
-		ReportWarning("Batch Error Render Mode");
-		return ;
-	}
+	//Map Buffer
 	if (!mIsMap) {
 		if (mMapMode == Discard)
 			Map(true);
@@ -115,18 +24,20 @@ void Batch::DrawPolygon(const PolygonPle & polygon, const PolygonPleIndex & pind
 	}
 	else if(mMaxVertices - mPosInVertices <  polygon.mCount || mMaxIndexCount - mPosInIndices < pindex.mCount)
 	{
-		ReportWarning("Out of Range In Vertex Or Index Buffer, You Must Set A larger Buffer Size.");
+		ReportWarning("Out of Range In Vertex Or Index Buffer. You must set a larger buffer size.");
 		return ;//TODO::ERROR
 	}
+	//copy 顶点位置数据
 	unsigned slotSize = mShader->GetSizeInSlot(0);
-	memcpy(mVertexData[0] + slotSize * mPosInVertices, polygon.mPoint, slotSize * polygon.mCount);
-	
+	memcpy(mVertexData[0] + slotSize * (mPosInVertices + mLastFrameVBStart), polygon.mPoint, slotSize * polygon.mCount);
+	//copy 顶点附加数据
 	for (int i = 0; i < bbridge.GetBinderCount(); i++)
 	{
 		slotSize = mShader->GetSizeInSlot(i + 1);
-		bbridge.GetBinder(i)->CopyTo(mVertexData[i + 1] + slotSize * mPosInVertices);
+		bbridge.GetBinder(i)->CopyTo(mVertexData[i + 1] + slotSize * (mPosInVertices + mLastFrameVBStart));
 	}
-	pindex.CopyTo(mIndexData + mPosInIndices, mPosInVertices);
+	//copy 索引缓冲
+	pindex.CopyTo(mIndexData + mPosInIndices + mLastFrameIBStart, mPosInVertices + mLastFrameVBStart);
 	mPosInIndices += pindex.mCount;
 	mPosInVertices += polygon.mCount;
 	DebugInscriber_CallAPolygon();
@@ -136,24 +47,32 @@ void Batch::Flush()
 {
 	if (mIsBegin)
 	{
-		End();
+		EndWithoutFrame();
 		mPosBeforeIndices = mPosInIndices;
 		mIsBegin = true;
 	}
 }
 
-void Batch::Initialize(GDI * gdi, Shader * shader, int MaxVertices, int MaxIndexCount, RenderMode em, bool UsingZBuffer, TopologyMode tm)
+void Batch::Initialize(GDI * gdi, Shader * shader, int MaxVertices, int MaxIndexCount,  TopologyMode tm)
 {
 	mGDI = gdi;
 	mMaxVertices = MaxVertices;
 	mMaxIndexCount = MaxIndexCount;
 	mShader = shader;
-	mUsingMode = em; 
-	mUsingZBuffer = UsingZBuffer;
 	mTopologyMode = tm;
 	CreateIndexBuffer();
-	
-	
+	//初始化
+	mLastFrameVBStart = 0;
+	mLastFrameIBStart = 0;
+	mFramePosition  = 0;
+	mIsBegin = false;
+	mIsMap = false;
+	mTextureResource = nullptr;
+	mDisabledBlend = false;
+	mNullTexture = true;
+	mUsingBlend = false;
+	mUsingZBuffer  = true;
+
     mVertexBufferCount = shader->GetSlotCount();
     mVertexBuffer = new ID3D11Buffer *[mVertexBufferCount];
     const unsigned *p = shader->GetSizePreSlot();
@@ -162,8 +81,6 @@ void Batch::Initialize(GDI * gdi, Shader * shader, int MaxVertices, int MaxIndex
         CreateVertexBuffer(p[i],&mVertexBuffer[i]);
     }
     mVertexData = new VertexDate[mVertexBufferCount];
-	if (mUsingMode == RenderMode::Buffer)
-		mBufferState.Insert(BufferInformation(0, mMaxVertices));
 }
 void Batch::Begin(const WVPMatrix & Matrix)
 {
@@ -177,20 +94,18 @@ void Batch::Begin(const WVPMatrix & Matrix)
 }
 void Batch::End()
 {
-    if (!mIsBegin)
-        return;//TODO::ERROR
-    mIsBegin = false;
-    
-    if (mIsMap) {
-        UnMap();
-        mIsMap = false;
-    }
-	if (mPosInIndices == 0)
-		return;
-    PrepareForRender();
-	mGDI->SetZBufferMode(mUsingZBuffer);
-	mGDI->GetDeviceContext()->DrawIndexed(mPosInIndices - mPosBeforeIndices, mPosBeforeIndices, 0);
-    DebugInscriber_CallABatch(mPosInIndices - mPosBeforeIndices, mPosInVertices);
+	EndWithoutFrame();
+    DebugInscriber_CallABatch(mPosInIndices, mPosInVertices);
+	
+	mLastFrameVBStart += mPosInVertices ;
+	mLastFrameIBStart += mPosInIndices ;
+	mFramePosition++;
+	if (mFramePosition >= mMaxPreRenderFrameCount)
+	{
+		mFramePosition = 0;
+		mLastFrameVBStart = 0;
+		mLastFrameIBStart = 0;
+	}
 
 }
 void Batch::SetBlend(bool Open)
@@ -201,7 +116,23 @@ void Batch::SetBlend(bool Open)
 	}
 	mUsingBlend = Open;
 }
-Batch::Batch() :mIsBegin(false), mIsMap(false), mTextureResource(nullptr),mMapMode(MapMode::Overwrite), mDisabledBlend(false), mNullTexture(true),mUsingBlend(false)
+void Batch::ChangeTopologyMode(TopologyMode tm)
+{
+	if (mTopologyMode != tm)
+	{
+		Flush();
+		mTopologyMode = tm;
+	}
+}
+void Batch::SetZBufferRender(bool open)
+{
+	mUsingZBuffer = open;
+}
+TopologyMode Batch::GetTopologyMode()
+{
+	return mTopologyMode;
+}
+Batch::Batch()
 {
 }
 void Batch::SetTexture(const Texture & tex)
@@ -272,6 +203,7 @@ void Batch::PrepareForRender()
     mShader->SetShaderParameter(*mMatrix);
     mShader->SetShaderAndInputLayout();
     gdi->GetDeviceContext()->IASetVertexBuffers(0, ct, mVertexBuffer, stride, offset);
+	//清楚以前VB的缓存
 	gdi->GetDeviceContext()->IASetVertexBuffers(ct , D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT - ct, mbuffer, stride2, offset);
     gdi->GetDeviceContext()->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
     gdi->GetDeviceContext()->IASetPrimitiveTopology(mTopologyMode);
@@ -293,8 +225,8 @@ void Batch::PrepareForRender()
 void Batch::CreateVertexBuffer(unsigned len, ID3D11Buffer ** buffer)
 {
     D3D11_BUFFER_DESC vertexDesc;
+	mMaxVertices *= mMaxPreRenderFrameCount;
     char *vertices = new char[mMaxVertices * len];
-    //ZeroMemory(mVertices, sizeof(VertexPosPCT)*mMaxVertices);
     ZeroMemory(&vertexDesc, sizeof(vertexDesc));
     vertexDesc.Usage = D3D11_USAGE_DYNAMIC;
     vertexDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -308,16 +240,33 @@ void Batch::CreateVertexBuffer(unsigned len, ID3D11Buffer ** buffer)
     delete[] vertices;
 }
 
+void Batch::EndWithoutFrame()
+{
+	if (!mIsBegin)
+		return;//TODO::ERROR
+	mIsBegin = false;
+
+	if (mIsMap) {
+		UnMap();
+		mIsMap = false;
+	}
+	if (mPosInIndices == 0)
+		return;
+	PrepareForRender();
+	mGDI->SetZBufferMode(mUsingZBuffer);
+	mGDI->GetDeviceContext()->DrawIndexed(mPosInIndices - mPosBeforeIndices, mLastFrameIBStart + mPosBeforeIndices,0);
+}
+
 void Batch::CreateIndexBuffer()
 {
     /*UINT index[]{
     1, 2, 0,
     0, 3, 1
     };*/
-    index *indexList = new index[mMaxIndexCount];
+    index *indexList = new index[mMaxIndexCount * mMaxPreRenderFrameCount];
     D3D11_BUFFER_DESC ibd;
     ibd.Usage = D3D11_USAGE_DYNAMIC;
-    ibd.ByteWidth = sizeof(index) *(mMaxIndexCount);
+    ibd.ByteWidth = sizeof(index) *(mMaxIndexCount * mMaxPreRenderFrameCount);
     ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
     ibd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     ibd.MiscFlags = 0;
