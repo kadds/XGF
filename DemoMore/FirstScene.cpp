@@ -40,8 +40,8 @@ void FirstScene::OnCreate()
 	mLb.SetMouseEventable(true);
 
 	mLxb.SetTextRenderer(&mTextRenderer);
-	mLxb.SetText(L"X Game Render Framework! Click To Next Scene.");
-    mLxb.SetPositionAndSize(0, 240, 200, 40);
+	mLxb.SetText(L"X Game Render Framework\nClick here switch next scene.");
+    mLxb.SetPositionAndSize(0, 240, 240, 40);
 	mLxb.SetMouseEventable(true);
 	mLxb.SetClickable(true);
 	mLxb.AddOnClickListener([=](const MousePoint& mp, int p) {
@@ -228,7 +228,7 @@ void FirstScene::Render(float deltaTime)
 	str.clear();
 	str.str(L"");
 	str << std::fixed << std::setprecision(1) << L"FPS:" << debug->GetAverageFPS() << "\n" << L"FC:" << std::setprecision(4) << debug->GetFrameCost() << "ms";
-	mTextRenderer.DrawString(str.str().c_str(), 4, 4);
+	mTextRenderer.DrawString(str.str().c_str(), Color(0.2f,0.2f,0.8f,1.0f),4, 4);
 	mTextRenderer.End();
 	mTextRenderer_b.End();
 	mUIBatches.End();

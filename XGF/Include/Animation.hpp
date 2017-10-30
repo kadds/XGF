@@ -1,6 +1,7 @@
 #pragma once
 #include "Defines.hpp"
 #include <vector>
+#include "Texture.hpp"
 using std::vector;
 
 class Animation

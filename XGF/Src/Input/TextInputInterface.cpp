@@ -3,7 +3,7 @@
 #include "../../Include/Log.hpp"
 
 
-TextInputInterface::TextInputInterface():mCursorPos(0)
+TextInputInterface::TextInputInterface():mCaretPos(0)
 {
 	mInputString.clear();
 	mFirstCharPos = 0;
@@ -14,22 +14,21 @@ TextInputInterface::~TextInputInterface()
 {
 }
 
-void TextInputInterface::SetCursorPos(int pos)
+void TextInputInterface::SetCaretPosInText(int pos)
 {
-	mCursorPos = pos;
+	mCaretPos = pos;
 }
 
 
 void TextInputInterface::AppendInputStr(wchar_t * str, int count)
 {
 	mInputString.append(str, count);
-	//mCursorPos += count;
+	//mCaretPos += count;
 }
 void TextInputInterface::AppendInputStr(wchar_t str)
 {
-	mInputString.insert(mCursorPos,1,str);
-	mCursorPos++;
-	SetCaretPos(mCursorPosition.x, mCursorPosition.y);
+	mInputString.insert(mCaretPos,1,str);
+	mCaretPos++;
 }
 void TextInputInterface::DelInputStr()
 {
@@ -39,61 +38,62 @@ void TextInputInterface::DelInputStr()
 
 void TextInputInterface::RenderText(const XMMATRIX * matrix, Shape::Rectangle & rc, Color & color)
 {
-	Position u = mTextRenderer->DrawString(mInputString.c_str(), mFirstCharPos, -1, color, &rc, matrix);
-	//mCursorPosition.x = u.x + rc->mPolygon.mPoint[0].x;
-	//mCursorPosition.y = u.y + rc->mPolygon.mPoint[0].y;
-	//rc->mPolygon.Translation(u.x , u.y, 0);
-	//mTextRenderer->DrawString(mInputString.c_str(), mCursorPos +1 , -1, Color(0.0, 0.0, 0.0, 1.0f), rc, &d);
-	//rc->mPolygon.Translation(-u.x, -u.y, 0);
-	//mTextRenderer->DrawString(mInputString, mCursorPos, -1, Color(0.0, 0.0, 0.0, 1.0f), rc, &d);
-	//rc->mPolygon->Translation(-u, 0, 0);
+	Position u = mTextRenderer->DrawString(mInputString.c_str(), mFirstCharPos, mCaretPos, color, &rc, matrix);
+	//rc.mPolygon.Translation(u.x , u.y, 0);
+	mCaretPosition.x = u.x + rc.mPolygon.mPoint[0].x + 1;
+	mCaretPosition.y = u.y + rc.mPolygon.mPoint[0].y;
+	mTextRenderer->DrawString(mInputString.c_str(), mCaretPos + 1 , -1, color, &rc, matrix);
+	//rc.mPolygon.Translation(-u.x, -u.y, 0);
 }
 
 void TextInputInterface::BackUp()
 {
-	if (mCursorPos > 0)
+	if (mCaretPos > 0)
 	{
-		mInputString.erase(mCursorPos - 1 , 1);
-		if (mCursorPos >= 1)
-			mCursorPos--;
-		SetCaretPos(mCursorPosition.x, mCursorPosition.y);
+		mInputString.erase(mCaretPos - 1 , 1);
+		if (mCaretPos >= 1)
+			mCaretPos--;
 	}
 }
 
 void TextInputInterface::Delete()
 {
-	if (mInputString.length() > 0 && mCursorPos <= mInputString.length() - 1)
+	if (mInputString.length() > 0 && mCaretPos <= mInputString.length() - 1)
 	{
-		mInputString.erase(mCursorPos, 1);
-		SetCaretPos(mCursorPosition.x, mCursorPosition.y);
+		mInputString.erase(mCaretPos, 1);
 	}
 }
 
-void TextInputInterface::CursorToLeft()
+void TextInputInterface::CaretToLeft()
 {
-	if (mCursorPos > 0)
-		mCursorPos--;
-	SetCaretPos(mCursorPosition.x, mCursorPosition.y);
+	if (mCaretPos > 0)
+		mCaretPos--;
 }
 
-void TextInputInterface::CursorToRight()
+void TextInputInterface::CaretToRight()
 {
-	mCursorPos++;
-	if (mCursorPos > mInputString.length())
+	mCaretPos++;
+	if (mCaretPos > mInputString.length())
 	{
-		mCursorPos = static_cast<int>(mInputString.length());
+		mCaretPos = static_cast<int>(mInputString.length());
 	}
-	SetCaretPos(mCursorPosition.x, mCursorPosition.y);
 }
 
-void TextInputInterface::CursorToUp()
+void TextInputInterface::CaretToUp()
 {
 	//TODO::未完成，需计算排版信息
 }
 
-void TextInputInterface::CursorToDowm()
+void TextInputInterface::CaretToDowm()
 {
 	//TODO::未完成
+}
+
+void TextInputInterface::GetCaretProperty(int & x, int & y, int & size)
+{
+	x = mCaretPosition.x;
+	y = mCaretPosition.y;
+	size = mTextRenderer->GetFontSize();
 }
 
 const wchar_t * TextInputInterface::GetText()

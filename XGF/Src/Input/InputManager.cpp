@@ -11,22 +11,23 @@ InputManager::~InputManager()
 {
 }
 
-bool InputManager::Initialize(HINSTANCE hs, HWND hwnd, Asyn * a)
+bool InputManager::Initialize(GDI * gdi, HINSTANCE hs, HWND hwnd, Asyn * a)
 {
 	if (!dinput.Initialize(hs, hwnd))
 		return false;
 	dinput.DoEvent(a);
 	mHwnd = hwnd;
-	CreateCaret(hwnd, NULL, 1, 20);
-	ShowCaret(hwnd);
-	SetCaretPos(0, 0);
+	mCaret.Initialize(gdi);
+	mCursor.Initialize(gdi);
+	mCaretPosInText = 0;
 	return true;
 }
 
 void InputManager::Shutdown()
 {
+	mCaret.Shutdown();
+	mCursor.Shutdown();
 	dinput.Shutdown();
-	DestroyCaret();
 }
 
 LRESULT InputManager::ProcessInputMessage(UINT msg, WPARAM wParam, LPARAM lParam)
@@ -38,13 +39,13 @@ LRESULT InputManager::ProcessInputMessage(UINT msg, WPARAM wParam, LPARAM lParam
 		if (wParam == VK_DELETE)
 			mForce->Delete();
 		else if (wParam == VK_LEFT)
-			mForce->CursorToLeft();
+			mForce->CaretToLeft();
 		else  if (wParam == VK_RIGHT)
-			mForce->CursorToRight();
+			mForce->CaretToRight();
 		else if (wParam == VK_UP)
-			mForce->CursorToUp();
+			mForce->CaretToUp();
 		else  if (wParam == VK_DOWN)
-			mForce->CursorToDowm();
+			mForce->CaretToDowm();
 		break;
 	case WM_CHAR:
 	{
@@ -74,6 +75,17 @@ void InputManager::OnActivate(bool isActivate)
 	dinput.OnActivate(isActivate);
 }
 
+bool InputManager::IsForce(TextInputInterface * in)
+{
+	return false;
+}
+
+void InputManager::SetCaretPosition(int x, int y)
+{
+	mCaret.SetPosition(x, y);
+}
+
+
 void InputManager::ClearForce(TextInputInterface * tei)
 {
 	auto ret = std::find(std::begin(mInputs), std::end(mInputs), tei);
@@ -86,11 +98,11 @@ void InputManager::SetForce(TextInputInterface * tei)
 {
 	if (tei != nullptr)
 	{
-		ShowCaret(mHwnd);
+		mCaret.Show();
 	}
 	else
 	{
-		HideCaret(mHwnd);
+		mCaret.Hide();
 		if (mForce != nullptr)
 			mForce->OnForce(false);
 		mForce = nullptr;
@@ -113,6 +125,28 @@ void InputManager::SetForce(TextInputInterface * tei)
 	mForce = tei;
 	mHasSetForce = true;
 }
+void InputManager::UpdateCameraMatrix(int x, int y)
+{
+	mCamera.UpdataSize(x, y);
+}
+void InputManager::Draw()
+{
+	WVPMatrix wvp;
+	mCamera.GetCameraMatrix(wvp);
+	if (mForce != nullptr)
+	{
+		int x, y,size;
+		mForce->GetCaretProperty(x, y, size);
+		mCaret.SetPosition(x, y);
+		mCaret.SetHeight(size);
+		mCaret.Draw(wvp);
+	}
+	mCursor.Draw(wvp);
+}
+void InputManager::Tick(float time)
+{
+	mCaret.Tick(time);
+}
 void InputManager::StartForForce()
 {
 	mHasSetForce = false;
@@ -123,6 +157,7 @@ void InputManager::StopForForce()
 	{
 		SetForce(nullptr);
 	}
+	
 }
 void InputManager::SetExclusiveMouseMode()
 {

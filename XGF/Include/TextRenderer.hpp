@@ -32,16 +32,14 @@ public:
 	//低性能，不推荐
     void DrawStringEx(float x, float y, Color color, const wchar_t * str, ...);
 	Position DrawString(const wchar_t * str, int start, int end, Color color, const Shape::Rectangle * ppe, const XMMATRIX * matrix);
-
+	int GetFontSize();
     void Begin(const WVPMatrix & matrix);
     void End();
 	void Flush();
 private:
 	Batch mBatch;
-    Shader mShader;
     //外部
 	Font *mFont;
-    //std::unordered_map<wchar_t, CharStateList*> map;
     wchar_t * mTemporarybuffer;
 };
 

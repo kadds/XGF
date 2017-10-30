@@ -9,6 +9,9 @@
 #include <memory>
 #include <future>
 class GDI;
+/*
+存在在多线程下极少出现的Bug
+*/
 class Asyn
 {
 public:

@@ -17,25 +17,27 @@ class TextInputInterface : public TextRenderInterface
 public:
 	TextInputInterface();
 	~TextInputInterface();
-	void SetCursorPos(int pos);
+	void SetCaretPosInText(int posx);
 	void AppendInputStr(wchar_t * str, int count);
 	void AppendInputStr(wchar_t str);
 	void DelInputStr();
 	void RenderText(const XMMATRIX * matrix, Shape::Rectangle & rc, Color & color);
 	void BackUp();
 	void Delete();
-	void CursorToLeft();
-	void CursorToRight();
-	void CursorToUp();
-	void CursorToDowm();
-	int GetCursorPos() { return mCursorPos; }
+	void CaretToLeft();
+	void CaretToRight();
+	void CaretToUp();
+	void CaretToDowm();
+	int GetCaretPosInText() { return mCaretPos; }
+
+	void GetCaretProperty(int &x, int &y, int &size);
 	const wchar_t* GetText();
 	//¿ò¼Üµ÷ÓÃ
 	virtual void OnForce(bool isForce) = 0;
 private:
 	std::wstring mInputString;
-	int mCursorPos;
+	int mCaretPos;
 	int mFirstCharPos;
-	PointI mCursorPosition;
+	PointI mCaretPosition;
 };
 

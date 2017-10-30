@@ -28,10 +28,8 @@ public:
 	//Çå³ýrederTaget buffer
 	void Clear(Color & c);
 
-	void OpenVsync() { mIsVsync = true; }
-	void CloseVsync() { mIsVsync = false; }
 protected:
-	bool mIsVsync;
+	
 	Scene * mScene;
 	void ISwitchScene(Scene * scene);
 private:

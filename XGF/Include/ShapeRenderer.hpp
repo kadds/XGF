@@ -24,6 +24,5 @@ public:
 	void DrawLine(float x, float y, float endx, float endy, Color & color);
 private:
 	Batch mBatch;
-	Shader mShader;
 };
 

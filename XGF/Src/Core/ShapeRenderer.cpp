@@ -4,6 +4,7 @@
 #include "..\..\Include\RectangleB.hpp"
 #include "..\..\Include\Circle.hpp"
 #include "..\..\Include\Line.hpp"
+#include "..\..\Include\ConstantData.hpp"
 ShapeRenderer::ShapeRenderer()
 {
 }
@@ -15,9 +16,7 @@ ShapeRenderer::~ShapeRenderer()
 
 void ShapeRenderer::Initialize(GDI * gdi, unsigned int MaxVetices, unsigned int MaxIndices)
 {
-	InputType inputtype[2] = { SHADER_INPUTLAYOUT_POSITION, SHADER_INPUTLAYOUT_COLOR };
-	mShader.Initialize(gdi, ShaderConst::shaderPCVS, ShaderConst::shaderPCVSSize, ShaderConst::shaderPCPS, ShaderConst::shaderPCPSSize, inputtype, 2);
-	mBatch.Initialize(gdi, &mShader, MaxVetices, MaxIndices, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	mBatch.Initialize(gdi, ConstantData::GetInstance().GetPCShader(), MaxVetices, MaxIndices, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	mBatch.SetBlend(true);
 	mBatch.SetZBufferRender(false);
 }
@@ -25,7 +24,6 @@ void ShapeRenderer::Initialize(GDI * gdi, unsigned int MaxVetices, unsigned int 
 void ShapeRenderer::Shutdown()
 {
 	mBatch.Shutdown();
-	mShader.Shutdown();
 }
 
 void ShapeRenderer::Begin(WVPMatrix & wvp)
@@ -108,7 +106,7 @@ void ShapeRenderer::DrawLine(float x, float y, float ex, float ey, Color & color
 	line.SetPosition(Point(x, y, 0.f));
 	line.SetEndPosition(Point(ex, ey, 0.f));
 	line.mPolygon.Transform(Batch::GetClientWidthD2(), Batch::GetClientHeightD2());
-	PolygonPleConstantColorBinder cb(color, 4);
+	PolygonPleConstantColorBinder cb(color, 2);
 	BindingBridge bb;
 	bb.AddBinder(cb);
 	mBatch.SetTexture(nullptr);

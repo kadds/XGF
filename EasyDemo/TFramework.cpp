@@ -16,8 +16,8 @@ void TFramework::OnCreate()
 	mShapeRenderer.Initialize(GetGDI());
 	char buffer[MAX_PATH];
 	Tools::GetInstance()->GetFontPath("Dengb.ttf", buffer, MAX_PATH);
-	mFont.Initialize(GetGDI(), buffer, 17);
-	mTextRenderer.Initialize(GetGDI(), &mFont, 100);
+	mFont.Initialize(GetGDI(), buffer, 16);
+	mTextRenderer.Initialize(GetGDI(), &mFont, 160);
 
 	InputType inputtype[2]{SHADER_INPUTLAYOUT_POSITION,SHADER_INPUTLAYOUT_TEXTURE};
 	mTextureShader.Initialize(GetGDI(), ShaderConst::shaderPTVS, ShaderConst::shaderPTVSSize, ShaderConst::shaderPTPS, ShaderConst::shaderPTPSSize, inputtype, 2);
@@ -69,13 +69,13 @@ void TFramework::Render()
 	mShapeRenderer.Begin(wvp);
 	mTextRenderer.Begin(wvp);
 	//RTT start
-	//mRenderToTexture.SetRenderTarget();
-	//mRenderToTexture.Clear(Color(0.f,0.f,0.f,1.f));
+	mRenderToTexture.SetRenderTarget();
+	mRenderToTexture.Clear(Color(0.1f,0.1f,0.1f,1.f));
 	
-	//MyRender(wvp, false);
+	MyRender(wvp, false);
 
 	//RTT end
-	//mRenderToTexture.SetDefaultRenderTarget();
+	mRenderToTexture.SetDefaultRenderTarget();
 
 	MyRender(wvp, true);
 	
@@ -94,9 +94,9 @@ void TFramework::Render()
 	str << std::fixed << std::setprecision(1) << L"FPS:" << debug->GetAverageFPS() << "\n" << L"FC:" << std::setprecision(4) << debug->GetFrameCost() << "ms";
 	mTextRenderer.DrawString(str.str().c_str(), 4, 4);
 	mTextRenderer.End();
-	//mTextureBatch.Begin(wvp);
-	//mRc.Render(mTextureBatch, nullptr, bb, mRenderToTexture.GetShaderResourceView());
-	//mTextureBatch.End();
+	mTextureBatch.Begin(wvp);
+	mRc.Render(mTextureBatch, nullptr, bb, mRenderToTexture.GetShaderResourceView());
+	mTextureBatch.End();
 	/*
 	auto c = mRenderToTexture.GetShaderResourceView();
 	ID3D11Resource *res;
@@ -104,14 +104,18 @@ void TFramework::Render()
 	DirectX::SaveDDSTextureToFile(GetGDI()->GetDeviceContext(),res ,L"scene.dds");
 	Exit(0);
 	*/
-	mGDI->Present(false);
 }
 void TFramework::MyRender(WVPMatrix & wvp, bool end)
 {
 	mShapeRenderer.DrawCircle(240, 240, 40, GetPrecision(40, 5), Color(1.f, 1.f, 0.f, 1.f), Color(0.f, 1.f, 0.f, 1.f));
+	mTextRenderer.DrawString(L"Circle", 200, 180);
 	mShapeRenderer.DrawRectangleB(50, 50, 100, 100, Color(1.f, 0.f, 0.f, 1.f), 8.f, Color(0.f, 0.f, 1.f, 1.f), Color(0.f, 1.f, 0.f, 1.f));
-	mShapeRenderer.DrawLine(0, 0, 150, 150, Color(1.f, 1.f, 1.f, 1.f));
-	mTextRenderer.DrawString(L"A RenderToTexture(RTT) Demo", 35, 35);
+	mTextRenderer.DrawString(L"RectangleB", 50, 100);
+	mShapeRenderer.DrawRectangle(250, 50, 100, 100, Color(0.f, 0.2f, 0.7f, 1.f));
+	mTextRenderer.DrawString(L"Rectangle", 280, 100);
+	mShapeRenderer.DrawLine(160, 0, 160, 180, Color(1.f, 1.f, 1.f, 1.f));
+	mTextRenderer.DrawString(L"Line", 140, 188);
+	mTextRenderer.DrawString(L"A RenderToTexture(RTT) Demo",125, 35);
 	if (!end)
 	{
 		mShapeRenderer.Flush();

@@ -7,6 +7,8 @@
 #include "../../Include/Texture.hpp"
 #include "../../Include/Tools.hpp"
 #include "../../Include/ShaderConst.hpp"
+#include "../../Include/ConstantData.hpp"
+#include "..\..\Include\TextRenderer.hpp"
 TextRenderer::TextRenderer():mTemporarybuffer(nullptr)
 {
 }
@@ -19,9 +21,7 @@ TextRenderer::~TextRenderer()
 void TextRenderer::Initialize(GDI * gdi, Font * font, int MaxCount)
 {
 	mFont = font;
-    InputType inputype[3] = { SHADER_INPUTLAYOUT_POSITION,SHADER_INPUTLAYOUT_COLOR,SHADER_INPUTLAYOUT_TEXTURE };
-    mShader.Initialize(gdi, ShaderConst::fontVS, ShaderConst::fontVSSize, ShaderConst::fontPS, ShaderConst::fontPSSize,inputype, 3);
-    mBatch.Initialize(gdi, &mShader, MaxCount * 4, MaxCount * 6, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    mBatch.Initialize(gdi, ConstantData::GetInstance().GetFontShader(), MaxCount * 4, MaxCount * 6, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	mBatch.SetBlend(true);
 	mBatch.SetZBufferRender(false);
 }
@@ -33,7 +33,6 @@ void TextRenderer::Shutdown()
    //     delete var.second;
     //}
     mBatch.Shutdown();
-    mShader.Shutdown();
     if (mTemporarybuffer != nullptr)
         delete[] mTemporarybuffer;
 }
@@ -102,7 +101,7 @@ Position TextRenderer::DrawString(const wchar_t * str, int start, int end, Color
 		if (start <= i && end >= i)
 		{
 			if (ps == nullptr) 
-				return Position(posLeft, posTop);//TODO::ERROR
+				return Position(static_cast<float>(posLeft), static_cast<float>(posTop));//TODO::ERROR
 			textureBinder.SetPosition(ps->left, ps->right, ps->top, ps->bottom);
 			if (c == L' ')
 				;
@@ -134,12 +133,18 @@ Position TextRenderer::DrawString(const wchar_t * str, int start, int end, Color
 				mBatch.DrawPolygon(py.mPolygon, py.GetIndex(), bbridge);
 			}
 		}
+		else break;
         posLeft += ps->advanceX;
         lastc = c;
 		i++;
         c = *(str + i);
     }
 	return Position(posLeft,posTop);
+}
+
+int TextRenderer::GetFontSize()
+{
+	return mFont->GetFontSize();
 }
 
 void TextRenderer::Begin(const WVPMatrix & matrix)

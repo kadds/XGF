@@ -297,6 +297,18 @@
     <ClInclude Include="Include\GridRenderer.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Include\ConstantData.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Caret.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Cursor.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\TextLayoutShaper.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\UI\UILayer.cpp">
@@ -526,6 +538,18 @@
     </ClCompile>
     <ClCompile Include="Src\Tools\GridRenderer.cpp">
       <Filter>源文件\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\ConstantData.cpp">
+      <Filter>源文件\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\Caret.cpp">
+      <Filter>源文件\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\Cursor.cpp">
+      <Filter>源文件\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\TextLayoutShaper.cpp">
+      <Filter>源文件\Core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

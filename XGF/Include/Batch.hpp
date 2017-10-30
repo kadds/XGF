@@ -55,11 +55,6 @@ enum VertexTransfrom
     None,
     Constant
 };
-enum MapMode 
-{
-	Discard,
-	Overwrite
-};
 /*
 渲染批次类
 使用DrawPolygon渲染图形
@@ -91,7 +86,6 @@ public:
 	void ChangeTopologyMode(TopologyMode tm);
 	void SetZBufferRender(bool open);
 	TopologyMode GetTopologyMode();
-	void SetMapMode(MapMode md) { mMapMode = md; };
     static int GetClientWidth() {
         return mClientWidth;
     }
@@ -138,7 +132,6 @@ protected:
 	bool mNullTexture;
 	bool mUsingBlend;
 
-	MapMode mMapMode;
 	TopologyMode mTopologyMode;
 
     index *mIndexData;

@@ -16,10 +16,7 @@ void Batch::DrawPolygon(const PolygonPle & polygon, const PolygonPleIndex & pind
 {
 	//Map Buffer
 	if (!mIsMap) {
-		if (mMapMode == Discard)
-			Map(true);
-		else
-			Map(false);
+		Map(false);
 		mIsMap = true;
 	}
 	else if(mMaxVertices - mPosInVertices <  polygon.mCount || mMaxIndexCount - mPosInIndices < pindex.mCount)

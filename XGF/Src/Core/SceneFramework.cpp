@@ -59,7 +59,6 @@ void SceneFramework::Render()
 {
 	if (mScene != nullptr)
 		mScene->Render(mDeltaTime);
-	mGDI->Present(mIsVsync);
 }
 
 void SceneFramework::Update(float time)

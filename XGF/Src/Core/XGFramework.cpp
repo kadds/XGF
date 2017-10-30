@@ -5,9 +5,11 @@
 #include "../../Include/Batch.hpp"
 #include "../../Include/DebugInscriber.hpp"
 #include "../../Include/AsyncTask.hpp"
+#include "../../Include/ConstantData.hpp"
 bool XGFramework::_Update(float time)
 {
 	if (mTheard->HandleMessage()) return true;
+	mInputManager.Tick(time);
 	Update(time);
 	return false;
 }
@@ -31,6 +33,8 @@ void XGFramework::_Loop()
 		}
 		DebugInscriber_Begin(mDeltaTime);
 		Render();
+		mInputManager.Draw();
+		mGDI->Present(mIsVsync);
 		DebugInscriber_End();
 		//DebugOut(L"\nRender\n");
 	}
@@ -45,6 +49,8 @@ void XGFramework::_Loop2()
 		//DebugOut(L"update ");
 		DebugInscriber_Begin(mDeltaTime);
 		Render();
+		mInputManager.Draw();
+		mGDI->Present(mIsVsync);
 		DebugInscriber_End();
 		//DebugOut(L"\nRender\n");
 	}
@@ -57,7 +63,8 @@ void XGFramework::_OnCreate(GDI *gdi, Asyn* asyn)
 	mTheard = asyn;
 	asyn->SetCallBackFunc(std::bind(&XGFramework::_OnMessage,this, std::placeholders::_1));
 	mGDI->Create();
-	mInputManager.Initialize(gdi->GetInstance(), gdi->GetTopHwnd(),mTheard);
+	ConstantData::GetInstance().Initialize(gdi);
+	mInputManager.Initialize(gdi, gdi->GetInstance(), gdi->GetTopHwnd(),mTheard);
 	OnCreate();
 }
 
@@ -65,6 +72,7 @@ void XGFramework::_OnDestory()
 {
 	OnDestory();
 	mInputManager.Shutdown();
+	ConstantData::GetInstance().Shutdown();
 	mGDI->Destory();
 	
 }
@@ -82,6 +90,7 @@ void XGFramework::_OnSize(int ClientX, int ClientY)
 	if (ClientX <= 0) ClientX = 1;
 	if (ClientY <= 0) ClientY = 1;
 	mGDI->SizeChanged(ClientX, ClientY);
+	mInputManager.UpdateCameraMatrix(ClientX, ClientY);
 	Batch::SetClientSize({ ClientX, ClientY });
 	OnSize(ClientX, ClientY);
 }

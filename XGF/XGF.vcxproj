@@ -153,13 +153,16 @@
     <ClInclude Include="Include\Bresenham.hpp" />
     <ClInclude Include="Include\Button.hpp" />
     <ClInclude Include="Include\Camera.hpp" />
+    <ClInclude Include="Include\Caret.hpp" />
     <ClInclude Include="Include\ChangeColorAction.hpp" />
     <ClInclude Include="Include\Circle.hpp" />
     <ClInclude Include="Include\ClickHelper.hpp" />
     <ClInclude Include="Include\Color.hpp" />
     <ClInclude Include="Include\CompositeAction.hpp" />
+    <ClInclude Include="Include\ConstantData.hpp" />
     <ClInclude Include="Include\Control.hpp" />
     <ClInclude Include="Include\Cube.hpp" />
+    <ClInclude Include="Include\Cursor.hpp" />
     <ClInclude Include="Include\DDSTextureLoader.h" />
     <ClInclude Include="Include\DebugInscriber.hpp" />
     <ClInclude Include="Include\Defines.hpp" />
@@ -212,6 +215,7 @@
     <ClInclude Include="Include\ShapeRenderer.hpp" />
     <ClInclude Include="Include\StateList.hpp" />
     <ClInclude Include="Include\TextInputInterface.hpp" />
+    <ClInclude Include="Include\TextLayoutShaper.hpp" />
     <ClInclude Include="Include\TextRenderer.hpp" />
     <ClInclude Include="Include\TextRenderInterface.hpp" />
     <ClInclude Include="Include\Texture.hpp" />
@@ -243,6 +247,9 @@
     <ClCompile Include="Src\Core\Batch.cpp" />
     <ClCompile Include="Src\Core\Batches.cpp" />
     <ClCompile Include="Src\Core\Camera.cpp" />
+    <ClCompile Include="Src\Core\Caret.cpp" />
+    <ClCompile Include="Src\Core\ConstantData.cpp" />
+    <ClCompile Include="Src\Core\Cursor.cpp" />
     <ClCompile Include="Src\Core\Font.cpp" />
     <ClCompile Include="Src\Core\FPS.cpp" />
     <ClCompile Include="Src\Core\GDI.cpp" />
@@ -257,6 +264,7 @@
     <ClCompile Include="Src\Core\Shader.cpp" />
     <ClCompile Include="Src\Core\ShaderConst.cpp" />
     <ClCompile Include="Src\Core\ShapeRenderer.cpp" />
+    <ClCompile Include="Src\Core\TextLayoutShaper.cpp" />
     <ClCompile Include="Src\Core\TextRenderer.cpp" />
     <ClCompile Include="Src\Core\Texture.cpp" />
     <ClCompile Include="Src\Core\XGFramework.cpp" />

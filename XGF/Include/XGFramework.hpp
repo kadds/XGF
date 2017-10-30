@@ -58,6 +58,8 @@ public:
 	void ClearDepthStencilBuffer();
 	void Present(bool isVsync);
 
+	void OpenVsync() { mIsVsync = true; }
+	void CloseVsync() { mIsVsync = false; }
 	HWND GetTopHwnd();
 	HINSTANCE GetInstance();
 	Asyn * GetTheard() { return mTheard; }
@@ -81,6 +83,7 @@ protected:
 	InputManager mInputManager;
 	std::list<InputListener* > mInputs;
 	Asyn * mTheard;
+	bool mIsVsync;
 private:
 	DISALLOW_COPY_AND_ASSIGN(XGFramework);
 };

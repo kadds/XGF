@@ -27,7 +27,6 @@ public:
 	void End();
 private:
 	Batch mBatch;
-	Shader mShader;
 	std::vector<std::unique_ptr<Shape::Line>> lines;
 	Color mColor[6];
 };

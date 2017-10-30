@@ -15,17 +15,30 @@ EditText::~EditText()
 
 void EditText::Render(const XMMATRIX * matrix, const Batches & batches)
 {
+	auto input = mLayer->GetParent()->GetFramework()->GetInputManager();
 	BindingBridge bbr;
 	int layer[3];
-	PolygonPleConstantExColorBinder cb(layer,GetBorderLayer(layer));
+	PolygonPleConstantExColorBinder cb(layer, GetBorderLayer(layer));
 	cb.SetLayerColor(0, mBoderColor);
 	cb.SetLayerColor(1, mInerBoderColor);
 	cb.SetLayerColor(2, mbkColor);
 	bbr.AddBinder(cb);
-	Shape::Render(*batches.at(BATCHES_BATCH_PC), matrix, bbr);
-	::Shape::Rectangle rc;
-	GetInerBorderRectangle(rc);
-	RenderText(matrix, rc, mTextColor);
+	if(input->IsForce(this))
+	{
+		Shape::Render(*batches.at(BATCHES_BATCH_PC), matrix, bbr);
+		::Shape::Rectangle rc;
+		GetInerBorderRectangle(rc);
+		RenderText(matrix, rc, mTextColor);
+	}
+	else
+	{
+		Shape::Render(*batches.at(BATCHES_BATCH_PC), matrix, bbr);
+		::Shape::Rectangle rc;
+		GetInerBorderRectangle(rc);
+		RenderText(matrix, rc, mTextColor);
+	}
+	
+	
 }
 
 void EditText::OnMouseDowm(const MousePoint & mp, int c, bool isIn)
