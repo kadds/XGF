@@ -16,6 +16,7 @@ public:
 	void Hide() { mIsCaretShow = false; };
 	void SetPosition(int x, int y);
 	void SetHeight(int height) { mHeight = height; };
+	void ResetTime();
 private:
 	Batch mColorBatch;
 	float mTime;

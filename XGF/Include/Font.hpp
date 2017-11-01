@@ -25,16 +25,17 @@
 
 
 struct FontMetrics {
-	int height;
-	int width;
-};
-class GDI;
-struct PosSize
-{
+	
 	float left;
 	float right;
 	float top;
 	float bottom;
+};
+class GDI;
+struct PosSize
+{
+	int height;
+	int width;
 	int advanceX;//²½½ø¾àÀë
 	int n;
 	int vx;

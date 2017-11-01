@@ -38,12 +38,17 @@ void TextInputInterface::DelInputStr()
 
 void TextInputInterface::RenderText(const XMMATRIX * matrix, Shape::Rectangle & rc, Color & color)
 {
-	Position u = mTextRenderer->DrawString(mInputString.c_str(), mFirstCharPos, mCaretPos, color, &rc, matrix);
-	//rc.mPolygon.Translation(u.x , u.y, 0);
-	mCaretPosition.x = u.x + rc.mPolygon.mPoint[0].x + 1;
-	mCaretPosition.y = u.y + rc.mPolygon.mPoint[0].y;
-	mTextRenderer->DrawString(mInputString.c_str(), mCaretPos + 1 , -1, color, &rc, matrix);
-	//rc.mPolygon.Translation(-u.x, -u.y, 0);
+	Position u = mTextRenderer->DrawStringRtPosition(mInputString.c_str(), color, &rc, matrix, mCaretPos);
+	if (mCaretPos == 0)
+	{
+		mCaretPosition.x = rc.mPolygon.mPoint[0].x + 1;
+		mCaretPosition.y = rc.mPolygon.mPoint[0].y;
+	}
+	else
+	{
+		mCaretPosition.x = u.x + rc.mPolygon.mPoint[0].x +  1;
+		mCaretPosition.y = u.y + rc.mPolygon.mPoint[0].y;
+	}
 }
 
 void TextInputInterface::BackUp()

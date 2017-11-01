@@ -3,6 +3,7 @@
 #include "Rectangle.hpp"
 #include "Shader.hpp"
 #include "Batch.hpp"
+#include "TextLayoutShaper.hpp"
 #include <sstream>
 class Font;
 class Batch;
@@ -31,15 +32,24 @@ public:
     void DrawStringEx(float x, float y, const wchar_t * str, ...);
 	//低性能，不推荐
     void DrawStringEx(float x, float y, Color color, const wchar_t * str, ...);
-	Position DrawString(const wchar_t * str, int start, int end, Color color, const Shape::Rectangle * ppe, const XMMATRIX * matrix);
+	//渲染字符串 颜色，渲染限定矩形，变换矩阵
+	void DrawString(const wchar_t * str, Color color, const Shape::Rectangle * ppe, const XMMATRIX * matrix);
+	Position DrawStringRtPosition(const wchar_t * str, Color color, const Shape::Rectangle * ppe, const XMMATRIX * matrix, int pos);
 	int GetFontSize();
+	TextLayoutShaper * GetLayoutShaper() {return &mLayoutShaper;}
     void Begin(const WVPMatrix & matrix);
     void End();
 	void Flush();
 private:
+	bool AddCharToBatch(int i, wchar_t ch, Shape::Rectangle * rc, const PosSize * ps, const XMMATRIX * matrix);
+	void PenMoveCallBackFunction(int i, wchar_t ch, Position * p, int c, Position * v);
 	Batch mBatch;
     //外部
 	Font *mFont;
+	TextLayoutShaper mLayoutShaper;
+	BindingBridge bbridge;
+	PolygonPleTextureBinder textureBinder;
+	PolygonPleConstantColorBinder colorBinder;
     wchar_t * mTemporarybuffer;
 };
 

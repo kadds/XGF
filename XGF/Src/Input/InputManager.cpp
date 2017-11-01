@@ -37,15 +37,15 @@ LRESULT InputManager::ProcessInputMessage(UINT msg, WPARAM wParam, LPARAM lParam
 	case WM_KEYDOWN:
 		if (mForce == nullptr) break;
 		if (wParam == VK_DELETE)
-			mForce->Delete();
+			mForce->Delete(), mCaret.ResetTime();
 		else if (wParam == VK_LEFT)
-			mForce->CaretToLeft();
+			mForce->CaretToLeft(), mCaret.ResetTime();
 		else  if (wParam == VK_RIGHT)
-			mForce->CaretToRight();
+			mForce->CaretToRight(), mCaret.ResetTime();
 		else if (wParam == VK_UP)
-			mForce->CaretToUp();
+			mForce->CaretToUp(), mCaret.ResetTime();
 		else  if (wParam == VK_DOWN)
-			mForce->CaretToDowm();
+			mForce->CaretToDowm(), mCaret.ResetTime();
 		break;
 	case WM_CHAR:
 	{
@@ -61,6 +61,7 @@ LRESULT InputManager::ProcessInputMessage(UINT msg, WPARAM wParam, LPARAM lParam
 			mForce->AppendInputStr(L'\n');
 		else
 			mForce->AppendInputStr(static_cast<wchar_t>(wParam));
+		mCaret.ResetTime();
 		break;
 	}
 	default:
@@ -83,6 +84,7 @@ bool InputManager::IsForce(TextInputInterface * in)
 void InputManager::SetCaretPosition(int x, int y)
 {
 	mCaret.SetPosition(x, y);
+	mCaret.ResetTime();
 }
 
 
@@ -99,6 +101,7 @@ void InputManager::SetForce(TextInputInterface * tei)
 	if (tei != nullptr)
 	{
 		mCaret.Show();
+		mCaret.ResetTime();
 	}
 	else
 	{

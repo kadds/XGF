@@ -9,7 +9,7 @@
 #include "../../Include/ShaderConst.hpp"
 #include "../../Include/ConstantData.hpp"
 #include "..\..\Include\TextRenderer.hpp"
-TextRenderer::TextRenderer():mTemporarybuffer(nullptr)
+TextRenderer::TextRenderer() :mTemporarybuffer(nullptr), textureBinder(4), colorBinder(Color(0.f, 0.f, 0.f, 1.f), 4)
 {
 }
 
@@ -24,14 +24,12 @@ void TextRenderer::Initialize(GDI * gdi, Font * font, int MaxCount)
     mBatch.Initialize(gdi, ConstantData::GetInstance().GetFontShader(), MaxCount * 4, MaxCount * 6, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	mBatch.SetBlend(true);
 	mBatch.SetZBufferRender(false);
+	bbridge.AddBinder(colorBinder);
+	bbridge.AddBinder(textureBinder);
 }
 
 void TextRenderer::Shutdown()
 {
-    //for each (auto var in map)
-    //{
-   //     delete var.second;
-    //}
     mBatch.Shutdown();
     if (mTemporarybuffer != nullptr)
         delete[] mTemporarybuffer;
@@ -41,14 +39,14 @@ void TextRenderer::DrawString(const wchar_t * str, float x, float y)
 {
     Shape::Rectangle rc;
     rc.SetPositionAndSize(x, y, 1000.f, 1000.f);
-    DrawString(str, -1, -1, Color(1.0f,1.0f,1.0f,1.0f),&rc, nullptr);
+    DrawString(str, Color(1.0f,1.0f,1.0f,1.0f),&rc, nullptr);
 }
 
 void TextRenderer::DrawString(const wchar_t * str, Color color, float x, float y)
 {
     Shape::Rectangle rc;
     rc.SetPositionAndSize(static_cast<float>(x), static_cast<float>(y), 1000.0f, 1000.0f);
-    DrawString(str, -1, -1, color, &rc, nullptr);
+    DrawString(str, color, &rc, nullptr);
 }
 
 void TextRenderer::DrawStringEx(float x, float y, const wchar_t * str, ...)
@@ -75,73 +73,21 @@ void TextRenderer::DrawStringEx(float x, float y, Color color, const wchar_t * s
     DrawString(mTemporarybuffer, color,x, y);
 }
 
-Position TextRenderer::DrawString(const wchar_t * str, int start, int end, Color color, const Shape::Rectangle * ppe, const XMMATRIX * matrix)
+void TextRenderer::DrawString(const wchar_t * str, Color color, const Shape::Rectangle * ppe, const XMMATRIX * matrix)
 {
-    wchar_t c = *str;
-    wchar_t lastc = 0;
-    int i = 0;
-    PosSize *ps;
-    int posLeft = 0;
-    int posTop = 0;
-    Shape::Rectangle py;
-    PolygonPleTextureBinder textureBinder(4);
-    PolygonPleConstantColorBinder colorBinder(color,4);
-	BindingBridge bbridge;
-	bbridge.AddBinder(colorBinder);
-	bbridge.AddBinder(textureBinder);
-	if (start == -1)
-		start = 0;
-	if (end == -1)
-		end = 1000000;
-    while (c != L'\0')
-    {
-		ps = mFont->GetCharGlyph(c);
-		//不进行微调
-		//pt = mFont->ResizeFontSize(c, lastc);
-		if (start <= i && end >= i)
-		{
-			if (ps == nullptr) 
-				return Position(static_cast<float>(posLeft), static_cast<float>(posTop));//TODO::ERROR
-			textureBinder.SetPosition(ps->left, ps->right, ps->top, ps->bottom);
-			if (c == L' ')
-				;
-			else if (c == L'\n')
-			{
-				posLeft = -ps->advanceX;
-				posTop += mFont->GetFontSize();
-			}
-			else
-			{
-				if (!ppe->SubRectangle(&py, static_cast<float>(posLeft + ps->vx), static_cast<float>( posTop + ps->vy),
-					static_cast<float>(ps->metrics.width), static_cast<float>(ps->metrics.height)))
-				{
-					posLeft = 0;
-					posTop += mFont->GetFontSize();
-					if (!ppe->SubRectangle(&py, static_cast<float>(ps->vx), static_cast<float>(posTop + ps->vy),
-						static_cast<float>(ps->metrics.width), static_cast<float>(ps->metrics.height)))
-					{
-						posLeft += ps->advanceX;
-						lastc = c;
-						i++;
-						c = *(str + i);
-						continue;
-					}
-				}
-				if (matrix != nullptr)
-					py.mPolygon.Mul(*matrix);
-				py.mPolygon.Transform(Batch::GetClientWidthD2(), Batch::GetClientHeightD2());
-				mBatch.DrawPolygon(py.mPolygon, py.GetIndex(), bbridge);
-			}
-		}
-		else break;
-        posLeft += ps->advanceX;
-        lastc = c;
-		i++;
-        c = *(str + i);
-    }
-	return Position(posLeft,posTop);
+	colorBinder.Set(0, 1, color);
+	auto fun = std::bind(&TextRenderer::AddCharToBatch, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,  std::placeholders::_4, matrix);
+	mLayoutShaper.DoLayouShaper(str, *ppe, *mFont, fun);
 }
-
+Position TextRenderer::DrawStringRtPosition(const wchar_t * str, Color color, const Shape::Rectangle * ppe, const XMMATRIX * matrix, int pos)
+{
+	Position p;
+	colorBinder.Set(0, 1, color);
+	auto fun = std::bind(&TextRenderer::AddCharToBatch, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, matrix);
+	auto fun2 = std::bind(&TextRenderer::PenMoveCallBackFunction, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, pos, &p);
+	mLayoutShaper.DoLayouShaper(str, *ppe, *mFont, fun, fun2);
+	return p;
+}
 int TextRenderer::GetFontSize()
 {
 	return mFont->GetFontSize();
@@ -162,3 +108,23 @@ void TextRenderer::Flush()
 {
 	mBatch.Flush();
 }
+
+bool TextRenderer::AddCharToBatch(int i, wchar_t ch, Shape::Rectangle * rc, const PosSize *ps, const XMMATRIX * matrix)
+{
+	if (matrix != nullptr)
+		rc->mPolygon.Mul(*matrix);
+	rc->mPolygon.Transform(Batch::GetClientWidthD2(), Batch::GetClientHeightD2());
+	textureBinder.SetPosition(ps->metrics.left, ps->metrics.right, ps->metrics.top, ps->metrics.bottom);
+	mBatch.DrawPolygon(rc->mPolygon, rc->GetIndex(), bbridge);
+	return false;
+}
+
+void TextRenderer::PenMoveCallBackFunction(int i, wchar_t ch, Position * p, int c, Position * u)
+{
+	if (c == i + 1)
+	{
+		u->x = p->x;
+		u->y = p->y;
+	}
+}
+

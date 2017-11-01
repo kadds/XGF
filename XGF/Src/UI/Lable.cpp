@@ -11,7 +11,7 @@ Lable::~Lable()
 
 void Lable::Render(const XMMATRIX * matrix, const Batches & bs)
 {
-	mTextRenderer->DrawString(mText, -1, -1, mColor, this, matrix);
+	mTextRenderer->DrawString(mText, mColor, this, matrix);
 }
 
 void Lable::SetText(wchar_t * text)

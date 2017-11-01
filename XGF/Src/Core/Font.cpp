@@ -140,12 +140,12 @@ PosSize * Font::GetCharGlyph(wchar_t ch) {
 			mBuffer[left + (i + top)*mBufferWidth + j] = bitmap.buffer[i * bitmap.width + j];
 		}
 	}
-	result->left = left / static_cast<float>(mBufferWidth);
-	result->right = right / static_cast<float>(mBufferWidth) ;
-	result->top =  top / static_cast<float>(mBufferHeight);
-	result->bottom = bottom / static_cast<float>(mBufferHeight);
-	result->metrics.width = slot->metrics.width >> 6;
-	result->metrics.height = slot->metrics.height >> 6;
+	result->metrics.left = left / static_cast<float>(mBufferWidth);
+	result->metrics.right = right / static_cast<float>(mBufferWidth) ;
+	result->metrics.top =  top / static_cast<float>(mBufferHeight);
+	result->metrics.bottom = bottom / static_cast<float>(mBufferHeight);
+	result->width = slot->metrics.width >> 6;
+	result->height = slot->metrics.height >> 6;
 	result->advanceX = slot->advance.x >> 6;
 	result->vx = slot->bitmap_left;
 	result->vy = ( -slot->bitmap_top + ascender);
