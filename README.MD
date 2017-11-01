@@ -4,8 +4,9 @@
   当前版本号0.10 
   
   下一版本开发计划：
-  1. 文本排版器  
-  2. 资源管理系统  
+  1. 自定义光标Cursor 
+  2. 动画系统
+  3. 资源管理系统  
 
 
 仅供个人学习 Direct3D11 用
@@ -21,7 +22,7 @@
   
   
   
-IDE要求 ：Visual Studio 2015 及以上 
+编译器要求 ：Visual C++ 14 及以上  
   效果图预览：  
 ![DemoMore](https://raw.githubusercontent.com/kadds/XGF/master/TT.PNG)
   
