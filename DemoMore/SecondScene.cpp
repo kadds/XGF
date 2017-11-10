@@ -1,7 +1,7 @@
 #include "SecondScene.hpp"
 #include <iomanip>
 
-SecondScene::SecondScene()
+SecondScene::SecondScene():mAnimation(0)
 {
 }
 
@@ -12,7 +12,8 @@ SecondScene::~SecondScene()
 
 void SecondScene::OnCreate()
 {
-	char cbuffer[MAX_PATH + 1];
+	char cbuffer[MAX_PATH];
+	wchar_t buffer[MAX_PATH];
 	GetFramework()->AddInputListener(&mUILayer);
 	AddLayer(&mUILayer);
 	mLable.SetPositionAndSize(20, 60, 100, 40);
@@ -35,6 +36,31 @@ void SecondScene::OnCreate()
 	mFont.Initialize(mFramework->GetGDI(), cbuffer, 16);
 	mTextRenderer.Initialize(mFramework->GetGDI(), &mFont, 140);
 	mUIBatches.Initialize(mFramework->GetGDI(), mBatches);
+	mCursorTexture.LoadWIC(mFramework->GetGDI(), GetFilePath(L"tcursor.png", buffer, MAX_PATH));
+
+	AnimationStage stage[4];
+	float c = 34.0 / 64.0;
+	float b = 32.0 / 64.0;
+	stage[0].left = 0.f;
+	stage[1].left = c;
+	stage[2].left = 0.f;
+	stage[3].left = c;
+	stage[0].top = 0.f;
+	stage[1].top = 0.f;
+	stage[2].top = c;
+	stage[3].top = c;
+	stage[0].right = b;
+	stage[1].right = 1.0f;
+	stage[2].right = b;
+	stage[3].right = 1.0f;
+	stage[0].bottom = b;
+	stage[1].bottom = b;
+	stage[2].bottom = 1.0f;
+	stage[3].bottom = 1.0f;
+	mAnimation.SetAnimation(0, 0.01f, 0.f, mCursorTexture, stage, 4);
+	GetFramework()->GetInputManager()->GetCursor()->SetAnimation(mAnimation);
+	GetFramework()->GetInputManager()->GetCursor()->SetPointDeviation(Position(3.f, 0.f));
+	GetFramework()->GetInputManager()->SetMouseMode(MouseMode::Custom);
 }
 void SecondScene::OnDestory()
 {

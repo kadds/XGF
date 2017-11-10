@@ -44,6 +44,11 @@ public:
 	void SetRelativeMode(bool Relative);
 	//USE DIK_?
 	bool IsPress(Key key);
+	void UpdateSize(int x, int y) { width = x; height = y; };
+
+	void SetMoveable(bool m) { mMoveable = m; };
+	void SetPosition(int x, int y) { mouseState.px = x; mouseState.py = y; };
+
 private:
 	void HandleMouseEvent(DIDEVICEOBJECTDATA * didod, int len, Asyn * asyn);
 	void HandleKeyBoardEvent(DIDEVICEOBJECTDATA * didod, int len, Asyn * asyn);
@@ -58,8 +63,9 @@ private:
 	BYTE keys[256];
 	MouseState mouseState;
 	//MouseState lastmouseState;
-
+	int width, height;
 	bool mRelativeMode;
+	bool mMoveable;
 	DWORD id;
 private:
 	DISALLOW_COPY_AND_ASSIGN(DX8Input);

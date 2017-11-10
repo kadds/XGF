@@ -38,16 +38,22 @@ void TextInputInterface::DelInputStr()
 
 void TextInputInterface::RenderText(const XMMATRIX * matrix, Shape::Rectangle & rc, Color & color)
 {
-	Position u = mTextRenderer->DrawStringRtPosition(mInputString.c_str(), color, &rc, matrix, mCaretPos);
+	
 	if (mCaretPos == 0)
 	{
-		mCaretPosition.x = rc.mPolygon.mPoint[0].x + 1;
-		mCaretPosition.y = rc.mPolygon.mPoint[0].y;
+		mTextRenderer->DrawStringRtPosition(mInputString.c_str() + mFirstCharPos, color, &rc, matrix,0);
+		mCaretPosition.x = rc.mPolygon.mPoint[0].x + 0.8f;
+		mCaretPosition.y = rc.mPolygon.mPoint[0].y + 0.f;
+	}
+	else if(mCaretPos > 0)
+	{
+		Position u = mTextRenderer->DrawStringRtPosition(mInputString.c_str() + mFirstCharPos, color, &rc, matrix, mCaretPos);
+		mCaretPosition.x = u.x + rc.mPolygon.mPoint[0].x + 0.8f;
+		mCaretPosition.y = u.y + rc.mPolygon.mPoint[0].y + 0.f;
 	}
 	else
 	{
-		mCaretPosition.x = u.x + rc.mPolygon.mPoint[0].x +  1;
-		mCaretPosition.y = u.y + rc.mPolygon.mPoint[0].y;
+		//do nothing
 	}
 }
 
@@ -83,18 +89,62 @@ void TextInputInterface::CaretToRight()
 		mCaretPos = static_cast<int>(mInputString.length());
 	}
 }
+inline bool equalcirca(float a, float b, float k)
+{
+	return fabs(a - b) < k;
+}
+bool TextInputInterface::layoutCallBack(int i, wchar_t ch, Position * p, bool c, Position & temp)//c == true is Down
+{
+	auto h = mTextRenderer->GetFontSize() + 1;
+	if (i < 0) {
+		if (mCallBackBuffer.first == -1)
+			mCallBackBuffer.first = 5;
+	}
+	if ((c ? (p->y - temp.y <= h
+		&&  p->y - temp.y > 0) : (temp.y - p->y <= h && temp.y - p->y > 0)))
+	{
+		
+		if (p->x - temp.x > h / 2.0)
+		{
+			return true;
+		}
+		mCallBackBuffer.first = i;
+		mCallBackBuffer.second = *p;
 
+	}
+	return false;
+}
 void TextInputInterface::CaretToUp()
 {
-	//TODO::未完成，需计算排版信息
+	Shape::Rectangle rc;
+	GetInerBox(rc);
+	mCallBackBuffer.first = -1;
+	mCallBackBuffer.second = Position(0,0);
+	Position temp;
+	temp.x = mCaretPosition.x - rc.mPolygon.mPoint[0].x - 0.8f;
+	temp.y = mCaretPosition.y - rc.mPolygon.mPoint[0].y;
+	mTextRenderer->GetLayoutShaper()->DoLayouShaper(mInputString.c_str() + mFirstCharPos, rc, *mTextRenderer->GetFont(), nullptr,
+		std::bind(&TextInputInterface::layoutCallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, false, temp));
+	if (mCallBackBuffer.first > 0 && mCallBackBuffer.first < mInputString.size())
+		mCaretPos = mCallBackBuffer.first;
 }
 
 void TextInputInterface::CaretToDowm()
 {
-	//TODO::未完成
+	Shape::Rectangle rc;
+	GetInerBox(rc);
+	mCallBackBuffer.first = -1;
+	mCallBackBuffer.second = Position(0, 0);
+	Position temp;
+	temp.x = mCaretPosition.x - rc.mPolygon.mPoint[0].x - 0.8f;
+	temp.y = mCaretPosition.y - rc.mPolygon.mPoint[0].y;
+	mTextRenderer->GetLayoutShaper()->DoLayouShaper(mInputString.c_str() + mFirstCharPos, rc, *mTextRenderer->GetFont(), nullptr,
+		std::bind(&TextInputInterface::layoutCallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, true, temp));
+ 	if(mCallBackBuffer.first > 0 && mCallBackBuffer.first < mInputString.size())
+		mCaretPos = mCallBackBuffer.first;
 }
 
-void TextInputInterface::GetCaretProperty(int & x, int & y, int & size)
+void TextInputInterface::GetCaretProperty(float & x, float & y, int & size)
 {
 	x = mCaretPosition.x;
 	y = mCaretPosition.y;

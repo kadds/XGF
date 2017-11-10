@@ -99,13 +99,13 @@ void FirstScene::OnCreate()
 	ActionBuilder::Builder().BeginBuild()
 		.ParallelActionTo()
 			.RotateBy(0, 0, DirectX::XM_2PI, 3.f, AnticipateOvershootInterpolator::GetInterpolator(2.5))
-			.ScaleBy(0.1,0.1,0.1f,3.f, AnticipateOvershootInterpolator::GetInterpolator(2.5))
+			.ScaleBy(0.1f,0.1f,0.1f,3.f, AnticipateOvershootInterpolator::GetInterpolator(2.5))
 		.EndBuild(animbt);
 	mBt.SetAction(std::move(animbt));
 	mBt.SetTexture(&btNormal, &btMove, &btPress);
 	mBt.AddOnClickListener([=](const MousePoint &mm, int pk) {
 		mBt.StartAction();
-		AsyncTask::NewTask(mFramework->GetTheard(), [](AsyncTask * asyn) {
+		AsyncTask::NewTask(mFramework->GetTheard(), [this](AsyncTask * asyn) {
 			MessageBox(NULL, L"YOU CLICK BUTTOM!!",L"E",0);
 			asyn->Finish(0, 0);
 		});
@@ -124,6 +124,9 @@ void FirstScene::OnCreate()
 	mUILayer.Add(&mBt);
 	mUILayer.Add(&mLxb);
 	mUILayer.Add(&mLb);
+
+	mFramework->GetInputManager()->GetCursor()->SetStaticTexture(mFramework->GetGDI(), GetFilePath(L"cursor.png", buffer, 100));
+	//mFramework->GetInputManager()->ShowCursor();
 	//GetFramework()->GetGDI()->ResizeTarget(500, 400); 
 }
 

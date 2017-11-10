@@ -144,14 +144,14 @@ PosSize * Font::GetCharGlyph(wchar_t ch) {
 	result->metrics.right = right / static_cast<float>(mBufferWidth) ;
 	result->metrics.top =  top / static_cast<float>(mBufferHeight);
 	result->metrics.bottom = bottom / static_cast<float>(mBufferHeight);
-	result->width = slot->metrics.width >> 6;
-	result->height = slot->metrics.height >> 6;
-	result->advanceX = slot->advance.x >> 6;
+	result->width = slot->metrics.width / 64.0f;
+	result->height = slot->metrics.height / 64.0f;
+	result->advanceX = slot->advance.x / 64.0f;
 	result->vx = slot->bitmap_left;
 	result->vy = ( -slot->bitmap_top + ascender);
 	map.insert(std::pair<wchar_t, PosSize  *>(ch, result));
 	FT_Done_Glyph(glyph);
-    mGDI->GetDeviceContext()->UpdateSubresource(mTexture,0, NULL,mBuffer, mBufferWidth, 0);
+    mGDI->GetDeviceContext()->UpdateSubresource(mTexture,0, NULL, mBuffer, mBufferWidth, 0);
     
 	return result;
 }

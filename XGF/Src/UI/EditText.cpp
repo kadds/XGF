@@ -74,3 +74,8 @@ void EditText::OnForce(bool isForce)
 		mInerBoderColor = Color(0.5f, 0.6f, 0.6f, 1.0f);
 	}
 }
+
+void EditText::GetInerBox(::Shape::Rectangle & rc)
+{
+	GetInerBorderRectangle(rc);
+}

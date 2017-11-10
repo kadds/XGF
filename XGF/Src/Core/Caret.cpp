@@ -50,7 +50,7 @@ void Caret::Tick(float time)
 	}
 }
 
-void Caret::SetPosition(int x, int y)
+void Caret::SetPosition(float x, float y)
 {
 	mLine.SetPosition(Point(x, y, 0.0f));
 	mLine.SetEndPosition(Point(x, y + mHeight, 0.f));

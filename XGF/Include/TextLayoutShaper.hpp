@@ -4,7 +4,8 @@
 #include <algorithm>
 #include <functional>
 typedef std::function<bool(int, wchar_t, Shape::Rectangle * rc, const PosSize * ps)> LayoutCallbackFunction;
-typedef std::function<void(int, wchar_t, Position * p)> PenMoveCallback;
+//return true break function;
+typedef std::function<bool(int, wchar_t, Position * p)> PenMoveCallback;
 /*
 º∆À„Layout Info
 */

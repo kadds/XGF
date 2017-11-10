@@ -14,7 +14,7 @@ public:
 	void Tick(float time);
 	void Show() { mIsCaretShow = true;mTime = 0.f; };
 	void Hide() { mIsCaretShow = false; };
-	void SetPosition(int x, int y);
+	void SetPosition(float x, float y);
 	void SetHeight(int height) { mHeight = height; };
 	void ResetTime();
 private:

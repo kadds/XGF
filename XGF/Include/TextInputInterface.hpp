@@ -4,6 +4,7 @@
 #include "Defines.hpp"
 #include "Rectangle.hpp"
 #include <string>
+#include <vector>
 struct PointI
 {
 	int x;
@@ -26,18 +27,22 @@ public:
 	void Delete();
 	void CaretToLeft();
 	void CaretToRight();
+	
 	void CaretToUp();
 	void CaretToDowm();
 	int GetCaretPosInText() { return mCaretPos; }
 
-	void GetCaretProperty(int &x, int &y, int &size);
+	void GetCaretProperty(float &x, float &y, int &size);
 	const wchar_t* GetText();
 	//¿ò¼Üµ÷ÓÃ
 	virtual void OnForce(bool isForce) = 0;
+	virtual void GetInerBox(::Shape::Rectangle & rc) = 0;
 private:
 	std::wstring mInputString;
+	bool layoutCallBack(int i, wchar_t ch, Position * p, bool c, Position & temp);
 	int mCaretPos;
 	int mFirstCharPos;
-	PointI mCaretPosition;
+	Position mCaretPosition;
+	std::pair<int, Position> mCallBackBuffer;
 };
 

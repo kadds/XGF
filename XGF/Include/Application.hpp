@@ -20,14 +20,21 @@ public:
 	Asyn * GetRenderThread() { return &mRenderThread; }
 	void SetExitCode(int ec);
 	XGFramework * GetFramework() { return mFramework; }
+
+	bool IsSetHideCursor() { return mHideCursor; }
+	void SetHideCursor(bool ishide) { mHideCursor = ishide; };
+	HCURSOR GetSysCursor() { return mSysCursor; }
 private:
 	XGFramework *mFramework;
 	HWND mHwnd;
 	Asyn mRenderThread;
 	HINSTANCE mInstance;
 	int exitCode;
+	bool mHideCursor;
+	HCURSOR mSysCursor;
 private:
 	ATOM RegisterWindowsClass(HINSTANCE hInstance, const wchar_t * className, int ICON, int sICON);
 	DISALLOW_COPY_AND_ASSIGN(Application);
 };
 
+#define WM_X_SHOWORHIDECURSOR WM_USER + 10

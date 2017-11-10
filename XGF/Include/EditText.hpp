@@ -4,6 +4,7 @@
 #include "TextRenderInterface.hpp"
 #include "TextInputInterface.hpp"
 #include "RectangleB.hpp"
+#include "Rectangle.hpp"
 
 class EditText :
 	public Control, public TextInputInterface, public Shape::RectangleB
@@ -16,6 +17,7 @@ public:
 	virtual void OnMouseUp(const MousePoint & mp, int c, bool isIn) override;
 	virtual void OnMouseMove(const MousePoint & mp, int cp, bool isIn) override;
 	virtual void OnForce(bool isForce);
+	virtual void GetInerBox(::Shape::Rectangle & rc);
 protected:
 	virtual Shape * GetShape() const override
 	{

@@ -44,10 +44,20 @@ bool DX8Input::Initialize(HINSTANCE hs, HWND hwnd)
 	Check(mMouse->SetProperty(DIPROP_BUFFERSIZE, &propertys.diph));
 	//propertys.dwData = DIPROPAXISMODE_ABS;
 	//Check(mMouse->SetProperty(DIPROP_AXISMODE, &propertys.diph));
-
+	POINT p;
+	p.x = mouseState.px;
+	p.y = mouseState.py;
+	GetCursorPos(&p);
+	ScreenToClient(mHwnd, &p);
+	mouseState.px = p.x;
+	mouseState.py = p.y;
 	mouseState.dowm = 0;
+	RECT rc;
+	GetClientRect(hwnd, &rc);
+	width = rc.right - rc.left;
+	height = rc.bottom - rc.top;
 	memset(keys, 0, sizeof(keys));
-	
+	mMoveable = true;
 	return true;
 }
 
@@ -91,18 +101,14 @@ void DX8Input::OnActivate(bool isActivate)
 
 void DX8Input::UpdatePos()
 {
-	//mKeyBoard->GetDeviceState(sizeof(keys),(LPVOID)keys);
 	if (!mRelativeMode)
 	{
 		POINT p;
-		p.x = mouseState.px;
-		p.y = mouseState.py;
 		GetCursorPos(&p);
 		ScreenToClient(mHwnd, &p);
 		mouseState.px = p.x;
 		mouseState.py = p.y;
 	}
-	
 }
 void DX8Input::DoEvent(Asyn * asyn)
 {
@@ -168,12 +174,15 @@ void DX8Input::DoEvent(Asyn * asyn)
 }
 void DX8Input::SetExclusiveMode(bool Exclusive)
 {
+	HRESULT hr;
 	if(Exclusive)
-		mMouse->SetCooperativeLevel(mHwnd,
-		DISCL_EXCLUSIVE | DISCL_FOREGROUND);
+		hr = mMouse->SetCooperativeLevel(mHwnd,
+		DISCL_EXCLUSIVE );
 	else
-		mMouse->SetCooperativeLevel(mHwnd,
+		hr = mMouse->SetCooperativeLevel(mHwnd,
 			DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
+	if (hr != S_OK)
+		return;
 }
 void DX8Input::SetRelativeMode(bool Relative)
 {
@@ -199,24 +208,25 @@ void DX8Input::HandleMouseEvent(DIDEVICEOBJECTDATA * didod, int len, Asyn * asyn
 {
 	//memcpy(&lastmouseState, &mouseState, sizeof(MouseState));
 	bool isDowm;
+	if (!mMoveable) return;
 	for (int i = 0; i < len; i++)
 	{
 		switch (didod[i].dwOfs)
 		{
 		case DIMOFS_X:
 			//hasMove = true;
-			mouseState.px = didod[i].dwData;
+			mouseState.px += didod[i].dwData;
 			UpdatePos();
 			asyn->PostEvent(EVENT_ONMOUSEMOVE, mouseState.px, mouseState.py, mouseState.dowm );
 			break;
 		case DIMOFS_Y:
 			//hasMove = true;
-			mouseState.py = didod[i].dwData;
+			mouseState.py += didod[i].dwData;
 			UpdatePos();
 			asyn->PostEvent(EVENT_ONMOUSEMOVE, mouseState.px, mouseState.py, mouseState.dowm);
 			break;
 			case DIMOFS_Z:
-				mouseState.pz = didod[i].dwData;
+				mouseState.pz += didod[i].dwData;
 				asyn->PostEvent(EVENT_ONMOUSEMOVE, mouseState.px, mouseState.py, mouseState.dowm);
 				break;
 			case DIMOFS_BUTTON0:

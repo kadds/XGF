@@ -1,6 +1,6 @@
 #include "..\..\Include\InputManager.hpp"
 #include "../../Include/Log.hpp"
-
+#include "../../Include/Application.hpp"
 
 InputManager::InputManager():mForce(nullptr), mHasSetForce(false)
 {
@@ -20,6 +20,7 @@ bool InputManager::Initialize(GDI * gdi, HINSTANCE hs, HWND hwnd, Asyn * a)
 	mCaret.Initialize(gdi);
 	mCursor.Initialize(gdi);
 	mCaretPosInText = 0;
+	SetMouseMode(MouseMode::Default);
 	return true;
 }
 
@@ -81,7 +82,7 @@ bool InputManager::IsForce(TextInputInterface * in)
 	return false;
 }
 
-void InputManager::SetCaretPosition(int x, int y)
+void InputManager::SetCaretPosition(float x, float y)
 {
 	mCaret.SetPosition(x, y);
 	mCaret.ResetTime();
@@ -130,6 +131,7 @@ void InputManager::SetForce(TextInputInterface * tei)
 }
 void InputManager::UpdateCameraMatrix(int x, int y)
 {
+	dinput.UpdateSize(x, y);
 	mCamera.UpdataSize(x, y);
 }
 void InputManager::Draw()
@@ -138,7 +140,8 @@ void InputManager::Draw()
 	mCamera.GetCameraMatrix(wvp);
 	if (mForce != nullptr)
 	{
-		int x, y,size;
+		float x, y;
+		int size;
 		mForce->GetCaretProperty(x, y, size);
 		mCaret.SetPosition(x, y);
 		mCaret.SetHeight(size);
@@ -149,6 +152,7 @@ void InputManager::Draw()
 void InputManager::Tick(float time)
 {
 	mCaret.Tick(time);
+	mCursor.Tick(time);
 }
 void InputManager::StartForForce()
 {
@@ -160,18 +164,49 @@ void InputManager::StopForForce()
 	{
 		SetForce(nullptr);
 	}
-	
+}
+void InputManager::SetMouseMode(MouseMode mm) 
+{ 
+	mMouseMode = mm; 
+	switch (mm)
+	{
+	case Default:
+		dinput.SetMoveable(true);
+		mCursor.Hide();
+		PostMessage(mHwnd, WM_X_SHOWORHIDECURSOR, TRUE, 0);
+		break;
+	case Center:
+		mCursor.Hide();
+		dinput.SetMoveable(false);
+		dinput.SetPosition(Batch::GetClientWidthD2(), Batch::GetClientHeightD2());
+		dinput.SetRelativeMode(true);
+		PostMessage(mHwnd, WM_X_SHOWORHIDECURSOR, TRUE, 0);
+		break;
+	case Custom:
+		dinput.SetMoveable(true);
+		dinput.SetRelativeMode(false);
+		mCursor.Show();
+		PostMessage(mHwnd, WM_X_SHOWORHIDECURSOR, FALSE, 0);
+		break;
+	case CustomCenter:
+		dinput.SetMoveable(false);
+		dinput.SetPosition(Batch::GetClientWidthD2(), Batch::GetClientHeightD2());
+		dinput.SetRelativeMode(true);
+		PostMessage(mHwnd, WM_X_SHOWORHIDECURSOR, FALSE, 0);
+		mCursor.Show();
+		break;
+	default:
+		break;
+	}
 }
 void InputManager::SetExclusiveMouseMode()
 {
 	dinput.SetExclusiveMode(true);
-	dinput.SetRelativeMode(true);
 }
 
 void InputManager::SetNoExclusiveMouseMode()
 {
 	dinput.SetExclusiveMode(false);
-	dinput.SetRelativeMode(false);
 }
 
 bool InputManager::IskeyDowm(Key k)

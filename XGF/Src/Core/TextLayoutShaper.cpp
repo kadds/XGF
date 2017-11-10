@@ -33,7 +33,8 @@ int TextLayoutShaper::DoLayouShaper(const wchar_t * str, const Shape::Rectangle 
 				pos.x = 0.f;
 				pos.y += font.GetFontSize() + 1.f;
 				if (movec != nullptr)
-					movec(i, c, &pos);
+					if (movec(i, c, &pos))
+						return i;
 				continue;
 			}
 			else
@@ -44,6 +45,8 @@ int TextLayoutShaper::DoLayouShaper(const wchar_t * str, const Shape::Rectangle 
 					pos.y += font.GetFontSize() + 1.f;
 					if (!rc.SubRectangle(&mRc, pos.x + ps->vx, pos.y + ps->vy, static_cast<float>(ps->width), static_cast<float>(ps->height)))
 					{
+						if (movec != nullptr)
+							movec(-1, c, &pos);
 						return i;
 					}
 				}
@@ -52,11 +55,16 @@ int TextLayoutShaper::DoLayouShaper(const wchar_t * str, const Shape::Rectangle 
 					pos.x += mRc.mPolygon.mPoint[1].x;
 					pos.y += mRc.mPolygon.mPoint[0].y;
 				}
+				if (movec != nullptr)
+					if (movec(i, c, &pos))
+						return i;
 			}
 		}
+		
 		pos.x += ps->advanceX;
-		if (movec != nullptr)
-			movec(i, c, &pos);
+		
 	}
+	if (movec != nullptr)
+		movec(i, L'\0', &pos);
 	return i;
 }

@@ -38,7 +38,7 @@ void TextRenderer::Shutdown()
 void TextRenderer::DrawString(const wchar_t * str, float x, float y)
 {
     Shape::Rectangle rc;
-    rc.SetPositionAndSize(x, y, 1000.f, 1000.f);
+    rc.SetPositionAndSize(x, y, 100000.f, 100000.f);
     DrawString(str, Color(1.0f,1.0f,1.0f,1.0f),&rc, nullptr);
 }
 
@@ -119,12 +119,13 @@ bool TextRenderer::AddCharToBatch(int i, wchar_t ch, Shape::Rectangle * rc, cons
 	return false;
 }
 
-void TextRenderer::PenMoveCallBackFunction(int i, wchar_t ch, Position * p, int c, Position * u)
+bool TextRenderer::PenMoveCallBackFunction(int i, wchar_t ch, Position * p, int c, Position * u)
 {
-	if (c == i + 1)
+	if (c == i)
 	{
 		u->x = p->x;
 		u->y = p->y;
 	}
+	return false;
 }
 

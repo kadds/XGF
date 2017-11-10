@@ -8,6 +8,14 @@
 #include "Caret.hpp"
 #include "Cursor.hpp"
 #include <vector>
+
+enum MouseMode {
+	Default,
+	Center,
+	Custom,
+	CustomCenter
+};
+
 class InputManager
 {
 public:
@@ -18,7 +26,7 @@ public:
 	LRESULT ProcessInputMessage(UINT msg, WPARAM wParam, LPARAM lParam);
 	void OnActivate(bool isActivate);
 	bool IsForce(TextInputInterface * in);
-	void SetCaretPosition(int x, int y);
+	void SetCaretPosition(float x, float y);
 	void SetExclusiveMouseMode();
 	void SetNoExclusiveMouseMode();
 	bool IskeyDowm(Key k);
@@ -29,6 +37,21 @@ public:
 	void Tick(float time);
 	void StartForForce();
 	void StopForForce();
+	Cursor * GetCursor() { return &mCursor; };
+	void ShowCursor() {
+		mCursor.Show();
+		SetExclusiveMouseMode();
+	};
+	void HideCursor() {
+		mCursor.Hide();
+		SetNoExclusiveMouseMode();
+	};
+	void OnMouseMove(float x, float y)
+	{
+		mCursor.SetPosition(x, y);
+	}
+	void SetMouseMode(MouseMode mm);
+
 private:
 	DX8Input dinput;
 	HWND mHwnd;
@@ -37,7 +60,8 @@ private:
 	int mCaretPosInText;
 	Cursor mCursor;
 	Caret mCaret;
-
+	MouseMode mMouseMode;
+	
 	OrthoCamera mCamera;
 	std::vector<TextInputInterface *> mInputs;
 	DISALLOW_COPY_AND_ASSIGN(InputManager);

@@ -37,12 +37,13 @@ public:
 	Position DrawStringRtPosition(const wchar_t * str, Color color, const Shape::Rectangle * ppe, const XMMATRIX * matrix, int pos);
 	int GetFontSize();
 	TextLayoutShaper * GetLayoutShaper() {return &mLayoutShaper;}
+	Font * GetFont() { return mFont; };
     void Begin(const WVPMatrix & matrix);
     void End();
 	void Flush();
 private:
 	bool AddCharToBatch(int i, wchar_t ch, Shape::Rectangle * rc, const PosSize * ps, const XMMATRIX * matrix);
-	void PenMoveCallBackFunction(int i, wchar_t ch, Position * p, int c, Position * v);
+	bool PenMoveCallBackFunction(int i, wchar_t ch, Position * p, int c, Position * v);
 	Batch mBatch;
     //Õ‚≤ø
 	Font *mFont;

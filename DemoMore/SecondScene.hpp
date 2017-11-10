@@ -16,6 +16,8 @@ public:
 private:
 	Font mFont;
 	TextRenderer mTextRenderer;
+	Animation mAnimation;
+	Texture mCursorTexture;
 
 	Batches mBatches;
 	UIBatches mUIBatches;

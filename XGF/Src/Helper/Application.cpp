@@ -28,6 +28,7 @@ int Application::CreateWindowsAndRunApplication(XGFramework & framework, GDI & g
 	{
 		return false;
 	}
+	mSysCursor = LoadCursor(NULL, IDC_ARROW);
 	//重设窗口客户区大小为传来的参数 大小
 	RECT wndRc, clientRc;
 	GetWindowRect(mHwnd, &wndRc);
@@ -40,7 +41,7 @@ int Application::CreateWindowsAndRunApplication(XGFramework & framework, GDI & g
 	DebugOut("ApplicationStart\n");
 
 	gdi.Initialize(mInstance, mHwnd, mHwnd, clientRc.right - clientRc.left, clientRc.bottom - clientRc.top);
-	
+	mHideCursor = false;
 	//开启渲染线程==============================================
 	mRenderThread.DoAsyn(std::bind([this, &gdi](Asyn * RenderThread) {
 		DebugOut("FrameworkStart\n");
@@ -75,7 +76,7 @@ int Application::CreateWindowsAndRunApplication(XGFramework & framework, GDI & g
 
 }
 
-ATOM Application::RegisterWindowsClass(HINSTANCE hInstance,const wchar_t * className,int ICON,int sICON)
+ATOM Application::RegisterWindowsClass(HINSTANCE hInstance,const wchar_t * className,int ICON, int sICON)
 {
 	WNDCLASSEXW wcex;
 
@@ -102,7 +103,7 @@ void Application::SetExitCode(int ec)
 //  函数: WndProc(HWND, UINT, WPARAM, LPARAM)
 //
 //  目的:    处理主窗口的消息。
-
+bool in = false;
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	Application * app;
@@ -159,6 +160,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			WndAppMap.insert(std::make_pair(hWnd, app));
 		break;
 	}
+	case WM_SETCURSOR:
+	{
+		app = WndAppMap.find(hWnd)->second;
+		if (app!=NULL && app->IsSetHideCursor())
+		{
+			if (LOWORD(lParam) == HTCLIENT)
+			{
+				SetCursor(NULL);
+			}
+			else
+				SetCursor(app->GetSysCursor());
+		}
+		else
+			SetCursor(app->GetSysCursor());
+		break;
+	}
 	case WM_CLOSE:
 		app = WndAppMap.find(hWnd)->second;
 		if (app != nullptr)
@@ -177,6 +194,35 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 		}
 		break;
+	case WM_ENTERMENULOOP:
+	case WM_ENTERSIZEMOVE:
+	{
+		app = WndAppMap.find(hWnd)->second;
+		if (app != nullptr)
+		{
+			app->GetFramework()->GetInputManager()->OnActivate(!wParam);
+		}
+		break;
+	}
+	case WM_X_SHOWORHIDECURSOR:
+	{
+		app = WndAppMap.find(hWnd)->second;
+		if (app != nullptr)
+		{
+			if (wParam == 0)//hide cursor
+			{
+				app->SetHideCursor(true);
+				SetCursor(NULL);
+			}
+			else
+			{
+				app->SetHideCursor(false);
+				SetCursor(app->GetSysCursor());
+			}
+		}
+		
+		break;
+	}
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}

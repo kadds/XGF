@@ -139,6 +139,7 @@ bool XGFramework::_OnInput(const Event & ev)
 	case EVENT_ONMOUSEMOVE:
 		mp.x = ev.Content.x.num;
 		mp.y = ev.Content.y.num;
+		mInputManager.OnMouseMove(mp.x, mp.y);
 		for each (auto var in mInputs)
 		{
 			var->OnMouseMove(mp, ev.Content.z.num);
