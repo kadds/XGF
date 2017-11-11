@@ -67,6 +67,7 @@ void SecondScene::OnDestory()
 	mTextRenderer.Shutdown();
 	mFont.Shutdown();
 	mUIBatches.Shutdown(mBatches);
+	mCursorTexture.Release();
 	GetFramework()->RemoveInputListener(&mUILayer);
 }
 

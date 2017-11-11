@@ -1,29 +1,47 @@
-基于Direct3D11 的 2D/3D 游戏渲染框架  
-==================
-**X Game Render Framework**
-  当前版本号0.10 
-  
-  下一版本开发计划：
-  1. 自定义光标Cursor 
-  2. 动画系统
-  3. 资源管理系统  
+#           XGF
+##What's it?
+###A game render framework(XGF) based on direct3d11 API for study game devolopment
+#####notic: only used by personal
+  ***
+##What Funtions Does It Have？
 
-
-仅供个人学习 Direct3D11 用
-
-1. Scene、Layer、Actor  
-2. Batch 渲染器  
-3. Action 动画系统  
-4. DirectInput （仅支持Mouse、KeyBoard）  
-5. UI 系统部分支持： Button、EditText（未完成）、Lable  
-6. 透视投影摄像机和正交投影摄像机  
-7. 基于Freetype的文本渲染  
-8. 基本Shape图元绘制  
+* A great batch renderer
+    *  Texture combine
+* Complete animation system
+    * Texture animaion
+    * Action animation
+* DirectInput support
+    * Different mouse mode
+* UI system
+    * Lable
+    * EditText
+    * Button
+* Text renderer based on Freetype
+* Basic shape render
+    * Line
+    * Rectange
+    * Circle
+* Scene manager
+    * Switch scene
+    * Scene Aniamtion(Uncompletely)
+  ***
+##How To Compile
+Compiler： VC++14 or later
+If you have Visual Studio or later, you can just open the Soltion(.sln) file. Selecting compiling mode, then compiling with x64 mode.
   
-  
-  
-编译器要求 ：Visual C++ 14 及以上  
-  效果图预览：  
+######notic: Some Demo used resorce, Please Copy these files to run directory. The resorce files always in Bin directory.
+ ***
+## Some Thumbnail Preview
+ Demo1:  
 ![DemoMore](https://raw.githubusercontent.com/kadds/XGF/master/TT.PNG)
+ ***
+##Problem Feedback
+I'm welcome to feedback. You can use the following contact to communicate with me  
   
-Email:[itmyxyf@gmail.com](itmyxyf@gmail.com)
+* Email: <itmyxyf@gmail.com>
+* QQ: 1346144952
+  ***
+##Thankes
+* [Freetype](https://sourceforge.net/projects/freetype/) 
+* [DirectXTK](https://github.com/Microsoft/DirectXT)
+* [DirectXTex](https://github.com/Microsoft/DirectXTex)

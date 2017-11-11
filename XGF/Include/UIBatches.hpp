@@ -22,8 +22,6 @@ private:
 	OrthoCamera mCamera;
 	Batch mBatchPC;
 	Batch mBatchPT;
-	Shader mShaderPT;
-	Shader mShaderPC;
 	WVPMatrix * wvp;
 };
 

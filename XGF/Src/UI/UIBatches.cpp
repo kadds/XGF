@@ -1,17 +1,13 @@
 #include "..\..\Include\UIBatches.hpp"
-
+#include "..\..\Include\ConstantData.hpp"
 #include "..\..\Include\ShaderConst.hpp"
 
 void UIBatches::Initialize(GDI * gdi, Batches & batches, unsigned int CmaxVetices, unsigned int CmaxIndices, unsigned int TmaxVetices, unsigned int TmaxIndices)
 {
-	InputType inputType[2] = { SHADER_INPUTLAYOUT_POSITION,SHADER_INPUTLAYOUT_COLOR };
-	mShaderPC.Initialize(gdi, ShaderConst::shaderPCVS, ShaderConst::shaderPCVSSize, ShaderConst::shaderPCPS, ShaderConst::shaderPCPSSize, inputType, 2);
-	mBatchPC.Initialize(gdi, &mShaderPC,CmaxVetices, CmaxIndices);
+	mBatchPC.Initialize(gdi, ConstantData::GetInstance().GetPCShader(),CmaxVetices, CmaxIndices);
 	batches.insert(std::make_pair(BATCHES_BATCH_PC, &mBatchPC));
 	
-	InputType inputType2[2] = { SHADER_INPUTLAYOUT_POSITION,SHADER_INPUTLAYOUT_TEXTURE };
-	mShaderPT.Initialize(gdi, ShaderConst::shaderPTVS, ShaderConst::shaderPTVSSize, ShaderConst::shaderPTPS, ShaderConst::shaderPTPSSize, inputType2, 2);
-	mBatchPT.Initialize(gdi, &mShaderPT, TmaxVetices, TmaxVetices);
+	mBatchPT.Initialize(gdi, ConstantData::GetInstance().GetPTShader(), TmaxVetices, TmaxVetices);
 	batches.insert(std::make_pair(BATCHES_BATCH_PT, &mBatchPT));
 	wvp = static_cast<WVPMatrix *>(_aligned_malloc(sizeof(WVPMatrix), 16));
 	mBatchPC.SetBlend(true);
@@ -24,8 +20,6 @@ void UIBatches::Shutdown(Batches & batches)
 	batches.erase(BATCHES_BATCH_PT);
 	mBatchPC.Shutdown();
 	mBatchPT.Shutdown();
-	mShaderPT.Shutdown();
-	mShaderPC.Shutdown();
 	_aligned_free(wvp);
 }
 
