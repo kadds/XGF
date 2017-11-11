@@ -48,6 +48,10 @@ public:
 	};
 	void OnMouseMove(float x, float y)
 	{
+		if (CustomCenter == mMouseMode)
+		{
+			return;
+		}
 		mCursor.SetPosition(x, y);
 	}
 	void SetMouseMode(MouseMode mm);

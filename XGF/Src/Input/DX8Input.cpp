@@ -1,5 +1,6 @@
 #include "../../Include/DX8Input.hpp"
 #include "../../Include/Log.hpp"
+#include "../../Include/Batch.hpp"
 DX8Input::DX8Input()
 {
 }
@@ -208,25 +209,44 @@ void DX8Input::HandleMouseEvent(DIDEVICEOBJECTDATA * didod, int len, Asyn * asyn
 {
 	//memcpy(&lastmouseState, &mouseState, sizeof(MouseState));
 	bool isDowm;
-	if (!mMoveable) return;
+	if (!mMoveable) {
+		return;
+	}
+	if (mRelativeMode)
+	{
+		POINT p;
+		p.x = Batch::GetClientWidthD2();
+		p.y = Batch::GetClientHeightD2();
+		ClientToScreen(mHwnd, &p);
+		SetCursorPos(p.x, p.y);
+	}
 	for (int i = 0; i < len; i++)
 	{
 		switch (didod[i].dwOfs)
 		{
 		case DIMOFS_X:
 			//hasMove = true;
-			mouseState.px += didod[i].dwData;
+			if (mRelativeMode)
+				mouseState.px = didod[i].dwData;
+			else
+				mouseState.px += didod[i].dwData;
 			UpdatePos();
 			asyn->PostEvent(EVENT_ONMOUSEMOVE, mouseState.px, mouseState.py, mouseState.dowm );
 			break;
 		case DIMOFS_Y:
 			//hasMove = true;
-			mouseState.py += didod[i].dwData;
+			if (mRelativeMode)
+				mouseState.py = didod[i].dwData;
+			else
+				mouseState.py += didod[i].dwData;
 			UpdatePos();
 			asyn->PostEvent(EVENT_ONMOUSEMOVE, mouseState.px, mouseState.py, mouseState.dowm);
 			break;
 			case DIMOFS_Z:
-				mouseState.pz += didod[i].dwData;
+				if (mRelativeMode)
+					mouseState.py = didod[i].dwData;
+				else
+					mouseState.py += didod[i].dwData;
 				asyn->PostEvent(EVENT_ONMOUSEMOVE, mouseState.px, mouseState.py, mouseState.dowm);
 				break;
 			case DIMOFS_BUTTON0:

@@ -12,15 +12,55 @@ GridRenderer::~GridRenderer()
 {
 }
 
-void GridRenderer::Initialize(GDI * gdi, unsigned width, unsigned height, unsigned max)
+void GridRenderer::Initialize(GDI * gdi, float width, float height, unsigned xcount, unsigned zcount)
 {
-	auto p = DirectX::XMMatrixIdentity();
 	InputType inputype[2] = { SHADER_INPUTLAYOUT_POSITION, SHADER_INPUTLAYOUT_TEXTURE };
 	mShader.Initialize(gdi, ShaderConst::shaderPTVS, ShaderConst::shaderPTVSSize, ShaderConst::shaderPTPS, ShaderConst::shaderPTPSSize, inputype, 2);
-	mBatch.Initialize(gdi, &mShader, (max + 1)*(max + 1), max * max * 2 * 3, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+	mBatch.Initialize(gdi, &mShader, (xcount * 2 + zcount * 2) + 4, xcount * 2 + zcount * 2 + 4, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+	mBatch.SetBlend(false);
+	mBatch.SetZBufferRender(false);
 	mHeight = height;
 	mWidth = width;
-	mMeshData = new MeshData(max);
+	mPolygon = new PolygonPle(xcount * 2 + zcount * 2 + 4);
+	mPolygonPleIndex = new PolygonPleIndex(xcount * 2 + zcount * 2 + 4);
+	int c[2] = { xcount, zcount };
+	mColorBinder = new PolygonPleConstantExColorBinder(c, 2);
+	mColorBinder->SetLayerColor(0, Color(1.0, 0.2, 0.2, 1.0));
+	mColorBinder->SetLayerColor(1, Color(0.2, 1.0, 0.2, 1.0));
+	mBindingBridge.AddBinder(*mColorBinder);
+	Point pstart;
+	pstart.x = 0 - mWidth * xcount / 2.0;//x
+	pstart.z = 0 - mHeight * (zcount - 1);//z
+	for (int i = 0; i < xcount * 2 + 2; i+= 2)
+	{
+		mPolygon->mPoint[i].x = pstart.x;
+		mPolygon->mPoint[i].y = 0.f;
+		mPolygon->mPoint[i].z = pstart.z;
+
+		mPolygon->mPoint[i + 1].x = pstart.x;
+		mPolygon->mPoint[i + 1].y = 0.f;
+		mPolygon->mPoint[i + 1].z = -pstart.z;
+		mPolygonPleIndex->mIndex[i] = i;
+		mPolygonPleIndex->mIndex[i + 1] = i + 1;
+		pstart.x += mWidth;
+	}
+	pstart.x = 0 - mWidth * (xcount - 1);//x
+	pstart.z = 0 - mHeight * zcount / 2.0;//z
+	for (int j = xcount * 2 + 2; j < xcount * 2 + zcount * 2 + 4; j += 2)
+	{
+		mPolygon->mPoint[j].x = pstart.x;
+		mPolygon->mPoint[j].y = 0.f;
+		mPolygon->mPoint[j].z = pstart.z;
+
+		mPolygon->mPoint[j + 1].x = -pstart.x;
+		mPolygon->mPoint[j + 1].y = 0.f;
+		mPolygon->mPoint[j + 1].z = pstart.z;
+		mPolygonPleIndex->mIndex[j] = j;
+		mPolygonPleIndex->mIndex[j + 1] = j + 1;
+		pstart.z += mWidth;
+	}
+
+	//mMeshData = new MeshData(max);
 
 }
 
@@ -28,7 +68,10 @@ void GridRenderer::Shutdown()
 {
 	mBatch.Shutdown();
 	mShader.Shutdown();
-	delete mMeshData;
+	delete mPolygon;
+	delete mPolygonPleIndex;
+	delete mColorBinder;
+	//delete mMeshData;
 }
 
 void GridRenderer::Begin(const WVPMatrix & matrix)
@@ -41,10 +84,11 @@ void GridRenderer::End()
 	mBatch.End();
 }
 
-void GridRenderer::DrawGrid()
+void GridRenderer::DrawGrid(Point & center)
 {
-	//mMeshData->Render(mBatch, nullptr, );
+	mBatch.DrawPolygon(*mPolygon, *mPolygonPleIndex, mBindingBridge);
 }
+
 
 MeshData::MeshData(unsigned max):Shape::Shape((max+1)*(max + 1),max * max * 2 *3),maxLen(max)
 {

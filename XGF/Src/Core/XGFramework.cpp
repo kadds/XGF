@@ -73,6 +73,13 @@ void XGFramework::_OnCreate(GDI *gdi, Asyn* asyn)
 
 void XGFramework::_OnDestory()
 {
+	if (mScene != nullptr)
+	{
+		mScene->OnDestory();
+		if (mSceneDeleter != nullptr)
+			mSceneDeleter(mScene);
+	}
+		
 	mInputManager.Shutdown();
 	ConstantData::GetInstance().Shutdown();
 	mGDI->Destory();

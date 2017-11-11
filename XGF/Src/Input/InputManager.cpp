@@ -133,6 +133,10 @@ void InputManager::UpdateCameraMatrix(int x, int y)
 {
 	dinput.UpdateSize(x, y);
 	mCamera.UpdataSize(x, y);
+	if (mMouseMode == CustomCenter)
+	{
+		mCursor.SetPosition(x / 2.f, y / 2.f);
+	}
 }
 void InputManager::Draw()
 {
@@ -167,7 +171,6 @@ void InputManager::StopForForce()
 }
 void InputManager::SetMouseMode(MouseMode mm) 
 { 
-	mMouseMode = mm; 
 	switch (mm)
 	{
 	case Default:
@@ -189,15 +192,17 @@ void InputManager::SetMouseMode(MouseMode mm)
 		PostMessage(mHwnd, WM_X_SHOWORHIDECURSOR, FALSE, 0);
 		break;
 	case CustomCenter:
-		dinput.SetMoveable(false);
+		dinput.SetMoveable(true);
 		dinput.SetPosition(Batch::GetClientWidthD2(), Batch::GetClientHeightD2());
 		dinput.SetRelativeMode(true);
 		PostMessage(mHwnd, WM_X_SHOWORHIDECURSOR, FALSE, 0);
+		OnMouseMove(Batch::GetClientWidthD2(), Batch::GetClientHeightD2());
 		mCursor.Show();
 		break;
 	default:
 		break;
 	}
+	mMouseMode = mm;
 }
 void InputManager::SetExclusiveMouseMode()
 {
