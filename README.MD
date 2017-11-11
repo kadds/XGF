@@ -34,6 +34,8 @@ If you have Visual Studio or later, you can just open the Soltion(.sln) file. Se
 ## Some Thumbnail Preview
  Demo1:  
 ![DemoMore](https://raw.githubusercontent.com/kadds/XGF/master/TT.PNG)
+ Demo2:  
+![EasyDemo](https://raw.githubusercontent.com/kadds/XGF/master/TT2.PNG)
  ***
 ## Problem Feedback
 I'm welcome to feedback. You can use the following contact to communicate with me  
