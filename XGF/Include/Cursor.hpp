@@ -16,7 +16,7 @@ public:
 	void Show();
 	void Tick(float time);
 	void SetStaticTexture(GDI * gdi, const wchar_t * t);
-	void SetAnimation(Animation & mm);
+	void SetAnimation(Animation * mm);
 	void SetPointDeviation(Position & p) { mPointDeviation = p; };
 	void Hide();
 private:
@@ -31,7 +31,7 @@ private:
 	bool mUsedStaticTexture;
 	PolygonPleTextureBinder mPtBinder;
 	Texture mTexture;
-	Animation mAnimation;
+	Animation *mAnimation;
 	DISALLOW_COPY_AND_ASSIGN(Cursor);
 };
 

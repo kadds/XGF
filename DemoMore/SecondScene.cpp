@@ -20,7 +20,7 @@ void SecondScene::OnCreate()
 	mLable.SetTextRenderer(&mTextRenderer);
 	mLable.SetText(L"第二个界面 按Esc退出");
 	mUILayer.Add(&mLable);
-	mCamera3D.FixYAxis(false);
+	mCamera3D.FixYAxis(true);
 	mLable2.SetPositionAndSize(20, 100, 100, 40);
 	mLable2.SetTextRenderer(&mTextRenderer);
 	mLable2.SetText(L"Activate!");
@@ -61,7 +61,7 @@ void SecondScene::OnCreate()
 	stage[2].bottom = 1.0f;
 	stage[3].bottom = 1.0f;
 	mAnimation.SetAnimation(0, 0.01f, 0.f, mCursorTexture, stage, 4);
-	GetFramework()->GetInputManager()->GetCursor()->SetAnimation(mAnimation);
+	GetFramework()->GetInputManager()->GetCursor()->SetAnimation(&mAnimation);
 	GetFramework()->GetInputManager()->GetCursor()->SetPointDeviation(Position(3.f, 0.f));
 	GetFramework()->GetInputManager()->SetMouseMode(MouseMode::CustomCenter);
 	mFramework->AddInputListener(this);
@@ -99,7 +99,6 @@ void SecondScene::Render(float deltaTime)
 	std::wstringstream str;
 	str << std::fixed << std::setprecision(1) << L"FPS:" << debug->GetAverageFPS() <<"\n"<< L"FC:" << std::setprecision(4) <<debug->GetFrameCost() << "ms";
 	mTextRenderer.DrawString(str.str().c_str(), 4, 4);
-	//mTextRenderer.DrawString(str.str().c_str(), 4, 20);
 	UpdataLayer(deltaTime);
 	RenderLayer(mBatches);
 	mTextRenderer.End();
@@ -137,7 +136,7 @@ void SecondScene::OnMouseMove(const MousePoint & mm, int pk)
 {
 	float h = GetFramework()->GetWindowsHeight();
 	float w = GetFramework()->GetWindowsWidth();
-	mCamera3D.PitchYawRoll(mCamera3D.GetFovAngle() / h  *mm.y * 0.8, mCamera3D.GetFovAngle() / w * mm.x * 0.8,0);
+	mCamera3D.PitchYawRoll(-mCamera3D.GetFovAngle() / h  *mm.y * 0.5, mCamera3D.GetFovAngle() / w * mm.x * 0.5,0);
 }
 
 void SecondScene::OnKeyDowm(Key k)

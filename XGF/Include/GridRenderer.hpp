@@ -26,7 +26,7 @@ class GridRenderer
 public:
 	GridRenderer();
 	~GridRenderer();
-	void Initialize(GDI * gdi, float widthPreRect, float heightPreRect, unsigned xcount, unsigned zcount);
+	void Initialize(GDI * gdi, float widthPreRect, float heightPreRect, unsigned xcount, unsigned zcount, Point & origin = Point(0.f,0.f,0.f));
 	void Shutdown();
 	//every frame call it
 	void Begin(const WVPMatrix & matrix);
@@ -35,12 +35,11 @@ public:
 
 	//call it after call Begin ,before call End
 	void DrawGrid(Point & center);
-
-	//void SetYAxisHeight(,float height);
-	//void Set
+	void SetColor(Color & cx, Color & cz);
+	void SetXColor(Color & cx);
+	void SetZColor(Color & cz);
 private:
 	Batch mBatch;
-	Shader mShader;
 	//MeshData * mMeshData;
 	float mWidth;
 	float mHeight;

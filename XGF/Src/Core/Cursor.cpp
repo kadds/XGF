@@ -44,12 +44,12 @@ void Cursor::Draw(const WVPMatrix & wvp)
 		BindingBridge bbr;
 		bbr.AddBinder(mPtBinder);
 		float x, y, w, h;
-		mAnimation.GetPositionInTexture(x,y,w,h);
+		mAnimation->GetPositionInTexture(x,y,w,h);
 		mPtBinder.SetPosition(x, w, y, h);
 		mTextureBatch.Begin(wvp);
 		mRc.SetPositionAndSize(mPosition.x - mPointDeviation.x, mPosition.y - mPointDeviation.y, mSize.x, mSize.y);
 
-		mRc.Render(mTextureBatch, nullptr, mBbrg, mAnimation.GetTexture()->GetShaderResourceView());
+		mRc.Render(mTextureBatch, nullptr, mBbrg, mAnimation->GetTexture()->GetShaderResourceView());
 		mTextureBatch.End();
 	}
 }
@@ -71,7 +71,7 @@ void Cursor::Tick(float time)
 	mPassTime += time;
 	if (!mUsedStaticTexture)
 	{
-		mAnimation.Tick(time);
+		mAnimation->Tick(time);
 	}
 }
 
@@ -81,8 +81,9 @@ void Cursor::SetStaticTexture(GDI * gdi, const wchar_t * t)
 	mUsedStaticTexture = true;
 }
 
-void Cursor::SetAnimation(Animation & mm)
+void Cursor::SetAnimation(Animation * mm)
 {
+	if (mAnimation == nullptr) return;
 	mAnimation = mm;
 	mUsedStaticTexture = false;
 }

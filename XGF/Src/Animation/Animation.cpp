@@ -7,6 +7,11 @@
 
 Animation::~Animation()
 {
+	if (mStages != nullptr)
+	{
+		delete[] mStages;
+		mStages = nullptr;
+	}
 }
 
 void Animation::Tick(float time)
