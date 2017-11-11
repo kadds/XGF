@@ -2,7 +2,8 @@
 //
 
 #include "DemoMore.h"
-#include "GameFramework.hpp"
+#include "FirstScene.hpp"
+#include "SecondScene.hpp"
 #define MAX_LOADSTRING 100
 #ifdef _DEBUG
 #ifdef _WIN64
@@ -43,10 +44,12 @@ int RunGame(HINSTANCE hInstance)
 {
 	Application app;
 	GDI gdi;
-	GameFramework gf;
-
+	FirstScene * gs = new FirstScene();
+	XGFramework framework;
+	framework.SetSceneDeleter([](Scene * sc) {delete sc;});
+	framework.SetOnClose([]() {return true;});
 	int rt = -1;
-	rt = app.CreateWindowsAndRunApplication(gf, gdi, hInstance, L"Demo", L"DEC",
-		0, 0, { 300,100 }, { 600,400 });
+	rt = app.CreateWindowsAndRunApplication(framework, gdi, hInstance, L"Demo", L"DEC",
+		0, 0, { 300,100 }, { 600,400 }, gs);
 	return rt;
 }

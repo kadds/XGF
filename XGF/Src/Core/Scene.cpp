@@ -1,5 +1,4 @@
 #include "../../Include/Scene.hpp"
-#include "../../Include/SceneFramework.hpp"
 #include "../../Include/Batch.hpp"
 #include "../../Include/Shader.hpp"
 #include "../../Include/ShaderConst.hpp"
@@ -32,7 +31,7 @@ void Scene::RenderLayer(Batches & batches)
 }
 void Scene::SwitchScene(Scene * scene)
 {
-	static_cast<SceneFramework *>(GetFramework())->SwitchScene(scene);
+	static_cast<XGFramework *>(GetFramework())->SwitchScene(scene);
 }
 void Scene::Clear(Color & c)
 {

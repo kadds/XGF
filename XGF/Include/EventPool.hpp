@@ -1,6 +1,7 @@
 #pragma once
 #include "StateList.hpp"
 #include <memory>
+
 #define EVENT_NULL 0
 #define EVENT_EXIT 1
 #define EVENT_ONINPUT 2
@@ -80,7 +81,6 @@ public:
 	static  Event& CreateAEvent(int msg, int data1, int  data2, int data3);
 	static  Event& CreateAEvent(int msg, int data1, int  data2, void * address);
 	static  Event& CreateAEvent(int msg, int data1, void * address, void * address2);
-
 	static Event& GetNullEvent();
 	static void DistoryAEvent(const Event & event);
 	

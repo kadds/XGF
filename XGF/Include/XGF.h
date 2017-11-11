@@ -5,7 +5,6 @@
 //*********** Core ***************
 #include "GDI.hpp"
 #include "XGFramework.hpp"
-#include "SceneFramework.hpp"
 #include "Shader.hpp"
 #include "Batch.hpp"
 #include "Camera.hpp"

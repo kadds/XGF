@@ -5,32 +5,17 @@
 #include "InputListener.hpp"
 #include "Asyn.hpp"
 #include <list>
-
+#include <memory>
 class Scene;
 class GDI;
 /*
 这是应用程序框架
-*请继承此类并实现抽象方法
 */
 class XGFramework
 {
 public:
 	XGFramework();
 	~XGFramework();
-	//框架调用，在该函数初始化
-	virtual void OnCreate() = 0;
-	//框架调用，在该函数释放资源
-	virtual void OnDestory() = 0;
-	//框架调用，注意更新Camera
-	virtual void OnSize(int ClientX, int ClientY) = 0;
-	//框架调用
-	virtual void OnActivate(bool isActivate) = 0;
-	//当WM_CLOSE消息触发时 框架调用， 返回true允许退出，false不允许退出
-	virtual bool OnClose() = 0;
-	//每帧框架调用，用于主渲染
-	virtual void Render() = 0;
-	//每帧框架调用，更新逻辑和camera
-	virtual void Update(float time) = 0;
 	bool _Update(float time);
 	//Application框架调用
 	void _Loop();
@@ -47,17 +32,17 @@ public:
 	//Application框架调用
 	void _OnMessage(const Event& ev);
 	//框架调用，处理感兴趣的消息，系统消息均被过滤
-	virtual void OnMessage(const Event& ev) = 0;
+	virtual void OnMessage(const Event& ev) {};
 	//Application框架调用
 	bool _OnInput(const Event &ev);
 	//Application框架调用
 	void _OnClose();
-	
+
 	void Clear(float color[]);
 	void Clear(Color &color);
 	void ClearDepthStencilBuffer();
 	void Present(bool isVsync);
-
+	
 	void OpenVsync() { mIsVsync = true; }
 	void CloseVsync() { mIsVsync = false; }
 	HWND GetTopHwnd();
@@ -70,20 +55,35 @@ public:
 	void Exit(int code);
 	void AddInputListener(InputListener* il);
 	void RemoveInputListener(InputListener* il);
-
+	//切换Scene。注意，该函数只是在消息队列中添加了消息，下一帧才会切换，实际切换代码在ISwithScene中
+	//可确保在Click事件中调用不会破坏迭代器
+	void SwitchScene(Scene * scene);
+	void AddScene(Scene * scene);
+	//渲染Scene
+	void RenderScene();
 	//Application框架调用
 	LRESULT OnInputMessage(UINT msg, WPARAM wParam, LPARAM lParam) { return mInputManager.ProcessInputMessage(msg, wParam, lParam); }
 
 	InputManager * GetInputManager() { return &mInputManager; }
+
+	void SetSceneDeleter(std::function<void(Scene *)> f) { mSceneDeleter = f; };
+	void SetOnClose(std::function<bool()> f) { mOnClose = f; };
+	void SetOnInput(std::function<bool(const Event &ev)> f) { mOnInput = f; };
+
 protected://来自外部初始化的变量
 	GDI *mGDI;
 protected:
+	Scene * mScene;
+	void ISwitchScene(Scene * scene);
 	Timer mainTimer; 
 	float mDeltaTime;
 	InputManager mInputManager;
 	std::list<InputListener* > mInputs;
 	Asyn * mTheard;
 	bool mIsVsync;
+	std::function<void(Scene * )> mSceneDeleter;
+	std::function<bool()> mOnClose;
+	std::function<bool(const Event &ev)> mOnInput;
 private:
 	DISALLOW_COPY_AND_ASSIGN(XGFramework);
 };

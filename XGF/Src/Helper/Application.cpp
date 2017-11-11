@@ -14,7 +14,7 @@ Application::~Application()
 {
 }
 
-int Application::CreateWindowsAndRunApplication(XGFramework & framework, GDI & gdi, HINSTANCE hInstance, const wchar_t * title, const wchar_t * className, int ICON, int sICON, POINT pos, SIZE size)
+int Application::CreateWindowsAndRunApplication(XGFramework &framework, GDI &gdi, HINSTANCE hInstance, const wchar_t * title, const wchar_t * className, int ICON, int sICON, POINT pos, SIZE size, Scene * firstScene)
 {
 	mInstance = hInstance;
 	mFramework = &framework;
@@ -41,11 +41,13 @@ int Application::CreateWindowsAndRunApplication(XGFramework & framework, GDI & g
 	DebugOut("ApplicationStart\n");
 
 	gdi.Initialize(mInstance, mHwnd, mHwnd, clientRc.right - clientRc.left, clientRc.bottom - clientRc.top);
+	
 	mHideCursor = false;
 	//开启渲染线程==============================================
-	mRenderThread.DoAsyn(std::bind([this, &gdi](Asyn * RenderThread) {
+	mRenderThread.DoAsyn(std::bind([this, &gdi, &firstScene](Asyn * RenderThread) {
 		DebugOut("FrameworkStart\n");
 		mFramework->_OnCreate(&gdi, RenderThread);
+		mFramework->AddScene(firstScene);
 		RenderThread->Notify();
 		//消息循环
 		DebugOut("FrameworkLoop\n");

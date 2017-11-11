@@ -206,7 +206,6 @@
     <ClInclude Include="Include\RotateToAction.hpp" />
     <ClInclude Include="Include\ScaleToAction.hpp" />
     <ClInclude Include="Include\Scene.hpp" />
-    <ClInclude Include="Include\SceneFramework.hpp" />
     <ClInclude Include="Include\ScreenGrab.h" />
     <ClInclude Include="Include\SequenceAction.hpp" />
     <ClInclude Include="Include\Shader.hpp" />
@@ -260,7 +259,6 @@
     <ClCompile Include="Src\Core\Polygon.cpp" />
     <ClCompile Include="Src\Core\RenderToTexture.cpp" />
     <ClCompile Include="Src\Core\Scene.cpp" />
-    <ClCompile Include="Src\Core\SceneFramework.cpp" />
     <ClCompile Include="Src\Core\Shader.cpp" />
     <ClCompile Include="Src\Core\ShaderConst.cpp" />
     <ClCompile Include="Src\Core\ShapeRenderer.cpp" />

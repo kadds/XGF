@@ -24,18 +24,12 @@
     <ClInclude Include="Firstscene.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="GameFramework.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DemoMore.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="FirstScene.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="GameFramework.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="SecondScene.cpp">
