@@ -29,7 +29,7 @@ void SecondScene::OnCreate()
 	mLable2.AddOnClickListener([this](const MousePoint & ms, int pk)
 	{
 		mLable2.SetText(L"Click!");
-		this->GetFramework()->GetGDI()->SetFullScreen(false);
+		//this->GetFramework()->GetGDI()->SetFullScreen(false);
 	});
 	mUILayer.Add(&mLable2);
 	Tools::GetInstance()->GetFontPath("Dengb.ttf", cbuffer, MAX_PATH);

@@ -201,6 +201,7 @@
     <ClInclude Include="Include\Polygon.hpp" />
     <ClInclude Include="Include\Rectangle.hpp" />
     <ClInclude Include="Include\RectangleB.hpp" />
+    <ClInclude Include="Include\RenderTarget.hpp" />
     <ClInclude Include="Include\RenderToTexture.hpp" />
     <ClInclude Include="Include\RepeatAction.hpp" />
     <ClInclude Include="Include\RotateToAction.hpp" />

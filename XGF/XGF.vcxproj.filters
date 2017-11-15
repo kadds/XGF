@@ -306,6 +306,9 @@
     <ClInclude Include="Include\TextLayoutShaper.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Include\RenderTarget.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\UI\UILayer.cpp">

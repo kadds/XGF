@@ -4,6 +4,9 @@
 
 void GDI::Create()
 {
+	mDisplayMode = Windowed;
+	mIsFullRenderTarget = true;
+	mDisplayFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	D3D_FEATURE_LEVEL featureLevels[] = {
 		D3D_FEATURE_LEVEL_11_1,
 		D3D_FEATURE_LEVEL_11_0,
@@ -20,7 +23,7 @@ void GDI::Create()
 	sd.BufferDesc.Width = mWidth;
 	sd.BufferDesc.Height = mHeight;
 	//像素格式
-	sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	sd.BufferDesc.Format = mDisplayFormat;
 	//刷新率
 	sd.BufferDesc.RefreshRate.Numerator = 60;
 	sd.BufferDesc.RefreshRate.Denominator = 1;
@@ -62,7 +65,7 @@ void GDI::Create()
 		&mDeviceContext));
 	UINT  m4xMsaaQuality;
 	Check(mD3dDevice->CheckMultisampleQualityLevels(
-		DXGI_FORMAT_R8G8B8A8_UNORM, 4, &m4xMsaaQuality));
+		mDisplayFormat, 4, &m4xMsaaQuality));
 	sd.SampleDesc.Quality = m4xMsaaQuality - 1;
 	char const *levelstr[] = {"11.1","11","10.1","10" };
 	for (size_t i = 0; i < sizeof(featureLevels) / sizeof(featureLevels[0]); i++)
@@ -206,15 +209,15 @@ void GDI::Create()
 void GDI::SaveDisplayMode(int c, IDXGIOutput * pDXGIOutput)
 {
 	UINT  num = 0;
-	pDXGIOutput->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_ENUM_MODES_INTERLACED, &num, 0);
+	pDXGIOutput->GetDisplayModeList(mDisplayFormat, 0 , &num, 0);
 	DXGI_MODE_DESC * pdsk = new DXGI_MODE_DESC[num];
-	mDisplayMode.push_back(std::make_pair(num, pdsk));
-	pDXGIOutput->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_ENUM_MODES_INTERLACED, &num, pdsk);
+	mScreenMode.push_back(std::make_pair(num, pdsk));
+	pDXGIOutput->GetDisplayModeList(mDisplayFormat,0 , &num, pdsk);
 
 #ifdef _DEBUG
 	for (UINT i = 0; i < num; i++)
 	{
-		OutputDebugStringEx(L"DisplayMode%d: Width:%d,Height:%d,RefreshRate[Denominator]:%d,RefreshRate[Numerator]:%d"
+		OutputDebugStringEx(L"DisplayMode%d: Width:%d,Height:%d,RefreshRate[Denominator]:%u,RefreshRate[Numerator]:%u"
 			",Scaling:%d,ScanlineOrdering:%d,Format:%d\n"
 			, i, pdsk[i].Width, pdsk[i].Height, pdsk[i].RefreshRate.Denominator, pdsk[i].RefreshRate.Numerator
 			, pdsk[i].Scaling, pdsk[i].ScanlineOrdering, pdsk[i].Format);
@@ -264,7 +267,7 @@ void GDI::Destory()
 	{
 		var->Release();
 	}
-	for each (auto var in mDisplayMode)
+	for each (auto var in mScreenMode)
 	{
 		delete[] var.second;
 	}
@@ -353,7 +356,7 @@ void GDI::SizeChanged(UINT ClientWidth, UINT ClientHeight)
 		mDepthStencilBuffer = 0;
 	}
 	//重新创建渲染目标视图 
-	Check(mSwapChain->ResizeBuffers(1, ClientWidth, ClientHeight, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
+	Check(mSwapChain->ResizeBuffers(1, ClientWidth, ClientHeight, mDisplayFormat, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
 	PutDebugString(mSwapChain);
 	// 得到交换链中的后缓冲指针. 
 	ID3D11Texture2D* backBufferPtr;
@@ -398,15 +401,23 @@ void GDI::SizeChanged(UINT ClientWidth, UINT ClientHeight)
 	mDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
 
 	SetFillMode(mIsOpenFillSold);
-	//重新设置 viewPort
-	D3D11_VIEWPORT view;
-	view.MinDepth = 0.0f;
-	view.MaxDepth = 1.0f;
-	view.Width = static_cast<FLOAT>(ClientWidth);
-	view.Height = static_cast<FLOAT>(ClientHeight);
-	view.TopLeftX = 0;
-	view.TopLeftY = 0;
-	mDeviceContext->RSSetViewports(1, &view);
+	if(!mIsFullRenderTarget)
+		while (mRenderTarget.HasNext())
+		{
+			mRenderTarget.Next()->OnSize(static_cast<float>(ClientWidth), static_cast<float>(ClientHeight));
+		}
+	else
+	{
+		D3D11_VIEWPORT vp;
+		vp.MinDepth = 0.f;
+		vp.MaxDepth = 1.f;
+		vp.TopLeftX = 0.f;
+		vp.TopLeftY = 0.f;
+		vp.Height = static_cast<FLOAT>(ClientHeight);
+		vp.Width = static_cast<FLOAT>(ClientWidth);
+		mDeviceContext->RSSetViewports(1, &vp);
+	}
+	
 	mWidth = ClientWidth;
 	mHeight = ClientHeight;
 }
@@ -416,25 +427,23 @@ void GDI::ResizeTarget(UINT x, UINT y)
 	DXGI_MODE_DESC mode;
 	mode.Width = x;
 	mode.Height = y;
-	mode.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	mode.Format = mDisplayFormat;
 	
 	mSwapChain->ResizeTarget(&mode);
 }
 
-void GDI::SetFullScreen(bool isFullscreen)
+void GDI::SetFullScreen(bool isFullscreen, int pos)
 {
-	//未完成的功能
 	if (isFullscreen)
 	{
+		DXGI_MODE_DESC dxm = mScreenMode.at(0).second[pos];
+		mSwapChain->ResizeTarget(&dxm);
 		mSwapChain->SetFullscreenState(isFullscreen, 0);
-		mSwapChain->ResizeTarget(&(mDisplayMode.at(0).second[mNowInDisplayMode]));
-		//SizeChanged(mDisplayMode.at(0)[mNowInDisplayMode].Width, mDisplayMode.at(0)[mNowInDisplayMode].Height);
+		mSwapChain->ResizeTarget(&dxm);
 	}
 	else
 	{
-		//mSwapChain->ResizeTarget(&(mDisplayMode.at(0).second[mNowInDisplayMode]));
 		mSwapChain->SetFullscreenState(isFullscreen, 0);
-		
 	}
 }
 void GDI::SetFillMode(bool isSold)
@@ -481,9 +490,55 @@ void GDI::SetRenderTargetView()
 	mDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
 }
 
-void GDI::SetFullScreenDisplayMode(int pos)
+bool GDI::SetDisplayMode(DisplayMode dm,int left, int top, int cx, int cy, bool move)
 {
-	mNowInDisplayMode = pos;
+	mDisplayMode = dm;
+	if (dm == DisplayMode::Windowed)
+	{
+		SetFullScreen(false, 0);
+		UINT newtype = ::GetWindowLong(mHwnd, GWL_STYLE);
+		if (!(newtype & WS_CAPTION))
+		{
+			newtype |= (WS_CAPTION | WS_SYSMENU | WS_SIZEBOX);
+			::SetWindowLong(mHwnd, GWL_STYLE, newtype);
+		}
+		RECT rect = { 0,0,cx,cy };
+		AdjustWindowRect(&rect, newtype, FALSE);
+		SetWindowPos(mHwnd, NULL, left, top, rect.right - rect.left, rect.bottom - rect.top, !move ? SWP_NOMOVE | SWP_NOZORDER : SWP_NOZORDER);
+		return true;
+	}
+	else if(dm == DisplayMode::Borderless)
+	{
+		SetFullScreen(false, 0);
+		UINT newtype = ::GetWindowLong(mHwnd, GWL_STYLE);
+		if (newtype & WS_CAPTION)
+		{
+			newtype &= ~WS_CAPTION & ~WS_SYSMENU & ~WS_SIZEBOX;
+			::SetWindowLong(mHwnd, GWL_STYLE, newtype);
+		}
+		RECT rect = { 0,0,cx,cy };
+		AdjustWindowRect(&rect, newtype, FALSE);
+		SetWindowPos(mHwnd, 0, left, top, rect.right - rect.left, rect.bottom - rect.top, !move ? SWP_NOMOVE | SWP_NOZORDER : SWP_NOZORDER);
+		return true;
+	}
+	else
+	{
+		if (mScreenMode.empty()) return false;
+		auto var = mScreenMode[0];
+		for (int i = 0; i < var.first; i++)
+		{
+			DXGI_MODE_DESC * k = &var.second[i];
+			if (k->Height == cy && k->Width == cx
+				&& k->Format == mDisplayFormat && k->ScanlineOrdering == DXGI_MODE_SCANLINE_ORDER_PROGRESSIVE && k->Scaling == 0
+				&& k->RefreshRate.Numerator / k->RefreshRate.Denominator > 40)
+			{
+				SetFullScreen(true, i);
+				return true;
+			}
+		}
+		return false;
+	}
+	return true;
 }
 
 
