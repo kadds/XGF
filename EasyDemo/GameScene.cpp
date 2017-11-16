@@ -44,6 +44,7 @@ void GameScene::OnCreate()
 
 	mRc.SetPositionAndSize(0, mFramework->GetGDI()->GetHeight() - 100, 130, 100);
 	mRc.SetZ(0.0f);
+	mTime = 0.f;
 }
 
 void GameScene::OnDestory()
@@ -104,6 +105,20 @@ void GameScene::Render(float deltaTime)
 
 void GameScene::Updata(float deltaTime)
 {
+	if (mFramework->GetInputManager()->IskeyDowm(DIK_F11) && mTime >= 5.f)
+	{
+		if (!mFramework->GetGDI()->IsFullScreen())
+			mFramework->GetGDI()->SetDisplayMode(DisplayMode::FullScreen, 0, 0, 1440, 900, false, true);
+		else
+			mFramework->GetGDI()->SetDisplayMode(DisplayMode::Windowed, 400, 400, 600, 400, false, true);
+		mTime = 0.f;
+	}
+	else if(mTime >= 0.f)
+	{
+		mTime += deltaTime;
+		if (mTime > 50000.f) mTime = 1.f;
+	}
+		
 }
 
 void GameScene::OnSize(int ClientX, int ClientY)

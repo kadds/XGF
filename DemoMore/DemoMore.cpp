@@ -50,6 +50,6 @@ int RunGame(HINSTANCE hInstance)
 	framework.SetOnClose([]() {return true;});
 	int rt = -1;
 	rt = app.CreateWindowsAndRunApplication(framework, gdi, hInstance, L"Demo", L"DEC",
-		0, 0, { 300,100 }, { 600,400 }, gs);
+		0, 0, { 300,100 }, { 600,400 }, true, gs);
 	return rt;
 }

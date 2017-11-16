@@ -86,7 +86,7 @@ void GDI::Create()
 	IDXGIFactory * pIDXGIFactory = nullptr;
 	pDXGIAdapter->GetParent(__uuidof(IDXGIFactory), (void **)&pIDXGIFactory);
 	Check(pIDXGIFactory->CreateSwapChain(mD3dDevice, &sd, &mSwapChain));
-	Check(pIDXGIFactory->MakeWindowAssociation(mTopHwnd, DXGI_MWA_NO_ALT_ENTER));
+	Check(pIDXGIFactory->MakeWindowAssociation(mTopHwnd, DXGI_MWA_NO_ALT_ENTER| DXGI_MWA_NO_WINDOW_CHANGES));
 
 	IDXGIAdapter * eDXGIAdapter = nullptr;
 	int i = 0;
@@ -316,7 +316,13 @@ void GDI::ClearDepthStencilBuffer()
 
 void GDI::Present(bool isVsync)
 {
-	mSwapChain->Present(isVsync,0);
+	HRESULT  hr = mSwapChain->Present(isVsync,0);
+	if (hr == DXGI_STATUS_OCCLUDED)
+	{
+		DebugOut("ERROR IN Prensent");
+		ShowWindow(mHwnd, SW_MINIMIZE);
+		CheckFullScreenForce(false);
+	}
 }
 
 void GDI::Initialize(HINSTANCE instance, HWND WndHwnd, HWND TopHwnd, UINT ClientWidth, UINT ClientHeight)
@@ -333,7 +339,8 @@ void GDI::SizeChanged(UINT ClientWidth, UINT ClientHeight)
 	//交换链为空直接返回 
 	if (!mSwapChain)
 		return ;
-
+	OutputDebugString(L"***SIZE**\n");
+	OutputDebugStringEx("ex:%d,%d\n", ClientWidth, ClientHeight);
 	//窗口最小化时候为0，会创建缓冲失败 
 	if (ClientWidth < 1)
 		ClientWidth = 1;
@@ -424,26 +431,46 @@ void GDI::SizeChanged(UINT ClientWidth, UINT ClientHeight)
 
 void GDI::ResizeTarget(UINT x, UINT y)
 {
+	BOOL bl;
+	mSwapChain->GetFullscreenState(&bl, NULL);
 	DXGI_MODE_DESC mode;
 	mode.Width = x;
 	mode.Height = y;
 	mode.Format = mDisplayFormat;
-	
+	mode.RefreshRate.Numerator = 0;
 	mSwapChain->ResizeTarget(&mode);
 }
 
 void GDI::SetFullScreen(bool isFullscreen, int pos)
 {
-	if (isFullscreen)
+	BOOL bl;
+	mSwapChain->GetFullscreenState(&bl, NULL);
+	if (isFullscreen && bl == FALSE)
 	{
+		RECT rc;
+		GetClientRect(mHwnd, &mLastWinRc);
 		DXGI_MODE_DESC dxm = mScreenMode.at(0).second[pos];
-		mSwapChain->ResizeTarget(&dxm);
-		mSwapChain->SetFullscreenState(isFullscreen, 0);
-		mSwapChain->ResizeTarget(&dxm);
+		dxm.Format = DXGI_FORMAT_UNKNOWN;
+		//mSwapChain->ResizeTarget(&dxm);
+		DebugOut("fullscreen");
+		Check(mSwapChain->SetFullscreenState(isFullscreen, 0));
+		//dxm.RefreshRate.Numerator = 0;
+		Check(mSwapChain->ResizeTarget(&dxm));
+		//SizeChanged(dxm.Width, dxm.Height);
 	}
-	else
+	else if (isFullscreen && bl == TRUE)
+	{
+		return;
+	}
+	else if(!isFullscreen && bl == TRUE)
 	{
 		mSwapChain->SetFullscreenState(isFullscreen, 0);
+		DXGI_MODE_DESC dxm = mScreenMode.at(0).second[0];
+		dxm.Width = mLastWinRc.right;
+		dxm.Height = mLastWinRc.bottom;
+		dxm.Format = mDisplayFormat;
+		dxm.RefreshRate.Numerator = 0;
+		mSwapChain->ResizeTarget(&dxm);
 	}
 }
 void GDI::SetFillMode(bool isSold)
@@ -490,8 +517,9 @@ void GDI::SetRenderTargetView()
 	mDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
 }
 
-bool GDI::SetDisplayMode(DisplayMode dm,int left, int top, int cx, int cy, bool move)
+bool GDI::SetDisplayMode(DisplayMode dm, int left, int top, int cx, int cy, bool move, bool isClientSize)
 {
+	mLastMode = mDisplayMode;
 	mDisplayMode = dm;
 	if (dm == DisplayMode::Windowed)
 	{
@@ -502,9 +530,14 @@ bool GDI::SetDisplayMode(DisplayMode dm,int left, int top, int cx, int cy, bool 
 			newtype |= (WS_CAPTION | WS_SYSMENU | WS_SIZEBOX);
 			::SetWindowLong(mHwnd, GWL_STYLE, newtype);
 		}
+		
 		RECT rect = { 0,0,cx,cy };
-		AdjustWindowRect(&rect, newtype, FALSE);
-		SetWindowPos(mHwnd, NULL, left, top, rect.right - rect.left, rect.bottom - rect.top, !move ? SWP_NOMOVE | SWP_NOZORDER : SWP_NOZORDER);
+		if (!isClientSize)
+		{
+			AdjustWindowRect(&rect, newtype, FALSE);
+		}
+		SetWindowPos(mHwnd, NULL, left, top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOACTIVATE |( !move ? SWP_NOMOVE | SWP_NOZORDER : SWP_NOZORDER));
+		ResizeTarget(rect.right - rect.left, rect.bottom - rect.top);
 		return true;
 	}
 	else if(dm == DisplayMode::Borderless)
@@ -517,8 +550,12 @@ bool GDI::SetDisplayMode(DisplayMode dm,int left, int top, int cx, int cy, bool 
 			::SetWindowLong(mHwnd, GWL_STYLE, newtype);
 		}
 		RECT rect = { 0,0,cx,cy };
-		AdjustWindowRect(&rect, newtype, FALSE);
-		SetWindowPos(mHwnd, 0, left, top, rect.right - rect.left, rect.bottom - rect.top, !move ? SWP_NOMOVE | SWP_NOZORDER : SWP_NOZORDER);
+		if (!isClientSize)
+		{
+			AdjustWindowRect(&rect, newtype, FALSE);
+		}
+		SetWindowPos(mHwnd, 0, left, top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOACTIVATE | (!move ? SWP_NOMOVE | SWP_NOZORDER : SWP_NOZORDER));
+		ResizeTarget(rect.right - rect.left, rect.bottom - rect.top);
 		return true;
 	}
 	else
@@ -532,6 +569,8 @@ bool GDI::SetDisplayMode(DisplayMode dm,int left, int top, int cx, int cy, bool 
 				&& k->Format == mDisplayFormat && k->ScanlineOrdering == DXGI_MODE_SCANLINE_ORDER_PROGRESSIVE && k->Scaling == 0
 				&& k->RefreshRate.Numerator / k->RefreshRate.Denominator > 40)
 			{
+				mFullScreenSize.cx = cx;
+				mFullScreenSize.cy = cy;
 				SetFullScreen(true, i);
 				return true;
 			}
@@ -541,6 +580,27 @@ bool GDI::SetDisplayMode(DisplayMode dm,int left, int top, int cx, int cy, bool 
 	return true;
 }
 
+
+void GDI::CheckFullScreenForce(bool isforce)
+{
+	BOOL bl;
+	mSwapChain->GetFullscreenState(&bl, NULL);
+	if (isforce)
+	{
+		if (bl == FALSE && mDisplayMode == FullScreen)
+		{
+			SetDisplayMode(FullScreen, 0, 0, mFullScreenSize.cx, mFullScreenSize.cy, true);
+		}
+	}
+	else
+	{
+		if (mDisplayMode == FullScreen)
+		{
+			SetDisplayMode(mLastMode, mLastWinRc.left, mLastWinRc.top,mLastWinRc.right, mLastWinRc.bottom, true, true);
+			mDisplayMode = FullScreen;
+		}
+	}
+}
 
 void GDI::OpenDefaultBlendState()
 {
@@ -552,6 +612,23 @@ void GDI::CloseBlendState()
 {
 	float factor[4] = { 0.f,0.f,0.f,0.f };
 	mDeviceContext->OMSetBlendState(mDisableBlendState, factor, 0xffffffff);
+}
+
+inline void GDI::SetRenderTarget(int start, int num)
+{
+	D3D11_VIEWPORT vp[20];
+	for (int i = 0; i < num > 20 ? 20 : num; i++)
+	{
+		const R_Rect * rc = mRenderTarget.Get(i)->GetRect();
+		vp[i].MaxDepth = 1.f;
+		vp[i].MinDepth = 0.f;
+		vp[i].TopLeftX = rc->left;
+		vp[i].TopLeftY = rc->top;
+		vp[i].Height = static_cast<FLOAT>(rc->height);
+		vp[i].Width = static_cast<FLOAT>(rc->width);
+	}
+	mDeviceContext->RSSetViewports(num, vp);
+
 }
 
 void GDI::SetDefaultSamplerState()

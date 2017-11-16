@@ -181,7 +181,7 @@ void InputManager::SetMouseMode(MouseMode mm)
 	case Center:
 		mCursor.Hide();
 		dinput.SetMoveable(false);
-		dinput.SetPosition(Batch::GetClientWidthD2(), Batch::GetClientHeightD2());
+		dinput.SetPosition(Batch::GetClientWidth() / 2, Batch::GetClientHeight() / 2);
 		dinput.SetRelativeMode(true);
 		PostMessage(mHwnd, WM_X_SHOWORHIDECURSOR, TRUE, 0);
 		break;

@@ -90,6 +90,7 @@ void XGFramework::_OnDestory()
 
 void XGFramework::_OnActivate(bool isActivate)
 {
+	mGDI->CheckFullScreenForce(isActivate);
 	mInputManager.OnActivate(isActivate);
 	if (mScene != nullptr)
 		mScene->OnActivate(isActivate);

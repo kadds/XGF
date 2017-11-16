@@ -42,6 +42,13 @@ void Asyn::PostEvent(UINT msg, int data1, int data2)
 	msgQueue.InsertMsg(ev);
 }
 
+void Asyn::PostWithoutRepeat(UINT msg, int data1, int data2)
+{
+	Event& ev = EventPool::CreateAEvent(msg,data1,data2);
+	msgQueue.InsertMsgWithoutRepeat(ev);
+}
+
+
 
 void Asyn::Wait()
 {

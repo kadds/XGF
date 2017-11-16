@@ -47,16 +47,6 @@ void FirstScene::OnCreate()
 	mLxb.AddOnClickListener([=](const MousePoint& mp, int p) {
 		SecondScene * sc = new SecondScene();
 		SwitchScene(sc);
-		DXGI_MODE_DESC * dc;
-		int count = this->GetFramework()->GetGDI()->GetFullScreenDisplayModes(&dc);
-		int i;
-		for (i = 0; i < count; i++)
-		{
-			if (dc[i].Width == 800 && dc[i].Height == 600)
-				break;
-		}
-		//this->GetFramework()->GetGDI()->SetFullScreenDisplayMode(i);
-		//this->GetFramework()->GetGDI()->SetFullScreen(true);
 	});
 	mLb.SetMouseDowmListener([=](const MousePoint& mp, int p) {
 		mLb.StartAction();

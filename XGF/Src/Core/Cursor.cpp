@@ -1,7 +1,7 @@
 #include "..\..\Include\Cursor.hpp"
 #include "..\..\Include\ConstantData.hpp"
 
-Cursor::Cursor() :mPtBinder(4), mIsShow(false), mUsedStaticTexture(false),mAnimation(0), mPointDeviation(0.f,0.f), mPassTime(0.f)
+Cursor::Cursor() :mPtBinder(4), mIsShow(false), mUsedStaticTexture(true),mAnimation(0), mPointDeviation(0.f,0.f), mPassTime(0.f)
 {
 }
 

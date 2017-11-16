@@ -22,6 +22,7 @@ public:
 	void PostEvent(UINT msg, int data1, int data2, void * address);
 	void PostExitEvent();
 	void PostEvent(UINT msg, int data1, int data2);
+	void PostWithoutRepeat(UINT msg, int data1, int data2);
 	void Wait();
 	void Notify();
 	void DoAsyn(std::function<void(Asyn * asyn)> fun);

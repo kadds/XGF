@@ -57,30 +57,16 @@ public:
 	//恢复RenderTargetView
 	void SetRenderTargetView();
 
-
-	bool SetDisplayMode(DisplayMode dm, int left, int top, int cx, int cy, bool move);
+	bool IsFullScreen() { return mDisplayMode == FullScreen; }
+	bool SetDisplayMode(DisplayMode dm, int left, int top, int cx, int cy, bool move, bool isClientSize = false);
 	DisplayMode GetDisplayMode() { return  mDisplayMode; };
 	//获取displaymode list
 	//返回值：mode数目
 	int GetFullScreenDisplayModes(DXGI_MODE_DESC ** c) { *c = mScreenMode[0].second; return mScreenMode[0].first; }
+	void CheckFullScreenForce(bool isforce);
 	void OpenDefaultBlendState();
 	void CloseBlendState();
-	void SetRenderTarget(int start, int num) 
-	{ 
-		D3D11_VIEWPORT vp[20];
-		for (int i = 0; i < num > 20 ? 20: num ; i++)
-		{
-			const R_Rect * rc = mRenderTarget.Get(i)->GetRect();
-			vp[i].MaxDepth = 1.f;
-			vp[i].MinDepth = 0.f;
-			vp[i].TopLeftX = rc->left;
-			vp[i].TopLeftY = rc->top;
-			vp[i].Height = static_cast<FLOAT>(rc->height);
-			vp[i].Width = static_cast<FLOAT>(rc->width);
-		}
-		mDeviceContext->RSSetViewports(num, vp);
-
-	};
+	void SetRenderTarget(int start, int num);;
 	void SetDefaultSamplerState();
 	void CloseSamplerState();
 	void AddRenderTarget(RenderTarget* rt) { mRenderTarget.Add(rt);mIsFullRenderTarget = false; }
@@ -124,6 +110,10 @@ protected:
 	RenderTargetList mRenderTarget;
 	bool mIsFullRenderTarget;
 	DXGI_FORMAT mDisplayFormat;
+	RECT mLastWinRc;
+	DisplayMode mLastMode;
+
+	SIZE mFullScreenSize;
 	//DXGI_ADAPTER_DESC * mAdapters;
 private:
 #ifdef _DEBUG

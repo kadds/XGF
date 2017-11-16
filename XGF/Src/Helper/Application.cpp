@@ -14,13 +14,13 @@ Application::~Application()
 {
 }
 
-int Application::CreateWindowsAndRunApplication(XGFramework &framework, GDI &gdi, HINSTANCE hInstance, const wchar_t * title, const wchar_t * className, int ICON, int sICON, POINT pos, SIZE size, Scene * firstScene)
+int Application::CreateWindowsAndRunApplication(XGFramework &framework, GDI &gdi, HINSTANCE hInstance, const wchar_t * title, const wchar_t * className, int ICON, int sICON, POINT pos, SIZE size, bool CanChangeSize, Scene * firstScene)
 {
 	mInstance = hInstance;
 	mFramework = &framework;
 	EventPool::Initialize(100);
 	RegisterWindowsClass(hInstance, className, ICON, sICON);
-	HWND hWnd = CreateWindowW(className, title, WS_OVERLAPPEDWINDOW,
+	HWND hWnd = CreateWindowW(className, title, !CanChangeSize ? WS_OVERLAPPEDWINDOW &~ WS_THICKFRAME & ~WS_MAXIMIZEBOX : WS_OVERLAPPEDWINDOW,
 		pos.x, pos.y, size.cx, size.cy, nullptr, nullptr, hInstance, this);
 	DebugOut("CreateWindowsEnd\n");
 	mHwnd = hWnd;
@@ -139,7 +139,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		app = WndAppMap.find(hWnd)->second;
 		if ( app != nullptr)
 		{
-			app->GetRenderThread()->PostEvent(EVENT_ONACTIVATE, wParam == FALSE ? 0 : 1, 0);
+			
+			app->GetRenderThread()->PostEvent(EVENT_ONACTIVATE, LOWORD(wParam) == 0 ? 0 : 1, 0);
 		}
 		break;
 	case WM_SIZE:
@@ -147,10 +148,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		app = WndAppMap.find(hWnd)->second;
 		RECT rc;
 		GetClientRect(hWnd, &rc);
-		if ( app != nullptr)
+		if ( app != nullptr && SIZE_MINIMIZED != wParam && SIZE_MAXHIDE != wParam)
 		{
 			DebugOut("WM_SIZE IN\n");
-			app->GetRenderThread()->PostEvent(EVENT_ONSIZE, rc.right - rc.left, rc.bottom - rc.top);
+			app->GetRenderThread()->PostWithoutRepeat(EVENT_ONSIZE, rc.right - rc.left, rc.bottom - rc.top);
 		}
 	}
 	break;

@@ -28,5 +28,7 @@ private:
 	Shape::Rectangle mRc;
 
 	Texture mTexture;
+
+	float mTime;
 };
 
