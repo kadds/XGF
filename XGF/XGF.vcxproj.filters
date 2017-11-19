@@ -183,9 +183,6 @@
     <ClInclude Include="Include\EditText.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Include\TextRenderInterface.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Cube.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -304,9 +301,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\TextLayoutShaper.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\RenderTarget.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

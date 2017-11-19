@@ -14,7 +14,7 @@ public:
 	Scene();
 	virtual ~Scene();
     virtual void UpdataLayer(float dt);
-	virtual void RenderLayer(Batches & bts);
+	virtual void RenderLayer(WVPMatrix & wvp);
 
 	virtual void Render(float deltaTime) = 0;
 	virtual void Updata(float deltaTime) = 0;

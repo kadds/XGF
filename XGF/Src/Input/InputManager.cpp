@@ -132,7 +132,7 @@ void InputManager::SetForce(TextInputInterface * tei)
 void InputManager::UpdateCameraMatrix(int x, int y)
 {
 	dinput.UpdateSize(x, y);
-	mCamera.UpdataSize(x, y);
+	mCamera.UpdataProject(x, y);
 	if (mMouseMode == CustomCenter)
 	{
 		mCursor.SetPosition(x / 2.f, y / 2.f);

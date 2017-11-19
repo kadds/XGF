@@ -38,7 +38,7 @@ void Actor::_Updata(float deltaTime)
 {
 	mActions.Updata(deltaTime);
 }
-void Actor::_Render(const Batches & bs)
+void Actor::_Render(Batches & bs)
 {
     DirectX::XMMATRIX matrix;
     RefreshMatrix();

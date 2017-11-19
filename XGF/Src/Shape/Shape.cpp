@@ -41,7 +41,6 @@ void Shape::Render(Batch & batch, const XMMATRIX * matirix, const BindingBridge 
 	}
 	else
 		mPolygon.CopyTo(ppe);
-	ppe.Transform(Batch::GetClientWidthD2(), Batch::GetClientHeightD2());
 	batch.DrawPolygon(ppe, GetIndex(), bbrige);
 }
 void Shape::Render(Batch & batch, const XMMATRIX * matirix, const BindingBridge & bbrige)
@@ -53,7 +52,6 @@ void Shape::Render(Batch & batch, const XMMATRIX * matirix, const BindingBridge 
 	}
 	else
 		mPolygon.CopyTo(ppe);
-	ppe.Transform(Batch::GetClientWidthD2(), Batch::GetClientHeightD2());
 	batch.DrawPolygon(ppe, GetIndex(), bbrige);
 }
 float triangleArea(Point a, Point b, Point c)

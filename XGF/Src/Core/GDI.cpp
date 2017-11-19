@@ -5,7 +5,6 @@
 void GDI::Create()
 {
 	mDisplayMode = Windowed;
-	mIsFullRenderTarget = true;
 	mDisplayFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	D3D_FEATURE_LEVEL featureLevels[] = {
 		D3D_FEATURE_LEVEL_11_1,
@@ -316,13 +315,26 @@ void GDI::ClearDepthStencilBuffer()
 
 void GDI::Present(bool isVsync)
 {
-	HRESULT  hr = mSwapChain->Present(isVsync,0);
-	if (hr == DXGI_STATUS_OCCLUDED)
+	if (!mIsStandby)
 	{
-		DebugOut("ERROR IN Prensent");
-		ShowWindow(mHwnd, SW_MINIMIZE);
-		CheckFullScreenForce(false);
+		HRESULT  hr = mSwapChain->Present(isVsync, 0);
+		if (hr == DXGI_STATUS_OCCLUDED)
+		{
+			mIsStandby = true;
+			DebugOut("ERROR IN Prensent\n");
+			ShowWindow(mHwnd, SW_MINIMIZE);
+			CheckFullScreenForce(false);
+		}
 	}
+	else
+	{
+		HRESULT  hr = mSwapChain->Present(isVsync, DXGI_PRESENT_TEST);
+		if (hr == S_OK)
+		{
+			mIsStandby = false;
+		}
+	}
+	
 }
 
 void GDI::Initialize(HINSTANCE instance, HWND WndHwnd, HWND TopHwnd, UINT ClientWidth, UINT ClientHeight)
@@ -408,22 +420,14 @@ void GDI::SizeChanged(UINT ClientWidth, UINT ClientHeight)
 	mDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
 
 	SetFillMode(mIsOpenFillSold);
-	if(!mIsFullRenderTarget)
-		while (mRenderTarget.HasNext())
-		{
-			mRenderTarget.Next()->OnSize(static_cast<float>(ClientWidth), static_cast<float>(ClientHeight));
-		}
-	else
-	{
-		D3D11_VIEWPORT vp;
-		vp.MinDepth = 0.f;
-		vp.MaxDepth = 1.f;
-		vp.TopLeftX = 0.f;
-		vp.TopLeftY = 0.f;
-		vp.Height = static_cast<FLOAT>(ClientHeight);
-		vp.Width = static_cast<FLOAT>(ClientWidth);
-		mDeviceContext->RSSetViewports(1, &vp);
-	}
+	D3D11_VIEWPORT vp;
+	vp.MinDepth = 0.f;
+	vp.MaxDepth = 1.f;
+	vp.TopLeftX = 0.f;
+	vp.TopLeftY = 0.f;
+	vp.Height = static_cast<FLOAT>(ClientHeight);
+	vp.Width = static_cast<FLOAT>(ClientWidth);
+	mDeviceContext->RSSetViewports(1, &vp);
 	
 	mWidth = ClientWidth;
 	mHeight = ClientHeight;
@@ -614,22 +618,6 @@ void GDI::CloseBlendState()
 	mDeviceContext->OMSetBlendState(mDisableBlendState, factor, 0xffffffff);
 }
 
-inline void GDI::SetRenderTarget(int start, int num)
-{
-	D3D11_VIEWPORT vp[20];
-	for (int i = 0; i < num > 20 ? 20 : num; i++)
-	{
-		const R_Rect * rc = mRenderTarget.Get(i)->GetRect();
-		vp[i].MaxDepth = 1.f;
-		vp[i].MinDepth = 0.f;
-		vp[i].TopLeftX = rc->left;
-		vp[i].TopLeftY = rc->top;
-		vp[i].Height = static_cast<FLOAT>(rc->height);
-		vp[i].Width = static_cast<FLOAT>(rc->width);
-	}
-	mDeviceContext->RSSetViewports(num, vp);
-
-}
 
 void GDI::SetDefaultSamplerState()
 {

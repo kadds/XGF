@@ -25,7 +25,7 @@ void Button::OnMouseMove(const MousePoint & mp, int cp, bool isIn)
     Actor::OnMouseMove(mp, cp,isIn);
     SetTextureState();
 }
-void Button::Render(const XMMATRIX * matrix, const Batches & batches)
+void Button::Render(const XMMATRIX * matrix, Batches & batches)
 {
 	if (mxTexture == nullptr)
 		mxTexture = mNormalTexture;
@@ -33,7 +33,7 @@ void Button::Render(const XMMATRIX * matrix, const Batches & batches)
 	BindingBridge bbrige;
 	textureBinder.FromTexture(mxTexture);
 	bbrige.AddBinder(textureBinder);
-    Rectangle::Render(*batches.at(BATCHES_BATCH_PT), matrix, bbrige,*mxTexture);
+    Shape::Render(*batches.GetBatch(BATCHES_BATCH_DEFAULT_PT), matrix, bbrige,*mxTexture);
 }
 
 void Button::SetTextureState()

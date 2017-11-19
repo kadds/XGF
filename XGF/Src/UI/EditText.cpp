@@ -3,6 +3,7 @@
 #include "..\..\Include\Scene.hpp"
 #include "..\..\Include\XGFramework.hpp"
 #include "..\..\Include\Batch.hpp"
+#include "../../Include/UIBatches.hpp"
 EditText::EditText():mTextColor(Color(0.f,0.f,0.f,1.f)),mBoderColor(0.5f,0.7f,0.7f,1.0f),mInerBoderColor(0.5f,0.6f,0.6f,1.0f),mbkColor(0.2f,0.2f,0.5f,0.2f)
 {
 	SetMouseEventable(true);
@@ -13,8 +14,9 @@ EditText::~EditText()
 	mLayer->GetParent()->GetFramework()->GetInputManager()->ClearForce(this);
 }
 
-void EditText::Render(const XMMATRIX * matrix, const Batches & batches)
+void EditText::Render(const XMMATRIX * matrix, Batches & batches)
 {
+	mTextRenderer = ((UIBatches &) batches).GetTextRenderer(BATCHES_TEXTRENDERER_DEFAULT_SIZE);
 	auto input = mLayer->GetParent()->GetFramework()->GetInputManager();
 	BindingBridge bbr;
 	int layer[3];
@@ -25,16 +27,18 @@ void EditText::Render(const XMMATRIX * matrix, const Batches & batches)
 	bbr.AddBinder(cb);
 	if(input->IsForce(this))
 	{
-		Shape::Render(*batches.at(BATCHES_BATCH_PC), matrix, bbr);
+		Shape::Render(*batches.GetBatch(BATCHES_BATCH_DEFAULT_PC), matrix, bbr);
 		::Shape::Rectangle rc;
 		GetInerBorderRectangle(rc);
+		rc.SetZ(mPolygon.mPoint[0].z - 0.0001f);
 		RenderText(matrix, rc, mTextColor);
 	}
 	else
 	{
-		Shape::Render(*batches.at(BATCHES_BATCH_PC), matrix, bbr);
+		Shape::Render(*batches.GetBatch(BATCHES_BATCH_DEFAULT_PC), matrix, bbr);
 		::Shape::Rectangle rc;
 		GetInerBorderRectangle(rc);
+		rc.SetZ(mPolygon.mPoint[0].z - 0.0001f);
 		RenderText(matrix, rc, mTextColor);
 	}
 	

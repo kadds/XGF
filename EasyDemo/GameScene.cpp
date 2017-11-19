@@ -13,13 +13,14 @@ GameScene::~GameScene()
 
 void GameScene::MyRender(WVPMatrix & wvp, bool end)
 {
-	mShapeRenderer.DrawCircle(240, 240, 40, GetPrecision(40, 5), Color(1.f, 1.f, 0.f, 1.f), Color(0.f, 1.f, 0.f, 1.f));
+	mFramework->ClearDepthStencilBuffer();
+	mShapeRenderer.DrawCircle(240, 240, 40, GetPrecision(40, 5), 0.f, Color(1.f, 1.f, 0.f, 1.f), Color(0.f, 1.f, 0.f, 1.f));
 	mTextRenderer.DrawString(L"Circle", 200, 180);
-	mShapeRenderer.DrawRectangleB(50, 50, 100, 100, Color(1.f, 0.f, 0.f, 1.f), 8.f, Color(0.f, 0.f, 1.f, 1.f), Color(0.f, 1.f, 0.f, 1.f));
+	mShapeRenderer.DrawRectangleB(50, 50, 100, 100, 0.1f, Color(1.f, 0.f, 0.0f, 1.f), 8.f, Color(0.f, 0.f, 1.f, 1.f), Color(0.f, 1.f, 0.f, 1.f));
 	mTextRenderer.DrawString(L"RectangleB", 50, 100);
-	mShapeRenderer.DrawRectangle(250, 50, 100, 100, Color(0.f, 0.2f, 0.7f, 1.f));
+	mShapeRenderer.DrawRectangle(250, 50, 100, 100, 0.1f, Color(0.f, 0.2f, 0.7f, 1.f));
 	mTextRenderer.DrawString(L"Rectangle", 280, 100);
-	mShapeRenderer.DrawLine(160, 0, 160, 180, Color(1.f, 1.f, 1.f, 1.f));
+	mShapeRenderer.DrawLine(160, 0, 160, 180, 0.f, Color(1.f, 1.f, 1.f, 1.f));
 	mTextRenderer.DrawString(L"Line", 140, 188);
 	mTextRenderer.DrawString(L"A RenderToTexture(RTT) Demo", 125, 35);
 	if (!end)
@@ -62,7 +63,6 @@ void GameScene::Render(float deltaTime)
 	Clear(Color(0.5f, 0.5f, 0.5f, 0.0f));
 	WVPMatrix wvp;
 	mCamera.GetCameraMatrix(wvp);
-	//mGDI->Clear(Color(0.2f, 0.2f, 0.2f, 1.f));
 	mShapeRenderer.Begin(wvp);
 	mTextRenderer.Begin(wvp);
 	//RTT start
@@ -123,7 +123,7 @@ void GameScene::Updata(float deltaTime)
 
 void GameScene::OnSize(int ClientX, int ClientY)
 {
-	mCamera.UpdataSize(ClientX, ClientY);
+	mCamera.UpdataProject(ClientX, ClientY);
 	mRenderToTexture.Shutdown();
 	mRenderToTexture.Initialize(mFramework->GetGDI(), mFramework->GetGDI()->GetWidth(), mFramework->GetGDI()->GetHeight());
 	mRc.SetPositionAndSize(0, ClientY * 2 / 3, ClientX / 3, ClientY / 3);

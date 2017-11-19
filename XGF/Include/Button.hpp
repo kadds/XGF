@@ -16,7 +16,7 @@ public:
 	virtual void OnMouseDowm(const MousePoint & mp, int c, bool isIn) override;
 	virtual void OnMouseUp(const MousePoint & mp, int c, bool isIn) override;
 	virtual void OnMouseMove(const MousePoint & mp, int cp, bool isIn) override;
-	virtual void Render(const XMMATRIX * matrix, const Batches & batches) override;
+	virtual void Render(const XMMATRIX * matrix, Batches & batches) override;
 	
 protected:
 	Texture* mxTexture;

@@ -17,9 +17,5 @@ void Camera::GetCameraMatrix(WVPMatrix & wvp, const DirectX::XMFLOAT4X4 * pro)
 		wvp.projMatrix = DirectX::XMLoadFloat4x4(pro) * DirectX::XMLoadFloat4x4(&proMatrix);
 	else
 		wvp.projMatrix = DirectX::XMLoadFloat4x4(&proMatrix);
-}
-
-void Camera::UpdataSize(int width, int height)
-{
-	
+	wvp.Transpose();
 }

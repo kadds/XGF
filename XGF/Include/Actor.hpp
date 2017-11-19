@@ -26,11 +26,11 @@ public:
 	Actor();
 	virtual ~Actor();
 	//框架调用
-    void _Render(const Batches & bs);
+    void _Render(Batches & bs);
 	//框架调用
     void _Updata(float deltaTime);
 
-	virtual void Render(const XMMATRIX * matrix, const Batches & batches) = 0;
+	virtual void Render(const XMMATRIX * matrix, Batches & batches) = 0;
 	
 	//框架调用
 	//亦可用户调用

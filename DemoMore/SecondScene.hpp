@@ -23,12 +23,11 @@ private:
 	GridRenderer mGridRender;
 	Font mFont;
 	TextRenderer mTextRenderer;
+	TextRenderer mUITextRenderer;
 	Animation mAnimation;
 	Texture mCursorTexture;
 	AxisRenderer mAxisRenderer;
 
-	Batches mBatches;
-	UIBatches mUIBatches;
 
 	OrthoCamera mCamera;
 	PerspectiveCamera mCamera3D;

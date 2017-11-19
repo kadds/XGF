@@ -25,7 +25,6 @@ void Rectangle::SetPositionAndSize(float x, float y, float width, float height)
     shapePos[0].y = shapePos[3].y = y;
     shapePos[2].x = shapePos[3].x = x + width;
     shapePos[1].y = shapePos[2].y = y + height;
-	shapePos[0].z = shapePos[1].z = shapePos[2].z = shapePos[3].z = 0.01f;
 }
 
 
@@ -51,7 +50,10 @@ bool Rectangle::SubRectangle(Rectangle * pol, float x, float y, float width, flo
 
     pol->mPolygon.mPoint[0].y = pol->mPolygon.mPoint[3].y = mPolygon.mPoint[0].y + y;
     pol->mPolygon.mPoint[2].y = pol->mPolygon.mPoint[1].y = mPolygon.mPoint[0].y + y + height;
-    pol->mPolygon.mPoint[3].z = pol->mPolygon.mPoint[2].z = pol->mPolygon.mPoint[1].z = pol->mPolygon.mPoint[0].z = 0.0f;
+	pol->mPolygon.mPoint[3].z = mPolygon.mPoint[3].z;
+	pol->mPolygon.mPoint[0].z = mPolygon.mPoint[0].z;
+	pol->mPolygon.mPoint[2].z = mPolygon.mPoint[2].z;
+	pol->mPolygon.mPoint[1].z = mPolygon.mPoint[1].z;
     return pol->mPolygon.mPoint[2].y <= mPolygon.mPoint[2].y && pol->mPolygon.mPoint[2].x <= mPolygon.mPoint[2].x;
 }
 void Rectangle::SetPosition(const Point & p)
@@ -61,6 +63,7 @@ void Rectangle::SetPosition(const Point & p)
 	shapePos[1].y = shapePos[2].y += p.y - shapePos[0].y;
 	shapePos[0].x = shapePos[1].x = p.x;
 	shapePos[0].y = shapePos[3].y = p.y;
+	shapePos[0].z = shapePos[1].z = shapePos[2].z = shapePos[3].z = p.z;
 }
 
 void Rectangle::GetPosition(Point & p) const

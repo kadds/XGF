@@ -1,4 +1,5 @@
 #include "../../Include/Batches.hpp"
 
-const char BATCHES_BATCH_PT[] = "SYS_BATCH_PT";
-const char BATCHES_BATCH_PC[] = "SYS_BATCH_PC";
+
+const int BATCHES_BATCH_DEFAULT_PT = -1;
+const int BATCHES_BATCH_DEFAULT_PC = - 2;

@@ -8,7 +8,6 @@
 #include <vector> 
 #include "RenderToTexture.hpp"
 #include <stack>
-#include "RenderTarget.hpp"
 enum DisplayMode
 {
 	Windowed,
@@ -40,7 +39,7 @@ public:
 	void SizeChanged(UINT ClientWidth, UINT ClientHeight);
 
 	void ResizeTarget(UINT x, UINT y);
-
+	//float GetTargetWidthD2() {return }
 	void SetFullScreen(bool isFullscreen, int pos);
 
 	ID3D11Device * GetDevice() { return mD3dDevice; }
@@ -66,10 +65,8 @@ public:
 	void CheckFullScreenForce(bool isforce);
 	void OpenDefaultBlendState();
 	void CloseBlendState();
-	void SetRenderTarget(int start, int num);;
 	void SetDefaultSamplerState();
 	void CloseSamplerState();
-	void AddRenderTarget(RenderTarget* rt) { mRenderTarget.Add(rt);mIsFullRenderTarget = false; }
 protected:
 	ID3D11Device        *mD3dDevice;
 	ID3D11DeviceContext *mDeviceContext;
@@ -92,6 +89,7 @@ protected:
 	ID3D11RasterizerState * mFrameRasterState;
 	bool mIsOpenFillSold = true;
 	bool mIsOpenZBuffer = true;
+	bool mIsStandby = false;
 	//ÏÔÊ¾µÄ´°¿Ú¾ä±ú
 	HWND mHwnd;
 	//¶¥¼¶´°¿Ú¾ä±ú
@@ -107,8 +105,6 @@ protected:
 	std::vector<IDXGIOutput *> mOutputs;
 	std::vector<IDXGIAdapter *> mAdapters;
 	void SaveDisplayMode(int c, IDXGIOutput * pDXGIOutput);
-	RenderTargetList mRenderTarget;
-	bool mIsFullRenderTarget;
 	DXGI_FORMAT mDisplayFormat;
 	RECT mLastWinRc;
 	DisplayMode mLastMode;

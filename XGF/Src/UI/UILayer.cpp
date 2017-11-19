@@ -5,6 +5,7 @@
 #include "../../Include/Scene.hpp"
 #include "../../Include/XGFramework.hpp"
 #include "../../Include/InputManager.hpp"
+#include "../../Include/UIBatches.hpp"
 UILayer::UILayer()
 {
 }
@@ -16,19 +17,21 @@ UILayer::~UILayer()
 
 void UILayer::OnCreate()
 {
-
+	mBatches = (Batches *)new UIBatches();
+	mBatches->Initialize(mParent->GetFramework()->GetGDI());
 }
 
 void UILayer::OnDestory()
 {
-	
+	mBatches->Shutdown();
+	delete mBatches;
 }
 
-void UILayer::Render(Batches & bs)
+void UILayer::Render()
 {
     for each (auto var in mActors)
     {
-        (const_cast<Actor *>(var))->_Render(bs);
+        (const_cast<Actor *>(var))->_Render(*mBatches);
     }
 }
 

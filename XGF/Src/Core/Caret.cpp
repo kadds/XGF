@@ -54,7 +54,6 @@ void Caret::SetPosition(float x, float y)
 {
 	mLine.SetPosition(Point(x, y, 0.0f));
 	mLine.SetEndPosition(Point(x, y + mHeight, 0.f));
-	mLine.mPolygon.Transform(Batch::GetClientWidthD2(), Batch::GetClientHeightD2());
 }
 
 void Caret::ResetTime()

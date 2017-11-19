@@ -23,7 +23,7 @@ void TextRenderer::Initialize(GDI * gdi, Font * font, int MaxCount)
 	mFont = font;
     mBatch.Initialize(gdi, ConstantData::GetInstance().GetFontShader(), MaxCount * 4, MaxCount * 6, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	mBatch.SetBlend(true);
-	mBatch.SetZBufferRender(false);
+	mBatch.SetZBufferRender(true);
 	bbridge.AddBinder(colorBinder);
 	bbridge.AddBinder(textureBinder);
 }
@@ -35,17 +35,19 @@ void TextRenderer::Shutdown()
         delete[] mTemporarybuffer;
 }
 
-void TextRenderer::DrawString(const wchar_t * str, float x, float y)
+void TextRenderer::DrawString(const wchar_t * str, float x, float y, float z)
 {
     Shape::Rectangle rc;
     rc.SetPositionAndSize(x, y, 100000.f, 100000.f);
+	rc.SetZ(z);
     DrawString(str, Color(1.0f,1.0f,1.0f,1.0f),&rc, nullptr);
 }
 
-void TextRenderer::DrawString(const wchar_t * str, Color color, float x, float y)
+void TextRenderer::DrawString(const wchar_t * str, Color color, float x, float y, float z)
 {
     Shape::Rectangle rc;
     rc.SetPositionAndSize(static_cast<float>(x), static_cast<float>(y), 1000.0f, 1000.0f);
+	rc.SetZ(z);
     DrawString(str, color, &rc, nullptr);
 }
 
@@ -113,7 +115,6 @@ bool TextRenderer::AddCharToBatch(int i, wchar_t ch, Shape::Rectangle * rc, cons
 {
 	if (matrix != nullptr)
 		rc->mPolygon.Mul(*matrix);
-	rc->mPolygon.Transform(Batch::GetClientWidthD2(), Batch::GetClientHeightD2());
 	textureBinder.SetPosition(ps->metrics.left, ps->metrics.right, ps->metrics.top, ps->metrics.bottom);
 	mBatch.DrawPolygon(rc->mPolygon, rc->GetIndex(), bbridge);
 	return false;

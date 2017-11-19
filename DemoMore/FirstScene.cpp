@@ -13,7 +13,6 @@ FirstScene::~FirstScene()
 
 void FirstScene::OnCreate()
 {
-	mUIBatches.Initialize(mFramework->GetGDI(), mBatches);
 	wchar_t buffer[MAX_PATH];
 	char cbuffer[MAX_PATH];
 	Tools::GetInstance()->GetFontPath("Dengb.ttf", cbuffer, MAX_PATH);
@@ -26,20 +25,19 @@ void FirstScene::OnCreate()
 
 	mFont.Initialize(mFramework->GetGDI(), cbuffer, 16);
     mFont_s.Initialize(mFramework->GetGDI(), cbuffer, 12);
-	mFont_b.Initialize(mFramework->GetGDI(), cbuffer, 24);
-	mTextRenderer.Initialize(mFramework->GetGDI(), &mFont, 1000);
+	mFont_b.Initialize(mFramework->GetGDI(), cbuffer, 20);
+	mUITextRenderer.Initialize(mFramework->GetGDI(), &mFont, 1000);
     mTextRenderer_s.Initialize(mFramework->GetGDI(), &mFont_s, 1000);
-	mTextRenderer_b.Initialize(mFramework->GetGDI(), &mFont_b, 1000);
+	mTextRenderer_b.Initialize(mFramework->GetGDI(), &mFont_b, 200);
 	mFramework->AddInputListener(&mUILayer);
 	mFramework->AddInputListener(this);
 	AddLayer(&mUILayer);
 
-	mLb.SetTextRenderer(&mTextRenderer_b);
 	mLb.SetText(L"Direct3D11");
     mLb.SetPositionAndSize(50, 200, 150, 40);
 	mLb.SetMouseEventable(true);
+	mLb.SetZ(0.05f);
 
-	mLxb.SetTextRenderer(&mTextRenderer);
 	mLxb.SetText(L"X Game Render Framework\nClick here switch next scene.");
     mLxb.SetPositionAndSize(0, 240, 240, 40);
 	mLxb.SetMouseEventable(true);
@@ -48,6 +46,7 @@ void FirstScene::OnCreate()
 		SecondScene * sc = new SecondScene();
 		SwitchScene(sc);
 	});
+	mLxb.SetZ(0.06f);
 	mLb.SetMouseDowmListener([=](const MousePoint& mp, int p) {
 		mLb.StartAction();
 	});
@@ -57,15 +56,15 @@ void FirstScene::OnCreate()
 	.BeginBuild()
 		.ParallelActionTo()
 			.SequenceActionTo()
-				.MoveTo(180.f, 0.f, 0.f, 1.0f, AnticipateOvershootInterpolator::GetInterpolator(4))
+				.MoveTo(180.f, 0.f, 0.4f, 1.0f, AnticipateOvershootInterpolator::GetInterpolator(4))
 				.DelayActionTo(0.2f)
 				.RotateBy(0.f, 0.f, -DirectX::XM_PI * 2 , 1.0f, AnticipateOvershootInterpolator::GetInterpolator(2.5))
 				.DelayActionTo(0.2f)
-				.MoveTo(0.f, 180.f, 0.f, 1.4f, AnticipateOvershootInterpolator::GetInterpolator(4))
+				.MoveTo(0.f, 180.f, 0.4f, 1.4f, AnticipateOvershootInterpolator::GetInterpolator(4))
 				.DelayActionTo(0.2f)
 				.RotateBy(0.f, 0.f, -DirectX::XM_PI * 2, 1.0f, AnticipateOvershootInterpolator::GetInterpolator(2.5))
 				.DelayActionTo(0.2f)
-				.MoveTo(180.f, 180.f, 0.f, 1.4f, AnticipateOvershootInterpolator::GetInterpolator(4))
+				.MoveTo(180.f, 180.f, 0.4f, 1.4f, AnticipateOvershootInterpolator::GetInterpolator(4))
 				.DelayActionTo(0.2f)
 				.RotateBy(0.f, 0.f, -DirectX::XM_PI * 2, 1.0f, AnticipateOvershootInterpolator::GetInterpolator(2.5))
 				.BackUp()
@@ -89,7 +88,7 @@ void FirstScene::OnCreate()
 	ActionBuilder::Builder().BeginBuild()
 		.ParallelActionTo()
 			.RotateBy(0, 0, DirectX::XM_2PI, 3.f, AnticipateOvershootInterpolator::GetInterpolator(2.5))
-			.ScaleBy(0.1f,0.1f,0.1f,3.f, AnticipateOvershootInterpolator::GetInterpolator(2.5))
+			.ScaleBy(0.1f,0.1f,1.0f,3.f, AnticipateOvershootInterpolator::GetInterpolator(2.5))
 		.EndBuild(animbt);
 	mBt.SetAction(std::move(animbt));
 	mBt.SetTexture(&btNormal, &btMove, &btPress);
@@ -101,39 +100,38 @@ void FirstScene::OnCreate()
 			mFramework->GetGDI()->SetDisplayMode(Borderless ,0 ,0 , 1920, 1080, true);
 		else
 			mFramework->GetGDI()->SetDisplayMode(FullScreen, 0, 0, 1920, 1080, true);
-		AsyncTask::NewTask(mFramework->GetTheard(), [this](AsyncTask * asyn) {
+		//AsyncTask::NewTask(mFramework->GetTheard(), [this](AsyncTask * asyn) {
 			
 			//MessageBox(NULL, L"YOU CLICK BUTTOM!!",L"E",0);
-			asyn->Finish(0, 0);
-		});
+			//asyn->Finish(0, 0);
+		//});
 		
     });
+	mBt.SetZ(0.07f);
 	mEdit.SetPositionAndSize(300, 20, 200, 40);
 	mEdit.SetBorderSize(2);
-	mEdit.SetTextRenderer(&mTextRenderer);
+	mEdit.SetZ(0.08f);
 
-	mEdit2.SetPositionAndSize(100, 20, 200, 40);
+	mEdit2.SetPositionAndSize(140, 20, 120, 40);
 	mEdit2.SetBorderSize(2);
-	mEdit2.SetTextRenderer(&mTextRenderer);
+	mEdit2.SetZ(0.08f);
 
 	mUILayer.Add(&mEdit);
 	mUILayer.Add(&mEdit2);
 	mUILayer.Add(&mBt);
 	mUILayer.Add(&mLxb);
 	mUILayer.Add(&mLb);
-	
+	mUILayer.GetUIBatches()->SetTextRenderer(BATCHES_TEXTRENDERER_DEFAULT_SIZE, &mUITextRenderer);
 	mFramework->GetInputManager()->GetCursor()->SetStaticTexture(mFramework->GetGDI(), GetFilePath(L"cursor.png", buffer, 100));
-	//mFramework->GetInputManager()->ShowCursor();
-	//GetFramework()->GetGDI()->ResizeTarget(500, 400); 
 }
 
 void FirstScene::OnDestory()
 {
+	Scene::OnDestory();
 	mFramework->RemoveInputListener(this);
 	mFramework->RemoveInputListener(&mUILayer);
-	mUIBatches.Shutdown(mBatches);
     mTextRenderer_s.Shutdown();
-	mTextRenderer.Shutdown();
+	mUITextRenderer.Shutdown();
 	mTextRenderer_b.Shutdown();
 
 	mFont.Shutdown();
@@ -218,20 +216,16 @@ void FirstScene::Render(float deltaTime)
 	mBatch3D.DrawPolygon(mCube.mPolygon, mCube.mPolygonPleIndex, bbr);
 	mBatch3D.End();
 	
-	mUIBatches.Begin();
 
 	mTextRenderer_b.Begin(wvp2D);
-	mTextRenderer.Begin(wvp2D);
 	
 	UpdataLayer(deltaTime);
-	RenderLayer(mBatches);
+	RenderLayer(wvp2D);
 	str.clear();
 	str.str(L"");
 	str << std::fixed << std::setprecision(1) << L"FPS:" << debug->GetAverageFPS() << "\n" << L"FC:" << std::setprecision(4) << debug->GetFrameCost() << "ms";
-	mTextRenderer.DrawString(str.str().c_str(), Color(0.2f,0.2f,0.8f,1.0f),4, 4);
-	mTextRenderer.End();
+	mTextRenderer_b.DrawString(str.str().c_str(), Color(0.2f,0.2f,0.8f,1.0f),4, 4);
 	mTextRenderer_b.End();
-	mUIBatches.End();
 }
 
 void FirstScene::Updata(float deltaTime)
@@ -245,9 +239,8 @@ void FirstScene::Updata(float deltaTime)
 
 void FirstScene::OnSize(int ClientX, int ClientY)
 {
-	mCamera2D.UpdataSize(ClientX,ClientY);
-	mCamera.UpdataSize(ClientX, ClientY);
-	mUIBatches.OnSize(ClientX, ClientY);
+	mCamera2D.UpdataProject(ClientX, ClientY);
+	mCamera.UpdataProject(ClientX, ClientY);
 }
 
 void FirstScene::OnActivate(bool isActivate)

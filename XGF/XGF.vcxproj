@@ -201,7 +201,6 @@
     <ClInclude Include="Include\Polygon.hpp" />
     <ClInclude Include="Include\Rectangle.hpp" />
     <ClInclude Include="Include\RectangleB.hpp" />
-    <ClInclude Include="Include\RenderTarget.hpp" />
     <ClInclude Include="Include\RenderToTexture.hpp" />
     <ClInclude Include="Include\RepeatAction.hpp" />
     <ClInclude Include="Include\RotateToAction.hpp" />
@@ -217,7 +216,6 @@
     <ClInclude Include="Include\TextInputInterface.hpp" />
     <ClInclude Include="Include\TextLayoutShaper.hpp" />
     <ClInclude Include="Include\TextRenderer.hpp" />
-    <ClInclude Include="Include\TextRenderInterface.hpp" />
     <ClInclude Include="Include\Texture.hpp" />
     <ClInclude Include="Include\Timer.hpp" />
     <ClInclude Include="Include\Tools.hpp" />

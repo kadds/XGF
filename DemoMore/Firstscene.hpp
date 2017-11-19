@@ -29,7 +29,7 @@ private:
 	Shader mShader3D;
 	Shape::Cube mCube;
     Font mFont;
-    TextRenderer mTextRenderer;
+    TextRenderer mUITextRenderer;
     Font mFont_s;
     TextRenderer mTextRenderer_s;
 	Font mFont_b;
@@ -46,8 +46,6 @@ private:
 	Texture btMove;
 	
 
-	Batches mBatches;
-	UIBatches mUIBatches;
 
 public:
 };

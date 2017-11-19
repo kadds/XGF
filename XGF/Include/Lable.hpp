@@ -2,18 +2,17 @@
 #include "Defines.hpp"
 #include "Control.hpp"
 #include "Rectangle.hpp"
-#include "TextRenderInterface.hpp"
 /*
 * 控件：标签
 * 显示一段文本
 */
 class Lable :
-	public Control, public TextRenderInterface, public Shape::Rectangle
+	public Control, public Shape::Rectangle
 {
 public:
     Lable();
     ~Lable();
-    virtual void Render(const XMMATRIX * matrix, const Batches & bs) override;
+    virtual void Render(const XMMATRIX * matrix, Batches & bs) override;
     void SetText(wchar_t * text);
     void SetColor(Color color) { mColor = color; }
 protected:

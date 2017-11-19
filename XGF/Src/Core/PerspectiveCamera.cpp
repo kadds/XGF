@@ -15,11 +15,9 @@ PerspectiveCamera::~PerspectiveCamera()
 {
 }
 
-void PerspectiveCamera::UpdataSize(int width, int height)
+void PerspectiveCamera::UpdataProject(int cx, int cy)
 {
-	DirectX::XMStoreFloat4x4(&proMatrix, DirectX::XMMatrixPerspectiveFovLH(mFovAngle, static_cast<float>(width) / static_cast<float>(height), mMinDistance, mMaxDistance));
-	mLastHeight = height;
-	mLastWidth = width;
+	DirectX::XMStoreFloat4x4(&proMatrix, DirectX::XMMatrixPerspectiveFovLH(mFovAngle, cx / float(cy), mMinDistance, mMaxDistance));
 }
 
 void PerspectiveCamera::Updata()
@@ -42,12 +40,6 @@ void PerspectiveCamera::Updata()
 	DirectX::XMStoreFloat4x4(&viewMatrix, DirectX::XMMatrixLookAtLH(DirectX::XMLoadFloat4(&mPos)
 		, DirectX::XMLoadFloat4(&mLook), DirectX::XMLoadFloat4(&mUp)));
 
-}
-void PerspectiveCamera::GetCameraMatrix(WVPMatrix & wvp, DirectX::XMFLOAT4X4 * pro)
-{
-	Camera::GetCameraMatrix(wvp, pro);
-	//3D±ä»»ÒªÇóTransport
-	wvp.Transpose();
 }
 void PerspectiveCamera::Walk(float units)
 {
@@ -100,7 +92,6 @@ void PerspectiveCamera::Translation(float x, float y, float z)
 void PerspectiveCamera::SetFovAngle(float va)
 {
 	mFovAngle = va;
-	UpdataSize(mLastWidth, mLastHeight);
 }
 
 void PerspectiveCamera::SetPos(DirectX::XMFLOAT4 & pos)

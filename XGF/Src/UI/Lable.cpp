@@ -1,6 +1,6 @@
 #include "../../Include/Lable.hpp"
 #include "../../Include/TextRenderer.hpp"
-
+#include "../../Include/UIBatches.hpp"
 Lable::Lable()
 {
 }
@@ -9,9 +9,9 @@ Lable::~Lable()
 {
 }
 
-void Lable::Render(const XMMATRIX * matrix, const Batches & bs)
+void Lable::Render(const XMMATRIX * matrix, Batches & bs)
 {
-	mTextRenderer->DrawString(mText, mColor, this, matrix);
+	((UIBatches &)bs).GetTextRenderer(BATCHES_TEXTRENDERER_DEFAULT_SIZE)->DrawString(mText, mColor, this, matrix);
 }
 
 void Lable::SetText(wchar_t * text)

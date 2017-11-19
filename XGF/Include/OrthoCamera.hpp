@@ -9,7 +9,7 @@ class OrthoCamera :
 public:
 	OrthoCamera();
 	~OrthoCamera();
-	virtual void UpdataSize(int width, int height);
+	virtual void UpdataProject(int cx, int cy);
 	virtual void Updata();
 	void SetScaleFactor(float scalefactor);
 	float GetScaleFactor();

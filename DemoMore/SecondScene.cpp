@@ -17,12 +17,10 @@ void SecondScene::OnCreate()
 	GetFramework()->AddInputListener(&mUILayer);
 	AddLayer(&mUILayer);
 	mLable.SetPositionAndSize(20, 60, 100, 40);
-	mLable.SetTextRenderer(&mTextRenderer);
 	mLable.SetText(L"第二个界面 按Esc退出");
 	mUILayer.Add(&mLable);
 	mCamera3D.FixYAxis(true);
 	mLable2.SetPositionAndSize(20, 100, 100, 40);
-	mLable2.SetTextRenderer(&mTextRenderer);
 	mLable2.SetText(L"Activate!");
 	mLable2.SetClickable(true);
 	mLable2.SetMouseEventable(true);
@@ -35,12 +33,13 @@ void SecondScene::OnCreate()
 	Tools::GetInstance()->GetFontPath("Dengb.ttf", cbuffer, MAX_PATH);
 	mFont.Initialize(mFramework->GetGDI(), cbuffer, 16);
 	mTextRenderer.Initialize(mFramework->GetGDI(), &mFont, 140);
-	mUIBatches.Initialize(mFramework->GetGDI(), mBatches);
+	mUITextRenderer.Initialize(mFramework->GetGDI(), &mFont, 140);
+
 	mGridRender.Initialize(mFramework->GetGDI(), 10, 10, 5, 5);
 	mAxisRenderer.Initialize(mFramework->GetGDI());
 
 	mCursorTexture.LoadWIC(mFramework->GetGDI(), GetFilePath(L"tcursor.png", buffer, MAX_PATH));
-
+	mUILayer.GetUIBatches()->SetTextRenderer(BATCHES_TEXTRENDERER_DEFAULT_SIZE, &mUITextRenderer);
 	AnimationStage stage[4];
 	float c = 34.0 / 64.0;
 	float b = 32.0 / 64.0;
@@ -68,11 +67,12 @@ void SecondScene::OnCreate()
 }
 void SecondScene::OnDestory()
 {
+	Scene::OnDestory();
 	mTextRenderer.Shutdown();
 	mFont.Shutdown();
-	mUIBatches.Shutdown(mBatches);
 	mCursorTexture.Release();
 	mAxisRenderer.Shutdown();
+	mUITextRenderer.Shutdown();
 	mGridRender.Shutdown();
 	GetFramework()->RemoveInputListener(&mUILayer);
 }
@@ -94,20 +94,19 @@ void SecondScene::Render(float deltaTime)
 	mGridRender.Begin(wvp3D);
 	mGridRender.DrawGrid(Point(0,0,0));
 	mGridRender.End();
-	mUIBatches.Begin();
 	mTextRenderer.Begin(wvp);
 	std::wstringstream str;
 	str << std::fixed << std::setprecision(1) << L"FPS:" << debug->GetAverageFPS() <<"\n"<< L"FC:" << std::setprecision(4) <<debug->GetFrameCost() << "ms";
 	mTextRenderer.DrawString(str.str().c_str(), 4, 4);
-	UpdataLayer(deltaTime);
-	RenderLayer(mBatches);
+	
+	RenderLayer(wvp);
 	mTextRenderer.End();
-	mUIBatches.End();
 	
 }
 
 void SecondScene::Updata(float deltaTime)
 {
+	UpdataLayer(deltaTime);
 	mCamera.Updata();
 	mCamera3D.Updata();
 	auto ip = GetFramework()->GetInputManager();
@@ -117,8 +116,8 @@ void SecondScene::Updata(float deltaTime)
 
 void SecondScene::OnSize(int ClientX, int ClientY)
 {
-	mCamera3D.UpdataSize(ClientX, ClientY);
-	mCamera.UpdataSize(ClientX, ClientY);
+	mCamera3D.UpdataProject(ClientX, ClientY);
+	mCamera.UpdataProject(ClientX, ClientY);
 }
 
 void SecondScene::OnActivate(bool isActivate)

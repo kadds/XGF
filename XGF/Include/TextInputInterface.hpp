@@ -1,6 +1,5 @@
 #pragma once
 #include <tchar.h>
-#include "TextRenderInterface.hpp"
 #include "Defines.hpp"
 #include "Rectangle.hpp"
 #include <string>
@@ -10,10 +9,11 @@ struct PointI
 	int x;
 	int y;
 };
+class TextRenderer;
 /*
 具有接受输入Text 和渲染Text的类
 */
-class TextInputInterface : public TextRenderInterface
+class TextInputInterface
 {
 public:
 	TextInputInterface();
@@ -27,7 +27,7 @@ public:
 	void Delete();
 	void CaretToLeft();
 	void CaretToRight();
-	
+	virtual TextRenderer * GetTextRenderer() = 0;
 	void CaretToUp();
 	void CaretToDowm();
 	int GetCaretPosInText() { return mCaretPos; }

@@ -22,11 +22,14 @@ void Scene::UpdataLayer(float dt)
     }
 }
 
-void Scene::RenderLayer(Batches & batches)
+void Scene::RenderLayer(WVPMatrix & wvp)
 {
+	mFramework->GetGDI()->ClearDepthStencilBuffer();
 	for (auto i = mLayerList.begin(); i != mLayerList.end(); ++i)
 	{
-		(*i)->Render(batches);
+		(*i)->BeginBatches(wvp);
+		(*i)->Render();
+		(*i)->EndBatches();
 	}
 }
 void Scene::SwitchScene(Scene * scene)

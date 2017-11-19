@@ -4,6 +4,7 @@
 
 OrthoCamera::OrthoCamera(): mScaleFactor(1.f)
 {
+	
 }
 
 
@@ -11,12 +12,14 @@ OrthoCamera::~OrthoCamera()
 {
 }
 
-void OrthoCamera::UpdataSize(int width, int height)
+void OrthoCamera::UpdataProject(int cx, int cy)
 {
-	DirectX::XMStoreFloat4x4(&proMatrix, DirectX::XMMatrixIdentity());
-	DirectX::XMStoreFloat4x4(&viewMatrix, DirectX::XMMatrixOrthographicLH(static_cast<float>(width) * mScaleFactor, static_cast<float>(height) * mScaleFactor, mMinDistance, mMaxDistance));
-	mLastHeight = height;
-	mLastWidth = width;
+	//DirectX::XMStoreFloat4x4(&viewMatrix, DirectX::XMMatrixIdentity());
+	DirectX::XMStoreFloat4x4(&viewMatrix, DirectX::XMMatrixLookAtLH(DirectX::XMLoadFloat3(&DirectX::XMFLOAT3(0, 0, -1)), 
+		DirectX::XMLoadFloat3(&DirectX::XMFLOAT3(0, 0, 0)), DirectX::XMLoadFloat3(&DirectX::XMFLOAT3(0, 1, 0))));
+	DirectX::XMStoreFloat4x4(&proMatrix, DirectX::XMMatrixOrthographicOffCenterLH(0,(cx) * mScaleFactor,
+		(cy )* mScaleFactor, 0, mMinDistance, mMaxDistance));
+	//DirectX::XMStoreFloat4x4(&viewMatrix, DirectX::XMMatrixOrthographicLH(width, height, mMinDistance, mMaxDistance));
 }
 void OrthoCamera::Updata()
 {

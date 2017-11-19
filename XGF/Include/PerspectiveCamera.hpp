@@ -10,9 +10,8 @@ public:
 	PerspectiveCamera();
 	
 	~PerspectiveCamera();
-	virtual void UpdataSize(int width, int height);
+	virtual void UpdataProject(int cx, int cy);
 	virtual void Updata();
-	virtual void GetCameraMatrix(WVPMatrix & wvp, DirectX::XMFLOAT4X4 * pro = nullptr);
 	// вСср 
 	void Strafe(float units);
 	// иооб 
