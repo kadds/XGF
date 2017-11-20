@@ -62,7 +62,6 @@ private:
 
 	BYTE keys[256];
 	MouseState mouseState;
-	//MouseState lastmouseState;
 	int width, height;
 	bool mRelativeMode;
 	bool mMoveable;

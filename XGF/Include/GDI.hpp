@@ -17,7 +17,6 @@ enum DisplayMode
 /*
 底层图形接口
 调整窗口尺寸可使用ResizeTarget函数
-使用全屏模式先选择一个DisplayMode(DXGI_MODE)：call SetFullScreenDisplayMode（）；再call SetFullScreen（true）
 */
 class GDI
 {
@@ -39,7 +38,6 @@ public:
 	void SizeChanged(UINT ClientWidth, UINT ClientHeight);
 
 	void ResizeTarget(UINT x, UINT y);
-	//float GetTargetWidthD2() {return }
 	void SetFullScreen(bool isFullscreen, int pos);
 
 	ID3D11Device * GetDevice() { return mD3dDevice; }
@@ -118,4 +116,8 @@ private:
 private:
 	DISALLOW_COPY_AND_ASSIGN(GDI);
 };
+#ifdef _DEBUG
 #define PutDebugString(de) de->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof(_FUNNAME_XGF_), _FUNNAME_XGF_);
+#else
+#define PutDebugString(de) ;
+#endif

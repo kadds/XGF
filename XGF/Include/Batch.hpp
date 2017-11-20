@@ -18,7 +18,7 @@ typedef char* VertexDate;
 
 typedef D3D_PRIMITIVE_TOPOLOGY TopologyMode;
 
-//用于顶点缓存信息节点
+//用于顶点缓存信息节点,该结构体废弃
 class BufferInformation {
 public:
     int start;
@@ -148,6 +148,4 @@ private:
 	void UnMap();
     void PrepareForRender();
 	DISALLOW_COPY_AND_ASSIGN(Batch);
-	//保存未使用的顶点缓存信息
-    //LinkedList<BufferInformation> mBufferState;
 };

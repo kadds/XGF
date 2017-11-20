@@ -11,13 +11,13 @@ void Log::Warning(const char * str, const char * file, int line, const char * fu
 	int len;
 	if (funName != nullptr)
 	{
-		len = static_cast<int>(strlen(str) + strlen(file) + strlen(funName)) + 200;
+		len = static_cast<int>(strlen(str) + strlen(file) + strlen(funName)) + 1000;
 		buffer = new char[len];
 		sprintf_s(buffer, len, "Warning: %s\nSource File:%s\nLine:%d\nFunction name:%s", str, file, line, funName);
 	}
 	else
 	{
-		len = static_cast<int>(strlen(str) + strlen(file)) + 200;
+		len = static_cast<int>(strlen(str) + strlen(file)) + 1000;
 		buffer = new char[len];
 		sprintf_s(buffer, len, "Warning: %s\nSource File:%s\nLine:%d\nno function name", str, file, line);
 	}
@@ -54,7 +54,7 @@ void Log::CheckHR(LPCSTR str, HRESULT hr, const char * file, int line, const cha
 		Error(msg, file, line, funName);
 	}
 }
-void OutputDebugStringEx(const wchar_t *strOutputString, ...)
+void XGF_OutputDebugStringEx(const wchar_t *strOutputString, ...)
 {
 	va_list vlArgs = NULL;
 	va_start(vlArgs, strOutputString);
@@ -65,7 +65,7 @@ void OutputDebugStringEx(const wchar_t *strOutputString, ...)
 	OutputDebugStringW(strBuffer);
 	delete[] strBuffer;
 }
-void OutputDebugStringEx(const char *strOutputString, ...)
+void XGF_OutputDebugStringEx(const char *strOutputString, ...)
 {
 	va_list vlArgs = NULL;
 	va_start(vlArgs, strOutputString);

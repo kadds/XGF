@@ -66,17 +66,18 @@ void GDI::Create()
 	Check(mD3dDevice->CheckMultisampleQualityLevels(
 		mDisplayFormat, 4, &m4xMsaaQuality));
 	sd.SampleDesc.Quality = m4xMsaaQuality - 1;
+#ifdef _DEBUG
 	char const *levelstr[] = {"11.1","11","10.1","10" };
 	for (size_t i = 0; i < sizeof(featureLevels) / sizeof(featureLevels[0]); i++)
 	{
 		if (curLevel == featureLevels[i])
 		{
-			OutputDebugStringEx("Level:%s\n", levelstr[i]);
+			OutputDebugStringExA("Level:%s\n", levelstr[i]);
 			break;
 		}
 	}
-	
-	OutputDebugStringEx(L"4xMsaaQuality:%d\n", m4xMsaaQuality);
+#endif
+	OutputDebugStringExA("4xMsaaQuality:%d\n", m4xMsaaQuality);
 	//获取Factory创建SwapChain
 	IDXGIDevice * pDXGIDevice = nullptr;
 	mD3dDevice->QueryInterface(__uuidof(IDXGIDevice), (void **)&pDXGIDevice);
@@ -86,14 +87,14 @@ void GDI::Create()
 	pDXGIAdapter->GetParent(__uuidof(IDXGIFactory), (void **)&pIDXGIFactory);
 	Check(pIDXGIFactory->CreateSwapChain(mD3dDevice, &sd, &mSwapChain));
 	Check(pIDXGIFactory->MakeWindowAssociation(mTopHwnd, DXGI_MWA_NO_ALT_ENTER| DXGI_MWA_NO_WINDOW_CHANGES));
-
+	
 	IDXGIAdapter * eDXGIAdapter = nullptr;
 	int i = 0;
 	while (pIDXGIFactory->EnumAdapters(i, &eDXGIAdapter) != DXGI_ERROR_NOT_FOUND)
 	{
 		DXGI_ADAPTER_DESC dad;
 		eDXGIAdapter->GetDesc(&dad);
-		OutputDebugStringEx(L"显卡%d: DeviceId:%d,SharedSystemMemory:%dMB,DedicatedSystemMemory:%dMB,DedicatedVideoMemory:%dMB,AdapterLuid:%d,Description:%s\n"
+		OutputDebugStringExA("显卡%d: DeviceId:%d,SharedSystemMemory:%dMB,DedicatedSystemMemory:%dMB,DedicatedVideoMemory:%dMB,AdapterLuid:%d,Description:%s\n"
 			,i, dad.DeviceId, dad.SharedSystemMemory >> 20, dad.DedicatedSystemMemory >> 20, dad.DedicatedVideoMemory >> 20, dad.AdapterLuid,dad.Description);
 		mAdapters.push_back(eDXGIAdapter);
 		++i;
@@ -102,7 +103,7 @@ void GDI::Create()
 	i = 0;
 	while (pDXGIAdapter->EnumOutputs(i, &output) != DXGI_ERROR_NOT_FOUND)
 	{
-		OutputDebugStringEx(L"显示器 OutPut:%d\n"
+		OutputDebugStringExA("显示器 OutPut:%d\n"
 			, i);
 
 		mOutputs.push_back(output);
@@ -216,7 +217,7 @@ void GDI::SaveDisplayMode(int c, IDXGIOutput * pDXGIOutput)
 #ifdef _DEBUG
 	for (UINT i = 0; i < num; i++)
 	{
-		OutputDebugStringEx(L"DisplayMode%d: Width:%d,Height:%d,RefreshRate[Denominator]:%u,RefreshRate[Numerator]:%u"
+		OutputDebugStringExA("DisplayMode%d: Width:%d,Height:%d,RefreshRate[Denominator]:%u,RefreshRate[Numerator]:%u"
 			",Scaling:%d,ScanlineOrdering:%d,Format:%d\n"
 			, i, pdsk[i].Width, pdsk[i].Height, pdsk[i].RefreshRate.Denominator, pdsk[i].RefreshRate.Numerator
 			, pdsk[i].Scaling, pdsk[i].ScanlineOrdering, pdsk[i].Format);
@@ -351,8 +352,8 @@ void GDI::SizeChanged(UINT ClientWidth, UINT ClientHeight)
 	//交换链为空直接返回 
 	if (!mSwapChain)
 		return ;
-	OutputDebugString(L"***SIZE**\n");
-	OutputDebugStringEx("ex:%d,%d\n", ClientWidth, ClientHeight);
+	OutputDebugStringExA("***SIZE**\n");
+	OutputDebugStringExA("ex:%d,%d\n", ClientWidth, ClientHeight);
 	//窗口最小化时候为0，会创建缓冲失败 
 	if (ClientWidth < 1)
 		ClientWidth = 1;

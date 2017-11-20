@@ -183,7 +183,7 @@ void DX8Input::SetExclusiveMode(bool Exclusive)
 		hr = mMouse->SetCooperativeLevel(mHwnd,
 			DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
 	if (hr != S_OK)
-		return;
+		ReportWarning("DirectInput Error");
 }
 void DX8Input::SetRelativeMode(bool Relative)
 {
@@ -191,6 +191,7 @@ void DX8Input::SetRelativeMode(bool Relative)
 	if (Relative) {
 		if (!(mouseState.dowm & MOUSE_POSITION_RELATIVEMODE))
 			mouseState.dowm |= MOUSE_POSITION_RELATIVEMODE;
+		mouseState.px = mouseState.py = mouseState.pz = 0;
 	}
 	else
 	{
@@ -207,7 +208,6 @@ bool DX8Input::IsPress(Key key)
 
 void DX8Input::HandleMouseEvent(DIDEVICEOBJECTDATA * didod, int len, Asyn * asyn)
 {
-	//memcpy(&lastmouseState, &mouseState, sizeof(MouseState));
 	bool isDowm;
 	if (!mMoveable) {
 		return;

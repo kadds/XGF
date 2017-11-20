@@ -28,8 +28,15 @@ private:
 	char filename[260];
 	void GetHRString(char * out, int size, const char * msg ,HRESULT hr);
 };
-void OutputDebugStringEx(const wchar_t *strOutputString, ...);
-void OutputDebugStringEx(const char *strOutputString, ...);
+void XGF_OutputDebugStringEx(const wchar_t *strOutputString, ...);
+void XGF_OutputDebugStringEx(const char *strOutputString, ...);
+#ifdef _DEBUG
+#define OutputDebugStringExW(str, ...)  XGF_OutputDebugStringEx(str, ## __VA_ARGS__);
+#define OutputDebugStringExA(str, ...)  XGF_OutputDebugStringEx(str, ## __VA_ARGS__);
+#else
+#define OutputDebugStringExW(str,...) ;
+#define OutputDebugStringExA(str,...) ;
+#endif
 
 #ifdef _DEBUG
 #define DebugOut(x) OutputDebugStringA(x);
