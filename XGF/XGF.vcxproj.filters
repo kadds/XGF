@@ -303,6 +303,15 @@
     <ClInclude Include="Include\TextLayoutShaper.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Include\SceneAnimation.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\FPSCamera.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ParticleSystem.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\UI\UILayer.cpp">
@@ -540,6 +549,15 @@
       <Filter>源文件\Core</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\TextLayoutShaper.cpp">
+      <Filter>源文件\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Animation\SceneAnimation.cpp">
+      <Filter>源文件\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\FPSCamera.cpp">
+      <Filter>源文件\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\ParticleSystem.cpp">
       <Filter>源文件\Core</Filter>
     </ClCompile>
   </ItemGroup>

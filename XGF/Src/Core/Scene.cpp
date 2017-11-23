@@ -32,6 +32,14 @@ void Scene::RenderLayer(WVPMatrix & wvp)
 		(*i)->EndBatches();
 	}
 }
+void Scene::_Render(float deltaTime)
+{
+	Render(deltaTime);
+}
+void Scene::_Updata(float deltaTime)
+{
+	Updata(deltaTime);
+}
 void Scene::SwitchScene(Scene * scene)
 {
 	static_cast<XGFramework *>(GetFramework())->SwitchScene(scene);
@@ -44,12 +52,13 @@ void Scene::ClearDepthStencilBuffer()
 {
 	mFramework->GetGDI()->ClearDepthStencilBuffer();
 }
-void Scene::OnSwitchIn()
+SceneAnimation * Scene::OnSwitchIn()
 {
+	return nullptr;
 }
-
-void Scene::OnSwitchOut()
+SceneAnimation * Scene::OnSwitchOut()
 {
+	return nullptr;
 }
 
 void Scene::AddLayer(Layer * layer)

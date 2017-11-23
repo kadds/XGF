@@ -7,12 +7,39 @@
 #include "../../Include/AsyncTask.hpp"
 #include "../../Include/ConstantData.hpp"
 #include "../../Include/Scene.hpp"
+#include "../../Include/ScreenGrab.h"
 bool XGFramework::_Update(float time)
 {
 	if (mTheard->HandleMessage()) return true;
 	mInputManager.Tick(time);
 	if (mScene != nullptr)
 		mScene->Updata(time);
+	if (mSceneAnimation != nullptr)
+	{
+		mSceneAnimation->Updata(time);
+		if (mSceneAnimation->IsEnd())
+		{
+			mSceneAnimation = nullptr;
+		}
+	}
+	if (mLastScene != nullptr)
+	{
+		mLastScene->Updata(time);
+		if (mLastSceneAnimation != nullptr)
+		{
+			mLastSceneAnimation->Updata(time);
+			if (mLastSceneAnimation->IsEnd())
+			{
+				mLastScene->OnDestory();
+				if (mSceneDeleter != nullptr)
+				{
+					mSceneDeleter(mLastScene);
+					mLastScene = nullptr;
+				}
+			}
+		}
+	}
+	
 	return false;
 }
 void XGFramework::_Loop()
@@ -36,6 +63,10 @@ void XGFramework::_Loop()
 		DebugInscriber_Begin(mDeltaTime);
 		if (mScene != nullptr)
 			mScene->Render(mDeltaTime);
+		if (mLastScene != nullptr)
+		{
+			mLastScene->Render(mDeltaTime);
+		}
 		mInputManager.Draw();
 		mGDI->Present(mIsVsync);
 		DebugInscriber_End();
@@ -51,8 +82,36 @@ void XGFramework::_Loop2()
 				return;
 		//DebugOut(L"update ");
 		DebugInscriber_Begin(mDeltaTime);
-		if (mScene != nullptr)
-			mScene->Render(mDeltaTime);
+		if (mLastScene != nullptr)
+		{
+			mGDI->PushRTTLayer(&mRenderToTexture);
+			mGDI->PushRTTLayer(&mLastRenderToTexture);
+			mGDI->DrawRTT();
+			mLastScene->Render(mDeltaTime);
+			mGDI->PopRTTLayer();
+			mGDI->DrawRTT();
+			if (mScene != nullptr)
+				mScene->Render(mDeltaTime);
+			mGDI->PopRTTLayer();
+			mGDI->DrawRTT();
+			DrawSceneAnimation();
+		}
+		else if (mScene != nullptr)
+		{
+			if (mSceneAnimation != nullptr)
+			{
+				mGDI->PushRTTLayer(&mRenderToTexture);
+				mGDI->DrawRTT();
+				mScene->Render(mDeltaTime);
+				mGDI->PopRTTLayer();
+				mGDI->DrawRTT();
+				DrawSceneAnimation();
+			}
+			else
+			{
+				mScene->Render(mDeltaTime);
+			}
+		}
 		mInputManager.Draw();
 		mGDI->Present(mIsVsync);
 		DebugInscriber_End();
@@ -62,13 +121,17 @@ void XGFramework::_Loop2()
 void XGFramework::_OnCreate(GDI *gdi, Asyn* asyn)
 {
 	CoInitializeEx(nullptr, COINITBASE_MULTITHREADED);
-	
 	mGDI = gdi;
 	mTheard = asyn;
 	asyn->SetCallBackFunc(std::bind(&XGFramework::_OnMessage,this, std::placeholders::_1));
 	mGDI->Create();
 	ConstantData::GetInstance().Initialize(gdi);
 	mInputManager.Initialize(gdi, gdi->GetInstance(), gdi->GetTopHwnd(),mTheard);
+	mSceneBatch.Initialize(gdi, ConstantData::GetInstance().GetPTShader(), 24, 24);
+	mSceneBatch.SetBlend(true);
+	mSceneBatch.SetZBufferRender(false);
+	mRenderToTexture.Initialize(mGDI, mGDI->GetWidth(), mGDI->GetHeight());
+	mLastRenderToTexture.Initialize(mGDI, mGDI->GetWidth(), mGDI->GetHeight());
 }
 
 void XGFramework::_OnDestory()
@@ -78,8 +141,17 @@ void XGFramework::_OnDestory()
 		mScene->OnDestory();
 		if (mSceneDeleter != nullptr)
 			mSceneDeleter(mScene);
+		if (mLastScene != nullptr)
+		{
+			mLastScene->OnDestory();
+			if (mSceneDeleter != nullptr)
+				mSceneDeleter(mLastScene);
+		}
+			
 	}
-		
+	mSceneBatch.Shutdown();
+	mRenderToTexture.Shutdown();
+	mLastRenderToTexture.Shutdown();
 	mInputManager.Shutdown();
 	ConstantData::GetInstance().Shutdown();
 	mGDI->Destory();
@@ -94,6 +166,8 @@ void XGFramework::_OnActivate(bool isActivate)
 	mInputManager.OnActivate(isActivate);
 	if (mScene != nullptr)
 		mScene->OnActivate(isActivate);
+	if(mLastScene != nullptr)
+		mLastScene->OnActivate(isActivate);
 }
 
 void XGFramework::_OnSize(int ClientX, int ClientY)
@@ -102,9 +176,20 @@ void XGFramework::_OnSize(int ClientX, int ClientY)
 	if (ClientY <= 0) ClientY = 1;
 	mGDI->SizeChanged(ClientX, ClientY);
 	mInputManager.UpdateCameraMatrix(ClientX, ClientY);
+	mRenderCamera.UpdataProject(ClientX, ClientY);
 	Batch::SetClientSize({ ClientX, ClientY });
 	if (mScene != nullptr)
 		mScene->OnSize(ClientX, ClientY);
+	if (mLastScene != nullptr)
+		mLastScene->OnSize(ClientX, ClientY);
+	mLastRenderRectangle.SetPositionAndSize(0,0, ClientX, ClientY);
+	mLastRenderRectangle.SetZ(0.f);
+	mRenderRectangle.SetPositionAndSize(0, 0, ClientX, ClientY);
+	mRenderRectangle.SetZ(0.f);
+	mRenderToTexture.Shutdown();
+	mLastRenderToTexture.Shutdown();
+	mRenderToTexture.Initialize(mGDI, ClientX, ClientY);
+	mLastRenderToTexture.Initialize(mGDI, ClientX, ClientY);
 }
 
 void XGFramework::_OnMessage(const Event& ev)
@@ -194,25 +279,73 @@ void XGFramework::_OnClose()
 void XGFramework::ISwitchScene(Scene * scene)
 {
 	scene->SetFramework(this);
-	mScene->OnSwitchOut();
 	scene->OnCreate();
-	scene->OnSwitchIn();
-	mScene->OnDestory();
-	if (mSceneDeleter != nullptr)
-		mSceneDeleter(mScene);
-	mScene = scene;
+	SceneAnimation * sa = scene->OnSwitchIn();
+	SceneAnimation * la = mScene->OnSwitchOut();
+	mLastSceneAnimation = la;
+	mSceneAnimation = sa;
+	bool k = false;
+	if (sa != nullptr)
+	{
+		sa->BeginAnimation();
+		k = true;
+	}
+	if(la != nullptr)
+	{
+		la->BeginAnimation();
+		k = true;
+	}
+	if(!k)
+	{
+		mScene->OnDestory();
+		if (mSceneDeleter != nullptr)
+			mSceneDeleter(mScene);
+		mScene = scene;
+	}
+	else
+	{
+		mLastScene = mScene;
+		mScene = scene;
+	}
 	mScene->OnSize(mGDI->GetWidth(), mGDI->GetHeight());
+}
+void XGFramework::DrawSceneAnimation()
+{
+	mGDI->Clear(Color(0.0f,0.0f,0.0f,1.f));
+	WVPMatrix wvp;
+	BindingBridge bbr;
+	PolygonPleTextureBinder ppb(4);
+	bbr.AddBinder(ppb);
+	ppb.SetPosition(0.f, 1.f, 0.f, 1.f);
+	mRenderCamera.GetCameraMatrix(wvp);
+	mSceneBatch.Begin(wvp);
+	if (mLastSceneAnimation != nullptr)
+		mLastRenderRectangle.Render(mSceneBatch, &mLastSceneAnimation->GetMatrix(), bbr, mLastRenderToTexture.GetShaderResourceView());
+	else
+		mLastRenderRectangle.Render(mSceneBatch, nullptr, bbr, mLastRenderToTexture.GetShaderResourceView());
+	if(mSceneAnimation!=nullptr)
+		mRenderRectangle.Render(mSceneBatch, &mSceneAnimation->GetMatrix(), bbr, mRenderToTexture.GetShaderResourceView());
+	else
+		mRenderRectangle.Render(mSceneBatch, nullptr, bbr, mRenderToTexture.GetShaderResourceView());
+	mSceneBatch.End();
+	
+	
 }
 void XGFramework::AddScene(Scene * scene)
 {
 	scene->SetFramework(this);
 	scene->OnCreate();
-	scene->OnSwitchIn();
+	SceneAnimation * sa = scene->OnSwitchIn();
+	if (sa != nullptr)
+	{
+		mSceneAnimation = sa;
+		sa->BeginAnimation();
+	}
 	mScene = scene;
 }
 void XGFramework::RenderScene()
 {
-	mScene->Render(mDeltaTime);
+	mScene->_Render(mDeltaTime);
 }
 void XGFramework::SwitchScene(Scene * scene)
 {

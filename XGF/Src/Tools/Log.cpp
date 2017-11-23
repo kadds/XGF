@@ -49,9 +49,10 @@ void Log::CheckHR(LPCSTR str, HRESULT hr, const char * file, int line, const cha
 {
 	if (!SUCCEEDED(hr))
 	{
-		char msg[240];
-		GetHRString(msg, 240, str, hr);
+		char *msg = new char[8192];
+		GetHRString(msg, 8192, str, hr);
 		Error(msg, file, line, funName);
+		delete[] msg;
 	}
 }
 void XGF_OutputDebugStringEx(const wchar_t *strOutputString, ...)
@@ -123,7 +124,7 @@ Log::~Log()
 
 void Log::GetHRString(char * out, int size, const char * msg, HRESULT hr)
 {
-	char wdxerr[200];
+	char *wdxerr = new char[1024];
 	size_t converted = 0;
 	const wchar_t * estring = DXGetErrorStringW(hr);
 	wcstombs_s(&converted, wdxerr, wcslen(estring) + 1, estring, _TRUNCATE);
@@ -135,4 +136,5 @@ void Log::GetHRString(char * out, int size, const char * msg, HRESULT hr)
 	{
 		sprintf_s(out, size, "DXerror: %s", wdxerr);
 	}
+	delete[]wdxerr;
 }

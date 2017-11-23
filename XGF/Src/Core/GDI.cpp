@@ -168,7 +168,7 @@ void GDI::Create()
 	Check(mD3dDevice->CreateRasterizerState(&rasterDesc, &mFrameRasterState));
 	PutDebugString(mRasterState);
 	PutDebugString(mFrameRasterState);
-	//创建两个Blend
+	//创建Blend
 	D3D11_BLEND_DESC blendDesc;
 	ZeroMemory(&blendDesc, sizeof(blendDesc));
 	blendDesc.RenderTarget[0].BlendEnable = TRUE;
@@ -184,6 +184,18 @@ void GDI::Create()
 	blendDesc.RenderTarget[0].BlendEnable = FALSE;
 	mD3dDevice->CreateBlendState(&blendDesc, &mDisableBlendState);
 	PutDebugString(mDisableBlendState);
+
+	blendDesc.RenderTarget[0].BlendEnable = TRUE;
+	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	mD3dDevice->CreateBlendState(&blendDesc, &mCEVBlendState);
+	PutDebugString(mCEVBlendState);
+
 	//设置取样器
 	D3D11_SAMPLER_DESC samplerDesc;
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;  //线性插值(三种方式,点过滤,线性过滤,异性过滤)
@@ -235,6 +247,9 @@ void GDI::Destory()
 	if (mBlendState)
 		mBlendState->Release();
 	mBlendState = nullptr;
+	if (mCEVBlendState != nullptr)
+		mCEVBlendState->Release();
+	mCEVBlendState = nullptr;
 	if (mDisableBlendState)
 		mDisableBlendState->Release();
 	mDisableBlendState = nullptr;
@@ -301,6 +316,11 @@ void GDI::Clear(float color[])
 }
 void GDI::Clear(Color & c)
 {
+	if (!mRTTs.empty())
+	{
+		mRTTs.top()->Clear(c);
+		return;
+	}
 	float color[4];
 	color[0] = c.x;
 	color[1] = c.y;
@@ -607,18 +627,6 @@ void GDI::CheckFullScreenForce(bool isforce)
 	}
 }
 
-void GDI::OpenDefaultBlendState()
-{
-	float factor[4] = { 0.f,0.f,0.f,0.f };
-	mDeviceContext->OMSetBlendState(mBlendState, factor, 0xffffffff);
-}
-
-void GDI::CloseBlendState()
-{
-	float factor[4] = { 0.f,0.f,0.f,0.f };
-	mDeviceContext->OMSetBlendState(mDisableBlendState, factor, 0xffffffff);
-}
-
 
 void GDI::SetDefaultSamplerState()
 {
@@ -629,4 +637,53 @@ void GDI::CloseSamplerState()
 {
 	ID3D11SamplerState * const ss[]= { NULL };
 	mDeviceContext->PSSetSamplers(0, 1, ss);  //S0注册 对应0
+}
+
+void GDI::PushRTTLayer(RenderToTexture * rtt)
+{
+	mRTTs.push(rtt);
+}
+
+void GDI::PopRTTLayer()
+{
+	mRTTs.pop();
+}
+
+void GDI::DrawRTT()
+{
+	if (!mRTTs.empty())
+	{
+		ID3D11ShaderResourceView *const pSRV[1] = { nullptr };
+
+		mDeviceContext->PSSetShaderResources(0, 1, pSRV);
+		mRTTs.top()->SetRenderTarget();
+	}
+	else
+	{
+		ID3D11ShaderResourceView *const pSRV[1] = { nullptr };
+
+		mDeviceContext->PSSetShaderResources(0, 1, pSRV);
+		SetRenderTargetView();
+	}
+		
+}
+
+void GDI::SetBlendState(BlendState bb)
+{
+	float factor[4] = { 0.f,0.f,0.f,0.f };
+	
+	switch (bb)
+	{
+	case NoneBlend:
+		mDeviceContext->OMSetBlendState(mDisableBlendState, factor, 0xffffffff);
+		break;
+	case AddOneOneAdd:
+		mDeviceContext->OMSetBlendState(mBlendState, factor, 0xffffffff);
+		break;
+	case AddZeroOneAdd:
+		mDeviceContext->OMSetBlendState(mCEVBlendState, factor, 0xffffffff);
+		break;
+	default:
+		break;
+	}
 }

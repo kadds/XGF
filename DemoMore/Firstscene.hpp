@@ -13,7 +13,8 @@ public:
 	virtual void Updata(float deltaTime) override;
 	virtual void OnSize(int ClientX, int ClientY) override;
 	virtual void OnActivate(bool isActivate) override;
-
+	virtual SceneAnimation * OnSwitchIn();
+	virtual SceneAnimation * OnSwitchOut();
 	virtual void OnMouseDowm(const MousePoint &mp, int pk)  override {};
 	virtual void OnMouseUp(const MousePoint &mp, int pk) override {};
 	virtual void OnMouseMove(const MousePoint &mm, int pk) override;
@@ -44,7 +45,8 @@ private:
 	Texture btNormal;
 	Texture btPress;
 	Texture btMove;
-	
+	SceneAnimation mSceneAnimationIn;
+	SceneAnimation mSceneAnimationOut;
 
 
 public:

@@ -25,14 +25,15 @@ Texture::~Texture()
 {
 	//Release();
 }
+
 void Texture::LoadDDS(GDI * gdi, const wchar_t * name)
 {
 	//ID3D11Resource * texture;
-	Check(DirectX::CreateDDSTextureFromFile(gdi->GetDevice(), gdi->GetDeviceContext(), name,nullptr,&mShaderResourceView));
+	Check(DirectX::CreateDDSTextureFromFile(gdi->GetDevice(), gdi->GetDeviceContext(), name, nullptr, &mShaderResourceView));
 	PutDebugString(mShaderResourceView);
-    left = top = 0.0f;
-    right = bottom = 1.0f;
-    isCreateResourceView = true;
+	left = top = 0.0f;
+	right = bottom = 1.0f;
+	isCreateResourceView = true;
 }
 
 void Texture::Load(ID3D11ShaderResourceView * ShaderResource)

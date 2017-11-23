@@ -19,6 +19,7 @@ public:
 	virtual void OnMouseMove(const MousePoint &mm, int pk) override;
 	virtual void OnKeyDowm(Key k) override;
 	virtual void OnKeyUp(Key k)  override {};
+	virtual SceneAnimation * OnSwitchIn() { return &mSceneAnimationIn; };
 private:
 	GridRenderer mGridRender;
 	Font mFont;
@@ -30,11 +31,11 @@ private:
 
 
 	OrthoCamera mCamera;
-	PerspectiveCamera mCamera3D;
+	FPSCamera mCamera3D;
 	UILayer mUILayer;
 
 	Lable mLable;
 	Lable mLable2;
-
+	SceneAnimation mSceneAnimationIn;
 };
 

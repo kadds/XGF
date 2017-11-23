@@ -173,6 +173,7 @@
     <ClInclude Include="Include\EventPool.hpp" />
     <ClInclude Include="Include\Font.hpp" />
     <ClInclude Include="Include\FPS.hpp" />
+    <ClInclude Include="Include\FPSCamera.hpp" />
     <ClInclude Include="Include\GDI.hpp" />
     <ClInclude Include="Include\GridRenderer.hpp" />
     <ClInclude Include="Include\InputManager.hpp" />
@@ -197,6 +198,7 @@
     <ClInclude Include="Include\MsgQueue.hpp" />
     <ClInclude Include="Include\OrthoCamera.hpp" />
     <ClInclude Include="Include\ParallelAction.hpp" />
+    <ClInclude Include="Include\ParticleSystem.hpp" />
     <ClInclude Include="Include\PerspectiveCamera.hpp" />
     <ClInclude Include="Include\Polygon.hpp" />
     <ClInclude Include="Include\Rectangle.hpp" />
@@ -206,6 +208,7 @@
     <ClInclude Include="Include\RotateToAction.hpp" />
     <ClInclude Include="Include\ScaleToAction.hpp" />
     <ClInclude Include="Include\Scene.hpp" />
+    <ClInclude Include="Include\SceneAnimation.hpp" />
     <ClInclude Include="Include\ScreenGrab.h" />
     <ClInclude Include="Include\SequenceAction.hpp" />
     <ClInclude Include="Include\Shader.hpp" />
@@ -239,6 +242,7 @@
     <ClCompile Include="Src\Animation\RepeatAction.cpp" />
     <ClCompile Include="Src\Animation\RotateToAction.cpp" />
     <ClCompile Include="Src\Animation\ScaleToAction.cpp" />
+    <ClCompile Include="Src\Animation\SceneAnimation.cpp" />
     <ClCompile Include="Src\Animation\SequenceAction.cpp" />
     <ClCompile Include="Src\Core\Actor.cpp" />
     <ClCompile Include="Src\Core\Asyn.cpp" />
@@ -250,10 +254,12 @@
     <ClCompile Include="Src\Core\Cursor.cpp" />
     <ClCompile Include="Src\Core\Font.cpp" />
     <ClCompile Include="Src\Core\FPS.cpp" />
+    <ClCompile Include="Src\Core\FPSCamera.cpp" />
     <ClCompile Include="Src\Core\GDI.cpp" />
     <ClCompile Include="Src\Core\Layer.cpp" />
     <ClCompile Include="Src\Core\MsgQueue.cpp" />
     <ClCompile Include="Src\Core\OrthoCamera.cpp" />
+    <ClCompile Include="Src\Core\ParticleSystem.cpp" />
     <ClCompile Include="Src\Core\PerspectiveCamera.cpp" />
     <ClCompile Include="Src\Core\Polygon.cpp" />
     <ClCompile Include="Src\Core\RenderToTexture.cpp" />

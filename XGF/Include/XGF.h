@@ -10,12 +10,14 @@
 #include "Camera.hpp"
 #include "PerspectiveCamera.hpp"
 #include "OrthoCamera.hpp"
+#include "FPSCamera.hpp"
 #include "Font.hpp"
 #include "TextRenderer.hpp"
 #include "Scene.hpp"
 #include "ShaderConst.hpp"
 #include "ShapeRenderer.hpp"
 #include "RenderToTexture.hpp"
+#include "ParticleSystem.hpp"
 #include "ConstantData.hpp"
 //********************************
 

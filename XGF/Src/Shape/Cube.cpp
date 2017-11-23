@@ -63,4 +63,14 @@ void Cube::SetPosition(const Point & p)
 	GetPosition(c);
 	mPolygon.Translation(c.x + p.x, c.y + p.y, c.z + p.z);
 }
+void Cube::Filp()
+{
+	float temp;
+	for (int i = 0; i < mPolygonPleIndex.mCount; i+=3)
+	{
+		temp = mPolygonPleIndex.mIndex[i + 1];
+		mPolygonPleIndex.mIndex[i + 1] = mPolygonPleIndex.mIndex[i + 2];
+		mPolygonPleIndex.mIndex[i + 2] = temp;
+	}
+}
 }

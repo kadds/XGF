@@ -123,6 +123,22 @@ void FirstScene::OnCreate()
 	mUILayer.Add(&mLb);
 	mUILayer.GetUIBatches()->SetTextRenderer(BATCHES_TEXTRENDERER_DEFAULT_SIZE, &mUITextRenderer);
 	mFramework->GetInputManager()->GetCursor()->SetStaticTexture(mFramework->GetGDI(), GetFilePath(L"cursor.png", buffer, 100));
+	std::unique_ptr<Action> sceneact;
+
+	ActionBuilder::Builder()
+		.BeginBuild()
+		.MoveTo(0.f, 0.f, 0.0f, 2.0f, AnticipateOvershootInterpolator::GetInterpolator(4))
+		.EndBuild(sceneact);
+	mSceneAnimationIn.OnPositionChange(Point(-500.f, 0.f, 0.f), 0);
+	mSceneAnimationIn.SetAction(std::move(sceneact));
+	
+	std::unique_ptr<Action> sceneact2;
+
+	ActionBuilder::Builder()
+		.BeginBuild()
+		.MoveTo(-500.f, 0.f, 0.0f, 2.0f, AnticipateOvershootInterpolator::GetInterpolator(4))
+		.EndBuild(sceneact2);
+	mSceneAnimationOut.SetAction(std::move(sceneact2));
 }
 
 void FirstScene::OnDestory()
@@ -247,53 +263,58 @@ void FirstScene::OnActivate(bool isActivate)
 {
 }
 
+SceneAnimation * FirstScene::OnSwitchIn()
+{
+	return &mSceneAnimationIn;
+}
+
+SceneAnimation * FirstScene::OnSwitchOut()
+{
+	return &mSceneAnimationOut;
+}
+
 void FirstScene::OnMouseMove(const MousePoint & mm, int pk)
 {
 	float h = GetFramework()->GetWindowsHeight();
 	float w = GetFramework()->GetWindowsWidth();
-	mCamera.PitchYawRoll(mCamera.GetFovAngle()/w, mCamera.GetFovAngle()/h,0);
+	mCamera.Pitch(mCamera.GetFovAngle() / h * mm.y);
+	mCamera.Yaw(mCamera.GetFovAngle() / w * mm.x);
 }
 
 void FirstScene::OnKeyDowm(Key k)
 {
 	switch (k)
 	{
-		case DIK_W:
-			mCamera.Walk(0.1f);
-			break;
-		case DIK_S:
-			mCamera.Walk(-0.1f);
-			break;
-		case DIK_A:
-			mCamera.Strafe(0.1f);
-			break;
-		case DIK_D:
-			mCamera.Strafe(-0.1f);
-			break;
-		case DIK_Z:
-			mCamera.Fly(-0.1f);
-			break;
-		case DIK_X:
-			mCamera.Fly(0.1f);
-			break;
-		case DIK_T:
-			mCamera.Roll(0.1f);
-			break;
-		case DIK_G:
-			mCamera.Roll(-0.1f);
-			break;
-		case DIK_R:
-			mCamera.Pitch(0.1f);
-			break;
-		case DIK_Y:
-			mCamera.Pitch(-0.1f);
-			break;
-		case DIK_F:
-			mCamera.Yaw(0.1f);
-			break;
-		case DIK_H:
-			mCamera.Yaw(-0.1f);
-			break;
+	case DIK_W:
+		mCamera.Walk(1);
+		break;
+	case DIK_S:
+		mCamera.Walk(-1);
+		break;
+	case DIK_A:
+		mCamera.Strafe(-1);
+		break;
+	case DIK_D:
+		mCamera.Strafe(1);
+		break;
+	case DIK_Z:
+		mCamera.Fly(-1);
+		break;
+	case DIK_X:
+		mCamera.Fly(1);
+		break;
+	case DIK_R:
+		mCamera.Pitch(1);
+		break;
+	case DIK_Y:
+		mCamera.Pitch(-1);
+		break;
+	case DIK_F:
+		mCamera.Yaw(1);
+		break;
+	case DIK_H:
+		mCamera.Yaw(-1);
+		break;
 	default:
 		break;
 	}

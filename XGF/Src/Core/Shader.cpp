@@ -2,7 +2,7 @@
 #include "../../Include/GDI.hpp"
 #include "../../Include/Log.hpp"
 #include <d3dcompiler.h>
-Shader::Shader()
+Shader::Shader():mGeometryShader(nullptr)
 {
 }
 
@@ -50,6 +50,25 @@ void Shader::Initialize(GDI * gdi, const wchar_t * VSname, const wchar_t * PSnam
 	pVertexBlob->Release();
 }
 
+void Shader::Initialize(GDI * gdi, const wchar_t * VSname, const wchar_t * PSname, const wchar_t * Geometryname, InputType it[], int len)
+{
+	ID3DBlob* pErrorBlob = nullptr;
+	ID3DBlob* pGeometryBlob = nullptr;
+	HRESULT hr = D3DCompileFromFile(Geometryname, NULL,
+		NULL, "GS", "gs_4_0", 0, 0, &pGeometryBlob, &pErrorBlob);
+	if (FAILED(hr))
+		if (pErrorBlob == nullptr)
+			ReportError(ERROR_SHADER_FILE_NOT_FIND_STRING);
+		else
+			CheckEx((LPCSTR)pErrorBlob->GetBufferPointer(), hr);
+	Check(gdi->GetDevice()->CreateGeometryShader(pGeometryBlob->GetBufferPointer(),
+		pGeometryBlob->GetBufferSize(), NULL, &mGeometryShader));
+	PutDebugString(mGeometryShader);
+
+	Initialize(gdi, VSname, PSname, it, len);
+
+}
+
 void Shader::Initialize(GDI * gdi, const unsigned char * constVSShader, unsigned int VSSize, const unsigned char * constPSShader, unsigned int PSSize, InputType it[], int len)
 {
 	mGDI = gdi;
@@ -74,6 +93,10 @@ void Shader::Shutdown()
 }
 void Shader::SetShaderAndInputLayout()
 {
+	if (mGeometryShader != nullptr)
+		mGDI->GetDeviceContext()->GSSetShader(mGeometryShader, 0, 0);
+	else
+		mGDI->GetDeviceContext()->GSSetShader(nullptr, 0, 0);
     mGDI->GetDeviceContext()->PSSetShader(mPixelShader, 0, 0);
     mGDI->GetDeviceContext()->VSSetShader(mVertexShader, 0, 0);
     mGDI->GetDeviceContext()->IASetInputLayout(mInputLayout);

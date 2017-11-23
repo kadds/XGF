@@ -23,9 +23,8 @@ public:
 
 	void Pitch(float angle); 
 
-	void PitchYawRoll(float angle1, float angle2, float angle3);
 
-	void Roll(float angle);
+	void RotateY(float angle);
 	//平移
 	void Translation(float x, float y, float z);
 	//设置视角大小 ：  弧度
@@ -33,16 +32,15 @@ public:
 	//获取视角大小 ：  弧度
 	float GetFovAngle(){return mFovAngle; }
 	//设置摄像机位置
-	void SetPos(DirectX::XMFLOAT4 & pos);
-	//固定Y轴向上
-	void FixYAxis(bool isFix);
-private:
-	DirectX::XMFLOAT4 mPos;
-	DirectX::XMFLOAT4 mRight;
-	DirectX::XMFLOAT4 mLook;
-	DirectX::XMFLOAT4 mUp;
+	void SetPos(DirectX::XMFLOAT3 & pos);
+
+	Point GetPosition() { return mPos; };
+protected:
+	DirectX::XMFLOAT3 mPos;
+	DirectX::XMFLOAT3 mRight;
+	DirectX::XMFLOAT3 mLook;
+	DirectX::XMFLOAT3 mUp;
 	float mFovAngle;
-	bool mFixYAxis;
 	
 };
 

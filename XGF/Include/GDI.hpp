@@ -14,6 +14,12 @@ enum DisplayMode
 	Borderless,
 	FullScreen
 };
+enum BlendState
+{
+	NoneBlend,
+	AddOneOneAdd,
+	AddZeroOneAdd
+};
 /*
 底层图形接口
 调整窗口尺寸可使用ResizeTarget函数
@@ -61,10 +67,14 @@ public:
 	//返回值：mode数目
 	int GetFullScreenDisplayModes(DXGI_MODE_DESC ** c) { *c = mScreenMode[0].second; return mScreenMode[0].first; }
 	void CheckFullScreenForce(bool isforce);
-	void OpenDefaultBlendState();
-	void CloseBlendState();
+
 	void SetDefaultSamplerState();
 	void CloseSamplerState();
+	void PushRTTLayer(RenderToTexture *rtt);
+	void PopRTTLayer();
+	void DrawRTT();
+
+	void SetBlendState(BlendState);
 protected:
 	ID3D11Device        *mD3dDevice;
 	ID3D11DeviceContext *mDeviceContext;
@@ -76,6 +86,10 @@ protected:
 
 	ID3D11BlendState * mDisableBlendState;
 	ID3D11BlendState * mBlendState;
+	ID3D11BlendState * mCEVBlendState;
+	
+
+
 	ID3D11SamplerState * mLineSamplerState;
 	//开启 Z 深度 缓冲state
 	ID3D11DepthStencilState * mDepthStencilState;

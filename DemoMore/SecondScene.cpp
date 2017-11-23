@@ -19,7 +19,7 @@ void SecondScene::OnCreate()
 	mLable.SetPositionAndSize(20, 60, 100, 40);
 	mLable.SetText(L"第二个界面 按Esc退出");
 	mUILayer.Add(&mLable);
-	mCamera3D.FixYAxis(true);
+	//mCamera3D.FixYAxis(true);
 	mLable2.SetPositionAndSize(20, 100, 100, 40);
 	mLable2.SetText(L"Activate!");
 	mLable2.SetClickable(true);
@@ -64,6 +64,13 @@ void SecondScene::OnCreate()
 	GetFramework()->GetInputManager()->GetCursor()->SetPointDeviation(Position(3.f, 0.f));
 	GetFramework()->GetInputManager()->SetMouseMode(MouseMode::CustomCenter);
 	mFramework->AddInputListener(this);
+	std::unique_ptr<Action> sceneact;
+	ActionBuilder::Builder()
+		.BeginBuild()
+		.MoveTo(0.f, 0.f, 0.0f, 2.0f, AnticipateOvershootInterpolator::GetInterpolator(4))
+		.EndBuild(sceneact);
+	mSceneAnimationIn.OnPositionChange(Point(500.f, 0.f, 0.f), 0);
+	mSceneAnimationIn.SetAction(std::move(sceneact));
 }
 void SecondScene::OnDestory()
 {
@@ -135,7 +142,8 @@ void SecondScene::OnMouseMove(const MousePoint & mm, int pk)
 {
 	float h = GetFramework()->GetWindowsHeight();
 	float w = GetFramework()->GetWindowsWidth();
-	mCamera3D.PitchYawRoll(-mCamera3D.GetFovAngle() / h  *mm.y * 0.5, mCamera3D.GetFovAngle() / w * mm.x * 0.5,0);
+	mCamera3D.Pitch(mCamera3D.GetFovAngle() / h *mm.y);
+	mCamera3D.Yaw(mCamera3D.GetFovAngle() / w *mm.x);
 }
 
 void SecondScene::OnKeyDowm(Key k)
@@ -146,13 +154,13 @@ void SecondScene::OnKeyDowm(Key k)
 		mCamera3D.Walk(1);
 		break;
 	case DIK_S:
-		mCamera3D.Walk(1);
+		mCamera3D.Walk(-1);
 		break;
 	case DIK_A:
-		mCamera3D.Strafe(1);
+		mCamera3D.Strafe(-1);
 		break;
 	case DIK_D:
-		mCamera3D.Strafe(-1);
+		mCamera3D.Strafe(1);
 		break;
 	case DIK_Z:
 		mCamera3D.Fly(-1);
@@ -160,14 +168,8 @@ void SecondScene::OnKeyDowm(Key k)
 	case DIK_X:
 		mCamera3D.Fly(1);
 		break;
-	case DIK_T:
-		mCamera3D.Roll(1);
-		break;
-	case DIK_G:
-		mCamera3D.Roll(-1);
-		break;
 	case DIK_R:
-		mCamera3D.Pitch(0);
+		mCamera3D.Pitch(1);
 		break;
 	case DIK_Y:
 		mCamera3D.Pitch(-1);

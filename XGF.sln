@@ -17,6 +17,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DemoMore", "DemoMore\DemoMo
 		{4ADD6D63-DB8A-48A6-BFBC-667B9058112B} = {4ADD6D63-DB8A-48A6-BFBC-667B9058112B}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SkyBoxDemo", "SkyBoxDemo\SkyBoxDemo.vcxproj", "{FB2F8C4B-791A-4BCC-91E9-76289893EE09}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4ADD6D63-DB8A-48A6-BFBC-667B9058112B} = {4ADD6D63-DB8A-48A6-BFBC-667B9058112B}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true
@@ -58,6 +63,14 @@ Global
 		{7F5DE52D-572E-4F15-871B-D491016CE8E1}.Release|x64.Build.0 = Release|x64
 		{7F5DE52D-572E-4F15-871B-D491016CE8E1}.Release|x86.ActiveCfg = Release|Win32
 		{7F5DE52D-572E-4F15-871B-D491016CE8E1}.Release|x86.Build.0 = Release|Win32
+		{FB2F8C4B-791A-4BCC-91E9-76289893EE09}.Debug|x64.ActiveCfg = Debug|x64
+		{FB2F8C4B-791A-4BCC-91E9-76289893EE09}.Debug|x64.Build.0 = Debug|x64
+		{FB2F8C4B-791A-4BCC-91E9-76289893EE09}.Debug|x86.ActiveCfg = Debug|Win32
+		{FB2F8C4B-791A-4BCC-91E9-76289893EE09}.Debug|x86.Build.0 = Debug|Win32
+		{FB2F8C4B-791A-4BCC-91E9-76289893EE09}.Release|x64.ActiveCfg = Release|x64
+		{FB2F8C4B-791A-4BCC-91E9-76289893EE09}.Release|x64.Build.0 = Release|x64
+		{FB2F8C4B-791A-4BCC-91E9-76289893EE09}.Release|x86.ActiveCfg = Release|Win32
+		{FB2F8C4B-791A-4BCC-91E9-76289893EE09}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

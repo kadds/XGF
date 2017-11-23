@@ -10,6 +10,8 @@ public:
 	Shader();
 	~Shader();
 	void Initialize(GDI* gdi, const wchar_t* VSname, const wchar_t* PSname, InputType it[], int len);
+	void Initialize(GDI* gdi, const wchar_t* VSname, const wchar_t* PSname, const wchar_t* Geometryname, InputType it[], int len);
+
 	void Initialize(GDI* gdi, const unsigned char *constVSShader, unsigned int VSSize, const unsigned char *constPSShader, unsigned int PSSize, InputType it[], int len);
 	//virtual void CreateInputLayout(GDI* gdi) = 0;
 	void SetShaderParameter(const WVPMatrix & Matrix);
@@ -23,7 +25,8 @@ public:
 protected:
 	ID3D11PixelShader *mPixelShader;
 	ID3D11VertexShader *mVertexShader;
-	
+	ID3D11GeometryShader * mGeometryShader;
+
 	ID3D11InputLayout *mInputLayout;
 	ID3D11Buffer* mCBMatrixBuffer; //(常量)缓存,顶点索引也是用这个类型
     GDI *mGDI;

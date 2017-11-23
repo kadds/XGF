@@ -23,7 +23,7 @@
     * Circle
 * Scene manager
     * Switch scene
-    * Scene Aniamtion(Uncompletely)
+    * Scene switch aniamtion
   
 ## How To Compile
 Compiler： VC++14 or later

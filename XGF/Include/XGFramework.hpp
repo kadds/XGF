@@ -4,6 +4,13 @@
 #include "InputManager.hpp"
 #include "InputListener.hpp"
 #include "Asyn.hpp"
+#include "SceneAnimation.hpp"
+#include "Batch.hpp"
+#include "Shader.hpp"
+#include "OrthoCamera.hpp"
+#include "Rectangle.hpp"
+#include "RenderToTexture.hpp"
+#include "ConstantData.hpp"
 #include <list>
 #include <memory>
 class Scene;
@@ -74,6 +81,7 @@ protected://来自外部初始化的变量
 	GDI *mGDI;
 protected:
 	Scene * mScene;
+	Scene * mLastScene;
 	void ISwitchScene(Scene * scene);
 	Timer mainTimer; 
 	float mDeltaTime;
@@ -84,6 +92,12 @@ protected:
 	std::function<void(Scene * )> mSceneDeleter;
 	std::function<bool()> mOnClose;
 	std::function<bool(const Event &ev)> mOnInput;
+	RenderToTexture mRenderToTexture, mLastRenderToTexture;
+	SceneAnimation * mSceneAnimation, *mLastSceneAnimation;
+	Batch mSceneBatch;
+	OrthoCamera mRenderCamera;
+	Shape::Rectangle mRenderRectangle, mLastRenderRectangle;
 private:
+	void DrawSceneAnimation();
 	DISALLOW_COPY_AND_ASSIGN(XGFramework);
 };

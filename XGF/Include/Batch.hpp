@@ -70,7 +70,7 @@ public:
 	//使状态改变
     void SetTexture(ID3D11ShaderResourceView* rv);
 
-    
+	void DrawPolygon(const PolygonPle & polygon, const BindingBridge & bbridge);
 	void DrawPolygon(const PolygonPle & polygon, const PolygonPleIndex & pindex, const BindingBridge & bbridge);
 	//提前提交图形
 	void Flush();
@@ -124,6 +124,7 @@ protected:
 	int mPosInVertices;
 	int mPosInIndices;
     int mPosBeforeIndices;
+	int mBeforeVertices;
 
 	bool mIsBegin;
 	bool mIsMap;
@@ -131,7 +132,7 @@ protected:
 	bool mDisabledBlend;
 	bool mNullTexture;
 	bool mUsingBlend;
-
+	bool mUsingIndex;
 	TopologyMode mTopologyMode;
 
     index *mIndexData;
