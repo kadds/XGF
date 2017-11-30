@@ -11,71 +11,80 @@ ParticleSystem::~ParticleSystem()
 {
 }
 
-void ParticleSystem::Initialize(GDI * gdi, int MaxCount)
+
+
+void ParticleExplosion::Begin(const WVPMatrix & matrix)
 {
-	InputType it = SHADER_INPUTLAYOUT_POSITION;
-	wchar_t bf[_MAX_PATH];
-	GetFilePath(L"../../fx/fx/gs.fx", bf, MAX_PATH);
-	mShader.Initialize(gdi, bf, bf, bf, &it, 1);
-	mBatch.Initialize(gdi, &mShader, MaxCount, 0, D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
+	if (firstRun)
+		mBatch.Begin(matrix);
+	else
+	{
+		mBatch.Begin(matrix);
+		mDrawBatch.Begin(matrix);
+	}
+		
 }
 
-void ParticleSystem::Shutdown()
+void ParticleExplosion::End()
 {
+	if (firstRun)
+	{
+		firstRun = false;
+		mBatch.End();
+	}
+	else
+	{
+		mBatch.End();
+		mDrawBatch.EndWithVertexBuffer(mBatch.GetSOOutBuffer());
+	}
+}
+
+void ParticleExplosion::Draw()
+{
+	if(mTexture !=nullptr)
+		mBatch.SetTexture(*mTexture);
+	BindingBridge bbr;
+	PolygonPleDataBinder pdb[2];
+	PolygonPlePoint3 ppl(1);
+	bbr.AddBinder(ppl);
+	bbr.AddBinder(pdb[0]);
+	bbr.AddBinder(pdb[1]);
+	for each(auto it in mEmitters)
+	{
+		*ppl.mPoint = it->GetPosition();
+		pdb[0].mData = XMFLOAT4(it->width, it->height, it->mPastTime, it->mAliveTime);
+		pdb[1].mData = XMFLOAT4(it->speed, it->radialAccel, it->startRadius, it->endRadius);
+		mBatch.DrawPolygon(bbr);
+	}
+}
+
+void ParticleExplosion::Initialize(GDI * gdi)
+{
+
+	ShaderLayout it[3] = { &SHADER_EL_POSITION3, &SHADER_EL_POSITION4, &SHADER_EL_POSITION4};
+	EnumLayout ot[] = { SHADER_EL_SV_POSITION, SHADER_EL_TEXTURE };
+	wchar_t bf[_MAX_PATH];
+	GetFilePath(L"../../fx/fx/ParticleFireworks.fx", bf, MAX_PATH);
+	mShader.Initialize(gdi, bf, bf, bf, it, 3, ot, 2);
+	GetFilePath(L"../../fx/fx/ParticleDo.fx", bf, MAX_PATH);
+	it[0] = { &SHADER_EL_SV_POSITION , true};
+	it[1] = { &SHADER_EL_TEXTURE };
+	mDrawShader.Initialize(gdi, bf, bf, it, 2);
+	mBatch.Initialize(gdi, &mShader, 100, 0, D3D_PRIMITIVE_TOPOLOGY_POINTLIST, SOmode::SOOut);
+
+	mDrawBatch.Initialize(gdi, &mDrawShader, 24, 0, D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, SOmode::SOIn);
+	mBatch.SetZBufferRender(false);
+	mBatch.SetBlend(false);
+	mDrawBatch.SetZBufferRender(false);
+	mDrawBatch.SetBlend(true);
+	firstRun = true;
+	mTexture = nullptr;
+}
+
+void ParticleExplosion::Shutdown()
+{
+	mDrawBatch.Shutdown();
 	mBatch.Shutdown();
 	mShader.Shutdown();
-}
-
-
-void ParticleSystem::Draw(Particle & pt)
-{
-	pt.Draw(mBatch);
-}
-
-void ParticleSystem::Begin(const WVPMatrix & matrix)
-{
-	mBatch.Begin(matrix);
-}
-
-void ParticleSystem::End()
-{
-	mBatch.End();
-}
-
-void ParticleSystem::Flush()
-{
-	mBatch.Flush();
-}
-
-void PointColorParticle::Draw(Batch & bt)
-{
-	PolygonPle p(1);
-	BindingBridge bbr;
-	PolygonPleColorBinder cb(1);
-	for (int i = 0;i < 100; i ++)
-	{
-		if (allparticle[i].alive)
-		{
-			p.mPoint[0] = allparticle[i].pos;
-			
-			bt.DrawPolygon(p, bbr);
-		}
-	}
-	
-}
-
-void PointColorParticle::Update()
-{
-	for (int i = 0;i < 100; i++)
-	{
-		allparticle[i].alive = true;
-		
-		allparticle[i].pos = Point(0,i/100.0,i/200.0);
-
-		allparticle[i].color = Color(1.0 * i / 100.0, 0,0.4,1.0);
-	}
-}
-
-void RectangleColorParticle::Draw(Batch & bt)
-{
+	mDrawShader.Shutdown();
 }

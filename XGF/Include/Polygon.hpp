@@ -9,9 +9,30 @@ public:
 	PolygonPleBinder() {}
 	virtual ~PolygonPleBinder() {}
 	int mCount;
-	virtual void CopyTo(void * Des) const = 0;
+	virtual void CopyTo(void * Des, unsigned int chunk) const = 0;
 };
-
+class PolygonPleDataBinder : public PolygonPleBinder
+{
+public:
+	PolygonPleDataBinder();
+	~PolygonPleDataBinder();
+	PolygonPleDataBinder(const PolygonPleDataBinder& pcb);
+	XMFLOAT4 mData;
+	//chunk is byte
+	virtual void CopyTo(void * Des, unsigned int chunk) const override;
+	bool operator ==(const PolygonPleDataBinder &rx) const {
+		if (&rx == this)
+			return true;
+		if (rx.mCount != mCount) return false;
+		for (int i = 0; i < mCount; i++)
+		{
+			if (!(mData.x == rx.mData.x && mData.y == rx.mData.y && mData.x == rx.mData.x &&
+				mData.y == rx.mData.y && mData.z == rx.mData.z && mData.w == rx.mData.w))
+				return false;
+		}
+		return  true;
+	}
+};
 /*
 索引结构
 */
@@ -60,7 +81,7 @@ public:
         }
         return  true;
     }
-	virtual void CopyTo(void * Des) const override;
+	virtual void CopyTo(void * Des, unsigned int chunk) const override;
     void SetPosition(float left, float right, float top, float bottom);
 };
 
@@ -76,7 +97,7 @@ public:
 	Color * mColor;
 	void Set(int start, int count, Color & c);
 	virtual Color Get(int n);
-	virtual void CopyTo(void * Des) const override;
+	virtual void CopyTo(void * Des, unsigned int chunk) const override;
     bool operator ==(const PolygonPleColorBinder &rx) const {
         if (&rx == this)
             return true;
@@ -98,7 +119,7 @@ public:
 	PolygonPleConstantColorBinder(Color & c, int Maxcount);
 	~PolygonPleConstantColorBinder();
     PolygonPleConstantColorBinder(const PolygonPleConstantColorBinder& pcb);
-	virtual void CopyTo(void * Des) const override;
+	virtual void CopyTo(void * Des, unsigned int chunk) const override;
     virtual Color Get(int n);
 
     bool operator ==(const PolygonPleConstantColorBinder &rx) const {
@@ -118,7 +139,7 @@ public:
 	PolygonPleConstantExColorBinder(int CountInEachLayer[], int LayerCount);
 	~PolygonPleConstantExColorBinder();
 	PolygonPleConstantExColorBinder(const PolygonPleConstantExColorBinder& pcb);
-	virtual void CopyTo(void * Des) const override;
+	virtual void CopyTo(void * Des, unsigned int chunk) const override;
 	virtual Color Get(int n);
 	void SetLayerColor(int layer, Color & color);
 	bool operator ==(const PolygonPleConstantExColorBinder &rx) const {
@@ -144,25 +165,31 @@ public:
 	int GetBinderCount() const {
 		return mCount;
 	};
+	void SetBinder(const  PolygonPleBinder & c, int pos);
+	void InsertBinder(const  PolygonPleBinder & c, int pos);
 	void AddBinder(const  PolygonPleBinder & c);
 	const PolygonPleBinder * GetBinder(int tp) const;
 private:
-	const PolygonPleBinder* binders[16];
+	const PolygonPleBinder* binders[16];//max is 16
 };
 
 
 /*
 * 几何顶点结构
 */
-class PolygonPle
+class PolygonPlePoint : public PolygonPleBinder
+{
+public:
+	virtual void CopyTo(void * Des, unsigned int chunk) const = 0;
+};
+class PolygonPlePoint3 : public PolygonPleBinder
 {
 public:
 	Point *mPoint;
-	int mCount;
-	PolygonPle(int n);
-    PolygonPle(const PolygonPle & p);
-	~PolygonPle();
-    bool operator ==(const PolygonPle &rx) const {
+	PolygonPlePoint3(int n);
+	PolygonPlePoint3(const PolygonPlePoint3 & p);
+	~PolygonPlePoint3();
+    bool operator ==(const PolygonPlePoint3 &rx) const {
         if (&rx == this)
             return true;
         if (rx.mCount != mCount) return false;
@@ -173,13 +200,40 @@ public:
         }
         return true;
     }
-	void CopyTo(PolygonPle & ppe);
+	virtual void CopyTo(void * Des, unsigned int chunk) const override;
+	void CopyTo(PolygonPlePoint3 & ppe);
 public:
 	void Transform(float centerXD2, float centerYD2);
-	void TransformTo(PolygonPle * pol,float centerXD2,float centerYD2) const;
+	void TransformTo(PolygonPlePoint3 * pol,float centerXD2,float centerYD2) const;
 	void Translation(float x, float y, float z);
-	int GetPointCount() const;
 	void Mul(DirectX::CXMMATRIX matrix);
-	void MulTo(PolygonPle * pol, DirectX::CXMMATRIX matrix) const;
+	void MulTo(PolygonPlePoint3 * pol, DirectX::CXMMATRIX matrix) const;
+};
 
+class PolygonPlePoint4 : public PolygonPleBinder
+{
+public:
+	Point4 *mPoint;
+	PolygonPlePoint4(int n);
+	PolygonPlePoint4(const PolygonPlePoint4 & p);
+	~PolygonPlePoint4();
+	bool operator ==(const PolygonPlePoint4 &rx) const {
+		if (&rx == this)
+			return true;
+		if (rx.mCount != mCount) return false;
+		for (int i = 0; i < mCount; i++)
+		{
+			if (mPoint[i].x != rx.mPoint[i].x || mPoint[i].y != rx.mPoint[i].y || mPoint[i].z != rx.mPoint[i].z)
+				return false;
+		}
+		return true;
+	}
+	virtual void CopyTo(void * Des, unsigned int chunk) const override;
+	void CopyTo(PolygonPlePoint4 & ppe);
+public:
+	void Transform(float centerXD2, float centerYD2);
+	void TransformTo(PolygonPlePoint4 * pol, float centerXD2, float centerYD2) const;
+	void Translation(float x, float y, float z);
+	void Mul(DirectX::CXMMATRIX matrix);
+	void MulTo(PolygonPlePoint4 * pol, DirectX::CXMMATRIX matrix) const;
 };

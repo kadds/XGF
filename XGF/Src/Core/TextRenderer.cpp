@@ -24,6 +24,7 @@ void TextRenderer::Initialize(GDI * gdi, Font * font, int MaxCount)
     mBatch.Initialize(gdi, ConstantData::GetInstance().GetFontShader(), MaxCount * 4, MaxCount * 6, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	mBatch.SetBlend(true);
 	mBatch.SetZBufferRender(true);
+	bbridge.AddBinder(colorBinder);// just for seize positon 0 while next can SetBinder at position 0: (In Function AddCharToBatch)
 	bbridge.AddBinder(colorBinder);
 	bbridge.AddBinder(textureBinder);
 }
@@ -115,8 +116,9 @@ bool TextRenderer::AddCharToBatch(int i, wchar_t ch, Shape::Rectangle * rc, cons
 {
 	if (matrix != nullptr)
 		rc->mPolygon.Mul(*matrix);
+	bbridge.SetBinder(rc->mPolygon, 0);// here setBinder
 	textureBinder.SetPosition(ps->metrics.left, ps->metrics.right, ps->metrics.top, ps->metrics.bottom);
-	mBatch.DrawPolygon(rc->mPolygon, rc->GetIndex(), bbridge);
+	mBatch.DrawPolygon(rc->GetIndex(), bbridge);
 	return false;
 }
 

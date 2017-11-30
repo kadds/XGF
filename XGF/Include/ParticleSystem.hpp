@@ -3,58 +3,58 @@
 #include "Shape.hpp"
 #include "Rectangle.hpp"
 #include "Shader.hpp"
-class Particle
+//Emitter base
+class Emitter
 {
 public:
-	virtual void Draw(Batch & bt) = 0;
+	Point & GetPosition() { return pos; };
 protected:
-
-private:
+	
+public:
+	void SetWidthAndHeight(float w, float h) { width = w; height = h; }
+	float mAliveTime;
+	float mPastTime;
+	bool isAlive;
+	float width;
+	float height;
+	Point pos;
 };
+
 class ParticleSystem
 {
 public:
 	ParticleSystem();
 	~ParticleSystem();
-	void Initialize(GDI * gdi, int MaxCount);
-	void Shutdown();
-
-	void Draw(Particle & pt);
-	void Begin(const WVPMatrix & matrix);
-	void End();
-	void Flush();
-private:
+	
+protected:
 	Batch mBatch;
 	Shader mShader;
+	Shader mDrawShader;
+	Batch mDrawBatch;
+	bool firstRun;
+private:
+	
 };
 
-class PointColorParticle : public Particle
+class ParticleExplosion : public ParticleSystem
 {
-	class ParticleData
+public:
+	class ExplosionEmitter : public Emitter
 	{
 	public:
-		bool alive;
-		Point pos;
-		Color color;
+		float speed;
+		float radialAccel;
+		float startRadius;
+		float endRadius;
+
 	};
-public:
-	virtual void Draw(Batch & bt);
-	void Update();
-	void SetPosition(Point p) { pos = p; };
-protected:
-
+	void Draw();
+	void Begin(const WVPMatrix & matrix);
+	void End();
+	void Initialize(GDI * gdi);
+	void Shutdown();
+	void AddEmitter(ExplosionEmitter *e) { mEmitters.push_back(e); }
 private:
-	int maxcount;
-	ParticleData allparticle[500];
-	Point pos;
-};
-class RectangleColorParticle
-{
-public:
-	virtual void Draw(Batch & bt);
-	//void SetPosition();
-protected:
-
-private:
-	Shape::Rectangle rc;
+	Texture *mTexture;
+	std::vector<ExplosionEmitter *> mEmitters;
 };

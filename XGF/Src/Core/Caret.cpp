@@ -19,6 +19,7 @@ void Caret::Initialize(GDI * gdi)
 	mColorBatch.SetZBufferRender(false);
 	mHide = false;
 	mHeight = 16;
+	mBbrg.AddBinder(mLine.mPolygon);
 	mBbrg.AddBinder(mPcColor);
 	mPcColor.Set(0, 1, Color(0.f, 0.f, 0.f, 1.f));
 }
@@ -36,14 +37,14 @@ void Caret::Draw(const WVPMatrix & wvp)
 	}
 	mColorBatch.Begin(wvp);
 	mColorBatch.SetTexture(nullptr);
-	mColorBatch.DrawPolygon(mLine.mPolygon, mLine.mPolygonPleIndex, mBbrg);
+	mColorBatch.DrawPolygon(mLine.mPolygonPleIndex, mBbrg);
 	mColorBatch.End();
 }
 
 void Caret::Tick(float time)
 {
 	mTime += time;
-	if (mTime >= 1.0f)
+	if (mTime >= 0.7f)
 	{
 		mTime = 0.f;
 		mHide = !mHide;

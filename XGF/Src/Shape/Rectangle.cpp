@@ -1,7 +1,7 @@
 #include "../../Include/Rectangle.hpp"
 #include "../../Include/Control.hpp"
 namespace Shape {
-bool pInPolygon(const PolygonPle& ql, int x, int y);
+bool pInPolygon(const PolygonPlePoint3& ql, int x, int y);
 Rectangle::Rectangle():Shape(4,6)
 {
     mPolygonPleIndex.mIndex[0] = 0;
@@ -37,7 +37,7 @@ bool Rectangle::IsInBBox(const Point & p, const XMFLOAT4X4 * matrix) const
 	}
 	else
 	{
-		PolygonPle ple(4);
+		PolygonPlePoint3 ple(4);
 		mPolygon.MulTo(&ple, DirectX::XMLoadFloat4x4(matrix));
 		return pInPolygon(ple, static_cast<int>(p.x), static_cast<int>(p.y));
 	}

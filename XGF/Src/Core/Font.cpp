@@ -147,8 +147,8 @@ PosSize * Font::GetCharGlyph(wchar_t ch) {
 	result->width = slot->metrics.width / 64.0f;
 	result->height = slot->metrics.height / 64.0f;
 	result->advanceX = slot->advance.x / 64.0f;
-	result->vx = slot->bitmap_left;
-	result->vy = ( -slot->bitmap_top + ascender);
+	result->vx = static_cast<float>(slot->bitmap_left);
+	result->vy = static_cast<float>( -slot->bitmap_top + ascender);
 	map.insert(std::pair<wchar_t, PosSize  *>(ch, result));
 	FT_Done_Glyph(glyph);
     mGDI->GetDeviceContext()->UpdateSubresource(mTexture,0, NULL, mBuffer, mBufferWidth, 0);
@@ -172,7 +172,7 @@ void Font::ReadFileToBuffer(const char* name)
 	filestr.open(name, std::ios::binary);
 	pbuf = filestr.rdbuf();
 
-	size = pbuf->pubseekoff(0, std::ios::end, std::ios::in);
+	size = static_cast<long>(pbuf->pubseekoff(0, std::ios::end, std::ios::in));
 	pbuf->pubseekpos(0, std::ios::in);
 	mFileLen = size;
 	if (size > 0)

@@ -19,17 +19,18 @@ void GridRenderer::Initialize(GDI * gdi, float width, float height, unsigned xco
 	mBatch.SetZBufferRender(false);
 	mHeight = height; 
 	mWidth = width;
-	mPolygon = new PolygonPle(xcount * 2 + zcount * 2 + 4);
+	mPolygon = new PolygonPlePoint3(xcount * 2 + zcount * 2 + 4);
 	mPolygonPleIndex = new PolygonPleIndex(xcount * 2 + zcount * 2 + 4);
-	int c[2] = { xcount * 2 + 2, zcount * 2 + 2 };
+	int c[2] = { (int)xcount * 2 + 2, (int)zcount * 2 + 2 };
 	mColorBinder = new PolygonPleConstantExColorBinder(c, 2);
 	mColorBinder->SetLayerColor(0, Color(1.0, 0.2, 0.2, 1.0));
 	mColorBinder->SetLayerColor(1, Color(0.2, 1.0, 0.2, 1.0));
+	mBindingBridge.AddBinder(*mPolygon);
 	mBindingBridge.AddBinder(*mColorBinder);
 	Point pstart = origin;
-	pstart.x = 0 - mWidth * xcount / 2.0;//x
-	pstart.z = 0 - mHeight * (zcount - 1);//z
-	for (int i = 0; i < xcount * 2 + 2; i+= 2)
+	pstart.x = 0 - mWidth * xcount / 2.0f;//x
+	pstart.z = 0 - mHeight * (zcount - 1.f);//z
+	for (unsigned int i = 0; i < xcount * 2 + 2; i+= 2)
 	{
 		mPolygon->mPoint[i].x = pstart.x;
 		mPolygon->mPoint[i].y = origin.y;
@@ -42,9 +43,9 @@ void GridRenderer::Initialize(GDI * gdi, float width, float height, unsigned xco
 		mPolygonPleIndex->mIndex[i + 1] = i + 1;
 		pstart.x += mWidth;
 	}
-	pstart.x = 0 - mWidth * (xcount - 1);//x
-	pstart.z = 0 - mHeight * zcount / 2.0;//z
-	for (int j = xcount * 2 + 2; j < xcount * 2 + zcount * 2 + 4; j += 2)
+	pstart.x = 0 - mWidth * (xcount - 1.f);//x
+	pstart.z = 0 - mHeight * zcount / 2.0f;//z
+	for (unsigned int j = xcount * 2 + 2; j < xcount * 2 + zcount * 2 + 4; j += 2)
 	{
 		mPolygon->mPoint[j].x = pstart.x;
 		mPolygon->mPoint[j].y = origin.y;
@@ -83,7 +84,7 @@ void GridRenderer::End()
 
 void GridRenderer::DrawGrid(Point & center)
 {
-	mBatch.DrawPolygon(*mPolygon, *mPolygonPleIndex, mBindingBridge);
+	mBatch.DrawPolygon(*mPolygonPleIndex, mBindingBridge);
 }
 
 void GridRenderer::SetColor(Color & cx, Color & cz)
@@ -118,9 +119,9 @@ void MeshData::SetMeshPosition(Position center, unsigned width, unsigned height,
 	Position pstart;
 	pstart.x = center.x - width * maxLen / 2.0f;//x
 	pstart.y = center.y - height * maxLen / 2.0f;//z
-	for (int i = 0; i < maxLen; i++)
+	for (unsigned int i = 0; i < maxLen; i++)
 	{
-		for (int j = 0; j < maxLen; j++)
+		for (unsigned int j = 0; j < maxLen; j++)
 		{
 			mPolygon.mPoint[i* (maxLen + 1) + j] = Point(i* (maxLen + 1)* width + pstart.x
 				, baseY,  j * height + pstart.y);

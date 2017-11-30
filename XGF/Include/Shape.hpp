@@ -13,7 +13,7 @@ public:
     virtual bool IsInBBox(const Point & p, const XMFLOAT4X4 * matrix) const = 0;
 	virtual void SetPosition(const Point & p) = 0;
 	virtual void GetPosition(Point & p) const;
-    PolygonPle mPolygon;
+	PolygonPlePoint3 mPolygon;
     PolygonPleIndex mPolygonPleIndex;
     const PolygonPleIndex & GetIndex() const;
 	void SetZ(float z);
@@ -25,6 +25,6 @@ private:
     int mPosInVertex;
 };
 float triangleArea(Point a, Point b, Point c);
-bool pInPolygon(const PolygonPle& ql, int x, int y);
+bool pInPolygon(const PolygonPlePoint3& ql, int x, int y);
 }
 

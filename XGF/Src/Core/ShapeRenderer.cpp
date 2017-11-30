@@ -48,9 +48,10 @@ void ShapeRenderer::DrawRectangle(float x, float y, float w, float h, float z, C
 	rc.SetZ(z);
 	PolygonPleConstantColorBinder cb(color ,rc.mPolygon.mCount);
 	BindingBridge bb;
+	bb.AddBinder(rc.mPolygon);
 	bb.AddBinder(cb);
 	mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	mBatch.DrawPolygon(rc.mPolygon, rc.mPolygonPleIndex, bb);
+	mBatch.DrawPolygon(rc.mPolygonPleIndex, bb);
 }
 
 void ShapeRenderer::DrawRectangleB(float x, float y, float w, float h, float z, Color & bkcolor, float borderWidth, Color & boderColor, Color & boderOuterColor)
@@ -65,10 +66,11 @@ void ShapeRenderer::DrawRectangleB(float x, float y, float w, float h, float z, 
 	cb.SetLayerColor(1, boderColor);
 	cb.SetLayerColor(2, bkcolor);
 	BindingBridge bb;
+	bb.AddBinder(rc.mPolygon);
 	bb.AddBinder(cb);
 	mBatch.SetTexture(nullptr);
 	mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	mBatch.DrawPolygon(rc.mPolygon, rc.mPolygonPleIndex, bb);
+	mBatch.DrawPolygon(rc.mPolygonPleIndex, bb);
 }
 
 void ShapeRenderer::DrawCircle(float x, float y, float r, int precision, float z, Color & color)
@@ -78,10 +80,11 @@ void ShapeRenderer::DrawCircle(float x, float y, float r, int precision, float z
 	ce.SetZ(z);
 	PolygonPleConstantColorBinder cb(color, ce.mPolygon.mCount);
 	BindingBridge bb;
+	bb.AddBinder(ce.mPolygon);
 	bb.AddBinder(cb);
 	mBatch.SetTexture(nullptr);
 	mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	mBatch.DrawPolygon(ce.mPolygon, ce.mPolygonPleIndex, bb);
+	mBatch.DrawPolygon(ce.mPolygonPleIndex, bb);
 }
 
 void ShapeRenderer::DrawCircle(float x, float y, float r, int precision, float z, Color & color, Color & centerColor)
@@ -94,10 +97,11 @@ void ShapeRenderer::DrawCircle(float x, float y, float r, int precision, float z
 	cb.SetLayerColor(0, centerColor);
 	cb.SetLayerColor(1, color);
 	BindingBridge bb;
+	bb.AddBinder(ce.mPolygon);
 	bb.AddBinder(cb);
 	mBatch.SetTexture(nullptr);
 	mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	mBatch.DrawPolygon(ce.mPolygon, ce.mPolygonPleIndex, bb);
+	mBatch.DrawPolygon(ce.mPolygonPleIndex, bb);
 }
 
 void ShapeRenderer::DrawLine(float x, float y, float ex, float ey, float z, Color & color)
@@ -107,8 +111,9 @@ void ShapeRenderer::DrawLine(float x, float y, float ex, float ey, float z, Colo
 	line.SetEndPosition(Point(ex, ey, z));
 	PolygonPleConstantColorBinder cb(color, 2);
 	BindingBridge bb;
+	bb.AddBinder(line.mPolygon);
 	bb.AddBinder(cb);
 	mBatch.SetTexture(nullptr);
 	mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-	mBatch.DrawPolygon(line.mPolygon, line.mPolygonPleIndex, bb);
+	mBatch.DrawPolygon(line.mPolygonPleIndex, bb);
 }

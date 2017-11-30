@@ -35,6 +35,7 @@ void Cursor::Draw(const WVPMatrix & wvp)
 		mTextureBatch.Begin(wvp);
 		mRc.SetPositionAndSize(mPosition.x - mPointDeviation.x, mPosition.y - mPointDeviation.y, mSize.x, mSize.y);
 		mPtBinder.FromTexture(&mTexture);
+		mRc.SetZ(0.f);
 		mRc.Render(mTextureBatch, nullptr, mBbrg, mTexture.GetShaderResourceView());
 		mTextureBatch.End();
 	}
@@ -48,7 +49,7 @@ void Cursor::Draw(const WVPMatrix & wvp)
 		mPtBinder.SetPosition(x, w, y, h);
 		mTextureBatch.Begin(wvp);
 		mRc.SetPositionAndSize(mPosition.x - mPointDeviation.x, mPosition.y - mPointDeviation.y, mSize.x, mSize.y);
-
+		mRc.SetZ(0.f);
 		mRc.Render(mTextureBatch, nullptr, mBbrg, mAnimation->GetTexture()->GetShaderResourceView());
 		mTextureBatch.End();
 	}

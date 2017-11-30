@@ -8,7 +8,6 @@
 using std::vector;
 
 class GDI;
-class PolygonPle;
 struct WVPMatrix;
 class Polygon;
 class Shader;
@@ -49,8 +48,13 @@ public:
     }
 
 };
-
-enum VertexTransfrom
+enum class SOmode
+{
+	None,
+	SOOut,
+	SOIn
+};
+enum class VertexTransfrom
 {
     None,
     Constant
@@ -66,18 +70,18 @@ class Batch
 public:
 	Batch();
 	//使状态改变
-    void SetTexture(const Texture & tex);
+	void SetTexture(const Texture & tex);
 	//使状态改变
-    void SetTexture(ID3D11ShaderResourceView* rv);
+	void SetTexture(ID3D11ShaderResourceView* rv);
 
-	void DrawPolygon(const PolygonPle & polygon, const BindingBridge & bbridge);
-	void DrawPolygon(const PolygonPle & polygon, const PolygonPleIndex & pindex, const BindingBridge & bbridge);
+	void DrawPolygon(const BindingBridge & bbridge);
+	void DrawPolygon(const PolygonPleIndex & pindex, const BindingBridge & bbridge);
 	//提前提交图形
 	void Flush();
-	Shader * GetShader() const{ return mShader; }
-	void Initialize(GDI * gdi, Shader * shader, int MaxVertices, int MaxIndexCount, TopologyMode tm = TopologyMode::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	Shader * GetShader() const { return mShader; }
+	void Initialize(GDI * gdi, Shader * shader, int MaxVertices, int MaxIndexCount, TopologyMode tm = TopologyMode::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, SOmode smode = SOmode::None);
 	void Shutdown();
-	
+
 	void Begin(const WVPMatrix & Matrix);
 	void End();
 	//使状态改变
@@ -86,12 +90,12 @@ public:
 	void ChangeTopologyMode(TopologyMode tm);
 	void SetZBufferRender(bool open);
 	TopologyMode GetTopologyMode();
-    static int GetClientWidth() {
-        return mClientWidth;
-    }
-    static int GetClientHeight() {
-        return mClientHeight;
-    }
+	static int GetClientWidth() {
+		return mClientWidth;
+	}
+	static int GetClientHeight() {
+		return mClientHeight;
+	}
 
 	static float GetClientWidthD2() {
 		return mClientWidth / 2.f;
@@ -99,7 +103,8 @@ public:
 	static float GetClientHeightD2() {
 		return mClientHeight / 2.f;
 	}
-
+	ID3D11Buffer * GetSOOutBuffer();
+	void EndWithVertexBuffer(ID3D11Buffer * c);
 	static void SetClientSize(SIZE size) { mClientHeight = size.cy; mClientWidth = size.cx; }
 protected:
     static int mClientWidth;
@@ -109,8 +114,8 @@ protected:
 	//保存上一次渲染的纹理，便于合并Batch
     ID3D11ShaderResourceView* mTextureResource;
 	GDI * mGDI;
-
 	ID3D11Buffer ** mVertexBuffer;
+	ID3D11Buffer *mSOBuffer[2];
 	ID3D11Buffer * mIndexBuffer;
 	//外部Shader
 	Shader *mShader;
@@ -130,15 +135,17 @@ protected:
 	bool mIsMap;
 	bool mUsingZBuffer;
 	bool mDisabledBlend;
+	
 	bool mNullTexture;
 	bool mUsingBlend;
 	bool mUsingIndex;
+	SOmode mSOMode;
 	TopologyMode mTopologyMode;
 
     index *mIndexData;
 	int mLastFrameVBStart;
 	int mLastFrameIBStart;
-	int mFramePosition;
+	unsigned int mFramePosition;
 protected:
     void CreateIndexBuffer();
     void CreateVertexBuffer(unsigned len, ID3D11Buffer ** buffer);

@@ -67,9 +67,9 @@ void SecondScene::OnCreate()
 	std::unique_ptr<Action> sceneact;
 	ActionBuilder::Builder()
 		.BeginBuild()
-		.MoveTo(0.f, 0.f, 0.0f, 2.0f, AnticipateOvershootInterpolator::GetInterpolator(4))
+		.ChangeColorTo(1.f, 1.f, 1.f, 1.f, 2.f, LinearInterpolator::GetInterpolator())
 		.EndBuild(sceneact);
-	mSceneAnimationIn.OnPositionChange(Point(500.f, 0.f, 0.f), 0);
+	mSceneAnimationIn.OnColorChange(Color(1.0, 1.0, 1.0, 0.f), 0);
 	mSceneAnimationIn.SetAction(std::move(sceneact));
 }
 void SecondScene::OnDestory()

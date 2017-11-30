@@ -1,7 +1,6 @@
 #           XGF
 ## What's it?
-### A game render framework(XGF) based on direct3d11 API for study game devolopment
-##### notic: only used by personal
+### X Game render Framework(XGF) is based on direct3d11 API for study game devolopment
   
 ## What Funtions Does It Have？
 
@@ -11,34 +10,38 @@
     * Texture animaion
     * Action animation
 * DirectInput support
-    * Different mouse mode
 * UI system
     * Lable
     * EditText
     * Button
+	* More Control can be added simply (Uncompletely)
 * Text renderer based on Freetype
 * Basic shape render
     * Line
     * Rectange
     * Circle
+	* More...(Uncompletely)
 * Scene manager
-    * Switch scene
-    * Scene switch aniamtion
+    * Switch scene with aniamtion(Uncompletely)
+* Particle
+    * Different ParticleEffect(Uncompletely)
+* Lua support (Uncompletely)
   
 ## How To Compile
-Compiler： VC++14 or later
-If you have Visual Studio or later, you can just open the Soltion(.sln) file. Selecting compiling mode, then compiling with x64 mode.
+Compiler： VC++14 or later(Only Support MSVC14+. In the future, it may be migrated to cmake tools)
+If you have Visual Studio 14 or later, you can just open the Soltion(.sln) file. Selecting compiling mode, then compiling with x64 mode.
   
-###### notic: Some Demo used resorce, Please Copy these files to run directory. The resorce files always in Bin directory.
+###### notic: Please Copy resorce files to run directory. The resorce files always in Bin directory.
  
 ## Some Thumbnail Preview
  Demo1:  
 ![DemoMore](https://raw.githubusercontent.com/kadds/XGF/master/TT.PNG)
- Demo2:  
+  
+  Demo2:  
 ![EasyDemo](https://raw.githubusercontent.com/kadds/XGF/master/TT2.PNG)
  
 ## Problem Feedback
-I'm welcome to feedback. You can use the following contact to communicate with me  
+Feedback is welcome. You can use the following contact way to communicate with me  
   
 * Email: <itmyxyf@gmail.com>
 * QQ: 1346144952

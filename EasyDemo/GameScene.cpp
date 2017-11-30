@@ -38,7 +38,7 @@ void GameScene::OnCreate()
 	mFont.Initialize(mFramework->GetGDI(), buffer, 16);
 	mTextRenderer.Initialize(mFramework->GetGDI(), &mFont, 160);
 
-	InputType inputtype[2]{ SHADER_INPUTLAYOUT_POSITION,SHADER_INPUTLAYOUT_TEXTURE };
+	ShaderLayout inputtype[2]{ &SHADER_EL_POSITION3,&SHADER_EL_TEXTURE };
 	mTextureShader.Initialize(mFramework->GetGDI(), ShaderConst::shaderPTVS, ShaderConst::shaderPTVSSize, ShaderConst::shaderPTPS, ShaderConst::shaderPTPSSize, inputtype, 2);
 	mTextureBatch.Initialize(mFramework->GetGDI(), &mTextureShader, 200, 400);
 	mRenderToTexture.Initialize(mFramework->GetGDI(), mFramework->GetGDI()->GetWidth(), mFramework->GetGDI()->GetHeight());

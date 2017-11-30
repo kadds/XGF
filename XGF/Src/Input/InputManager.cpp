@@ -193,7 +193,7 @@ void InputManager::SetMouseMode(MouseMode mm)
 		break;
 	case CustomCenter:
 		dinput.SetMoveable(true);
-		dinput.SetPosition(Batch::GetClientWidthD2(), Batch::GetClientHeightD2());
+		dinput.SetPosition(Batch::GetClientWidth() / 2, Batch::GetClientHeight() / 2);
 		dinput.SetRelativeMode(true);
 		PostMessage(mHwnd, WM_X_SHOWORHIDECURSOR, FALSE, 0);
 		OnMouseMove(Batch::GetClientWidthD2(), Batch::GetClientHeightD2());

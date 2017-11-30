@@ -23,6 +23,7 @@ using DirectX::XMFLOAT4;
 
 typedef XMFLOAT2 Position;
 typedef XMFLOAT3 Point;
+typedef XMFLOAT4 Point4;
 typedef XMFLOAT4 Color;
 struct WVPMatrix
 {

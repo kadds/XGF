@@ -1,34 +1,32 @@
 Texture2D ShaderTexture:register(t0);  //纹理资源
 SamplerState SampleType:register(s0);   //采样方式
-
 cbuffer CBMatrix:register(b0)
 {
 	matrix World;
 	matrix View;
 	matrix Proj;
 };
-
 struct VertexIn
 {
-	float3 Pos:POSITION;
-	float2 Tex:TEXCOORD;
+	float4 Pos:SV_POSITION;
+	float2 tPos:TEXCOORD;
 };
+
 struct VertexOut
 {
 	float4 Pos:SV_POSITION;
-	float2 Tex:TEXCOORD;
+	float2 tPos:TEXCOORD;
 };
-float4 PS( VertexOut outa ) : SV_TARGET
-{
-	return ShaderTexture.Sample(SampleType, outa.Tex) ;
-}
 
 VertexOut VS(VertexIn ina)
 {
     VertexOut outa;
-	outa.Pos = mul(float4(ina.Pos,1.0f), World);
-	outa.Pos = mul(outa.Pos, View);
-	outa.Pos = mul(outa.Pos, Proj);
-	outa.Tex = ina.Tex;
+	outa.Pos  = ina.Pos;
+	outa.tPos = ina.tPos;
 	return outa;
+}
+float4 PS( VertexOut outa ) : SV_TARGET
+{
+	//return ShaderTexture.Sample(SampleType, outa.tPos) ;
+	return float4(1.0,0.0,0.0,1.0) ; 
 }

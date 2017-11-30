@@ -2,17 +2,27 @@
 #include <math.h>
 #include "../../Include/Texture.hpp"
 #include "../../Include/Texture.hpp"
-PolygonPle::PolygonPle(int n)
+PolygonPlePoint3::PolygonPlePoint3(int n)
 {
 	mPoint = new Point[n];
     mCount = n;
 }
-PolygonPle::~PolygonPle()
+PolygonPlePoint3::~PolygonPlePoint3()
 {
     delete[] mPoint;
 }
 
-void PolygonPle::CopyTo(PolygonPle & ppe)
+void PolygonPlePoint3::CopyTo(void * Des, unsigned int chunk) const
+{
+	char * des = (char *)Des;
+	for (int i = 0; i < mCount; i++)
+	{
+		*((Point *)des) = mPoint[i];
+		des += chunk;
+	}
+}
+
+void PolygonPlePoint3::CopyTo(PolygonPlePoint3 & ppe)
 {
 	for (int i = 0; i < mCount; i++)
 	{
@@ -20,7 +30,7 @@ void PolygonPle::CopyTo(PolygonPle & ppe)
 	}
 }
 
-void PolygonPle::Transform(float centerXD2, float centerYD2)
+void PolygonPlePoint3::Transform(float centerXD2, float centerYD2)
 {
 	for (int i = 0; i < mCount; i++)
 	{
@@ -29,14 +39,14 @@ void PolygonPle::Transform(float centerXD2, float centerYD2)
 		mPoint[i].z = 0.0f;
 	}
 }
-PolygonPle::PolygonPle(const PolygonPle & p)
+PolygonPlePoint3::PolygonPlePoint3(const PolygonPlePoint3 & p)
 {
     if (&p == this)return;
     mCount = p.mCount;
     mPoint = new Point[p.mCount];
     memcpy(mPoint, p.mPoint, sizeof(Point)*mCount);
 }
-void PolygonPle::TransformTo(PolygonPle * qua, float centerXD2, float centerYD2) const
+void PolygonPlePoint3::TransformTo(PolygonPlePoint3 * qua, float centerXD2, float centerYD2) const
 {
 	for (int i = 0; i < mCount; i++)
 	{
@@ -45,26 +55,102 @@ void PolygonPle::TransformTo(PolygonPle * qua, float centerXD2, float centerYD2)
 		qua->mPoint[i].z = 0.0f;
 	}
 }
-int PolygonPle::GetPointCount() const
-{
-	return mCount;
-}
 
-void PolygonPle::MulTo(PolygonPle * pol, DirectX::CXMMATRIX matrix) const
+void PolygonPlePoint3::MulTo(PolygonPlePoint3 * pol, DirectX::CXMMATRIX matrix) const
 {
 	for (int i = 0; i < mCount; i++)
 	{
 		DirectX::XMStoreFloat3(&pol->mPoint[i], DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat3(&mPoint[i]), matrix));
 	}
 }
-void PolygonPle::Mul(DirectX::CXMMATRIX matrix)
+void PolygonPlePoint3::Mul(DirectX::CXMMATRIX matrix)
 {
 	for (int i = 0; i < mCount; i++)
 	{
 		DirectX::XMStoreFloat3(&mPoint[i], DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat3(&mPoint[i]), matrix));
 	}
 }
-void PolygonPle::Translation(float x, float y, float z)
+void PolygonPlePoint3::Translation(float x, float y, float z)
+{
+	for (int i = 0; i < mCount; i++)
+	{
+		mPoint[i].x += x;
+		mPoint[i].y += y;
+		mPoint[i].z += z;
+	}
+}
+
+
+
+PolygonPlePoint4::PolygonPlePoint4(int n)
+{
+	mPoint = new Point4[n];
+	mCount = n;
+}
+PolygonPlePoint4::~PolygonPlePoint4()
+{
+	delete[] mPoint;
+}
+
+void PolygonPlePoint4::CopyTo(void * Des, unsigned int chunk) const
+{
+	char * des = (char *)Des;
+	for (int i = 0; i < mCount; i++)
+	{
+		*((Point4 *)des) = mPoint[i];
+		des += chunk;
+	}
+}
+
+void PolygonPlePoint4::CopyTo(PolygonPlePoint4 & ppe)
+{
+	for (int i = 0; i < mCount; i++)
+	{
+		ppe.mPoint[i] = mPoint[i];
+	}
+}
+
+void PolygonPlePoint4::Transform(float centerXD2, float centerYD2)
+{
+	for (int i = 0; i < mCount; i++)
+	{
+		mPoint[i].x = mPoint[i].x - centerXD2;
+		mPoint[i].y = -mPoint[i].y + centerYD2;
+		mPoint[i].z = 0.0f;
+	}
+}
+PolygonPlePoint4::PolygonPlePoint4(const PolygonPlePoint4 & p)
+{
+	if (&p == this)return;
+	mCount = p.mCount;
+	mPoint = new Point4[p.mCount];
+	memcpy(mPoint, p.mPoint, sizeof(Point)*mCount);
+}
+void PolygonPlePoint4::TransformTo(PolygonPlePoint4 * qua, float centerXD2, float centerYD2) const
+{
+	for (int i = 0; i < mCount; i++)
+	{
+		qua->mPoint[i].x = mPoint[i].x - centerXD2;
+		qua->mPoint[i].y = -mPoint[i].y + centerYD2;
+		qua->mPoint[i].z = 0.0f;
+	}
+}
+
+void PolygonPlePoint4::MulTo(PolygonPlePoint4 * pol, DirectX::CXMMATRIX matrix) const
+{
+	for (int i = 0; i < mCount; i++)
+	{
+		DirectX::XMStoreFloat4(&pol->mPoint[i], DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat4(&mPoint[i]), matrix));
+	}
+}
+void PolygonPlePoint4::Mul(DirectX::CXMMATRIX matrix)
+{
+	for (int i = 0; i < mCount; i++)
+	{
+		DirectX::XMStoreFloat4(&mPoint[i], DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat4(&mPoint[i]), matrix));
+	}
+}
+void PolygonPlePoint4::Translation(float x, float y, float z)
 {
 	for (int i = 0; i < mCount; i++)
 	{
@@ -93,9 +179,14 @@ void PolygonPleTextureBinder::FromTexture(const Texture * tx)
 	mPoint[0].y = mPoint[3].y = tx->GetTexturePosTop();
 	mPoint[1].y = mPoint[2].y = tx->GetTexturePosBottom();
 }
-void PolygonPleTextureBinder::CopyTo(void * Des) const
+void PolygonPleTextureBinder::CopyTo(void * Des, unsigned int chunk) const
 {
-	memcpy(Des, mPoint, sizeof(Position) * mCount);
+	char * c = static_cast<char *>(Des);
+	for (int i = 0; i < mCount; i++)
+	{
+		*(Position *)c = mPoint[i];
+		c += chunk;
+	}
 }
 void PolygonPleTextureBinder::SetPosition(float left, float right, float top, float bottom)
 {
@@ -115,6 +206,21 @@ BindingBridge::BindingBridge():mCount(0)
 BindingBridge::~BindingBridge()
 {
   
+}
+
+void BindingBridge::SetBinder(const PolygonPleBinder & c, int pos)
+{
+	binders[pos] = &c;
+}
+
+void BindingBridge::InsertBinder(const PolygonPleBinder & c, int pos)
+{
+	for (int i = mCount; i > pos; i--)
+	{
+		binders[i] = binders[i - 1];//TODO:: some problem!!
+	}
+	binders[pos] = &c;
+	mCount++;
 }
 
 void BindingBridge::AddBinder(const PolygonPleBinder & c)
@@ -164,11 +270,13 @@ PolygonPleConstantColorBinder::PolygonPleConstantColorBinder(const PolygonPleCon
 	mAllCount = pcb.mAllCount;
    // memcpy(mColor, pcb.mColor, sizeof(Color)*mCount);
 }
-void PolygonPleConstantColorBinder::CopyTo(void * Des) const
+void PolygonPleConstantColorBinder::CopyTo(void * Des, unsigned int chunk) const
 {
+	char * c = static_cast<char *>(Des);
 	for (int i = 0; i < mAllCount; i++)
 	{
-		*(static_cast<Color *>(Des) + i) = mColor[0];
+		*(Color *)c = mColor[0];
+		c += chunk;
 	}
 }
 Color PolygonPleConstantColorBinder::Get(int n)
@@ -187,9 +295,14 @@ PolygonPleConstantColorBinder::PolygonPleConstantColorBinder(Color & c, int ct):
 
 /////////////////////////////////////////////////////////////////////////
 
-void PolygonPleColorBinder::CopyTo(void * Des) const
+void PolygonPleColorBinder::CopyTo(void * Des, unsigned int chunk) const
 {
-	memcpy(Des, mColor, sizeof(Color) * mCount);
+	char * c = static_cast<char *>(Des);
+	for (int i = 0; i < mCount; i++)
+	{
+		*(Color *)c = mColor[i];
+		c += chunk;
+	}
 }
 PolygonPleColorBinder::PolygonPleColorBinder(int n)
 {
@@ -251,14 +364,16 @@ PolygonPleConstantExColorBinder::PolygonPleConstantExColorBinder(const PolygonPl
 	mLayerCount = pcb.mLayerCount;
 }
 
-void PolygonPleConstantExColorBinder::CopyTo(void * Des) const
+void PolygonPleConstantExColorBinder::CopyTo(void * Des, unsigned int chunk) const
 {
 	int allPos = 0;
+	char * c = static_cast<char *>(Des);
 	for (int i = 0; i < mLayerCount; i++)
 	{
 		for (int j = 0; j < mLayer[i]; j++)
 		{
-			*(static_cast<Color *>(Des) + allPos + j) = mColor[i];
+			*((Color *)c) = mColor[i];
+			c += chunk;
 		}
 		allPos += mLayer[i];
 	}
@@ -275,4 +390,24 @@ void PolygonPleConstantExColorBinder::SetLayerColor(int layer, Color & color)
 	{
 		mColor[layer] = color;
 	}
+}
+
+
+PolygonPleDataBinder::PolygonPleDataBinder()
+{
+	mCount = 1;
+}
+
+PolygonPleDataBinder::~PolygonPleDataBinder()
+{
+}
+
+PolygonPleDataBinder::PolygonPleDataBinder(const PolygonPleDataBinder & pcb)
+{
+	mData = pcb.mData;
+}
+
+void PolygonPleDataBinder::CopyTo(void * Des, unsigned int chunk) const
+{
+	*(static_cast<XMFLOAT4 *>(Des)) = mData;
 }

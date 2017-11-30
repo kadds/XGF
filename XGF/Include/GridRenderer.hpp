@@ -43,7 +43,7 @@ private:
 	//MeshData * mMeshData;
 	float mWidth;
 	float mHeight;
-	PolygonPle *mPolygon;
+	PolygonPlePoint3 *mPolygon;
 	PolygonPleIndex *mPolygonPleIndex;
 	BindingBridge mBindingBridge;
 	PolygonPleConstantExColorBinder *mColorBinder;

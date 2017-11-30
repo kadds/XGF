@@ -2,7 +2,7 @@
 
 
 
-SceneAnimation::SceneAnimation():pos(0,0,0),angle(0,0,0),scale(1,1,1),color(0,0,0,1),alpha(1)
+SceneAnimation::SceneAnimation():pos(0,0,0),angle(0,0,0),scale(1,1,1),color(1,1,1,1),alpha(0)
 {
 }
 
@@ -16,12 +16,14 @@ void SceneAnimation::BeginAnimation()
 	mActions.Start();
 }
 
-void SceneAnimation::Updata(float time)
+void SceneAnimation::SetAction(std::unique_ptr<Action> ac) 
 {
-	mActions.Updata(time);
+	isend = false;
+	mActions.SetAction(std::move(ac), this);
+	mActions.SetOnActionCompletedListener(std::bind(&SceneAnimation::ok, this)); 
 }
 
-XMMATRIX SceneAnimation::GetMatrix() 
+XMMATRIX SceneAnimation::GetMatrix()
 { 
 	Point op(0,0,0);
 	Point sp(0, 0, 0);

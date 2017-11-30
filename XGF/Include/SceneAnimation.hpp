@@ -9,8 +9,11 @@ public:
 	~SceneAnimation();
 	bool IsEnd() { return isend; };
 	void BeginAnimation();
-	void SetAction(std::unique_ptr<Action> ac) { isend = false;mActions.SetAction(std::move(ac), this); mActions.SetOnActionCompletedListener(std::bind(&SceneAnimation::ok, this)); };
-	void Updata(float time);
+	void SetAction(std::unique_ptr<Action> ac);
+	void Updata(float time)
+	{
+		mActions.Updata(time);
+	}
 	Actions * GetActions() { return &mActions; };
 	XMMATRIX GetMatrix();
 	virtual void OnPositionChange(const Point & p, int ID) { pos = p; };

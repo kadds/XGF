@@ -94,7 +94,7 @@ void GDI::Create()
 	{
 		DXGI_ADAPTER_DESC dad;
 		eDXGIAdapter->GetDesc(&dad);
-		OutputDebugStringExA("ÏÔ¿¨%d: DeviceId:%d,SharedSystemMemory:%dMB,DedicatedSystemMemory:%dMB,DedicatedVideoMemory:%dMB,AdapterLuid:%d,Description:%s\n"
+		OutputDebugStringExA(L"ÏÔ¿¨%d: DeviceId:%d,SharedSystemMemory:%dMB,DedicatedSystemMemory:%dMB,DedicatedVideoMemory:%dMB,AdapterLuid:%d,Description:%s\n"
 			,i, dad.DeviceId, dad.SharedSystemMemory >> 20, dad.DedicatedSystemMemory >> 20, dad.DedicatedVideoMemory >> 20, dad.AdapterLuid,dad.Description);
 		mAdapters.push_back(eDXGIAdapter);
 		++i;
@@ -472,7 +472,6 @@ void GDI::SetFullScreen(bool isFullscreen, int pos)
 	mSwapChain->GetFullscreenState(&bl, NULL);
 	if (isFullscreen && bl == FALSE)
 	{
-		RECT rc;
 		GetClientRect(mHwnd, &mLastWinRc);
 		DXGI_MODE_DESC dxm = mScreenMode.at(0).second[pos];
 		dxm.Format = DXGI_FORMAT_UNKNOWN;

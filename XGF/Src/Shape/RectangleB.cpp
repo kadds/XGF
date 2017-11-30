@@ -66,7 +66,7 @@ bool RectangleB::IsInBBox(const Point & p, const XMFLOAT4X4 * matrix) const
 {
 	if (matrix != nullptr)
 	{
-		PolygonPle ple(4);
+		PolygonPlePoint3 ple(4);
 		
 		for (int i = 0; i < 4; i++)
 		{

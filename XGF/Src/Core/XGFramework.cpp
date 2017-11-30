@@ -127,7 +127,7 @@ void XGFramework::_OnCreate(GDI *gdi, Asyn* asyn)
 	mGDI->Create();
 	ConstantData::GetInstance().Initialize(gdi);
 	mInputManager.Initialize(gdi, gdi->GetInstance(), gdi->GetTopHwnd(),mTheard);
-	mSceneBatch.Initialize(gdi, ConstantData::GetInstance().GetPTShader(), 24, 24);
+	mSceneBatch.Initialize(gdi, ConstantData::GetInstance().GetPCTShader(), 24, 24);
 	mSceneBatch.SetBlend(true);
 	mSceneBatch.SetZBufferRender(false);
 	mRenderToTexture.Initialize(mGDI, mGDI->GetWidth(), mGDI->GetHeight());
@@ -182,9 +182,9 @@ void XGFramework::_OnSize(int ClientX, int ClientY)
 		mScene->OnSize(ClientX, ClientY);
 	if (mLastScene != nullptr)
 		mLastScene->OnSize(ClientX, ClientY);
-	mLastRenderRectangle.SetPositionAndSize(0,0, ClientX, ClientY);
+	mLastRenderRectangle.SetPositionAndSize(0.f, 0.f, static_cast<float>(ClientX), static_cast<float>(ClientY));
 	mLastRenderRectangle.SetZ(0.f);
-	mRenderRectangle.SetPositionAndSize(0, 0, ClientX, ClientY);
+	mRenderRectangle.SetPositionAndSize(0, 0, static_cast<float>(ClientX), static_cast<float>(ClientY));
 	mRenderRectangle.SetZ(0.f);
 	mRenderToTexture.Shutdown();
 	mLastRenderToTexture.Shutdown();
@@ -239,7 +239,7 @@ bool XGFramework::_OnInput(const Event & ev)
 	case EVENT_ONMOUSEMOVE:
 		mp.x = ev.Content.x.num;
 		mp.y = ev.Content.y.num;
-		mInputManager.OnMouseMove(mp.x, mp.y);
+		mInputManager.OnMouseMove(static_cast<float>(mp.x), static_cast<float>(mp.y));
 		for each (auto var in mInputs)
 		{
 			var->OnMouseMove(mp, ev.Content.z.num);
@@ -311,22 +311,37 @@ void XGFramework::ISwitchScene(Scene * scene)
 }
 void XGFramework::DrawSceneAnimation()
 {
-	mGDI->Clear(Color(0.0f,0.0f,0.0f,1.f));
+	mGDI->Clear(Color(1.0f,1.0f,1.0f,1.f));
 	WVPMatrix wvp;
+	Color c;
 	BindingBridge bbr;
 	PolygonPleTextureBinder ppb(4);
+	PolygonPleConstantColorBinder cc(Color(0.f,0.f,0.f,1.f),4);
+	bbr.AddBinder(cc);
 	bbr.AddBinder(ppb);
 	ppb.SetPosition(0.f, 1.f, 0.f, 1.f);
 	mRenderCamera.GetCameraMatrix(wvp);
 	mSceneBatch.Begin(wvp);
 	if (mLastSceneAnimation != nullptr)
+	{
+		mLastSceneAnimation->GetColor(c,0);
+		cc.Set(0, 1, c);
 		mLastRenderRectangle.Render(mSceneBatch, &mLastSceneAnimation->GetMatrix(), bbr, mLastRenderToTexture.GetShaderResourceView());
+	}
 	else
 		mLastRenderRectangle.Render(mSceneBatch, nullptr, bbr, mLastRenderToTexture.GetShaderResourceView());
-	if(mSceneAnimation!=nullptr)
+	if (mSceneAnimation != nullptr)
+	{
+		mSceneAnimation->GetColor(c, 0);
+		cc.Set(0, 1, c);
 		mRenderRectangle.Render(mSceneBatch, &mSceneAnimation->GetMatrix(), bbr, mRenderToTexture.GetShaderResourceView());
+	}
 	else
+	{
+		cc.Set(0, 1, Color(1.f,1.f,1.f,1.f));
 		mRenderRectangle.Render(mSceneBatch, nullptr, bbr, mRenderToTexture.GetShaderResourceView());
+	}
+		
 	mSceneBatch.End();
 	
 	

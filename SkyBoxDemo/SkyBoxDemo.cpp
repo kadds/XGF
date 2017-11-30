@@ -48,8 +48,8 @@ private:
 	Texture tt;
 	PolygonPleTextureBinder cb;
 	FPSCamera camera3d;
-	PointColorParticle ppcp;
-	//ParticleSystem ps;
+	ParticleExplosion ps;
+	ParticleExplosion::ExplosionEmitter eemitter;
 public:
 	GameScene() :cb(cube.mPolygon.mCount){};
 	virtual ~GameScene() {};
@@ -61,7 +61,7 @@ public:
 		Tools::GetInstance()->GetFontPath("Dengb.ttf", buffer, MAX_PATH);
 		font.Initialize(gdi, buffer, 14);
 		textRenderer.Initialize(gdi, &font, 100);
-		InputType it = SHADER_INPUTLAYOUT_POSITION;
+		ShaderLayout it = &SHADER_EL_POSITION3;
 		GetFilePath(L"../../fx/fx/shaderCube.fx", wbuffer, MAX_PATH);
 		shader.Initialize(gdi, wbuffer, nullptr,&it,1);
 		batch.Initialize(gdi,&shader, 100, 100);
@@ -69,7 +69,7 @@ public:
 		cube.Filp();
 		camera3d.SetPos(XMFLOAT3(20.0f, 1.f, 5.f));
 		
-		//ps.Initialize(gdi, 1000);
+		ps.Initialize(gdi);
 		ar.Initialize(gdi);
 		
 		tt.LoadDDS(gdi, GetFilePath(L"grasscube1024.dds", wbuffer, MAX_PATH));
@@ -77,8 +77,10 @@ public:
 		mFramework->GetInputManager()->GetCursor()->SetStaticTexture(mFramework->GetGDI(), GetFilePath(L"cursor.png", wbuffer, MAX_PATH));
 		mFramework->GetInputManager()->SetMouseMode(MouseMode::CustomCenter);
 		mFramework->AddInputListener(this);
-
-		ppcp.SetPosition(Point(20, 0, 5));
+		eemitter.pos = Point(50, 50, 5);
+		eemitter.SetWidthAndHeight(2, 2);
+		ps.AddEmitter(&eemitter);
+		bbg.AddBinder(cube.mPolygon);
 	}
 	virtual void OnDestory() override
 	{
@@ -86,7 +88,7 @@ public:
 		mFramework->RemoveInputListener(this);
 		batch.Shutdown();
 		shader.Shutdown();
-		//ps.Shutdown();
+		ps.Shutdown();
 		textRenderer.Shutdown();
 		font.Shutdown();
 		tt.Release();
@@ -102,7 +104,7 @@ public:
 
 		batch.Begin(wvp3d);
 		batch.SetTexture(tt);
-		batch.DrawPolygon(cube.mPolygon, cube.mPolygonPleIndex, bbg);
+		batch.DrawPolygon(cube.mPolygonPleIndex, bbg);
 		
 		batch.End();
 		ar.Begin(wvp3d);
@@ -115,14 +117,13 @@ public:
 		textRenderer.Begin(wvp2d);
 		textRenderer.DrawStringEx(4, 4, Color(0.8f, 0.8f, 0.9f, 1.0f), L"FPS:%d", (int)DebugInscriber::GetInstance()->GetAverageFPS());
 		textRenderer.End();
-		//ps.Begin(wvp3d);
-		//ps.Draw(ppcp);
-		//ps.End();
+		ps.Begin(wvp2d);
+		ps.Draw();
+		ps.End();
 
 	}
 	virtual void Updata(float deltaTime) override
 	{
-		ppcp.Update();
 		camera2d.Updata();
 		camera3d.Updata();
 		auto ip = GetFramework()->GetInputManager();

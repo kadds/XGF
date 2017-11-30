@@ -65,7 +65,7 @@ void Cube::SetPosition(const Point & p)
 }
 void Cube::Filp()
 {
-	float temp;
+	index temp;
 	for (int i = 0; i < mPolygonPleIndex.mCount; i+=3)
 	{
 		temp = mPolygonPleIndex.mIndex[i + 1];

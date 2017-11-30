@@ -38,13 +38,10 @@ void PerspectiveCamera::Updata()
 	DirectX::XMStoreFloat3(&mLook, look);
 	DirectX::XMStoreFloat3(&mUp, up);
 	DirectX::XMStoreFloat3(&mRight, right);
-	//DirectX::XMStoreFloat4x4(&viewMatrix, DirectX::XMMatrixLookAtLH(DirectX::XMLoadFloat3(&mPos)
-	//	, DirectX::XMLoadFloat3(&mLook), DirectX::XMLoadFloat3(&mUp)));
 	viewMatrix(0, 0) = mRight.x;    viewMatrix(0, 1) = mUp.x;   viewMatrix(0, 2) = mLook.x; viewMatrix(0, 3) = 0;
 	viewMatrix(1, 0) = mRight.y;    viewMatrix(1, 1) = mUp.y;   viewMatrix(1, 2) = mLook.y; viewMatrix(1, 3) = 0;
 	viewMatrix(2, 0) = mRight.z;    viewMatrix(2, 1) = mUp.z;   viewMatrix(2, 2) = mLook.z; viewMatrix(2, 3) = 0;
 	viewMatrix(3, 0) = x;            viewMatrix(3, 1) = y;        viewMatrix(3, 2) = z;         viewMatrix(3, 3) = 1;
-	
 	
 		
 }

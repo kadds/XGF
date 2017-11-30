@@ -18,7 +18,7 @@ void FirstScene::OnCreate()
 	Tools::GetInstance()->GetFontPath("Dengb.ttf", cbuffer, MAX_PATH);
 	mAxisRenderer.Initialize(mFramework->GetGDI());
 	
-	InputType it[] = { SHADER_INPUTLAYOUT_POSITION, SHADER_INPUTLAYOUT_COLOR };
+	ShaderLayout it[] = { {&SHADER_EL_POSITION3, true}, &SHADER_EL_COLOR };
 	mShader3D.Initialize(mFramework->GetGDI(), ShaderConst::shaderPCVS, ShaderConst::shaderPCVSSize, ShaderConst::shaderPCPS, ShaderConst::shaderPCPSSize, it, 2);
 	mBatch3D.Initialize(mFramework->GetGDI(), &mShader3D, 100, 100);
 	mCube.SetPositionAndSize(-1, -1, -1, 2, 2, 2);
@@ -127,17 +127,24 @@ void FirstScene::OnCreate()
 
 	ActionBuilder::Builder()
 		.BeginBuild()
-		.MoveTo(0.f, 0.f, 0.0f, 2.0f, AnticipateOvershootInterpolator::GetInterpolator(4))
+			.ParallelActionTo()
+				.SequenceActionTo()
+					.MoveTo(0.f, 0.f, 0.0f, 2.0f, AnticipateOvershootInterpolator::GetInterpolator(4))
+					.BackUp()
+				.SequenceActionTo()
+					.ChangeColorTo(1.f, 1.f, 1.f, 1.f, 2.f, LinearInterpolator::GetInterpolator())
 		.EndBuild(sceneact);
 	mSceneAnimationIn.OnPositionChange(Point(-500.f, 0.f, 0.f), 0);
+	mSceneAnimationIn.OnColorChange(Color(0.0, 0.0, 0.0, 0.f),0);
 	mSceneAnimationIn.SetAction(std::move(sceneact));
 	
 	std::unique_ptr<Action> sceneact2;
 
 	ActionBuilder::Builder()
 		.BeginBuild()
-		.MoveTo(-500.f, 0.f, 0.0f, 2.0f, AnticipateOvershootInterpolator::GetInterpolator(4))
+		.ChangeColorTo(1.f, 1.f, 1.f, 0.f, 2.f, LinearInterpolator::GetInterpolator())
 		.EndBuild(sceneact2);
+	mSceneAnimationOut.OnColorChange(Color(1.0, 1.0, 1.0, 1.f),0);
 	mSceneAnimationOut.SetAction(std::move(sceneact2));
 }
 
@@ -227,9 +234,10 @@ void FirstScene::Render(float deltaTime)
 	cb.mColor[6] = Color(0.0, 0.0, 0.0, 1.0);
 	cb.mColor[7] = Color(1.0, 0.0, 1.0, 1.0);
 	BindingBridge bbr;
+	bbr.AddBinder(mCube.mPolygon);
 	bbr.AddBinder(cb);
 	mBatch3D.Begin(wvp3D);
-	mBatch3D.DrawPolygon(mCube.mPolygon, mCube.mPolygonPleIndex, bbr);
+	mBatch3D.DrawPolygon(mCube.mPolygonPleIndex, bbr);
 	mBatch3D.End();
 	
 
@@ -277,8 +285,8 @@ void FirstScene::OnMouseMove(const MousePoint & mm, int pk)
 {
 	float h = GetFramework()->GetWindowsHeight();
 	float w = GetFramework()->GetWindowsWidth();
-	mCamera.Pitch(mCamera.GetFovAngle() / h * mm.y);
-	mCamera.Yaw(mCamera.GetFovAngle() / w * mm.x);
+	mCamera.Pitch(mCamera.GetFovAngle() / h);
+	mCamera.Yaw(mCamera.GetFovAngle() / w);
 }
 
 void FirstScene::OnKeyDowm(Key k)
