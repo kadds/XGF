@@ -3,21 +3,25 @@
 #include "Rectangle.hpp"
 #include <algorithm>
 #include <functional>
-typedef std::function<bool(int, wchar_t, Shape::Rectangle * rc, const PosSize * ps)> LayoutCallbackFunction;
-//return true break function;
-typedef std::function<bool(int, wchar_t, Position * p)> PenMoveCallback;
-/*
-º∆À„Layout Info
-*/
-class TextLayoutShaper
+namespace XGF
 {
-public:
-	TextLayoutShaper();
-	~TextLayoutShaper();
-	Position MeasureStringSize(Font & font, wchar_t * str);
-	int DoLayouShaper(const wchar_t * str, const Shape::Rectangle & rc, Font & font,
-		LayoutCallbackFunction fun, PenMoveCallback movec = nullptr);
-private:
-	Shape::Rectangle mRc;
-};
+	typedef std::function<bool(int, wchar_t, Shape::Rectangle * rc, const PosSize * ps)> LayoutCallbackFunction;
+	//return true break function;
+	typedef std::function<bool(int, wchar_t, Position * p)> PenMoveCallback;
+	/*
+	º∆À„Layout Info
+	*/
+	class TextLayoutShaper
+	{
+	public:
+		TextLayoutShaper();
+		~TextLayoutShaper();
+		Position MeasureStringSize(Font & font, wchar_t * str);
+		int DoLayouShaper(const wchar_t * str, const Shape::Rectangle & rc, Font & font,
+			LayoutCallbackFunction fun, PenMoveCallback movec = nullptr);
+	private:
+		Shape::Rectangle mRc;
+	};
 
+
+}

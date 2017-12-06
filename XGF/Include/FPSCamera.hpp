@@ -1,10 +1,14 @@
 #pragma once
 #include "PerspectiveCamera.hpp"
-class FPSCamera :public  PerspectiveCamera
+namespace XGF
 {
-public:
-	FPSCamera();
-	~FPSCamera();
-	virtual void Updata();
-};
+	class FPSCamera :public  PerspectiveCamera
+	{
+	public:
+		FPSCamera();
+		~FPSCamera();
+		virtual void Updata();
+	};
+}
+
 

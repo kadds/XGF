@@ -32,7 +32,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	int rt = RunGame(hInstance);
 	return rt;
 }
-
+using namespace XGF;
 
 class GameScene : public Scene, public InputListener
 {
@@ -43,7 +43,9 @@ private:
 	Batch batch;
 	Shape::Cube cube;
 	BindingBridge bbg;
-	Shader shader;
+	Shaders shaders;
+	VertexShader vss;
+	PixelShader pss;
 	AxisRenderer ar;
 	Texture tt;
 	PolygonPleTextureBinder cb;
@@ -63,13 +65,15 @@ public:
 		textRenderer.Initialize(gdi, &font, 100);
 		ShaderLayout it = &SHADER_EL_POSITION3;
 		GetFilePath(L"../../fx/fx/shaderCube.fx", wbuffer, MAX_PATH);
-		shader.Initialize(gdi, wbuffer, nullptr,&it,1);
-		batch.Initialize(gdi,&shader, 100, 100);
+		vss.Initialize(gdi, wbuffer, &it, 1);
+		pss.Initialize(gdi, wbuffer);
+		shaders.Initialize(&vss, &pss, nullptr);
+		batch.Initialize(gdi, &shaders, 100, 100);
 		cube.SetPositionAndSize(-100, -100, -100, 200, 200, 200);
 		cube.Filp();
 		camera3d.SetPos(XMFLOAT3(20.0f, 1.f, 5.f));
 		
-		ps.Initialize(gdi);
+		ps.Initialize(gdi, 50);
 		ar.Initialize(gdi);
 		
 		tt.LoadDDS(gdi, GetFilePath(L"grasscube1024.dds", wbuffer, MAX_PATH));
@@ -81,18 +85,21 @@ public:
 		eemitter.SetWidthAndHeight(2, 2);
 		ps.AddEmitter(&eemitter);
 		bbg.AddBinder(cube.mPolygon);
+		GetFilePath(L"../../fx/fx/ParticleComputer.fx", wbuffer, MAX_PATH);
+		
 	}
 	virtual void OnDestory() override
 	{
 		Scene::OnDestory();
 		mFramework->RemoveInputListener(this);
 		batch.Shutdown();
-		shader.Shutdown();
 		ps.Shutdown();
 		textRenderer.Shutdown();
 		font.Shutdown();
 		tt.Release();
 		ar.Shutdown();
+		vss.Shutdown();
+		pss.Shutdown();
 	}
 	virtual void Render(float deltaTime) override
 	{
@@ -101,7 +108,7 @@ public:
 		WVPMatrix wvp2d, wvp3d;
 		camera2d.GetCameraMatrix(wvp2d);
 		camera3d.GetCameraMatrix(wvp3d);
-
+		cube.SetPositionAndSize(camera3d.GetPosition().x, camera3d.GetPosition().y, camera3d.GetPosition().z,20,20,20);
 		batch.Begin(wvp3d);
 		batch.SetTexture(tt);
 		batch.DrawPolygon(cube.mPolygonPleIndex, bbg);

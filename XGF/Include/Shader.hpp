@@ -1,72 +1,139 @@
 #pragma once
 #include "Defines.hpp"
 #include <d3d11_1.h>
-
-class GDI;
-class EnumLayout
+namespace XGF
 {
-public:
-	char *name;
-	unsigned int size;
-	unsigned char number;
-	EnumLayout(char * n, unsigned int l, unsigned char num) :name(n), size(l), number(num) {};
-};
-class ShaderLayout
-{
-public:
-	const EnumLayout * enumLayout;
-	bool mConnet;
-	ShaderLayout(const EnumLayout * el, bool cn = false) :enumLayout(el),mConnet(cn){};
-};
-struct SlotCan
-{
-	union
+	class IConstantBuffer;
+	class GDI;
+	class EnumLayout
 	{
-		UINT * address;
-		UINT data;
-	} size;//count = 1, using the data else using the address for array
-	
-	int count;
-};
-class Shader
-{
-public:
-	Shader();
-	~Shader();
-	void Initialize(GDI* gdi, const wchar_t* VSname, const wchar_t* PSname, ShaderLayout it[], int len);
-	void Initialize(GDI* gdi, const wchar_t* VSname, const wchar_t* PSname, const wchar_t* Geometryname, ShaderLayout it[], int len, EnumLayout ot[], int olen);
+	public:
+		char *name;
+		unsigned int size;
+		unsigned char number;
+		EnumLayout(char * n, unsigned int l, unsigned char num) :name(n), size(l), number(num) {};
+	};
+	class ShaderLayout
+	{
+	public:
+		const EnumLayout * enumLayout;
+		bool mConnet;
+		bool mInstance;
+		ShaderLayout(const EnumLayout * el, bool cn = false, bool instance = false) :enumLayout(el), mConnet(cn), mInstance(instance) {};
+	};
+	struct SlotCan
+	{
+		int size;
+		bool nextIsASlot;
+	};
 
-	void Initialize(GDI* gdi, const unsigned char *constVSShader, unsigned int VSSize, const unsigned char *constPSShader, unsigned int PSSize, ShaderLayout it[], int len);
-	//virtual void CreateInputLayout(GDI* gdi) = 0;
-	void SetShaderParameter(const WVPMatrix & Matrix);
+	class Shader
+	{
+	public:
+		Shader();
+		~Shader();
+		virtual void SetShaderConstantParameter(IConstantBuffer * cb) {};
 
-	void Shutdown();
-    int GetSlotCount() { return mCount; }
-	SlotCan * GetSizePreSlot() { return sizePos; }
-    UINT * GetSizeInSlot(int i) { return sizePos[i].count == 1 ? &sizePos[i].size.data : sizePos[i].size.address; }
-	UINT GetAllSizeInOneSlot(int i);
-	void GetAllSizeInSlot(UINT dout[]);
-	int GetCountInSlot(int i) { return sizePos[i].count; }
-    void SetShaderAndInputLayout();
+	protected:
+		GDI *mGDI;
+		DISALLOW_COPY_AND_ASSIGN(Shader);
+	};
+	class PixelShader : public Shader
+	{
+	public:
+		void Initialize(GDI* gdi, const wchar_t* PSname);
+		void Initialize(GDI* gdi, const unsigned char* PScode, unsigned int codeLen);
+		void Shutdown();
+		virtual void SetShaderConstantParameter(IConstantBuffer * cb) override;
+	private:
+		friend class Shaders;
+		ID3D11PixelShader *mPixelShader;
+	};
+	class VertexShader : public Shader
+	{
+	public:
+		void Initialize(GDI* gdi, const wchar_t* VSname, ShaderLayout layout[], int layoutCount);
+		void Initialize(GDI* gdi, const unsigned char* VScode, unsigned int codeLen, ShaderLayout layout[], int layoutCount);
 
-protected:
-	ID3D11PixelShader *mPixelShader;
-	ID3D11VertexShader *mVertexShader;
-	ID3D11GeometryShader * mGeometryShader;
+		void Shutdown();
+		void SetInputLayout();
+		int GetSlotCount();
+		virtual void SetShaderConstantParameter(IConstantBuffer * cb) override;
+		void GetStride(unsigned int stride[]);
+		int GetSize(int position);
+		SlotCan * GetSlotCan() { return mSlotStride; }
+	private:
+		friend class Shaders;
+		ID3D11VertexShader *mVertexShader;
+		ID3D11InputLayout *mInputLayout;
+		SlotCan * mSlotStride;
+		int mCount;
+	};
+	class GeometryShader : public Shader
+	{
+	public:
+		void Initialize(GDI* gdi, const wchar_t* GSname);
+		void Shutdown();
+		virtual void SetShaderConstantParameter(IConstantBuffer * cb) override;
+	private:
+		friend class Shaders;
+		ID3D11GeometryShader * mGeometryShader;
+	};
 
-	ID3D11InputLayout *mInputLayout;
-	ID3D11Buffer* mCBMatrixBuffer; //常量缓存
-    GDI *mGDI;
-    SlotCan *sizePos;
-    int mCount;
-	void InitializeOther(ShaderLayout it[], int len,const void * VSpointer, unsigned int VSsize);
-	DISALLOW_COPY_AND_ASSIGN(Shader);
-};
 
 
-extern const EnumLayout SHADER_EL_POSITION4;
-extern const EnumLayout SHADER_EL_POSITION3;
-extern const EnumLayout SHADER_EL_COLOR;
-extern const EnumLayout SHADER_EL_TEXTURE;
-extern const EnumLayout SHADER_EL_NORMAL;
-extern const EnumLayout SHADER_EL_SV_POSITION;
+	extern const EnumLayout SHADER_EL_POSITION4;
+	extern const EnumLayout SHADER_EL_POSITION3;
+	extern const EnumLayout SHADER_EL_COLOR;
+	extern const EnumLayout SHADER_EL_TEXTURE;
+	extern const EnumLayout SHADER_EL_NORMAL;
+	extern const EnumLayout SHADER_EL_SV_POSITION;
+	enum class ComputeLayout
+	{
+		Float4,
+		Float3,
+		Float2,
+	};
+	class ComputeShader : Shader
+	{
+	public:
+		void Initialize(GDI* gdi, const wchar_t* CSname, int maxcount, int constantByteWidth, int inputByteWidth, int outputByteWidth);
+		void Shutdown();
+		void Run();
+		ID3D11Buffer * GetOutBuffer() {
+			return mOutputBuffer[1];
+		};
+		ID3D11ShaderResourceView * GetSRV() { return mInputShaderResourceView[1]; }
+		ID3D11UnorderedAccessView * GetUAV() { return mUnorderedAccessView[1]; };
+		void* Begin();
+		void End();
+	private:
+		ID3D11ComputeShader * mComputeShader;
+		ID3D11Buffer* mCBMatrixBuffer; //常量缓存
+		ID3D11Buffer * mOutputBuffer[2];
+		ID3D11ShaderResourceView *mInputShaderResourceView[2];
+		ID3D11UnorderedAccessView *mUnorderedAccessView[2];
+	};
+	class Shaders
+	{
+	private:
+		VertexShader * vs;
+		PixelShader * ps;
+		GeometryShader * gs;
+	public:
+		void Initialize(VertexShader * vs, PixelShader * ps = nullptr, GeometryShader * gs = nullptr)
+		{
+			this->vs = vs;
+			this->gs = gs;
+			this->ps = ps;
+		}
+		VertexShader * GetVSShader() { return vs; };
+		PixelShader * GetPSShader() { return ps; };
+		GeometryShader * GetGSShader() { return gs; };
+		void SetVSConstantBuffer(IConstantBuffer * ib) { vs->SetShaderConstantParameter(ib); };
+		void SetPSConstantBuffer(IConstantBuffer * ib) { ps->SetShaderConstantParameter(ib); };
+		void SetGSConstantBuffer(IConstantBuffer * ib) { gs->SetShaderConstantParameter(ib); };
+		void BindShader();
+		void UnBindShader();
+	};
+}

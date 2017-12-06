@@ -1,40 +1,43 @@
 #include "..\..\Include\SequenceAction.hpp"
 #include "..\..\Include\Animation.hpp"
 
-
-SequenceAction::SequenceAction()
+namespace XGF
 {
-
-}
-
-
-SequenceAction::~SequenceAction()
-{
-}
-
-bool SequenceAction::Tick(float time)
-{
-	bool isEnd = false;
-	size_t p = 0;
-	
-	if (actions[nowAction]->Tick(time - mTime))
+	SequenceAction::SequenceAction()
 	{
-		mTime = time;//+ mDelaytime;
-		if (actions.size() == nowAction + 1)
-		{
-			return true;
-		}
-		else
-		{
-			nowAction ++;
-		}
-	}
-	return false;
-}
 
-void SequenceAction::Reset()
-{
-	CompositeAction::Reset();
-	mTime = 0.f;
-	nowAction = 0;
+	}
+
+
+	SequenceAction::~SequenceAction()
+	{
+	}
+
+	bool SequenceAction::Tick(float time)
+	{
+		bool isEnd = false;
+		size_t p = 0;
+
+		if (actions[nowAction]->Tick(time - mTime))
+		{
+			mTime = time;//+ mDelaytime;
+			if (actions.size() == nowAction + 1)
+			{
+				return true;
+			}
+			else
+			{
+				nowAction++;
+			}
+		}
+		return false;
+	}
+
+	void SequenceAction::Reset()
+	{
+		CompositeAction::Reset();
+		mTime = 0.f;
+		nowAction = 0;
+	}
+
 }

@@ -18,9 +18,7 @@ void FirstScene::OnCreate()
 	Tools::GetInstance()->GetFontPath("Dengb.ttf", cbuffer, MAX_PATH);
 	mAxisRenderer.Initialize(mFramework->GetGDI());
 	
-	ShaderLayout it[] = { {&SHADER_EL_POSITION3, true}, &SHADER_EL_COLOR };
-	mShader3D.Initialize(mFramework->GetGDI(), ShaderConst::shaderPCVS, ShaderConst::shaderPCVSSize, ShaderConst::shaderPCPS, ShaderConst::shaderPCPSSize, it, 2);
-	mBatch3D.Initialize(mFramework->GetGDI(), &mShader3D, 100, 100);
+	mBatch3D.Initialize(mFramework->GetGDI(), ConstantData::GetInstance().GetPCShaders(), 100, 100);
 	mCube.SetPositionAndSize(-1, -1, -1, 2, 2, 2);
 
 	mFont.Initialize(mFramework->GetGDI(), cbuffer, 16);
@@ -167,8 +165,6 @@ void FirstScene::OnDestory()
     btPress.Release();
 
 	mBatch3D.Shutdown();
-	mShader3D.Shutdown();
-	
 }
 
 void FirstScene::Render(float deltaTime)

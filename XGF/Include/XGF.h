@@ -32,16 +32,6 @@
 
 //****** Animation And Interpolator *********
 #include "Interpolator\Interpolator.hpp"
-#include "Interpolator\LinearInterpolator.hpp"
-#include "Interpolator\AccelerateDecelerateInterpolator.hpp"
-#include "Interpolator\AccelerateInterpolator.hpp"
-#include "Interpolator\DecelerateInterpolator.hpp"
-#include "Interpolator\AnticipateOvershootInterpolator.hpp"
-#include "Interpolator\AnticipateInterpolator.hpp"
-#include "Interpolator\OvershootInterpolator.hpp"
-#include "Interpolator\SpringInterpolator.hpp"
-#include "Interpolator\CycleInterpolator.hpp"
-#include "Interpolator\BounceInterpolator.hpp"
 #include "ActionBuilder.hpp"
 #include "Action.hpp"
 #include "SequenceAction.hpp"

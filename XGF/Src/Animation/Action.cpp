@@ -1,18 +1,21 @@
 #include "../../Include/Action.hpp"
 
 
-
-Action::Action():mID(0)
+namespace XGF
 {
-}
+	Action::Action() :mID(0)
+	{
+	}
 
 
-Action::~Action()
-{
-}
+	Action::~Action()
+	{
+	}
 
-void Action::Reset()
-{
-	mBegan = false;
-	mComplete = false;
+	void Action::Reset()
+	{
+		mBegan = false;
+		mComplete = false;
+	}
+
 }

@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>-O shaderConst.cpp -OH shaderConst.h  -I fx/font.fx,fx/shader3.fx -ExStr "Test Debug"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>ShaderToCpp.exe -O ../XGF/Src/Core/ShaderConst.cpp -OH ../XGF/Include/ShaderConst.hpp -DIR "./fx/fx/*.fx"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>-O shaderConst.cpp -OH shaderConst.h  -I fx/font.fx,fx/shader3.fx -ExStr "Test Debug"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>ShaderToCpp.exe -O ../XGF/Src/Core/ShaderConst.cpp -OH ../XGF/Include/ShaderConst.hpp -DIR "./fx/fx/*.fx"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

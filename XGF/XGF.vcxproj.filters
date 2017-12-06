@@ -189,12 +189,6 @@
     <ClInclude Include="Include\Interpolator\Interpolator.hpp">
       <Filter>头文件\Interpolator</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Interpolator\LinearInterpolator.hpp">
-      <Filter>头文件\Interpolator</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Interpolator\AccelerateDecelerateInterpolator.hpp">
-      <Filter>头文件\Interpolator</Filter>
-    </ClInclude>
     <ClInclude Include="Include\SequenceAction.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -203,30 +197,6 @@
     </ClInclude>
     <ClInclude Include="Include\ChangeColorAction.hpp">
       <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Interpolator\AccelerateInterpolator.hpp">
-      <Filter>头文件\Interpolator</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Interpolator\AnticipateInterpolator.hpp">
-      <Filter>头文件\Interpolator</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Interpolator\AnticipateOvershootInterpolator.hpp">
-      <Filter>头文件\Interpolator</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Interpolator\BounceInterpolator.hpp">
-      <Filter>头文件\Interpolator</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Interpolator\SpringInterpolator.hpp">
-      <Filter>头文件\Interpolator</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Interpolator\DecelerateInterpolator.hpp">
-      <Filter>头文件\Interpolator</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Interpolator\OvershootInterpolator.hpp">
-      <Filter>头文件\Interpolator</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Interpolator\CycleInterpolator.hpp">
-      <Filter>头文件\Interpolator</Filter>
     </ClInclude>
     <ClInclude Include="Include\StateList.hpp">
       <Filter>头文件</Filter>
@@ -310,6 +280,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\ParticleSystem.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Buffer.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -455,36 +428,6 @@
     <ClCompile Include="Src\Animation\ChangeColorAction.cpp">
       <Filter>源文件\Animation</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Interpolator\AccelerateDecelerateInterpolator.cpp">
-      <Filter>源文件\Interpolator</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Interpolator\LinearInterpolator.cpp">
-      <Filter>源文件\Interpolator</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Interpolator\BounceInterpolator.cpp">
-      <Filter>源文件\Interpolator</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Interpolator\SpringInterpolator.cpp">
-      <Filter>源文件\Interpolator</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Interpolator\OvershootInterpolator.cpp">
-      <Filter>源文件\Interpolator</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Interpolator\DecelerateInterpolator.cpp">
-      <Filter>源文件\Interpolator</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Interpolator\CycleInterpolator.cpp">
-      <Filter>源文件\Interpolator</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Interpolator\AnticipateOvershootInterpolator.cpp">
-      <Filter>源文件\Interpolator</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Interpolator\AnticipateInterpolator.cpp">
-      <Filter>源文件\Interpolator</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Interpolator\AccelerateInterpolator.cpp">
-      <Filter>源文件\Interpolator</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Animation\DelayAction.cpp">
       <Filter>源文件\Animation</Filter>
     </ClCompile>
@@ -559,6 +502,12 @@
     </ClCompile>
     <ClCompile Include="Src\Core\ParticleSystem.cpp">
       <Filter>源文件\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\Buffer.cpp">
+      <Filter>源文件\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Interpolator\Interpolator.cpp">
+      <Filter>源文件\Interpolator</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

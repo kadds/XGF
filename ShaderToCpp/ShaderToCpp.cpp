@@ -1,5 +1,6 @@
 // ShaderToCpp.cpp
-// Data 2017/8/21 Time 17:05
+// convert hlsl to hlslcode
+// Data 2017/12/26 Time 13:00
 
 #include <iostream>
 #include <fstream>
@@ -10,6 +11,8 @@
 #include <time.h>
 #include <iomanip>
 #include <vector>
+#include <io.h>
+#include <Windows.h>
 
 #pragma comment(lib,"d3dcompiler.lib")
 #ifdef _DEBUG
@@ -23,33 +26,40 @@ typedef std::string string;
 DEFINE_string(O, "out.cpp", "output source file name");
 DEFINE_string(OH, "out.h", "output header file  name");
 DEFINE_string(I, "", "input File List, split by ,");
+DEFINE_string(DIR, "", "input File dir, split by ,");
 DEFINE_string(VSEP, "VS", "VSEntryPointName");
 DEFINE_string(VSV, "vs_4_0", "VSVersion");
 DEFINE_string(PSEP, "PS", "PSEntryPointName");
 DEFINE_string(PSV, "ps_4_0", "PSVersion");
+DEFINE_string(GSEP, "GS", "GSEntryPointName");
+DEFINE_string(GSV, "gs_4_0", "GSVersion");
+DEFINE_string(CSEP, "CS", "CSEntryPointName");
+DEFINE_string(CSV, "cs_5_0", "CSVersion");
 DEFINE_string(ExStr, "", "Extern String");
-DEFINE_string(NS, "ShaderConst", "NameSpace's Name");
+DEFINE_string(NS, "ShaderConst", "Iner NameSpace");
+DEFINE_string(ANS, "XGF", "NameSpace");
 
 wchar_t* CharToWchar(const char* c);
 void split(string str, string pattern, std::vector<string> & output);
 void TransformAShader(std::ofstream & os, std::ofstream & osh, string file, string name, string & entryPoint, string & version);
 void TransformToFile(std::ofstream & os, std::ofstream & osh ,ID3DBlob & bb, string & name);
 void OutputInformation(std::ofstream & os, std::ofstream & osh );
-
-
+HANDLE  gConsole;
+HANDLE  gErrorConsole;
 int main(int argc, char *argv[])
 {
-	google::SetVersionString("1.0");
-	google::SetUsageMessage("Make Shader file to cpp file");
+	google::SetVersionString("1.1");
+	google::SetUsageMessage("convert hlsl file to hlslcode");
 	google::ParseCommandLineFlags(&argc, &argv, false);
-	google::CommandLineFlagInfo info;
-	if ((google::GetCommandLineFlagInfo("I", &info) && info.is_default))
+	google::CommandLineFlagInfo info, info2;
+	if ((google::GetCommandLineFlagInfo("I", &info) && info.is_default) && google::GetCommandLineFlagInfo("DIR", &info2) && info2.is_default)
 	{
 		std::cerr << "Error! no input file";
 		google::ShutDownCommandLineFlags();
 		return -4;
 	}
-	
+	gConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	gErrorConsole = GetStdHandle(STD_ERROR_HANDLE);
 	string output = FLAGS_O;
 	string outputh = FLAGS_OH;
 	string input = FLAGS_I;
@@ -57,7 +67,12 @@ int main(int argc, char *argv[])
 	string VSVersion = FLAGS_VSV;
 	string PSEntryPoint = FLAGS_PSEP;
 	string PSVersion = FLAGS_PSV;
-	char exeFullPath[MAX_PATH]; // MAX_PATH在WINDEF.h中定义了，等于260  
+	string GSEntryPoint = FLAGS_GSEP;
+	string GSVersion = FLAGS_GSV;
+	string CSEntryPoint = FLAGS_CSEP;
+	string CSVersion = FLAGS_CSV;
+	string inputDir = FLAGS_DIR;
+	char exeFullPath[MAX_PATH];
 	memset(exeFullPath, 0, MAX_PATH);
 
 	GetModuleFileNameA(NULL, exeFullPath, MAX_PATH);
@@ -65,7 +80,39 @@ int main(int argc, char *argv[])
 	Exefilepath = std::tr2::sys::path(Exefilepath).parent_path().string();
 	
 	std::vector<string> inputFiles;
-	split(input, ",", inputFiles);
+	if (input != "")
+	{
+		split(input, ",", inputFiles);
+	}
+	if (inputDir != "")
+	{
+		std::vector<string> inputDirs;
+		split(inputDir, ",", inputDirs);
+		while (!inputDirs.empty())
+		{
+			string str = inputDirs.back();
+			std::tr2::sys::path path(str);
+			std::cout << "Finding files at Dir " << str << std::endl;
+			inputDirs.pop_back();
+			_finddata_t fd;
+			auto handle = _findfirst(str.c_str(), &fd);
+			if(handle != -1L)
+			{
+				if (fd.attrib != _A_SUBDIR)
+					inputFiles.push_back(path.parent_path().string() + '/' + fd.name);
+				std::cout << "file find:" << path.parent_path().string() + '/' + fd.name << std::endl;
+				while (_findnext(handle, &fd) == FALSE)
+				{
+					if(fd.attrib != _A_SUBDIR)
+						inputFiles.push_back(path.parent_path().string() + '/' + fd.name);
+					std::cout << "file find:" << path.parent_path().string() + '/' + fd.name << std::endl;
+				}
+				_findclose(handle);
+			}
+			else
+				std::cout << "Dir " << str << " can't find file" << std::endl;
+		}
+	}
 	std::ofstream out;
 	std::ofstream outh;
 	if (std::tr2::sys::path(output).is_relative())
@@ -96,14 +143,17 @@ int main(int argc, char *argv[])
 		}
 		TransformAShader(out, outh, infile, std::tr2::sys::path(var).stem().string() + "VS", VSEntryPoint, VSVersion);
 		TransformAShader(out, outh, infile, std::tr2::sys::path(var).stem().string() + "PS", PSEntryPoint, PSVersion);
+		TransformAShader(out, outh, infile, std::tr2::sys::path(var).stem().string() + "GS", GSEntryPoint, GSVersion);
+		TransformAShader(out, outh, infile, std::tr2::sys::path(var).stem().string() + "CS", CSEntryPoint, CSVersion);
 	}
-	out << "}" << std::endl;
-	outh << "}" << std::endl;
+	out << "}" << std::endl << "}" << std::endl;
+	outh << "}" << std::endl << "}" << std::endl;
 	outh.flush();
 	outh.close();
 	out.flush();
 	out.close();
-	std::cout << "Output :" << output << "  " << outputh << "  OK "  << std::endl << std::flush;
+	SetConsoleTextAttribute(gConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+	std::cout << std::endl <<"Output :" << output << "  \n" << outputh << "  OK "  << std::endl << std::flush;
 	google::ShutDownCommandLineFlags();
     return 0;
 }
@@ -129,7 +179,9 @@ void OutputInformation(std::ofstream & os, std::ofstream & osh)
 		osh << "/*" << FLAGS_ExStr << "*/" << std::endl;
 	}
 	os << "#include \""<< FLAGS_OH <<"\"" << std::endl;
+	os << "namespace " << FLAGS_ANS << "{" << std::endl;
 	os << "namespace "<< FLAGS_NS <<"{" << std::endl;
+	osh << "namespace " << FLAGS_ANS << "{" << std::endl;
 	osh << "namespace " << FLAGS_NS << "{" << std::endl;
 }
 void TransformToFile(std::ofstream & os, std::ofstream & osh, ID3DBlob & bb, string & name)
@@ -139,7 +191,7 @@ void TransformToFile(std::ofstream & os, std::ofstream & osh, ID3DBlob & bb, str
 	os << "const unsigned char " << name << "[] = {";
 	for (long i = 0; i < sz; i++)
 	{
-		os << "\'\\x"<< std::hex<< (unsigned)bt[i]<<"\'";
+		os << "u\'\\x"<< std::hex<< (unsigned)bt[i]<<"\'";
 		if(i != sz -1 )
 		{
 			os << ",";
@@ -147,8 +199,8 @@ void TransformToFile(std::ofstream & os, std::ofstream & osh, ID3DBlob & bb, str
 		if(i % 30 == 0)
 			os << std::endl << "    ";
 	}
-	os << "};" << std::endl << std::endl;
-	os << "const unsigned int " << name << "Size = " << std::dec << static_cast<unsigned int>(sz) << ";" << std::endl;
+	os << "};" << std::endl << std::endl << std::hex;
+	os << "const unsigned int " << name << "Size = 0x" << static_cast<unsigned int>(sz) << ";" << std::endl;
 	osh << "extern const unsigned char " << name << "[] ;" << std::endl;
 	osh << "extern const unsigned int " << name << "Size;" << std::endl;
 
@@ -163,17 +215,29 @@ void TransformAShader(std::ofstream & os, std::ofstream & osh, string file,strin
 	
 	if (FAILED(hr))
 	{
-		std::cout << "File: " << file ;
+		SetConsoleTextAttribute(gErrorConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
 		if (pErrorBlob == nullptr)
-			std::cout << "   Can't find it!";
+			std::cerr << "File: " << file << " Can't find file" << std::endl;
 		else
-			std::cout << "   " <<(char*)pErrorBlob->GetBufferPointer() ;
-		std::cout << std::endl << std::flush;
+		{
+			string buffer = (char*)pErrorBlob->GetBufferPointer();
+			if (buffer.find("error X3501:") != buffer.npos)
+			{
+				SetConsoleTextAttribute(gConsole, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY);
+				std::cout << "File: " << file << " Warn:" << entryPoint << " Entrypoint not found" << std::endl;
+			}
+			else
+			{
+				std::cerr << " " << buffer;
+			}
+		}
+		SetConsoleTextAttribute(gConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+		
 	}
 	else
 	{
 		TransformToFile(os, osh, *pBlob, name);
-		std::cout << "Transform File: "<< file <<" OK" << std::endl << std::flush;
+		std::cout << "File: "<< file << " " << entryPoint << " compile ok" << std::endl;
 	}
 	delete[] f;
 }

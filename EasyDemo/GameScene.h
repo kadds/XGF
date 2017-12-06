@@ -1,5 +1,6 @@
 #pragma once
 #include "..\XGF\Include\XGF.h"
+using namespace XGF;
 class GameScene :
 	public Scene
 {

@@ -1,7 +1,8 @@
 #pragma once
 #include "StateList.hpp"
 #include <memory>
-
+namespace XGF
+{
 #define EVENT_NULL 0
 #define EVENT_EXIT 1
 #define EVENT_ONINPUT 2
@@ -25,70 +26,72 @@
 #define BUTTON_MIDDLE 4
 
 #define EVENT_X 1001 
-struct GMousePoint 
-{
-	int x;
-	int y;
-	int z;
-	GMousePoint() {}
-	GMousePoint(int v) :x(v) {}
-	GMousePoint(int v, int c) :x(v), y(c) {}
-	GMousePoint(int v, int c, int p) :x(v), y(c), z(p) {}
-};
-union AnyEx
-{
-	int num;
-	void * address;
-	bool boolvalue;
-	//long longnum;
-};
-struct MsgContent
-{
-	AnyEx x;
-	AnyEx y;
-	AnyEx z;
-};
-
-/*
-缓存大量事件对象
-*/
-class Event
-{
-public:
-	int Message;
-	MsgContent Content;
-	Event(int msg, MsgContent c)
+	struct GMousePoint
 	{
-		Message = msg;
-		Content = c;
-	}
-	Event(int msg)
+		int x;
+		int y;
+		int z;
+		GMousePoint() {}
+		GMousePoint(int v) :x(v) {}
+		GMousePoint(int v, int c) :x(v), y(c) {}
+		GMousePoint(int v, int c, int p) :x(v), y(c), z(p) {}
+	};
+	union AnyEx
 	{
-		Message = msg;
-		Content.x.num = 0;
-	}
-	Event() {}
-};
+		int num;
+		void * address;
+		bool boolvalue;
+		//long longnum;
+	};
+	struct MsgContent
+	{
+		AnyEx x;
+		AnyEx y;
+		AnyEx z;
+	};
 
-class EventPool
-{
-public:
-	static void Initialize(unsigned int count);
-	static void Shutdown();
-	static Event& CreateAEvent(int msg);
-	static Event& CreateAEvent(int msg , int data);
-	static Event& CreateAEvent(int msg, int data1, int data2);
-	static  Event& CreateAEvent(int msg, int data1, int  data2, int data3);
-	static  Event& CreateAEvent(int msg, int data1, int  data2, void * address);
-	static  Event& CreateAEvent(int msg, int data1, void * address, void * address2);
-	static Event& GetNullEvent();
-	static void DistoryAEvent(const Event & event);
-	
-	inline static bool IsNullEvent(const Event & ev) {return  ev.Message == EVENT_NULL;}
-private:
-	EventPool();
-	~EventPool();
-	static Event * NewAEvent();
-	static Event nullEvent;
-	static StateList<Event *> * events;
-};
+	/*
+	缓存大量事件对象
+	*/
+	class Event
+	{
+	public:
+		int Message;
+		MsgContent Content;
+		Event(int msg, MsgContent c)
+		{
+			Message = msg;
+			Content = c;
+		}
+		Event(int msg)
+		{
+			Message = msg;
+			Content.x.num = 0;
+		}
+		Event() {}
+	};
+
+	class EventPool
+	{
+	public:
+		static void Initialize(unsigned int count);
+		static void Shutdown();
+		static Event& CreateAEvent(int msg);
+		static Event& CreateAEvent(int msg, int data);
+		static Event& CreateAEvent(int msg, int data1, int data2);
+		static  Event& CreateAEvent(int msg, int data1, int  data2, int data3);
+		static  Event& CreateAEvent(int msg, int data1, int  data2, void * address);
+		static  Event& CreateAEvent(int msg, int data1, void * address, void * address2);
+		static Event& GetNullEvent();
+		static void DistoryAEvent(const Event & event);
+
+		inline static bool IsNullEvent(const Event & ev) { return  ev.Message == EVENT_NULL; }
+	private:
+		EventPool();
+		~EventPool();
+		static Event * NewAEvent();
+		static Event nullEvent;
+		static StateList<Event *> * events;
+	};
+
+}

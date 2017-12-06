@@ -1,5 +1,6 @@
 #pragma once
 #include "../XGF/include/XGF.h"
+using namespace XGF;
 class SecondScene :
 	public Scene, public InputListener
 {

@@ -18,11 +18,11 @@ struct VertexOut
 VertexOut VS(VertexIn vin)
 {
 	VertexOut vout;
-	vout.texCoord = vin.Pos;
+	
 	vout.Pos = mul(float4(vin.Pos,1.0f), World);
 	vout.Pos = mul(vout.Pos, View);
 	vout.Pos = mul(vout.Pos, Proj);
-	
+	vout.texCoord = vin.Pos;
 	return vout;
 }
 

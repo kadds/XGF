@@ -1,254 +1,320 @@
 #include "../../Include/Shader.hpp"
 #include "../../Include/GDI.hpp"
 #include "../../Include/Log.hpp"
+#include "../../Include/Buffer.hpp"
 #include <d3dcompiler.h>
-Shader::Shader():mGeometryShader(nullptr)
-{
-}
-const EnumLayout SHADER_EL_POSITION3("POSITION", sizeof(XMFLOAT3),0);
-const EnumLayout SHADER_EL_POSITION4("POSITION", sizeof(XMFLOAT4), 0);
-const EnumLayout SHADER_EL_COLOR("COLOR", sizeof(XMFLOAT4),1);
-const EnumLayout SHADER_EL_TEXTURE("TEXCOORD", sizeof(XMFLOAT2),2);
-const EnumLayout SHADER_EL_NORMAL("NORMAL", sizeof(XMFLOAT3),3);
-const EnumLayout SHADER_EL_SV_POSITION("SV_POSITION", sizeof(XMFLOAT4),4);
-
-const int gCountAtLayout = 5;
-
-Shader::~Shader()
-{
-}
-DXGI_FORMAT GetFormat(int size)
-{
-	switch (size)
+namespace XGF {
+	Shader::Shader()
 	{
-	case 8:
-		return DXGI_FORMAT_R32G32_FLOAT;
-	case 12:
-		return DXGI_FORMAT_R32G32B32_FLOAT;
-	case 16:
+	}
+	const EnumLayout SHADER_EL_POSITION3("POSITION", sizeof(XMFLOAT3), 0);
+	const EnumLayout SHADER_EL_POSITION4("POSITION", sizeof(XMFLOAT4), 0);
+	const EnumLayout SHADER_EL_COLOR("COLOR", sizeof(XMFLOAT4), 1);
+	const EnumLayout SHADER_EL_TEXTURE("TEXCOORD", sizeof(XMFLOAT2), 2);
+	const EnumLayout SHADER_EL_NORMAL("NORMAL", sizeof(XMFLOAT3), 3);
+	const EnumLayout SHADER_EL_SV_POSITION("SV_POSITION", sizeof(XMFLOAT4), 4);
+
+	const int gCountAtLayout = 5;
+
+	Shader::~Shader()
+	{
+	}
+	DXGI_FORMAT GetFormat(int size)
+	{
+		switch (size)
+		{
+		case 4:
+			return DXGI_FORMAT_R32_FLOAT;
+		case 8:
+			return DXGI_FORMAT_R32G32_FLOAT;
+		case 12:
+			return DXGI_FORMAT_R32G32B32_FLOAT;
+		case 16:
+			return DXGI_FORMAT_R32G32B32A32_FLOAT;
+		}
+		XGF_ReportWarn("Format is unsupported", "return DXGI_FORMAT_R32G32B32A32_FLOAT");
 		return DXGI_FORMAT_R32G32B32A32_FLOAT;
 	}
-	return DXGI_FORMAT_R32G32B32A32_FLOAT;
-}
-void Shader::Initialize(GDI * gdi, const wchar_t * VSname, const wchar_t * PSname, ShaderLayout it[], int len)
-{
-    if (len <= 0) return;
-    if (len > 15) return;
-	if (PSname == nullptr) PSname = VSname;
-    if (VSname == nullptr) VSname = PSname;
-	ID3DBlob* pErrorBlob = nullptr;
-	ID3DBlob* pPixelBlob = nullptr;
-	ID3DBlob* pVertexBlob = nullptr;
-    mGDI = gdi; 
-	
-	HRESULT hr = D3DCompileFromFile(VSname, NULL,
-		NULL, "VS", "vs_4_0", 0, 0, &pVertexBlob, &pErrorBlob);
-	if (FAILED(hr))
-		if (pErrorBlob == nullptr)
-			ReportError(ERROR_SHADER_FILE_NOT_FIND_STRING);
-		else
-			CheckEx((LPCSTR)pErrorBlob->GetBufferPointer(), hr);
-	Check(gdi->GetDevice()->CreateVertexShader(pVertexBlob->GetBufferPointer(),
-		pVertexBlob->GetBufferSize(), NULL, &mVertexShader));
-	PutDebugString(mVertexShader);
-	
-	hr = D3DCompileFromFile(PSname, NULL,
-		NULL, "PS", "ps_4_0", 0, 0, &pPixelBlob, &pErrorBlob);
-	if (FAILED(hr))
-		if (pErrorBlob == nullptr)
-			ReportError(ERROR_SHADER_FILE_NOT_FIND_STRING);
-		else
-			CheckEx((LPCSTR)pErrorBlob->GetBufferPointer(), hr);
-    Check(gdi->GetDevice()->CreatePixelShader(pPixelBlob->GetBufferPointer(),
-		pPixelBlob->GetBufferSize(), NULL, &mPixelShader));
-	PutDebugString(mPixelShader);
-	
-	InitializeOther(it, len,pVertexBlob->GetBufferPointer(),static_cast<unsigned int>(pVertexBlob->GetBufferSize()));
-	pPixelBlob->Release();
-	pVertexBlob->Release();
-}
 
-void Shader::Initialize(GDI * gdi, const wchar_t * VSname, const wchar_t * PSname, const wchar_t * Geometryname, ShaderLayout it[], int len, EnumLayout ot[], int olen)
-{
-	ID3DBlob* pErrorBlob = nullptr;
-	ID3DBlob* pGeometryBlob = nullptr;
-	HRESULT hr = D3DCompileFromFile(Geometryname, NULL,
-		NULL, "GS", "gs_4_0", 0, 0, &pGeometryBlob, &pErrorBlob);
-	if (FAILED(hr))
-		if (pErrorBlob == nullptr)
-			ReportError(ERROR_SHADER_FILE_NOT_FIND_STRING);
-		else
-			CheckEx((LPCSTR)pErrorBlob->GetBufferPointer(), hr);
-
-	D3D11_SO_DECLARATION_ENTRY de[16];
-
-	unsigned char countInEachofGroup[gCountAtLayout] = { 0 };
-	for (int i = 0; i < olen; i++)
+	void ComputeShader::Initialize(GDI* gdi, const wchar_t* CSname, int maxcount, int constantByteWidth, int inputByteWidth, int outputByteWidth)
 	{
-		de[i] = { 0, ot[i].name, countInEachofGroup[ot[i].number],0, (BYTE)(ot[i].size / sizeof(float)), 0 };
-		countInEachofGroup[ot[i].number]++;
+		mGDI = gdi;
+		ID3DBlob* pErrorBlob = nullptr;
+		ID3DBlob* pComputerBlob = nullptr;
+
+		HRESULT hr = D3DCompileFromFile(CSname, NULL,
+			NULL, "CS", gdi->CheckFeatureLevel() >= D3D_FEATURE_LEVEL_11_0 ? "cs_5_0" : "cs_4_0", 0, 0, &pComputerBlob, &pErrorBlob);
+		if (FAILED(hr))
+			if (pErrorBlob == nullptr)
+				XGF_ReportError("ShaderFile no find", "");
+			else
+				XGF_Error_Check(hr, (LPCSTR)pErrorBlob->GetBufferPointer());
+		XGF_Error_Check(gdi->GetDevice()->CreateComputeShader(pComputerBlob->GetBufferPointer(),
+			pComputerBlob->GetBufferSize(), nullptr, &mComputeShader), "");
+		pComputerBlob->Release();
+		PutDebugString(mComputeShader);
+
+		mOutputBuffer[0] =CreateBuffer(gdi, D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED, maxcount * inputByteWidth, inputByteWidth, D3D11_USAGE_DEFAULT, D3D11_CPU_ACCESS_READ);
+		mOutputBuffer[1] = CreateBuffer(gdi, D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED, maxcount * inputByteWidth, inputByteWidth, D3D11_USAGE_DEFAULT, D3D11_CPU_ACCESS_READ);
+
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC DescRV;
+		ZeroMemory(&DescRV, sizeof(DescRV));
+		DescRV.Format = DXGI_FORMAT_UNKNOWN;
+		DescRV.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+		DescRV.Buffer.FirstElement = 0;
+		//DescRV.Buffer.NumElements = desc.ByteWidth / desc.StructureByteStride;
+
+		XGF_Error_Check(gdi->GetDevice()->CreateShaderResourceView(mOutputBuffer[0], &DescRV, &mInputShaderResourceView[0]), "");
+		XGF_Error_Check(gdi->GetDevice()->CreateShaderResourceView(mOutputBuffer[1], &DescRV, &mInputShaderResourceView[1]), "");
+
+		D3D11_UNORDERED_ACCESS_VIEW_DESC DescUAV;
+		ZeroMemory(&DescUAV, sizeof(D3D11_UNORDERED_ACCESS_VIEW_DESC));
+		DescUAV.Format = DXGI_FORMAT_UNKNOWN;
+		DescUAV.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+		DescUAV.Buffer.FirstElement = 0;
+		//DescUAV.Buffer.NumElements = desc.ByteWidth / desc.StructureByteStride;
+
+		XGF_Error_Check(gdi->GetDevice()->CreateUnorderedAccessView(mOutputBuffer[0], &DescUAV, &mUnorderedAccessView[0]), "");
+		XGF_Error_Check(gdi->GetDevice()->CreateUnorderedAccessView(mOutputBuffer[1], &DescUAV, &mUnorderedAccessView[1]), "");
 	}
 
-	gdi->GetDevice()->CreateGeometryShaderWithStreamOutput(pGeometryBlob->GetBufferPointer(),
-		pGeometryBlob->GetBufferSize(), de, olen, 0, 0, D3D11_SO_NO_RASTERIZED_STREAM, 0, &mGeometryShader);
-	pGeometryBlob->Release();
-	Initialize(gdi, VSname, PSname, it, len);
-	PutDebugString(mGeometryShader);
-}
-
-void Shader::Initialize(GDI * gdi, const unsigned char * constVSShader, unsigned int VSSize, const unsigned char * constPSShader, unsigned int PSSize, ShaderLayout it[], int len)
-{
-	mGDI = gdi;
-	Check(gdi->GetDevice()->CreateVertexShader(constVSShader,
-		VSSize, NULL, &mVertexShader));
-	PutDebugString(mVertexShader);
-
-	Check(gdi->GetDevice()->CreatePixelShader(constPSShader,
-		PSSize, NULL, &mPixelShader));
-	PutDebugString(mPixelShader);
-	InitializeOther(it, len, constVSShader, VSSize);
-}
-
-void Shader::Shutdown()
-{
-	mCBMatrixBuffer->Release();
-	mPixelShader->Release();
-	mVertexShader->Release();
-	if (mGeometryShader != nullptr)
-		mGeometryShader->Release();
-    mInputLayout->Release();
-	for (int i = 0; i < mCount; i++)
+	void ComputeShader::Shutdown()
 	{
-		if (sizePos[i].count > 1)
+		mComputeShader->Release();
+		mUnorderedAccessView[0]->Release();
+		mUnorderedAccessView[1]->Release();
+		mOutputBuffer[0]->Release();
+		mOutputBuffer[1]->Release();
+		mInputShaderResourceView[1]->Release();
+		mInputShaderResourceView[0]->Release();
+	}
+
+	void ComputeShader::Run()
+	{
+		mGDI->GetDeviceContext()->CSSetShader(mComputeShader, nullptr, 0);
+		//mGDI->GetDeviceContext()->CSSetConstantBuffers(0, 1, &mCBMatrixBuffer);
+		ID3D11ShaderResourceView* aRViews[1] = { mInputShaderResourceView[0] };
+		mGDI->GetDeviceContext()->CSSetShaderResources(0, 1, aRViews);
+		ID3D11UnorderedAccessView* aUAViews[1] = { mUnorderedAccessView[1] };
+		mGDI->GetDeviceContext()->CSSetUnorderedAccessViews(0, 1, aUAViews, (UINT*)(&aUAViews));
+
+		mGDI->GetDeviceContext()->Dispatch(32, 1, 1);
+
+		D3D11_QUERY_DESC pQueryDesc;
+		pQueryDesc.Query = D3D11_QUERY_EVENT;
+		pQueryDesc.MiscFlags = 0;
+		ID3D11Query *pEventQuery;
+		mGDI->GetDevice()->CreateQuery(&pQueryDesc, &pEventQuery);
+		mGDI->GetDeviceContext()->End(pEventQuery); // 在 pushbuffer 中插入一个篱笆
+		while (mGDI->GetDeviceContext()->GetData(pEventQuery, NULL, 0, 0) == S_FALSE) {} // 自旋等待事件结束
+		pEventQuery->Release();
+		ID3D11ComputeShader * sh = 0;
+		mGDI->GetDeviceContext()->CSGetShader(&sh, nullptr, nullptr);
+		//ID3D11Buffer *nullBf = 0;
+		ID3D11ShaderResourceView *nullres = 0;
+		//mGDI->GetDeviceContext()->CSSetConstantBuffers(0, 1, &nullBf);
+
+		ID3D11UnorderedAccessView * nulluav = 0;
+		mGDI->GetDeviceContext()->CSSetUnorderedAccessViews(0, 1, &nulluav, 0);
+		mGDI->GetDeviceContext()->CSSetShaderResources(0, 1, &nullres);
+		struct MyStruct
 		{
-			delete[] sizePos[i].size.address;
-		}
+			Point pos;
+			Point pos2;
+		};
+		std::swap(mOutputBuffer[0], mOutputBuffer[1]);
+		std::swap(mUnorderedAccessView[0], mUnorderedAccessView[1]);
+		std::swap(mInputShaderResourceView[0], mInputShaderResourceView[1]);
 	}
-    delete[]sizePos;
-}
-UINT Shader::GetAllSizeInOneSlot(int i)
-{
-	if (sizePos[i].count == 1)
+	void PixelShader::Initialize(GDI * gdi, const wchar_t * PSname)
 	{
-		return sizePos[i].size.data;
+		ID3DBlob* pErrorBlob = nullptr;
+		ID3DBlob* pPixelBlob = nullptr;
+		mGDI = gdi;
+
+		HRESULT hr = D3DCompileFromFile(PSname, NULL,
+			NULL, "PS", "ps_4_0", 0, 0, &pPixelBlob, &pErrorBlob);
+		if (FAILED(hr))
+			if (pErrorBlob == nullptr)
+				XGF_ReportError("Pixel Shader File Not Find!", PSname);
+			else
+				XGF_Error_Check(hr, (LPCSTR)pErrorBlob->GetBufferPointer());
+		XGF_Error_Check(gdi->GetDevice()->CreatePixelShader(pPixelBlob->GetBufferPointer(),
+			pPixelBlob->GetBufferSize(), NULL, &mPixelShader), "CreatePixelShader Failed");
+		PutDebugString(mPixelShader);
+		pPixelBlob->Release();
 	}
-	else
+
+	void PixelShader::Initialize(GDI * gdi, const unsigned char * PScode, unsigned int codeLen)
 	{
-		UINT u = 0;
-		for (int j = 0; j < sizePos[i].count; j++)
-			u += sizePos[i].size.address[j];
-		return u;
+		XGF_Error_Check(gdi->GetDevice()->CreatePixelShader(PScode,
+			codeLen, NULL, &mPixelShader), "CreatePixelShader Failed");
+		PutDebugString(mPixelShader);
+		mGDI = gdi;
 	}
-}
-void Shader::GetAllSizeInSlot(UINT dout[])
-{
-	for (int i = 0; i < mCount; i++)
+
+	void PixelShader::Shutdown()
 	{
-		if (sizePos[i].count == 1)
-		{
-			dout[i] = sizePos[i].size.data;
-		}
-		else
-		{
-			dout[i] = 0;
-			for (int j = 0; j < sizePos[i].count; j++)
-				dout[i] += sizePos[i].size.address[j];
-		}
-			
+		mPixelShader->Release();
 	}
-}
-void Shader::SetShaderAndInputLayout()
-{
-	if (mGeometryShader != nullptr)
+
+	void PixelShader::SetShaderConstantParameter(IConstantBuffer * cb)
 	{
-		ID3D11PixelShader *px = nullptr;
-		mGDI->GetDeviceContext()->PSSetShader(px, 0, 0);
-		mGDI->GetDeviceContext()->GSSetShader(mGeometryShader, 0, 0);
+		auto t = cb->GetRawBuffer();
+		mGDI->GetDeviceContext()->PSSetConstantBuffers(0, 1, &t);
 	}
+
+	void VertexShader::Initialize(GDI * gdi, const wchar_t * VSname, ShaderLayout layout[], int layoutCount)
+	{
+		ID3DBlob* pErrorBlob = nullptr;
+		ID3DBlob* pVertexBlob = nullptr;
+		mGDI = gdi;
+
+		HRESULT hr = D3DCompileFromFile(VSname, NULL,
+			NULL, "VS", "vs_4_0", 0, 0, &pVertexBlob, &pErrorBlob);
+		if (FAILED(hr))
+			if (pErrorBlob == nullptr)
+				XGF_ReportError("Vertex Shader File Not Find!", VSname);
+			else
+				XGF_Error_Check(hr, (LPCSTR)pErrorBlob->GetBufferPointer());
+		Initialize(gdi, (unsigned char *)pVertexBlob->GetBufferPointer(), (int)pVertexBlob->GetBufferSize(), layout, layoutCount);
 		
-	else
-	{
-		mGDI->GetDeviceContext()->GSSetShader(nullptr, 0, 0);
-		mGDI->GetDeviceContext()->PSSetShader(mPixelShader, 0, 0);
+		pVertexBlob->Release();
 	}
-		
-    mGDI->GetDeviceContext()->VSSetShader(mVertexShader, 0, 0);
-    mGDI->GetDeviceContext()->IASetInputLayout(mInputLayout);
-}
 
-void Shader::InitializeOther(ShaderLayout it[], int len, const void * VSpointer, unsigned int VSsize)
-{
-	D3D11_BUFFER_DESC matrixBufferDesc;
-	ZeroMemory(&matrixBufferDesc, sizeof(matrixBufferDesc));
-	matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;  //动态缓存
-	matrixBufferDesc.ByteWidth = sizeof(WVPMatrix);   //结构体大小
-	matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;  //CPU访问写
-	matrixBufferDesc.MiscFlags = 0;
-	matrixBufferDesc.StructureByteStride = 0;
-	Check(mGDI->GetDevice()->CreateBuffer(&matrixBufferDesc, NULL, &mCBMatrixBuffer));
-	PutDebugString(mCBMatrixBuffer);
-
-	//-------------inputlayout
-	D3D11_INPUT_ELEMENT_DESC *layout = new D3D11_INPUT_ELEMENT_DESC[len];
-	sizePos = new SlotCan[len];
-	UINT data[16];
-	bool isconnect = false;
-	unsigned int lenBefore = 0;
-	unsigned int slot = 0;
-	unsigned int  u = 0;// position in a slot
-	unsigned char countInEachofGroup[gCountAtLayout] = {0};
-	for (int i = 0; i < len; i++)
+	void VertexShader::Initialize(GDI * gdi, const unsigned char * VScode, unsigned int codeLen, ShaderLayout layout[], int layoutCount)
 	{
-		layout[i] = { it[i].enumLayout->name, countInEachofGroup[it[i].enumLayout->number], GetFormat(it[i].enumLayout->size),
-			slot, lenBefore, D3D11_INPUT_PER_VERTEX_DATA, 0 };
-		countInEachofGroup[it[i].enumLayout->number] ++;
-		data[u] = it[i].enumLayout->size;
-		if(u > 0)
-			sizePos[slot].count++;
-		else
-			sizePos[slot].count = 1;
+		XGF_Error_Check(gdi->GetDevice()->CreateVertexShader(VScode,
+			codeLen, NULL, &mVertexShader), "CreateVertexShader Failed");
+		PutDebugString(mVertexShader);
+		mGDI = gdi;
 
-		if (it[i].mConnet)
+		//-------------inputlayout
+		D3D11_INPUT_ELEMENT_DESC *d3dlayout = new D3D11_INPUT_ELEMENT_DESC[layoutCount];
+		mSlotStride = new SlotCan[layoutCount];
+		unsigned int lenBefore = 0;
+		int itemp = 0;
+		unsigned int slot = 0;
+		unsigned char countInEachofGroup[gCountAtLayout] = { 0 };
+		for (int i = 0; i < layoutCount; i++)
 		{
-			isconnect = true;
-			lenBefore += it[i].enumLayout->size;
-			u++;
-		}
-		else
-		{
-			isconnect = false;
-			lenBefore = 0;
-			if (sizePos[slot].count == 1)
+			mSlotStride[i].size = layout[i].enumLayout->size;
+			mSlotStride[i].nextIsASlot = layout[i].mConnet;
+			d3dlayout[i] = { layout[i].enumLayout->name, countInEachofGroup[layout[i].enumLayout->number], GetFormat(layout[i].enumLayout->size), slot, lenBefore, D3D11_INPUT_PER_VERTEX_DATA, 0 };
+			if (layout[i].mConnet)
 			{
-				sizePos[slot].size.data = data[0];
+				lenBefore += layout[i].enumLayout->size;
 			}
 			else
 			{
-				sizePos[slot].size.address = new UINT[sizePos[slot].count];
-				memcpy_s(sizePos[slot].size.address, sizePos[slot].count * sizeof(UINT), data, sizePos[slot].count * sizeof(UINT));
+				slot++;
+				lenBefore = 0;
 			}
-			u = 0;
-			slot++;
+			countInEachofGroup[layout[i].enumLayout->number]++;
 		}
-			
+		mCount = layoutCount;
+		XGF_Error_Check(gdi->GetDevice()->CreateInputLayout(d3dlayout, layoutCount,
+			VScode, codeLen, &mInputLayout), "CreateInputLayout Error");
+		delete[] d3dlayout;
 	}
-	mCount = slot;
-	Check(mGDI->GetDevice()->CreateInputLayout(layout, len,
-		VSpointer, VSsize, &mInputLayout));
-	PutDebugString(mInputLayout);
-	delete[] layout;
-}
-void Shader::SetShaderParameter(const WVPMatrix & Matrix)
-{
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
-    auto d3dDeviceContext = mGDI->GetDeviceContext();
-	d3dDeviceContext->Map(mCBMatrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	memcpy_s(mappedResource.pData, sizeof(WVPMatrix), &Matrix,sizeof(WVPMatrix));
-	d3dDeviceContext->Unmap(mCBMatrixBuffer, 0);
-	d3dDeviceContext->VSSetConstantBuffers(0, 1, &mCBMatrixBuffer);
-	if (mGeometryShader != nullptr)
+
+	void VertexShader::Shutdown()
 	{
-		d3dDeviceContext->GSSetConstantBuffers(0, 1, &mCBMatrixBuffer);
+		delete[] mSlotStride;
+		mVertexShader->Release();
+		mInputLayout->Release();
 	}
+
+	void VertexShader::SetInputLayout()
+	{
+		mGDI->GetDeviceContext()->IASetInputLayout(mInputLayout);
+	}
+
+	int VertexShader::GetSlotCount()
+	{
+		int rt = 0;
+		for (int i = 0; i < mCount; i++)
+		{
+			if (!mSlotStride[i].nextIsASlot)
+				rt++;
+		}
+		return rt;
+	}
+
+	void VertexShader::SetShaderConstantParameter(IConstantBuffer * cb)
+	{
+		auto t = cb->GetRawBuffer();
+		mGDI->GetDeviceContext()->VSSetConstantBuffers(0, 1, &t);
+	}
+
+	void VertexShader::GetStride(unsigned int stride[])
+	{
+		int rt = mSlotStride[0].size;
+		int pos = 0;
+		for (int i = 0; i < mCount; i++)
+		{
+			if (!mSlotStride[i].nextIsASlot)
+			{
+				stride[pos] = rt;
+				pos++;
+				rt = mSlotStride[i + 1].size;
+			}
+			else
+			{
+				rt += mSlotStride[i].size;
+			}
+				
+		}
+	}
+
+	int VertexShader::GetSize(int position)
+	{
+		return mSlotStride[position].size;
+	}
+
+	void GeometryShader::Initialize(GDI * gdi, const wchar_t * GSname)
+	{
+		ID3DBlob* pErrorBlob = nullptr;
+		ID3DBlob* pGeometryBlob = nullptr;
+		mGDI = gdi;
+
+		HRESULT hr = D3DCompileFromFile(GSname, NULL,
+			NULL, "GS", "gs_4_0", 0, 0, &pGeometryBlob, &pErrorBlob);
+		if (FAILED(hr))
+			if (pErrorBlob == nullptr)
+				XGF_ReportError("Geometry Shader File Not Find!", GSname);
+			else
+				XGF_Error_Check(hr, (LPCSTR)pErrorBlob->GetBufferPointer());
+		XGF_Error_Check(gdi->GetDevice()->CreateGeometryShader(pGeometryBlob->GetBufferPointer(),
+			pGeometryBlob->GetBufferSize(), NULL, &mGeometryShader), "CreateGeometryShader Failed");
+		PutDebugString(mGeometryShader);
+	}
+
+	void GeometryShader::Shutdown()
+	{
+		mGeometryShader->Release();
+	}
+
+	void Shaders::BindShader()
+	{
+		auto dev = vs->mGDI->GetDeviceContext();
+		dev->VSSetShader(vs->mVertexShader, 0, 0);
+		if(ps != nullptr)
+			dev->PSSetShader(ps->mPixelShader, 0, 0);
+		if(gs != nullptr)
+			dev->GSSetShader(gs->mGeometryShader, 0, 0);
+	}
+
+	void Shaders::UnBindShader()
+	{
+		void* null = 0 ;
+		auto dev = vs->mGDI->GetDeviceContext();
+		dev->VSSetShader((ID3D11VertexShader *)null, 0, 0);
+		if (ps != nullptr)
+			dev->PSSetShader((ID3D11PixelShader *)null, 0, 0);
+		if (gs != nullptr)
+			dev->GSSetShader((ID3D11GeometryShader *)null, 0, 0);
+	}
+
 }

@@ -8,27 +8,29 @@ struct VS_OUTPUT
 {  
     float4 ObjectPosition :POSITION0; 
 	float4 Data1 :POSITION1;
-	float4 Data2 :POSITION2;
+};
+struct ParticleData
+{
+    float3 position;
+    float4 velocity;
 };
 struct VertexIn
 {
-	float3 Pos :POSITION0;
-	float4 Data1 :POSITION1;
-	float4 Data2 :POSITION2;
+	float3 color:POSITION;
+    uint id : SV_VERTEXID;
 };
 struct GS_OUTPUT  
 {  
     float4 Position :SV_POSITION;  
 	float2 tps:TEXCOORD;	
 };  
+StructuredBuffer<ParticleData>   g_bufPosVelo;
 [maxvertexcount(100)]  
 void GS(point VS_OUTPUT vin[1], inout TriangleStream<GS_OUTPUT> triStream)  
 {
 	float4 v[4];
 	float w = vin[0].Data1.x / 2;
 	float h = vin[0].Data1.y / 2;
-	float timeall = vin[0].Data1.w;
-	float timepass = vin[0].Data1.z;
 	float startRadius =0 ;
 	float endRadius = 0;
 	v[0] = float4(vin[0].ObjectPosition.x - w, vin[0].ObjectPosition.y - h, 0.0f, 1.0f);
@@ -50,9 +52,9 @@ void GS(point VS_OUTPUT vin[1], inout TriangleStream<GS_OUTPUT> triStream)
 VS_OUTPUT VS(VertexIn vin)
 {
 	VS_OUTPUT vout;
-	vout.ObjectPosition = float4(vin.Pos,1.0f);
-	vout.Data1 = vin.Data1;
-	vout.Data2 = vin.Data2;
+	vout.ObjectPosition = float4( g_bufPosVelo[vin.id].position,0);
+	vout.Data1 = g_bufPosVelo[vin.id].velocity;
+	//vout.Data1 = vin.Data1;
 	return vout;
 }
 

@@ -1,55 +1,58 @@
 #include "..\..\Include\Actions.hpp"
 #include "../../Include/Action.hpp"
-
-
-Actions::Actions():onActionCompletedListener(nullptr), mIsActionBegan(false)
+namespace XGF
 {
-}
-
-
-Actions::~Actions()
-{
-	//delete mAction;
-}
-
-void Actions::Updata(float time)
-{
-	if (mIsActionBegan && mAction != nullptr)
+	Actions::Actions() :onActionCompletedListener(nullptr), mIsActionBegan(false)
 	{
-		mPassedTime += time;
-		if (mAction->Tick(mPassedTime))
+	}
+
+
+	Actions::~Actions()
+	{
+		//delete mAction;
+	}
+
+	void Actions::Updata(float time)
+	{
+		if (mIsActionBegan && mAction != nullptr)
 		{
-			mIsActionBegan = false;
-			if (onActionCompletedListener != nullptr)
+			mPassedTime += time;
+			if (mAction->Tick(mPassedTime))
 			{
-				onActionCompletedListener();
+				mIsActionBegan = false;
+				if (onActionCompletedListener != nullptr)
+				{
+					onActionCompletedListener();
+				}
 			}
 		}
 	}
-}
 
-void Actions::Start()
-{
-	if (mAction != nullptr)
+	void Actions::Start()
 	{
-		mAction->Reset();
-		mIsActionBegan = true;
-		mPassedTime = 0.f;
+		if (mAction != nullptr)
+		{
+			mAction->Reset();
+			mIsActionBegan = true;
+			mPassedTime = 0.f;
+		}
 	}
+
+	void Actions::Stop()
+	{
+	}
+
+	bool Actions::IsStart()
+	{
+		return mIsActionBegan;
+	}
+
+	void Actions::SetAction(std::unique_ptr<Action> action, ActionInterface * ainterface)
+	{
+		mAction = std::move(action);
+		if (mAction != nullptr)
+			mAction->SetTarget(ainterface);
+	}
+
 }
 
-void Actions::Stop()
-{
-}
-
-bool Actions::IsStart()
-{
-	return mIsActionBegan;
-}
-
-void Actions::SetAction(std::unique_ptr<Action> action, ActionInterface * ainterface)
-{ 
-	mAction = std::move(action);
-	if (mAction != nullptr)
-		mAction->SetTarget(ainterface);
-}

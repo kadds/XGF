@@ -1,6 +1,6 @@
 #pragma once
 #include "../XGF/include/XGF.h"
-
+using namespace XGF;
 class FirstScene :
 	public Scene, public InputListener
 {
@@ -27,7 +27,7 @@ private:
 	UILayer mUILayer;
 
 	Batch mBatch3D;
-	Shader mShader3D;
+	Shaders mShader3D;
 	Shape::Cube mCube;
     Font mFont;
     TextRenderer mUITextRenderer;
