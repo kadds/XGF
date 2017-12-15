@@ -8,12 +8,12 @@ namespace XGF
 	* 控件：标签
 	* 显示一段文本
 	*/
-	class Lable :
+	class Label :
 		public Control, public Shape::Rectangle
 	{
 	public:
-		Lable();
-		~Lable();
+		Label();
+		~Label();
 		virtual void Render(const XMMATRIX * matrix, Batches & bs) override;
 		void SetText(wchar_t * text);
 		void SetColor(Color color) { mColor = color; }

@@ -2,7 +2,9 @@
 #include "Defines.hpp"
 #include <Windows.h>
 #include <d3d11_1.h>
+#include <dxgi1_2.h>
 #pragma comment(lib,"d3d11.lib")
+#pragma comment(lib,"dxgi.lib")
 #pragma comment(lib,"d3dcompiler.lib")
 #include <d3dcompiler.h>
 #include <vector> 
@@ -11,17 +13,37 @@
 
 namespace XGF
 {
-	enum DisplayMode
+	enum class DisplayMode
 	{
 		Windowed,
 		Borderless,
 		FullScreen
 	};
-	enum BlendState
+	enum class BlendState
 	{
-		NoneBlend,
+		NoneBlend = 0,
 		AddOneOneAdd,
-		AddZeroOneAdd
+		AddZeroOneAdd,
+
+		InvalidValue
+	};
+	enum class SamplerState
+	{
+		LineWrap = 0,
+		LineClamp,
+		LineMirror,
+		LineMirrorOnce,
+
+
+		InvalidValue
+	};
+	enum class DepthStencilState
+	{
+		DepthEnable = 0,
+		DepthDisable,
+		DepthEnableWithLessEqual,
+
+		InvalidValue
 	};
 	/*
 	底层图形接口
@@ -52,8 +74,7 @@ namespace XGF
 		ID3D11Device * GetDevice() { return mD3dDevice; }
 		ID3D11DeviceContext * GetDeviceContext() { return mDeviceContext; }
 
-		void SetFillMode(bool isSold);
-		void SetZBufferMode(bool isOpenZBuffer);
+
 		int GetWidth() { return mWidth; }
 		int GetHeight() { return mHeight; }
 		HWND GetHwnd();
@@ -63,43 +84,40 @@ namespace XGF
 		//恢复RenderTargetView
 		void SetRenderTargetView();
 
-		bool IsFullScreen() { return mDisplayMode == FullScreen; }
+		bool IsFullScreen() { return mDisplayMode == DisplayMode::FullScreen; }
 		bool SetDisplayMode(DisplayMode dm, int left, int top, int cx, int cy, bool move, bool isClientSize = false);
 		DisplayMode GetDisplayMode() { return  mDisplayMode; };
 		//获取displaymode list
-		//返回值：mode数目
+		//返回值：DisplayMode数目
 		int GetFullScreenDisplayModes(DXGI_MODE_DESC ** c) { *c = mScreenMode[0].second; return mScreenMode[0].first; }
 		void CheckFullScreenForce(bool isforce);
-
-		void SetDefaultSamplerState();
-		void CloseSamplerState();
+		ID3D11BlendState * GetRawBlendState(BlendState bs);
+		ID3D11SamplerState * GetRawSamplerState(SamplerState ss);
+		ID3D11DepthStencilState * GetRawDepthStencilState(DepthStencilState ds);
 		void PushRTTLayer(RenderToTexture *rtt);
 		void PopRTTLayer();
 		void DrawRTT();
 		D3D_FEATURE_LEVEL CheckFeatureLevel();
-		void SetBlendState(BlendState);
+		void SetBlendState(BlendState bs);
+		void SetDepthStencilState(DepthStencilState ds);
+		void CreateSwapChain();
 	protected:
+		IDXGIFactory2 * mFactory2;
 		ID3D11Device        *mD3dDevice;
 		ID3D11DeviceContext *mDeviceContext;
-		IDXGISwapChain * mSwapChain;
+		IDXGISwapChain1 * mSwapChain;
 		ID3D11RenderTargetView * mRenderTargetView;
 
 		ID3D11DepthStencilView * mDepthStencilView;
 		ID3D11Texture2D * mDepthStencilBuffer;
 
-		ID3D11BlendState * mDisableBlendState;
-		ID3D11BlendState * mBlendState;
-		ID3D11BlendState * mCEVBlendState;
+		ID3D11BlendState * mBlendState[(int)BlendState::InvalidValue];
 
 		D3D_FEATURE_LEVEL mFeatureLevel;
 
-		ID3D11SamplerState * mLineSamplerState;
-		//开启 Z 深度 缓冲state
-		ID3D11DepthStencilState * mDepthStencilState;
-		//禁止 Z 深度 缓冲state
-		ID3D11DepthStencilState * md3dDisableDepthStencilState;
+		ID3D11SamplerState * mSamplerState[(int)SamplerState::InvalidValue];
 
-		ID3D11DepthStencilState * mDepthStencilStateLessEqual;
+		ID3D11DepthStencilState * mDepthStencilState[(int)DepthStencilState::InvalidValue];
 
 		//普通模式渲染的RasterState
 		ID3D11RasterizerState * mRasterState;
@@ -119,10 +137,10 @@ namespace XGF
 		std::stack<RenderToTexture *> mRTTs;
 		DisplayMode mDisplayMode;
 		std::vector<std::pair<int, DXGI_MODE_DESC *>> mScreenMode;
-		int mNowInDisplayMode;
-		std::vector<IDXGIOutput *> mOutputs;
-		std::vector<IDXGIAdapter *> mAdapters;
-		void SaveDisplayMode(int c, IDXGIOutput * pDXGIOutput);
+
+		std::vector<IDXGIOutput1 *> mOutputs;
+		std::vector<IDXGIAdapter1 *> mAdapters;
+		void SaveDisplayMode(int c, IDXGIOutput1 * pDXGIOutput);
 		DXGI_FORMAT mDisplayFormat;
 		RECT mLastWinRc;
 		DisplayMode mLastMode;
@@ -131,7 +149,7 @@ namespace XGF
 		//DXGI_ADAPTER_DESC * mAdapters;
 	private:
 #ifdef _DEBUG
-		void QueryInterface();
+		void QueryDebugInterface();
 #endif
 	private:
 		DISALLOW_COPY_AND_ASSIGN(GDI);

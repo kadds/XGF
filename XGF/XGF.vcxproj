@@ -182,7 +182,7 @@
     <ClInclude Include="Include\InputManager.hpp" />
     <ClInclude Include="Include\InputListener.hpp" />
     <ClInclude Include="Include\Interpolator\Interpolator.hpp" />
-    <ClInclude Include="Include\Lable.hpp" />
+    <ClInclude Include="Include\Label.hpp" />
     <ClInclude Include="Include\Layer.hpp" />
     <ClInclude Include="Include\Line.hpp" />
     <ClInclude Include="Include\LinkedList.hpp" />
@@ -215,6 +215,7 @@
     <ClInclude Include="Include\Texture.hpp" />
     <ClInclude Include="Include\Timer.hpp" />
     <ClInclude Include="Include\Tools.hpp" />
+    <ClInclude Include="Include\Triangle.hpp" />
     <ClInclude Include="Include\UIBatches.hpp" />
     <ClInclude Include="Include\UILayer.hpp" />
     <ClInclude Include="Include\WICTextureLoader.h" />
@@ -277,6 +278,7 @@
     <ClCompile Include="Src\Shape\Rectangle.cpp" />
     <ClCompile Include="Src\Shape\RectangleB.cpp" />
     <ClCompile Include="Src\Shape\Shape.cpp" />
+    <ClCompile Include="Src\Shape\Triangle.cpp" />
     <ClCompile Include="Src\Tools\AsyncTask.cpp" />
     <ClCompile Include="Src\Tools\AxisRenderer.cpp" />
     <ClCompile Include="Src\Tools\Bresenham.cpp" />
@@ -293,7 +295,7 @@
     <ClCompile Include="Src\UI\Button.cpp" />
     <ClCompile Include="Src\UI\Control.cpp" />
     <ClCompile Include="Src\UI\EditText.cpp" />
-    <ClCompile Include="Src\UI\Lable.cpp" />
+    <ClCompile Include="Src\UI\Label.cpp" />
     <ClCompile Include="Src\UI\UIBatches.cpp" />
     <ClCompile Include="Src\UI\UILayer.cpp" />
   </ItemGroup>

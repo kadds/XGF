@@ -22,6 +22,14 @@ void GameScene::MyRender(WVPMatrix & wvp, bool end)
 	mTextRenderer.DrawString(L"Rectangle", 280, 100);
 	mShapeRenderer.DrawLine(160, 0, 160, 180, 0.f, Color(1.f, 1.f, 1.f, 1.f));
 	mTextRenderer.DrawString(L"Line", 140, 188);
+	mShapeRenderer.DrawTriangle(Position(40,200), Position(70, 210), Position(40, 240), 0.1f, Color(0.4f, 0.8f, 0.1f, 1.f));
+	mTextRenderer.DrawString(L"Triangle", 40, 220);
+	Position p[5] = { {0,50},{ 50,50 },{ 40,100 },{ 100,100 },{ 100,80 } };
+	mShapeRenderer.DrawLineList(p, 5, 0, Color(0.0, 0.0, 0.0, 1.0));
+	mTextRenderer.DrawString(L"LineList", 4, 70);
+	Position p2[5] = { { 0,150 },{ 50,120 },{ 40,200 },{ 100,200 },{ 100,220 } };
+	mShapeRenderer.DrawPolygonList(p2, 5, 0.1f, Color(0.0, 0.1, 0.6, 1.0));
+	mTextRenderer.DrawString(L"PolygonList", 40, 172);
 	mTextRenderer.DrawString(L"A RenderToTexture(RTT) Demo", 125, 35);
 	if (!end)
 	{
@@ -36,12 +44,10 @@ void GameScene::OnCreate()
 	char buffer[MAX_PATH];
 	Tools::GetInstance()->GetFontPath("Dengb.ttf", buffer, MAX_PATH);
 	mFont.Initialize(mFramework->GetGDI(), buffer, 16);
-	mTextRenderer.Initialize(mFramework->GetGDI(), &mFont, 160);
+	mTextRenderer.Initialize(mFramework->GetGDI(), &mFont, 240);
 
-	//ShaderLayout inputtype[2]{ &SHADER_EL_POSITION3,&SHADER_EL_TEXTURE };
-	//mTextureShader.Initialize(mFramework->GetGDI(), ShaderConst::shaderPTVS, ShaderConst::shaderPTVSSize, ShaderConst::shaderPTPS, ShaderConst::shaderPTPSSize, inputtype, 2);
-	//mTextureBatch.Initialize(mFramework->GetGDI(), &mTextureShader, 200, 400);
-	//mRenderToTexture.Initialize(mFramework->GetGDI(), mFramework->GetGDI()->GetWidth(), mFramework->GetGDI()->GetHeight());
+	mTextureBatch.Initialize(mFramework->GetGDI(), ConstantData::GetInstance().GetPTShaders(), 200, 400);
+	mRenderToTexture.Initialize(mFramework->GetGDI(), mFramework->GetGDI()->GetWidth(), mFramework->GetGDI()->GetHeight());
 
 	mRc.SetPositionAndSize(0, mFramework->GetGDI()->GetHeight() - 100, 130, 100);
 	mRc.SetZ(0.0f);
@@ -50,9 +56,8 @@ void GameScene::OnCreate()
 
 void GameScene::OnDestory()
 {
-	//mRenderToTexture.Shutdown();
-	//mTextureBatch.Shutdown();
-	//mTextureShader.Shutdown();
+	mRenderToTexture.Shutdown();
+	mTextureBatch.Shutdown();
 	mTextRenderer.Shutdown();
 	mFont.Shutdown();
 	mShapeRenderer.Shutdown();
@@ -92,11 +97,11 @@ void GameScene::Render(float deltaTime)
 	str << std::fixed << std::setprecision(1) << L"FPS:" << debug->GetAverageFPS() << "\n" << L"FC:" << std::setprecision(4) << debug->GetFrameCost() << "ms";
 	mTextRenderer.DrawString(str.str().c_str(), 4, 4);
 	mTextRenderer.End();
-	/*
-	mTextureBatch.Begin(wvp);
+	mTextureBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
+	mTextureBatch.Begin();
 	mRc.Render(mTextureBatch, nullptr, bb, mRenderToTexture.GetShaderResourceView());
 	mTextureBatch.End();
-	
+	/*
 	auto c = mRenderToTexture.GetShaderResourceView();
 	ID3D11Resource *res;
 	c->GetResource(&res);

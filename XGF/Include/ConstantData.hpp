@@ -13,10 +13,10 @@ namespace XGF
 		void Initialize(GDI * gdi);//¶¥²ã´°¿Ú
 		void Shutdown();
 
-		Shaders * GetFontShaders() { return &mFontShaders; }
-		Shaders * GetPTShaders() { return &mPTShaders; }
-		Shaders * GetPCShaders() { return &mPCShaders; }
-		Shaders * GetPCTShaders() { return &mPCTShaders; }
+		Shaders GetFontShaders() { return mFontShaders; }
+		Shaders GetPTShaders() { return mPTShaders; }
+		Shaders GetPCShaders() { return mPCShaders; }
+		Shaders GetPCTShaders() { return mPCTShaders; }
 		static ConstantData & GetInstance() {
 			return mConstantData;
 		};

@@ -97,6 +97,7 @@ namespace XGF {
 			void Close();
 		};
 		extern LogRecorder gLogRecorder;
+		extern bool gHasRecord;
 	};
 	
 };
@@ -137,4 +138,3 @@ namespace XGF {
 #define XGF_ReportDebug(DebugStr, DebugStr2) ;
 #endif
 
-#define STATIC_ASSERT(num) if(num == false) exit(0);

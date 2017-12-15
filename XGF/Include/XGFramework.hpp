@@ -27,8 +27,6 @@ namespace XGF
 		~XGFramework();
 		bool _Update(float time);
 		//Application框架调用
-		void _Loop();
-		//Application框架调用
 		void _Loop2();
 		//Application框架调用
 		void _OnCreate(GDI *gdi, Asyn * asyn);

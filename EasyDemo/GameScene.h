@@ -24,7 +24,6 @@ private:
 	TextRenderer mTextRenderer;
 
 	Batch mTextureBatch;
-	Shader mTextureShader;
 
 	Shape::Rectangle mRc;
 

@@ -44,37 +44,7 @@ namespace XGF
 
 		return false;
 	}
-	void XGFramework::_Loop()
-	{
-		//_Update(1000.0f / 50);
-		for (;;)
-		{
-			mDeltaTime = mainTimer.Tick();
-			long tk = mainTimer.GetTimeCount();
-			int loops = 0;
-			float nextFrameTime = mainTimer.GetTime(tk);
-			while (mainTimer.GetTime(mainTimer.GetTimeCount())> nextFrameTime
-				&& loops < 10)
-			{
-				if (_Update(1000.0f / 50))
-					return;
-				nextFrameTime += 1000.0f / 50;
-				loops++;
-				//DebugOut(L"update ");
-			}
-			DebugInscriber_Begin(mDeltaTime);
-			if (mScene != nullptr)
-				mScene->Render(mDeltaTime);
-			if (mLastScene != nullptr)
-			{
-				mLastScene->Render(mDeltaTime);
-			}
-			mInputManager.Draw();
-			mGDI->Present(mIsVsync);
-			DebugInscriber_End();
-			//DebugOut(L"\nRender\n");
-		}
-	}
+
 	void XGFramework::_Loop2()
 	{
 		for (;;)
@@ -130,8 +100,8 @@ namespace XGF
 		ConstantData::GetInstance().Initialize(gdi);
 		mInputManager.Initialize(gdi, gdi->GetInstance(), gdi->GetTopHwnd(), mTheard);
 		mSceneBatch.Initialize(gdi, ConstantData::GetInstance().GetPCTShaders(), 24, 24);
-		mSceneBatch.SetBlend(true);
-		mSceneBatch.SetZBufferRender(false);
+		mSceneBatch.GetShaderStage()->SetBlendState(BlendState::AddOneOneAdd);
+		mSceneBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthDisable);
 		mRenderToTexture.Initialize(mGDI, mGDI->GetWidth(), mGDI->GetHeight());
 		mLastRenderToTexture.Initialize(mGDI, mGDI->GetWidth(), mGDI->GetHeight());
 	}
@@ -323,7 +293,8 @@ namespace XGF
 		bbr.AddBinder(ppb);
 		ppb.SetPosition(0.f, 1.f, 0.f, 1.f);
 		mRenderCamera.GetCameraMatrix(wvp);
-		mSceneBatch.Begin(wvp);
+		mSceneBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
+		mSceneBatch.Begin();
 		if (mLastSceneAnimation != nullptr)
 		{
 			mLastSceneAnimation->GetColor(c, 0);
@@ -332,6 +303,7 @@ namespace XGF
 		}
 		else
 			mLastRenderRectangle.Render(mSceneBatch, nullptr, bbr, mLastRenderToTexture.GetShaderResourceView());
+		mSceneBatch.Flush();
 		if (mSceneAnimation != nullptr)
 		{
 			mSceneAnimation->GetColor(c, 0);

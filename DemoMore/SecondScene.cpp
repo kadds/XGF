@@ -16,20 +16,20 @@ void SecondScene::OnCreate()
 	wchar_t buffer[MAX_PATH];
 	GetFramework()->AddInputListener(&mUILayer);
 	AddLayer(&mUILayer);
-	mLable.SetPositionAndSize(20, 60, 100, 40);
-	mLable.SetText(L"第二个界面 按Esc退出");
-	mUILayer.Add(&mLable);
+	mLabel.SetPositionAndSize(20, 60, 100, 40);
+	mLabel.SetText(L"第二个界面 按Esc退出");
+	mUILayer.Add(&mLabel);
 	//mCamera3D.FixYAxis(true);
-	mLable2.SetPositionAndSize(20, 100, 100, 40);
-	mLable2.SetText(L"Activate!");
-	mLable2.SetClickable(true);
-	mLable2.SetMouseEventable(true);
-	mLable2.AddOnClickListener([this](const MousePoint & ms, int pk)
+	mLabel2.SetPositionAndSize(20, 100, 100, 40);
+	mLabel2.SetText(L"Activate!");
+	mLabel2.SetClickable(true);
+	mLabel2.SetMouseEventable(true);
+	mLabel2.AddOnClickListener([this](const MousePoint & ms, int pk)
 	{
-		mLable2.SetText(L"Click!");
+		mLabel2.SetText(L"Click!");
 		//this->GetFramework()->GetGDI()->SetFullScreen(false);
 	});
-	mUILayer.Add(&mLable2);
+	mUILayer.Add(&mLabel2);
 	Tools::GetInstance()->GetFontPath("Dengb.ttf", cbuffer, MAX_PATH);
 	mFont.Initialize(mFramework->GetGDI(), cbuffer, 16);
 	mTextRenderer.Initialize(mFramework->GetGDI(), &mFont, 140);
@@ -131,11 +131,11 @@ void SecondScene::OnActivate(bool isActivate)
 {
 	if (isActivate)
 	{
-		mLable2.SetText(L"Activate!");
+		mLabel2.SetText(L"Activate!");
 	}
 	else
 	{
-		mLable2.SetText(L"No Activate!");
+		mLabel2.SetText(L"No Activate!");
 	}
 }
 void SecondScene::OnMouseMove(const MousePoint & mm, int pk)

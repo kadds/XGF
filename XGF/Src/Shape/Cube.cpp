@@ -60,6 +60,24 @@ namespace XGF
 			mPolygon.mPoint[6] = Point(x + width, y + height, z + depth);
 			mPolygon.mPoint[7] = Point(x + width, y, z + depth);
 		}
+		void Cube::SetCenterPositionAndSize(XMFLOAT3 center, XMFLOAT3 & whd)
+		{
+			
+			float cx = center.x - whd.x / 2;
+			float cy = center.y - whd.y / 2;
+			float cz = center.z - whd.z / 2;
+			float dw = whd.x;
+			float dh = whd.y;
+			float dd = whd.z;
+			mPolygon.mPoint[0] = Point(cx, cy, cz);
+			mPolygon.mPoint[1] = Point(cx, cy + dh, cz);
+			mPolygon.mPoint[2] = Point(cx + dw, cy + dh, cz);
+			mPolygon.mPoint[3] = Point(cx + dw, cy, cz);
+			mPolygon.mPoint[4] = Point(cx, cy,cz + dd);
+			mPolygon.mPoint[5] = Point(cx, cy + dh, cz + dd);
+			mPolygon.mPoint[6] = Point(cx + dw, cy + dh, cz + dd);
+			mPolygon.mPoint[7] = Point(cx + dw, cy, cz + dd);
+		}
 		void Cube::SetPosition(const Point & p)
 		{
 			Point c;

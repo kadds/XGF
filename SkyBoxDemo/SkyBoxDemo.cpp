@@ -41,9 +41,11 @@ private:
 	TextRenderer textRenderer;
 	OrthoCamera camera2d;
 	Batch batch;
+	Batch textureBatch;
 	Shape::Cube cube;
 	BindingBridge bbg;
 	Shaders shaders;
+
 	VertexShader vss;
 	PixelShader pss;
 	AxisRenderer ar;
@@ -52,6 +54,7 @@ private:
 	FPSCamera camera3d;
 	ParticleExplosion ps;
 	ParticleExplosion::ExplosionEmitter eemitter;
+	Texture particleT;
 public:
 	GameScene() :cb(cube.mPolygon.mCount){};
 	virtual ~GameScene() {};
@@ -63,16 +66,19 @@ public:
 		Tools::GetInstance()->GetFontPath("Dengb.ttf", buffer, MAX_PATH);
 		font.Initialize(gdi, buffer, 14);
 		textRenderer.Initialize(gdi, &font, 100);
-		ShaderLayout it = &SHADER_EL_POSITION3;
 		GetFilePath(L"../../fx/fx/shaderCube.fx", wbuffer, MAX_PATH);
-		vss.Initialize(gdi, wbuffer, &it, 1);
+		vss.Initialize(gdi, wbuffer);
 		pss.Initialize(gdi, wbuffer);
-		shaders.Initialize(&vss, &pss, nullptr);
-		batch.Initialize(gdi, &shaders, 100, 100);
+		shaders = { &vss, &pss, nullptr };
+		batch.Initialize(gdi, shaders, 100, 100);
+		batch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthEnableWithLessEqual);
+		batch.GetShaderStage()->SetPSSamplerState(0, SamplerState::LineMirror);
 		cube.SetPositionAndSize(-100, -100, -100, 200, 200, 200);
 		cube.Filp();
-		camera3d.SetPos(XMFLOAT3(20.0f, 1.f, 5.f));
-		
+		camera3d.SetPos(XMFLOAT3(100.0f, 1.f, 5.f));
+		textureBatch.Initialize(gdi, ConstantData::GetInstance().GetPTShaders(), 20, 24);
+		textureBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthDisable);
+		textureBatch.GetShaderStage()->SetBlendState(BlendState::AddZeroOneAdd);
 		ps.Initialize(gdi, 50);
 		ar.Initialize(gdi);
 		
@@ -81,12 +87,25 @@ public:
 		mFramework->GetInputManager()->GetCursor()->SetStaticTexture(mFramework->GetGDI(), GetFilePath(L"cursor.png", wbuffer, MAX_PATH));
 		mFramework->GetInputManager()->SetMouseMode(MouseMode::CustomCenter);
 		mFramework->AddInputListener(this);
-		eemitter.pos = Point(50, 50, 5);
-		eemitter.SetWidthAndHeight(2, 2);
+		eemitter.pos = Point(200, 200, 0);
+		eemitter.SetWidthAndHeight(15, 15);
+		eemitter.startRadius = 20;
+		eemitter.endRadius = 200;
+		eemitter.frequency = 800;
+		eemitter.mIgnoreZ = true;
+		eemitter.SetColor(Color(1, 0, 0, 1), Color(1, 0, 0, 1), Color(1, 0, 0, 0.4), Color(1, 0, 0, 0.4));
+		eemitter.SetEmitterAngle(0, 0, 360, 360);
+		eemitter.accelerationMin = 10;
+		eemitter.accelerationMax = 40;
+		eemitter.mMaxParticle = 4096;
+		eemitter.velocityMin = 50;
+		eemitter.velocityMax = 50;
+		eemitter.SetGravity({ 0,1,0 }, 200);
 		ps.AddEmitter(&eemitter);
 		bbg.AddBinder(cube.mPolygon);
-		GetFilePath(L"../../fx/fx/ParticleComputer.fx", wbuffer, MAX_PATH);
-		
+		GetFilePath(L"particle.png", wbuffer, MAX_PATH);
+		particleT.LoadWIC(gdi, wbuffer);
+		ps.SetTexture(&particleT);
 	}
 	virtual void OnDestory() override
 	{
@@ -99,7 +118,9 @@ public:
 		tt.Release();
 		ar.Shutdown();
 		vss.Shutdown();
+		textureBatch.Shutdown();
 		pss.Shutdown();
+		particleT.Release();
 	}
 	virtual void Render(float deltaTime) override
 	{
@@ -108,9 +129,10 @@ public:
 		WVPMatrix wvp2d, wvp3d;
 		camera2d.GetCameraMatrix(wvp2d);
 		camera3d.GetCameraMatrix(wvp3d);
-		cube.SetPositionAndSize(camera3d.GetPosition().x, camera3d.GetPosition().y, camera3d.GetPosition().z,20,20,20);
-		batch.Begin(wvp3d);
-		batch.SetTexture(tt);
+		
+		batch.GetShaderStage()->SetVSConstantBuffer(0, &wvp3d);
+		batch.GetShaderStage()->SetPSSRV(0, tt.GetShaderResourceView());
+		batch.Begin();
 		batch.DrawPolygon(cube.mPolygonPleIndex, bbg);
 		
 		batch.End();
@@ -127,16 +149,39 @@ public:
 		ps.Begin(wvp2d);
 		ps.Draw();
 		ps.End();
+		BindingBridge bbr;
+		Shape::Rectangle rc;
+		PolygonPleTextureBinder ttt(4);
+		bbr.AddBinder(rc.mPolygon);
+		bbr.AddBinder(ttt);
+		ttt.SetPosition(0, 1, 0, 1);
+		rc.SetPositionAndSize(100, 2, 50, 50);
+		rc.SetZ(0);
+		textureBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp3d);
+		textureBatch.Begin();
+		textureBatch.DrawPolygon( rc.mPolygonPleIndex,bbr);
+		textureBatch.GetShaderStage()->SetPSSRV(0, particleT.GetShaderResourceView());
+		textureBatch.End();
 
 	}
 	virtual void Updata(float deltaTime) override
 	{
 		camera2d.Updata();
 		camera3d.Updata();
+		cube.SetCenterPositionAndSize(camera3d.GetPosition(), XMFLOAT3( 200,200,200 ));
+		batch.GetShaderStage()->SetVSConstantBuffer(1,&camera3d.GetPosition());
 		auto ip = GetFramework()->GetInputManager();
 		if (ip->IskeyDowm(DIK_ESCAPE))
 			GetFramework()->Exit(0);
 		float dt = deltaTime * 5;
+		if (ip->IskeyDowm(DIK_LSHIFT))
+		{
+			dt *= 10;
+		}
+		if (ip->IskeyDowm(DIK_LCONTROL))
+		{
+			dt /= 10;
+		}
 		if(ip->IskeyDowm(DIK_W))
 		{
 			camera3d.Walk(dt);
@@ -161,7 +206,7 @@ public:
 		{
 			camera3d.Fly(dt);
 		}
-		
+		ps.Updata(deltaTime);
 	}
 	virtual void OnSize(int ClientX, int ClientY) override
 	{
@@ -177,6 +222,7 @@ public:
 	virtual void OnMouseUp(const MousePoint &mp, int pk) override {};
 	virtual void OnMouseMove(const MousePoint &mm, int pk) override 
 	{
+
 		float h = GetFramework()->GetWindowsHeight();
 		float w = GetFramework()->GetWindowsWidth();
 		camera3d.Pitch(camera3d.GetFovAngle() / h *mm.y);

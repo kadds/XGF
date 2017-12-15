@@ -13,8 +13,8 @@ namespace XGF
 	void Cursor::Initialize(GDI * gdi)
 	{
 		mTextureBatch.Initialize(gdi, ConstantData::GetInstance().GetPTShaders(), 4, 6);
-		mTextureBatch.SetBlend(true);
-		mTextureBatch.SetZBufferRender(false);
+		mTextureBatch.GetShaderStage()->SetBlendState(BlendState::AddOneOneAdd);
+		mTextureBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthEnable);
 		mBbrg.AddBinder(mPtBinder);
 
 		mSize.x = 16;
@@ -33,7 +33,8 @@ namespace XGF
 		if (mUsedStaticTexture)
 		{
 			if (!mIsShow || mTexture.GetShaderResourceView() == nullptr)  return;
-			mTextureBatch.Begin(wvp);
+			mTextureBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
+			mTextureBatch.Begin();
 			mRc.SetPositionAndSize(mPosition.x - mPointDeviation.x, mPosition.y - mPointDeviation.y, mSize.x, mSize.y);
 			mPtBinder.FromTexture(&mTexture);
 			mRc.SetZ(0.f);
@@ -48,7 +49,8 @@ namespace XGF
 			float x, y, w, h;
 			mAnimation->GetPositionInTexture(x, y, w, h);
 			mPtBinder.SetPosition(x, w, y, h);
-			mTextureBatch.Begin(wvp);
+			mTextureBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
+			mTextureBatch.Begin();
 			mRc.SetPositionAndSize(mPosition.x - mPointDeviation.x, mPosition.y - mPointDeviation.y, mSize.x, mSize.y);
 			mRc.SetZ(0.f);
 			mRc.Render(mTextureBatch, nullptr, mBbrg, mAnimation->GetTexture()->GetShaderResourceView());

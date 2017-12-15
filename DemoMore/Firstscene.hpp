@@ -37,8 +37,8 @@ private:
 	TextRenderer mTextRenderer_b;
 
 	Button mBt;
-	Lable mLb;
-	Lable mLxb;
+	Label mLb;
+	Label mLxb;
 	EditText mEdit;
 	EditText mEdit2;
 

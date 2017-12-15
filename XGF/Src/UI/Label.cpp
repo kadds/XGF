@@ -1,22 +1,22 @@
-#include "../../Include/Lable.hpp"
+#include "../../Include/Label.hpp"
 #include "../../Include/TextRenderer.hpp"
 #include "../../Include/UIBatches.hpp"
 namespace XGF
 {
-	Lable::Lable()
+	Label::Label()
 	{
 	}
 
-	Lable::~Lable()
+	Label::~Label()
 	{
 	}
 
-	void Lable::Render(const XMMATRIX * matrix, Batches & bs)
+	void Label::Render(const XMMATRIX * matrix, Batches & bs)
 	{
 		((UIBatches &)bs).GetTextRenderer(BATCHES_TEXTRENDERER_DEFAULT_SIZE)->DrawString(mText, mColor, this, matrix);
 	}
 
-	void Lable::SetText(wchar_t * text)
+	void Label::SetText(wchar_t * text)
 	{
 		mText = text;
 		mIsChange = true;

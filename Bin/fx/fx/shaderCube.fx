@@ -6,6 +6,10 @@ cbuffer CBMatrix:register(b0)
 	matrix View;
 	matrix Proj;
 };
+cbuffer CBMatrix2:register(b1)
+{
+	float3 cpos;
+};
 struct VertexIn
 {
 	float3 Pos : POSITION;
@@ -18,11 +22,10 @@ struct VertexOut
 VertexOut VS(VertexIn vin)
 {
 	VertexOut vout;
-	
 	vout.Pos = mul(float4(vin.Pos,1.0f), World);
-	vout.Pos = mul(vout.Pos, View);
-	vout.Pos = mul(vout.Pos, Proj);
-	vout.texCoord = vin.Pos;
+	vout.Pos = mul(float4(vin.Pos,1.0f), View);
+	vout.Pos = mul(vout.Pos, Proj).xyww;
+	vout.texCoord = -cpos + vin.Pos;
 	return vout;
 }
 

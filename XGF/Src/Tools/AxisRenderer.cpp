@@ -17,8 +17,7 @@ namespace XGF
 	{
 		auto p = DirectX::XMMatrixIdentity();
 		mBatch.Initialize(gdi, ConstantData::GetInstance().GetPCShaders(), 2 * 3 * 2, 2 * 3 * 2, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-		mBatch.SetBlend(false);
-		mBatch.SetZBufferRender(true);
+		mBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthEnable);
 		Color c = Color(0.f, 0.f, 0.f, 1.f);
 		auto fun = [&](float x, float y, float z) {
 
@@ -77,7 +76,8 @@ namespace XGF
 
 	void AxisRenderer::Begin(const WVPMatrix & matrix)
 	{
-		mBatch.Begin(matrix);
+		mBatch.GetShaderStage()->SetVSConstantBuffer(0, &matrix);
+		mBatch.Begin();
 	}
 
 	void AxisRenderer::End()

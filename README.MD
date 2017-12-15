@@ -14,17 +14,17 @@
     * Lable
     * EditText
     * Button
-	* More Control can be added simply (Uncompletely)
+	* More Control can be added simply 
 * Text renderer based on Freetype
 * Basic shape render
     * Line
     * Rectange
     * Circle
-	* More...(Uncompletely)
+	* More...
 * Scene manager
-    * Switch scene with aniamtion(Uncompletely)
+    * Switch scene with aniamtion
 * Particle
-    * Different ParticleEffect(Uncompletely)
+    * Different ParticleEffect
 * Lua support (Uncompletely)
   
 ## How To Compile

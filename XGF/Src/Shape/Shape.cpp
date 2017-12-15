@@ -35,7 +35,7 @@ namespace XGF
 		}
 		void Shape::Render(Batch & batch, const XMMATRIX * matirix, const BindingBridge & bbrige, ID3D11ShaderResourceView * tex)
 		{
-			batch.SetTexture(tex);
+			batch.GetShaderStage()->SetPSSRV(0, tex);
 			Render(batch, matirix, bbrige);
 		}
 		void Shape::Render(Batch & batch, const XMMATRIX * matirix, const BindingBridge & bbrige)

@@ -15,8 +15,8 @@ namespace XGF
 		public:
 			Shape(int n, int indexCount);
 			virtual ~Shape();
-			virtual bool IsInBBox(const Point & p, const XMFLOAT4X4 * matrix) const = 0;
-			virtual void SetPosition(const Point & p) = 0;
+			virtual bool IsInBBox(const Point & p, const XMFLOAT4X4 * matrix) const {return false;};
+			virtual void SetPosition(const Point & p) {};
 			virtual void GetPosition(Point & p) const;
 			PolygonPlePoint3 mPolygon;
 			PolygonPleIndex mPolygonPleIndex;

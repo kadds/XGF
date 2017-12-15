@@ -25,31 +25,14 @@ namespace XGF
 			XGF_ReportWarn("Out of Range In Vertex. You must set a larger buffer size.", "");
 			return;//TODO::ERROR
 		}
-		auto vs = mShaders->GetVSShader();
-		SlotCan * can = vs->GetSlotCan();
-		UINT nsizepos;
-		//copy 顶点附加数据
-		int itemp = 0;
+		auto vs = mShaderStage.GetVSShader();
+		UINT nsizepos = 0;
+		//copy 顶点数据
+		unsigned int tisk = vs->GetStrideAllSize();
 		for (int i = 0; i < bbridge.GetBinderCount(); i++)
 		{
-			nsizepos = 0;
-			if (can[i].nextIsASlot)
-			{
-				nsizepos += can[i].size;
-				itemp++;
-			}
-			else
-			{
-				nsizepos += can[i].size;
-				int temp = 0;
-				for (int j = 0; j < itemp + 1; j++) 
-				{
-					bbridge.GetBinder(i - itemp + j)->CopyTo(mVertexData[i] + nsizepos * (mPosInVertices + mLastFrameVBStart) + temp, nsizepos);
-					temp += can[i - itemp].size;
-				}
-				nsizepos = 0;
-				itemp = 0;
-			}
+			bbridge.GetBinder(i)->CopyTo(mVertexData + tisk * (mPosInVertices + mLastFrameVBStart) + nsizepos, tisk);
+			nsizepos += vs->GetStride()[i];
 		}
 		mPosInVertices += bbridge.GetBinder(0)->mCount;
 		DebugInscriber_CallAPolygon();
@@ -78,12 +61,12 @@ namespace XGF
 		}
 	}
 
-	void Batch::Initialize(GDI * gdi, Shaders * shaders, int MaxVertices, int MaxIndexCount, TopologyMode tm, SOmode sm, InstanceMode im)
+	void Batch::Initialize(GDI * gdi, Shaders shaders, int MaxVertices, int MaxIndexCount, TopologyMode tm)
 	{
 		mGDI = gdi;
 		mMaxVertices = MaxVertices;
 		mMaxIndexCount = MaxIndexCount;
-		mShaders = shaders;
+		mShaderStage.Initialize(shaders.vs, shaders.ps, shaders.gs);
 		mTopologyMode = tm;
 		//初始化
 		mLastFrameVBStart = 0;
@@ -91,23 +74,10 @@ namespace XGF
 		mFramePosition = 0;
 		mIsBegin = false;
 		mIsMap = false;
-		mTextureResource = nullptr;
 		mDisabledBlend = false;
 		mNullTexture = true;
-		mUsingBlend = false;
-		mVSShaderResourceView = nullptr;
-		mSOMode = sm;
-		mInstanceMode = im;
-
-		if (sm == SOmode::SOIn)
-		{
-			mVertexBufferCount = 0;
-			mVertexBuffer = nullptr;
-			mVertexData = nullptr;
-			mUsingZBuffer = true;
-			mUsingIndex = false;
-			return;
-		}
+		mVertexBuffer = nullptr;
+		mVertexData = nullptr;
 		if (MaxIndexCount <= 0)
 		{
 			mUsingIndex = false;
@@ -115,48 +85,24 @@ namespace XGF
 		else
 			mUsingIndex = true;
 		mUsingZBuffer = true;
-		if (sm == SOmode::SOOut)
+		if (mShaderStage.GetGSShader() != nullptr && mShaderStage.GetGSShader()->IsStreamOut())
 		{
-			D3D11_BUFFER_DESC bufferDesc =
-			{
-				10000,//TODO::max_vec_count
-				D3D11_USAGE_DEFAULT,
-				D3D11_BIND_STREAM_OUTPUT | D3D11_BIND_VERTEX_BUFFER,
-				0,
-				0,
-				0
-			};
-			gdi->GetDevice()->CreateBuffer(&bufferDesc, NULL, &mSOBuffer[0]);
-			gdi->GetDevice()->CreateBuffer(&bufferDesc, NULL, &mSOBuffer[1]);
 			mUsingIndex = false;
 			mUsingZBuffer = false;
-			mVertexBufferCount = 1;
 			mVertexData = nullptr;
 		}
-		if (im == InstanceMode::Open)
-		{
-
-		}
 		CreateIndexBuffer();
-		auto vs = shaders->GetVSShader();
-		mVertexBufferCount = vs->GetSlotCount();
-		mVertexBuffer = new ID3D11Buffer *[mVertexBufferCount];
-		UINT prt[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
-		vs->GetStride(prt);
-		for (int i = 0; i < mVertexBufferCount; i++)
-		{
-			CreateVertexBuffer(prt[i], &mVertexBuffer[i]);
-		}
-		mVertexData = new VertexDate[mVertexBufferCount];
-		mConstantBuffer.Initialize(gdi);
+		if (MaxVertices <= 0)
+			return;
+		auto vs = mShaderStage.GetVSShader();
+		CreateVertexBuffer(vs->GetStrideAllSize(), &mVertexBuffer);
 
 	}
-	void Batch::Begin(const WVPMatrix & Matrix)
+	void Batch::Begin()
 	{
 		if (mIsBegin)
 			return;//TODO::ERROR
 		mIsBegin = true;
-		mMatrix = const_cast<WVPMatrix *>(&Matrix);
 		mPosInIndices = 0;
 		mPosInVertices = 0;
 		mPosBeforeIndices = 0;
@@ -178,14 +124,7 @@ namespace XGF
 		}
 
 	}
-	void Batch::SetBlend(bool Open)
-	{
-		if (mUsingBlend != Open)
-		{
-			Flush();
-		}
-		mUsingBlend = Open;
-	}
+
 	void Batch::ChangeTopologyMode(TopologyMode tm)
 	{
 		if (mTopologyMode != tm)
@@ -194,93 +133,39 @@ namespace XGF
 			mTopologyMode = tm;
 		}
 	}
-	void Batch::SetZBufferRender(bool open)
-	{
-		mUsingZBuffer = open;
-	}
+	
 	TopologyMode Batch::GetTopologyMode()
 	{
 		return mTopologyMode;
 	}
-	ID3D11Buffer * Batch::GetSOOutBuffer()
-	{
-		return mSOBuffer[0];
-	}
-	void Batch::EndWithVertexBuffer(ID3D11Buffer * c, int count)
-	{
 
-		if (mSOMode == SOmode::SOIn)
-		{
-			PrepareForRender();
-			UINT stride[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
-			mShaders->GetVSShader()->GetStride(stride);
-			unsigned int offset[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT]{ 0 };
-			mGDI->GetDeviceContext()->IASetVertexBuffers(0, 1, &c, stride, offset);
-			mGDI->GetDeviceContext()->DrawAuto();
-		}
-	}
-	void Batch::EndWithVSID3D11ShaderResourceView(ID3D11ShaderResourceView * c, int count)
+	void Batch::End(ID3D11Buffer * c, int count)
 	{
-		mVSShaderResourceView = c;
-		mPosInVertices = count;
-		End();
+		mVertexBuffer = c;
+		EndWithoutFrame(true);
+		mVertexBuffer = nullptr;
 	}
+
 	Batch::Batch()
 	{
 	}
-	void Batch::SetTexture(const Texture & tex)
-	{
-		SetTexture(tex.GetShaderResourceView());
-	}
-	void Batch::SetTexture(ID3D11ShaderResourceView * rv)
-	{
-		if (!mIsBegin) return;
-		if (rv == nullptr)
-		{
-			if (mTextureResource != nullptr)
-			{
-				Flush();
-			}
-			mNullTexture = true;
-			return;
-		}
-		if (mTextureResource == nullptr || mTextureResource != rv)
-		{
-			Flush();
-			mTextureResource = rv;
-			mNullTexture = false;
-		}
-	}
+
 	void Batch::Shutdown()
 	{
 		if (mUsingIndex)
 			mIndexBuffer->Release();
-		if (mVertexData != nullptr)
-			delete[] mVertexData;
-		if (mSOMode == SOmode::SOOut)
-		{
-			mSOBuffer[0]->Release();
-			mSOBuffer[1]->Release();
-		}
-		else
-		{
-			for (int i = 0; i < mVertexBufferCount; i++)
-			{
-				mVertexBuffer[i]->Release();
-			}
-			delete[] mVertexBuffer;
-		}
-		mConstantBuffer.Shutdown();
+			
+		if(mVertexBuffer != nullptr)
+			mVertexBuffer->Release();
+		mShaderStage.Shutdown();
 	}
 
 	void Batch::Map(bool discard)
 	{
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
-		for (int i = 0; i < mVertexBufferCount; i++)
-		{
-			mGDI->GetDeviceContext()->Map(mVertexBuffer[i], 0, discard ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE_NO_OVERWRITE, 0, &mappedResource);
-			mVertexData[i] = static_cast<char*>(mappedResource.pData);
-		}
+		mGDI->GetDeviceContext()->Map(mVertexBuffer, 0, discard ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE_NO_OVERWRITE, 0, &mappedResource);
+		mVertexData = static_cast<char*>(mappedResource.pData);
+		
 		if (mUsingIndex)
 		{
 			mGDI->GetDeviceContext()->Map(mIndexBuffer, 0, discard ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE_NO_OVERWRITE, 0, &mappedResource);
@@ -290,10 +175,7 @@ namespace XGF
 
 	void Batch::UnMap()
 	{
-		for (int i = 0; i < mVertexBufferCount; i++)
-		{
-			mGDI->GetDeviceContext()->Unmap(mVertexBuffer[i], 0);
-		}
+		mGDI->GetDeviceContext()->Unmap(mVertexBuffer, 0);
 		if (mUsingIndex)
 		{
 			mGDI->GetDeviceContext()->Unmap(mIndexBuffer, 0);
@@ -303,56 +185,29 @@ namespace XGF
 	void Batch::PrepareForRender()
 	{
 		auto gdi = mGDI;
-		UINT stride[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
-		mShaders->GetVSShader()->GetStride(stride);
 		unsigned int offset[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT]{ 0 };
-		unsigned int ct = mVertexBufferCount;
+		unsigned int stride[] = { mShaderStage.GetVSShader()->GetStrideAllSize() };
 		ID3D11Buffer *mbuffer[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
 		memset(mbuffer, 0, sizeof(mbuffer));
-		mShaders->BindShader();
-		mShaders->GetVSShader()->SetInputLayout();
-		mConstantBuffer.Map(gdi);
-		*mConstantBuffer.GetBufferPoint() = *mMatrix;
-		mConstantBuffer.Unmap(gdi);
-		mShaders->SetVSConstantBuffer(&mConstantBuffer);
+		mShaderStage.BindStage();
+		mShaderStage.GetVSShader()->SetInputLayout();
 		
-		if (ct > 0)
-			gdi->GetDeviceContext()->IASetVertexBuffers(ct, D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT - ct, mbuffer, offset, offset);
-		if (mSOMode == SOmode::SOOut)
+		if (mMaxVertices > 0)
+			gdi->GetDeviceContext()->IASetVertexBuffers(1, D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT - 1, mbuffer, offset, offset);
+		if (mShaderStage.GetGSShader() != nullptr) //gs
 		{
-			gdi->GetDeviceContext()->SOSetTargets(1, mSOBuffer, offset);
-			gdi->GetDeviceContext()->IASetVertexBuffers(0, ct, mVertexBuffer, stride, offset);
+			auto gs = mShaderStage.GetGSShader();
+			if (gs->IsStreamOut())
+			{
+				auto buf = mShaderStage.GetGSShader()->GetStreamOutBuffer();
+				gdi->GetDeviceContext()->SOSetTargets(1, &buf, offset);
+			}
 		}
-		else if (mSOMode == SOmode::None)
-		{
-			ID3D11Buffer *b = 0;
-			gdi->GetDeviceContext()->SOSetTargets(1, &b, offset);
-			gdi->GetDeviceContext()->IASetVertexBuffers(0, ct, mVertexBuffer, stride, offset);
-		}
-		else if (mSOMode == SOmode::SOIn)
-		{
-			ID3D11Buffer *b = 0;
-			gdi->GetDeviceContext()->SOSetTargets(1, &b, offset);
-			//gdi->GetDeviceContext()->IASetVertexBuffers(0, ct, mVertexBuffer, stride, offset);
-		}
-		if (mVSShaderResourceView != nullptr)
-			gdi->GetDeviceContext()->VSSetShaderResources(0, 1, &mVSShaderResourceView);//TODO::clean
+		gdi->GetDeviceContext()->IASetVertexBuffers(0, 1, &mVertexBuffer, stride, offset);
+		
 		if (mUsingIndex)
 			gdi->GetDeviceContext()->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		gdi->GetDeviceContext()->IASetPrimitiveTopology(mTopologyMode);
-		if (mTextureResource)
-		{
-			gdi->SetDefaultSamplerState();
-			mGDI->GetDeviceContext()->PSSetShaderResources(0, 1, &mTextureResource);
-		}
-		if (mNullTexture) {
-			ID3D11ShaderResourceView *const pSRV[1] = { NULL };
-			gdi->GetDeviceContext()->PSSetShaderResources(0, 1, pSRV);
-		}
-		if (mUsingBlend)
-			gdi->SetBlendState(BlendState::AddZeroOneAdd);
-		else
-			gdi->SetBlendState(BlendState::NoneBlend);
 		
 	}
 
@@ -368,14 +223,12 @@ namespace XGF
 		D3D11_SUBRESOURCE_DATA resourceData;
 		ZeroMemory(&resourceData, sizeof(resourceData));
 		resourceData.pSysMem = vertices;
-		if (mSOMode == SOmode::SOOut)
-			vertexDesc.MiscFlags = D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS;
 		XGF_Error_Check(mGDI->GetDevice()->CreateBuffer(&vertexDesc, &resourceData, buffer), "CreateVertexBuffer Error");
 		PutDebugString((*buffer));
 		delete[] vertices;
 	}
 
-	void Batch::EndWithoutFrame()
+	void Batch::EndWithoutFrame(bool drawAuto)
 	{
 		if (!mIsBegin)
 			return;//TODO::ERROR
@@ -385,24 +238,28 @@ namespace XGF
 			UnMap();
 			mIsMap = false;
 		}
-		if (mPosInIndices == 0 && mUsingIndex)
+		if (mPosInIndices == 0 && mUsingIndex || !drawAuto && mPosInVertices - mBeforeVertices <= 0 && !mUsingIndex)
 			return;
 		PrepareForRender();
-		mGDI->SetZBufferMode(mUsingZBuffer);
-		if (mSOMode == SOmode::None)
-			if (mUsingIndex)
-				mGDI->GetDeviceContext()->DrawIndexed(mPosInIndices - mPosBeforeIndices, mLastFrameIBStart + mPosBeforeIndices, 0);
-			else
-				mGDI->GetDeviceContext()->Draw(mPosInVertices - mBeforeVertices, mLastFrameVBStart + mBeforeVertices);
-		else if (mSOMode == SOmode::SOOut)
+		if (mShaderStage.GetGSShader() != nullptr && mShaderStage.GetGSShader()->IsStreamOut())
 		{
 			mGDI->GetDeviceContext()->Draw(mPosInVertices - mBeforeVertices, mLastFrameVBStart + mBeforeVertices);
-			std::swap(mSOBuffer[0], mSOBuffer[1]);
+			mShaderStage.GetGSShader()->Swap();
 		}
-		ID3D11ShaderResourceView * sr = 0;
-		if (mVSShaderResourceView != nullptr)
-			mGDI->GetDeviceContext()->VSSetShaderResources(0, 1, &sr);//TODO::clean
-
+		else
+		{
+			if (!drawAuto)
+				if (mUsingIndex)
+					mGDI->GetDeviceContext()->DrawIndexed(mPosInIndices - mPosBeforeIndices, mLastFrameIBStart + mPosBeforeIndices, 0);
+				else
+					mGDI->GetDeviceContext()->Draw(mPosInVertices - mBeforeVertices, mLastFrameVBStart + mBeforeVertices);
+			else
+				mGDI->GetDeviceContext()->DrawAuto();
+		}
+		ID3D11Buffer *b = nullptr;
+		UINT offset[4] = { 0 };
+		mGDI->GetDeviceContext()->SOSetTargets(1, &b, offset);
+		mShaderStage.UnBindStage();
 	}
 
 	void Batch::CreateIndexBuffer()
@@ -424,6 +281,7 @@ namespace XGF
 		ZeroMemory(&iinitData, sizeof(iinitData));
 		iinitData.pSysMem = indexList;
 		XGF_Error_Check(mGDI->GetDevice()->CreateBuffer(&ibd, &iinitData, &mIndexBuffer), "CreateIndexBuffer Error");
+		//mIndexBuffer = CreateBuffer(mGDI, D3D11_BIND_INDEX_BUFFER, 0, sizeof(index) *(mMaxIndexCount * mMaxPreRenderFrameCount), 0, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 		PutDebugString(mIndexBuffer);
 		delete[] indexList;
 	}

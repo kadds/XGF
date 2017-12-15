@@ -14,10 +14,11 @@ namespace XGF {
 		std::stringstream mInfoBuffer;
 		std::stringstream mErrorBuffer;
 		std::stringstream mWarnBuffer;
-		const size_t gMaxBufferSize = 2048;
+		const size_t gMaxBufferSize = 20480;
 		char gFilename[MAX_PATH];
 		LogRecorder gLogRecorder;
-		void ShowXGFDialog(char * name);
+		bool gHasRecord = false;
+		void ShowXGFDialog(char * str, char * name);
 		void Record(LogLevel level, LogData & logData)
 		{
 			std::time_t t = std::time(NULL);
@@ -38,6 +39,7 @@ namespace XGF {
 			case LogLevel::Warn:
 				ss = &mWarnBuffer;
 				str = "Warn";
+				gHasRecord = true;
 				break;
 			case LogLevel::Error:
 				ss = &mErrorBuffer;
@@ -62,12 +64,14 @@ namespace XGF {
 				gLogRecorder.Close();
 				ss->str("");
 			}
+			
 			if (level == LogLevel::Error)
 			{
 				//flush all
 				gLogRecorder.Open() << mDebugBuffer.str() << std::endl << mInfoBuffer.str() << std::endl << mWarnBuffer.str() << std::endl << mErrorBuffer.str();
 				gLogRecorder.Close();
-				ShowXGFDialog(gFilename);
+				ShowXGFDialog("A error hanpend, Do you want to open log file?", gFilename);
+				gHasRecord = false;
 				exit(-1);
 			}
 		}
@@ -128,6 +132,12 @@ namespace XGF {
 				mLogfile.flush();
 				mLogfile.close();
 			}
+#ifdef _DEBUG
+			if (gHasRecord)
+			{
+				ShowXGFDialog("Some Log had recorded, Do you want to open log file?", gFilename);
+			}
+#endif
 		}
 
 		std::ofstream & LogRecorder::Open()
@@ -153,9 +163,9 @@ namespace XGF {
 				filepath);
 			GetTempFileNameA(filepath, "Log", 0, gFilename);
 		}
-		void ShowXGFDialog(char * name)
+		void ShowXGFDialog(char* str, char * name)
 		{
-			if (MessageBoxA(nullptr, name, "Error happend, Open Log file?", MB_YESNO | MB_ICONERROR) == IDYES)
+			if (MessageBoxA(nullptr, name, str, MB_YESNO | MB_ICONERROR) == IDYES)
 			{
 				ShellExecuteA(0,"open","notepad.exe",name, 0, SW_SHOW);
 			}

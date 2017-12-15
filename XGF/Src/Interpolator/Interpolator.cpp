@@ -1,0 +1,14 @@
+#include "../../Include/Interpolator/Interpolator.hpp"
+namespace XGF
+{
+	InterpolatorSingletonDefine(AccelerateDecelerateInterpolator);
+	InterpolatorSingletonDefineWithOneFactor(AccelerateInterpolator);
+	InterpolatorSingletonDefineWithOneFactor(AnticipateInterpolator);
+	InterpolatorSingletonDefineWithOneFactor(AnticipateOvershootInterpolator);
+	InterpolatorSingletonDefine(BounceInterpolator);
+	InterpolatorSingletonDefineWithOneFactor(CycleInterpolator);
+	InterpolatorSingletonDefineWithOneFactor(DecelerateInterpolator);
+	InterpolatorSingletonDefine(LinearInterpolator);
+	InterpolatorSingletonDefineWithOneFactor(OvershootInterpolator);
+	InterpolatorSingletonDefineWithOneFactor(SpringInterpolator)
+}

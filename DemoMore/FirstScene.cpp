@@ -92,12 +92,12 @@ void FirstScene::OnCreate()
 	mBt.SetTexture(&btNormal, &btMove, &btPress);
 	mBt.AddOnClickListener([=](const MousePoint &mm, int pk) {
 		mBt.StartAction();
-		if (mFramework->GetGDI()->GetDisplayMode() == Borderless)
-			mFramework->GetGDI()->SetDisplayMode(Windowed, 0, 0, 600, 400, false);
-		else if(mFramework->GetGDI()->GetDisplayMode() == FullScreen)
-			mFramework->GetGDI()->SetDisplayMode(Borderless ,0 ,0 , 1920, 1080, true);
+		if (mFramework->GetGDI()->GetDisplayMode() == DisplayMode::Borderless)
+			mFramework->GetGDI()->SetDisplayMode(DisplayMode::Windowed, 0, 0, 600, 400, false);
+		else if(mFramework->GetGDI()->GetDisplayMode() == DisplayMode::FullScreen)
+			mFramework->GetGDI()->SetDisplayMode(DisplayMode::Borderless ,0 ,0 , 1920, 1080, true);
 		else
-			mFramework->GetGDI()->SetDisplayMode(FullScreen, 0, 0, 1920, 1080, true);
+			mFramework->GetGDI()->SetDisplayMode(DisplayMode::FullScreen, 0, 0, 1920, 1080, true);
 		//AsyncTask::NewTask(mFramework->GetTheard(), [this](AsyncTask * asyn) {
 			
 			//MessageBox(NULL, L"YOU CLICK BUTTOM!!",L"E",0);
@@ -232,7 +232,8 @@ void FirstScene::Render(float deltaTime)
 	BindingBridge bbr;
 	bbr.AddBinder(mCube.mPolygon);
 	bbr.AddBinder(cb);
-	mBatch3D.Begin(wvp3D);
+	mBatch3D.GetShaderStage()->SetVSConstantBuffer(0, &wvp3D);
+	mBatch3D.Begin();
 	mBatch3D.DrawPolygon(mCube.mPolygonPleIndex, bbr);
 	mBatch3D.End();
 	

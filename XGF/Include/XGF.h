@@ -24,7 +24,7 @@
 //*********** UI *******************
 #include "Layer.hpp"
 #include "UILayer.hpp"
-#include "Lable.hpp"
+#include "Label.hpp"
 #include "Button.hpp"
 #include "EditText.hpp"
 #include "UIBatches.hpp"

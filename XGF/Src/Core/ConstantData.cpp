@@ -6,23 +6,21 @@ namespace XGF
 
 	void ConstantData::Initialize(GDI * gdi)
 	{
-		ShaderLayout it[3] = { &SHADER_EL_POSITION3, &SHADER_EL_COLOR, &SHADER_EL_TEXTURE };
-		mFontVShader.Initialize(gdi, ShaderConst::fontVS, ShaderConst::fontVSSize, it, 3);
+		mFontVShader.Initialize(gdi, ShaderConst::fontVS, ShaderConst::fontVSSize);
 		mFontPShader.Initialize(gdi, ShaderConst::fontPS, ShaderConst::fontPSSize);
-		mFontShaders.Initialize(&mFontVShader, &mFontPShader, nullptr);
-		it[1] = &SHADER_EL_TEXTURE;
-		mPTVShader.Initialize(gdi, ShaderConst::shaderPTVS, ShaderConst::shaderPTVSSize, it, 2);
+		mFontShaders = { &mFontVShader, &mFontPShader , nullptr};
+
+		mPTVShader.Initialize(gdi, ShaderConst::shaderPTVS, ShaderConst::shaderPTVSSize);
 		mPTPShader.Initialize(gdi, ShaderConst::shaderPTPS, ShaderConst::shaderPTPSSize);
-		mPTShaders.Initialize(&mPTVShader, &mPTPShader, nullptr);
-		it[1] = &SHADER_EL_COLOR;
-		mPCVShader.Initialize(gdi, ShaderConst::shaderPCVS, ShaderConst::shaderPCVSSize, it, 2);
+		mPTShaders = { &mPTVShader, &mPTPShader, nullptr };
+
+		mPCVShader.Initialize(gdi, ShaderConst::shaderPCVS, ShaderConst::shaderPCVSSize);
 		mPCPShader.Initialize(gdi, ShaderConst::shaderPCPS, ShaderConst::shaderPCPSSize);
-		mPCShaders.Initialize(&mPCVShader, &mPCPShader, nullptr);
-		it[1] = &SHADER_EL_COLOR;
-		it[2] = &SHADER_EL_TEXTURE;
-		mPCTVShader.Initialize(gdi, ShaderConst::shaderPCTVS, ShaderConst::shaderPCTVSSize, it, 3);
+		mPCShaders = { &mPCVShader, &mPCPShader, nullptr };
+
+		mPCTVShader.Initialize(gdi, ShaderConst::shaderPCTVS, ShaderConst::shaderPCTVSSize);
 		mPCTPShader.Initialize(gdi, ShaderConst::shaderPCTPS, ShaderConst::shaderPCTPSSize);
-		mPCTShaders.Initialize(&mPCTVShader, &mPCTPShader, nullptr);
+		mPCTShaders = { &mPCTVShader, &mPCTPShader, nullptr };
 	}
 
 	void ConstantData::Shutdown()

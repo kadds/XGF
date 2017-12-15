@@ -102,9 +102,6 @@
     <ClInclude Include="Include\InputListener.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Lable.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Layer.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -285,6 +282,12 @@
     <ClInclude Include="Include\Buffer.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Label.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Triangle.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\UI\UILayer.cpp">
@@ -294,9 +297,6 @@
       <Filter>源文件\UI</Filter>
     </ClCompile>
     <ClCompile Include="Src\UI\Control.cpp">
-      <Filter>源文件\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\UI\Lable.cpp">
       <Filter>源文件\UI</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\Actor.cpp">
@@ -508,6 +508,12 @@
     </ClCompile>
     <ClCompile Include="Src\Interpolator\Interpolator.cpp">
       <Filter>源文件\Interpolator</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\UI\Label.cpp">
+      <Filter>源文件\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Shape\Triangle.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

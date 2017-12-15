@@ -5,7 +5,7 @@ namespace XGF
 {
 	class GDI;
 	/*
-	用Color渲染几何图形
+	用Color渲染几何图形2d
 	Begin，Draw，End
 	*/
 	class ShapeRenderer
@@ -24,6 +24,10 @@ namespace XGF
 		void DrawCircle(float x, float y, float r, int precision, float z, Color & color);
 		void DrawCircle(float x, float y, float r, int precision, float z, Color & color, Color & centerColor);
 		void DrawLine(float x, float y, float endx, float endy, float z, Color & color);
+		void DrawLineList(Position *p, int count, float z, Color & color);
+		void DrawTriangle(Position & a, Position & b, Position & c, float z, Color & ca, Color & cb, Color & cc);
+		void DrawTriangle(Position & a, Position & b, Position & c, float z, Color & cc);
+		void DrawPolygonList(Position *p, int count, float z, Color & color);
 	private:
 		Batch mBatch;
 	};

@@ -3,6 +3,7 @@
 #include "..\..\Include\Rectangle.hpp"
 #include "..\..\Include\RectangleB.hpp"
 #include "..\..\Include\Circle.hpp"
+#include "..\..\Include\Triangle.hpp"
 #include "..\..\Include\Line.hpp"
 #include "..\..\Include\ConstantData.hpp"
 namespace XGF
@@ -19,8 +20,8 @@ namespace XGF
 	void ShapeRenderer::Initialize(GDI * gdi, unsigned int MaxVetices, unsigned int MaxIndices)
 	{
 		mBatch.Initialize(gdi, ConstantData::GetInstance().GetPCShaders(), MaxVetices, MaxIndices, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		mBatch.SetBlend(true);
-		mBatch.SetZBufferRender(true);
+		mBatch.GetShaderStage()->SetBlendState(BlendState::AddOneOneAdd);
+		mBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthEnable);
 	}
 
 	void ShapeRenderer::Shutdown()
@@ -30,7 +31,8 @@ namespace XGF
 
 	void ShapeRenderer::Begin(WVPMatrix & wvp)
 	{
-		mBatch.Begin(wvp);
+		mBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
+		mBatch.Begin();
 	}
 
 	void ShapeRenderer::End()
@@ -70,7 +72,6 @@ namespace XGF
 		BindingBridge bb;
 		bb.AddBinder(rc.mPolygon);
 		bb.AddBinder(cb);
-		mBatch.SetTexture(nullptr);
 		mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		mBatch.DrawPolygon(rc.mPolygonPleIndex, bb);
 	}
@@ -84,7 +85,6 @@ namespace XGF
 		BindingBridge bb;
 		bb.AddBinder(ce.mPolygon);
 		bb.AddBinder(cb);
-		mBatch.SetTexture(nullptr);
 		mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		mBatch.DrawPolygon(ce.mPolygonPleIndex, bb);
 	}
@@ -101,7 +101,6 @@ namespace XGF
 		BindingBridge bb;
 		bb.AddBinder(ce.mPolygon);
 		bb.AddBinder(cb);
-		mBatch.SetTexture(nullptr);
 		mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		mBatch.DrawPolygon(ce.mPolygonPleIndex, bb);
 	}
@@ -115,9 +114,55 @@ namespace XGF
 		BindingBridge bb;
 		bb.AddBinder(line.mPolygon);
 		bb.AddBinder(cb);
-		mBatch.SetTexture(nullptr);
-		mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+		mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
 		mBatch.DrawPolygon(line.mPolygonPleIndex, bb);
 	}
-
+	void ShapeRenderer::DrawLineList(Position * p, int count, float z, Color & color)
+	{
+		Shape::Shape shape(count, count);
+		for (int i = 0; i < count; i++)
+		{
+			shape.mPolygon.mPoint[i] = Point(p[i].x, p[i].y, z);
+			shape.mPolygonPleIndex.mIndex[i] = i;
+		}
+		PolygonPleConstantColorBinder cb(color, count);
+		BindingBridge bb;
+		bb.AddBinder(shape.mPolygon);
+		bb.AddBinder(cb);
+		mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+		mBatch.DrawPolygon(shape.mPolygonPleIndex, bb);
+	}
+	void ShapeRenderer::DrawTriangle(Position & a, Position & b, Position & c, float z, Color & ca, Color & cb, Color & cc)
+	{
+		Shape::Triangle tr;
+		tr.SetThreePoint(Point(a.x, a.y, z), Point(b.x, b.y, z), Point(c.x, c.y, z));
+		PolygonPleColorBinder pp(3);
+		BindingBridge bbr;
+		bbr.AddBinder(tr.mPolygon);
+		bbr.AddBinder(pp);
+		pp.Set(0, 1, ca);
+		pp.Set(1, 1, cb);
+		pp.Set(2, 1, cc);
+		mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+		mBatch.DrawPolygon(tr.mPolygonPleIndex, bbr);
+	}
+	void ShapeRenderer::DrawTriangle(Position & a, Position & b, Position & c, float z, Color & cc)
+	{
+		DrawTriangle(a, b, c, z, cc, cc, cc);
+	}
+	void ShapeRenderer::DrawPolygonList(Position * p, int count, float z, Color & color)
+	{
+		Shape::Shape shape(count, count);
+		for (int i = 0; i < count; i++)
+		{
+			shape.mPolygon.mPoint[i] = Point(p[i].x, p[i].y, z);
+			shape.mPolygonPleIndex.mIndex[i] = i;
+		}
+		PolygonPleConstantColorBinder cb(color, count);
+		BindingBridge bb;
+		bb.AddBinder(shape.mPolygon);
+		bb.AddBinder(cb);
+		mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+		mBatch.DrawPolygon(shape.mPolygonPleIndex, bb);
+	}
 };

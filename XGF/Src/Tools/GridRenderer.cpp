@@ -16,8 +16,7 @@ namespace XGF
 	void GridRenderer::Initialize(GDI * gdi, float width, float height, unsigned xcount, unsigned zcount, Point & origin)
 	{
 		mBatch.Initialize(gdi, ConstantData::GetInstance().GetPCShaders(), (xcount * 2 + zcount * 2) + 4, xcount * 2 + zcount * 2 + 4, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-		mBatch.SetBlend(false);
-		mBatch.SetZBufferRender(false);
+		mBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthDisable);
 		mHeight = height;
 		mWidth = width;
 		mPolygon = new PolygonPlePoint3(xcount * 2 + zcount * 2 + 4);
@@ -75,7 +74,8 @@ namespace XGF
 
 	void GridRenderer::Begin(const WVPMatrix & matrix)
 	{
-		mBatch.Begin(matrix);
+		mBatch.GetShaderStage()->SetVSConstantBuffer(0, &matrix);
+		mBatch.Begin();
 	}
 
 	void GridRenderer::End()

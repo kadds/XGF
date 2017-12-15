@@ -1,6 +1,5 @@
 // ShaderToCpp.cpp
 // convert hlsl to hlslcode
-// Data 2017/12/26 Time 13:00
 
 #include <iostream>
 #include <fstream>
@@ -13,7 +12,7 @@
 #include <vector>
 #include <io.h>
 #include <Windows.h>
-
+#include <sstream>
 #pragma comment(lib,"d3dcompiler.lib")
 #ifdef _DEBUG
 #pragma comment(lib,"lib/Debug/gflagsd.lib")
@@ -38,14 +37,18 @@ DEFINE_string(CSV, "cs_5_0", "CSVersion");
 DEFINE_string(ExStr, "", "Extern String");
 DEFINE_string(NS, "ShaderConst", "Iner NameSpace");
 DEFINE_string(ANS, "XGF", "NameSpace");
+DEFINE_string(IP, "../../Include/", "include Path at cpp file");
 
 wchar_t* CharToWchar(const char* c);
 void split(string str, string pattern, std::vector<string> & output);
-void TransformAShader(std::ofstream & os, std::ofstream & osh, string file, string name, string & entryPoint, string & version);
-void TransformToFile(std::ofstream & os, std::ofstream & osh ,ID3DBlob & bb, string & name);
-void OutputInformation(std::ofstream & os, std::ofstream & osh );
+void TransformAShader(std::ostream & os, std::ostream & osh, string file, string name, string & entryPoint, string & version);
+void TransformToFile(std::ostream & os, std::ostream & osh ,ID3DBlob & bb, string & name);
+void OutputInformation(std::ostream & os, std::ostream & osh );
 HANDLE  gConsole;
 HANDLE  gErrorConsole;
+int gErrorCount = 0;
+int gWarningCount = 0;
+
 int main(int argc, char *argv[])
 {
 	google::SetVersionString("1.1");
@@ -60,8 +63,12 @@ int main(int argc, char *argv[])
 	}
 	gConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	gErrorConsole = GetStdHandle(STD_ERROR_HANDLE);
+	//cpp file
 	string output = FLAGS_O;
+	//h file
 	string outputh = FLAGS_OH;
+
+
 	string input = FLAGS_I;
 	string VSEntryPoint = FLAGS_VSEP;
 	string VSVersion = FLAGS_VSV;
@@ -88,7 +95,7 @@ int main(int argc, char *argv[])
 	{
 		std::vector<string> inputDirs;
 		split(inputDir, ",", inputDirs);
-		while (!inputDirs.empty())
+		while (!inputDirs.empty())//搜索目录下所有文件
 		{
 			string str = inputDirs.back();
 			std::tr2::sys::path path(str);
@@ -113,19 +120,10 @@ int main(int argc, char *argv[])
 				std::cout << "Dir " << str << " can't find file" << std::endl;
 		}
 	}
-	std::ofstream out;
-	std::ofstream outh;
-	if (std::tr2::sys::path(output).is_relative())
-	{
-		output = Exefilepath + "\\" + output;
-		output = std::tr2::sys::path(output).make_preferred().string();
-	}
-	if (std::tr2::sys::path(outputh).is_relative())
-	{
-		outputh = Exefilepath + "\\" + outputh;
-	}
-	out.open(output, std::ios::out);
-	outh.open(outputh, std::ios::out);
+	std::stringstream out;
+	std::stringstream outh;
+	
+	
 	OutputInformation(out, outh);
 
 	std::cout << "Transform ..." << std::endl << std::flush;
@@ -148,17 +146,45 @@ int main(int argc, char *argv[])
 	}
 	out << "}" << std::endl << "}" << std::endl;
 	outh << "}" << std::endl << "}" << std::endl;
-	outh.flush();
-	outh.close();
-	out.flush();
-	out.close();
+	
 	SetConsoleTextAttribute(gConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-	std::cout << std::endl <<"Output :" << output << "  \n" << outputh << "  OK "  << std::endl << std::flush;
+	if (gErrorCount == 0)//无错误，输出到文件
+	{
+		std::ofstream outfile;
+		std::ofstream outhfile;
+
+		if (std::tr2::sys::path(output).is_relative())
+		{
+			output = Exefilepath + "\\" + output;
+			output = std::tr2::sys::path(output).make_preferred().string();
+		}
+		if (std::tr2::sys::path(outputh).is_relative())
+		{
+			outputh = Exefilepath + "\\" + outputh;
+			outputh = std::tr2::sys::path(outputh).make_preferred().string();
+		}
+
+		outfile.open(output, std::ios::out);
+		outhfile.open(outputh, std::ios::out);
+		outhfile << outh.str();
+		outfile << out.str();
+		outhfile.flush();
+		outhfile.close();
+		outfile.flush();
+		outfile.close();
+		std::cout << std::endl << "Output :" << output << "  \n" << outputh << "  OK " << std::endl;
+	}
+	else
+	{
+		std::cout << "Can't Output" << std::endl;
+	}
 	google::ShutDownCommandLineFlags();
+	std::cout << gWarningCount << " Warning(s), " << gErrorCount << " Error(s)" << std::endl;
+	
     return 0;
 }
-
-void OutputInformation(std::ofstream & os, std::ofstream & osh)
+//开始信息头
+void OutputInformation(std::ostream & os, std::ostream & osh)
 {
 	
 	std::time_t t = std::time(NULL);
@@ -178,13 +204,14 @@ void OutputInformation(std::ofstream & os, std::ofstream & osh)
 		os << "/*" << FLAGS_ExStr << "*/" << std::endl;
 		osh << "/*" << FLAGS_ExStr << "*/" << std::endl;
 	}
-	os << "#include \""<< FLAGS_OH <<"\"" << std::endl;
+	os << "#include \""<< FLAGS_IP << std::tr2::sys::path(FLAGS_OH).filename() <<"\"" << std::endl;
 	os << "namespace " << FLAGS_ANS << "{" << std::endl;
 	os << "namespace "<< FLAGS_NS <<"{" << std::endl;
 	osh << "namespace " << FLAGS_ANS << "{" << std::endl;
 	osh << "namespace " << FLAGS_NS << "{" << std::endl;
 }
-void TransformToFile(std::ofstream & os, std::ofstream & osh, ID3DBlob & bb, string & name)
+//写入数据
+void TransformToFile(std::ostream & os, std::ostream & osh, ID3DBlob & bb, string & name)
 {
 	size_t sz = bb.GetBufferSize() / sizeof(byte);
 	byte *bt = (byte * )bb.GetBufferPointer() ;
@@ -205,7 +232,7 @@ void TransformToFile(std::ofstream & os, std::ofstream & osh, ID3DBlob & bb, str
 	osh << "extern const unsigned int " << name << "Size;" << std::endl;
 
 }
-void TransformAShader(std::ofstream & os, std::ofstream & osh, string file,string name, string & entryPoint, string & version)
+void TransformAShader(std::ostream & os, std::ostream & osh, string file,string name, string & entryPoint, string & version)
 {
 	ID3DBlob* pErrorBlob = nullptr;
 	ID3DBlob* pBlob = nullptr;
@@ -216,18 +243,26 @@ void TransformAShader(std::ofstream & os, std::ofstream & osh, string file,strin
 	if (FAILED(hr))
 	{
 		SetConsoleTextAttribute(gErrorConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
+		
 		if (pErrorBlob == nullptr)
+		{
 			std::cerr << "File: " << file << " Can't find file" << std::endl;
+			gErrorCount++;
+		}
+			
 		else
 		{
+			
 			string buffer = (char*)pErrorBlob->GetBufferPointer();
 			if (buffer.find("error X3501:") != buffer.npos)
 			{
+				gWarningCount++;
 				SetConsoleTextAttribute(gConsole, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY);
 				std::cout << "File: " << file << " Warn:" << entryPoint << " Entrypoint not found" << std::endl;
 			}
 			else
 			{
+				gErrorCount++;
 				std::cerr << " " << buffer;
 			}
 		}

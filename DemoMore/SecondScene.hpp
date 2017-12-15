@@ -35,8 +35,8 @@ private:
 	FPSCamera mCamera3D;
 	UILayer mUILayer;
 
-	Lable mLable;
-	Lable mLable2;
+	Label mLabel;
+	Label mLabel2;
 	SceneAnimation mSceneAnimationIn;
 };
 

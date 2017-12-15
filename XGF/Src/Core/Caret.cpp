@@ -16,8 +16,8 @@ namespace XGF
 	{
 		mIsCaretShow = false;
 		mColorBatch.Initialize(gdi, ConstantData::GetInstance().GetPCShaders(), 16, 16, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-		mColorBatch.SetBlend(true);
-		mColorBatch.SetZBufferRender(false);
+		mColorBatch.GetShaderStage()->SetBlendState(BlendState::AddOneOneAdd);
+		mColorBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthDisable);
 		mHide = false;
 		mHeight = 16;
 		mBbrg.AddBinder(mLine.mPolygon);
@@ -36,8 +36,9 @@ namespace XGF
 		{
 			return;
 		}
-		mColorBatch.Begin(wvp);
-		mColorBatch.SetTexture(nullptr);
+		mColorBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
+		mColorBatch.Begin();
+		//mColorBatch.SetTexture(nullptr);
 		mColorBatch.DrawPolygon(mLine.mPolygonPleIndex, mBbrg);
 		mColorBatch.End();
 	}

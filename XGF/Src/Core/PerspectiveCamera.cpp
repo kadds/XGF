@@ -2,13 +2,13 @@
 
 namespace XGF
 {
-
+	using namespace DirectX;
 	PerspectiveCamera::PerspectiveCamera() :mFovAngle(DirectX::XM_PI / 3.f)
 	{
-		mPos = DirectX::XMFLOAT3(0.0f, 10.0f, 10.0f);
+		mPos = DirectX::XMFLOAT3(.0f, .0f, .0f);
 		mUp = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);
 		mRight = DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f);
-		mLook = DirectX::XMFLOAT3(1.f, 1.f, 1.f);
+		mLook = DirectX::XMFLOAT3(0.f, 0.f, 1.f);
 	}
 
 
@@ -27,24 +27,18 @@ namespace XGF
 		DirectX::XMVECTOR up, right, pos;
 		up = DirectX::XMLoadFloat3(&mUp);
 		right = DirectX::XMLoadFloat3(&mRight);
+		look = DirectX::XMVector3Normalize(look);
 		pos = DirectX::XMLoadFloat3(&mPos);
 
 		up = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(look, right));
 		right = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(up, look));
-		look = DirectX::XMVector3Normalize(look);
-
-		float x = -DirectX::XMVectorGetX(DirectX::XMVector3Dot(pos, right));
-		float y = -DirectX::XMVectorGetX(DirectX::XMVector3Dot(pos, up));
-		float z = -DirectX::XMVectorGetX(DirectX::XMVector3Dot(pos, look));
-		DirectX::XMStoreFloat3(&mLook, look);
 		DirectX::XMStoreFloat3(&mUp, up);
 		DirectX::XMStoreFloat3(&mRight, right);
-		viewMatrix(0, 0) = mRight.x;    viewMatrix(0, 1) = mUp.x;   viewMatrix(0, 2) = mLook.x; viewMatrix(0, 3) = 0;
-		viewMatrix(1, 0) = mRight.y;    viewMatrix(1, 1) = mUp.y;   viewMatrix(1, 2) = mLook.y; viewMatrix(1, 3) = 0;
-		viewMatrix(2, 0) = mRight.z;    viewMatrix(2, 1) = mUp.z;   viewMatrix(2, 2) = mLook.z; viewMatrix(2, 3) = 0;
-		viewMatrix(3, 0) = x;            viewMatrix(3, 1) = y;        viewMatrix(3, 2) = z;         viewMatrix(3, 3) = 1;
+		DirectX::XMStoreFloat3(&mLook, look);
 
-
+		DirectX::XMStoreFloat4x4(&viewMatrix, DirectX::XMMatrixLookToLH(pos, look, up ));
+		//DirectX::XMStoreFloat4x4(&viewMatrix, DirectX::XMMatrixLookAtLH(DirectX::XMLoadFloat3(&DirectX::XMFLOAT3(0, 0, -1)),
+		//	DirectX::XMLoadFloat3(&DirectX::XMFLOAT3(0, 0, 0)), DirectX::XMLoadFloat3(&DirectX::XMFLOAT3(0, 1, 0))));
 	}
 	void PerspectiveCamera::Walk(float units)
 	{
