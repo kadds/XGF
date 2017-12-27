@@ -30,7 +30,7 @@ namespace XGF
 			if (mLastSceneAnimation != nullptr)
 			{
 				mLastSceneAnimation->Updata(time);
-				if (mLastSceneAnimation->IsEnd())
+				if (mLastSceneAnimation->IsEnd())//动画执行完毕，结束
 				{
 					mLastScene->OnDestory();
 					if (mSceneDeleter != nullptr)
@@ -52,7 +52,6 @@ namespace XGF
 			mDeltaTime = mainTimer.Tick();
 			if (_Update(mDeltaTime))
 				return;
-			//DebugOut(L"update ");
 			DebugInscriber_Begin(mDeltaTime);
 			if (mLastScene != nullptr)
 			{
@@ -81,13 +80,12 @@ namespace XGF
 				}
 				else
 				{
-					mScene->Render(mDeltaTime);
+					mScene->Render(mDeltaTime);//无动画
 				}
 			}
 			mInputManager.Draw();
 			mGDI->Present(mIsVsync);
 			DebugInscriber_End();
-			//DebugOut(L"\nRender\n");
 		}
 	}
 	void XGFramework::_OnCreate(GDI *gdi, Asyn* asyn)
@@ -155,9 +153,9 @@ namespace XGF
 		if (mLastScene != nullptr)
 			mLastScene->OnSize(ClientX, ClientY);
 		mLastRenderRectangle.SetPositionAndSize(0.f, 0.f, static_cast<float>(ClientX), static_cast<float>(ClientY));
-		mLastRenderRectangle.SetZ(0.f);
+		mLastRenderRectangle.SetZ(0.1f);
 		mRenderRectangle.SetPositionAndSize(0, 0, static_cast<float>(ClientX), static_cast<float>(ClientY));
-		mRenderRectangle.SetZ(0.f);
+		mRenderRectangle.SetZ(0.01f);
 		mRenderToTexture.Shutdown();
 		mLastRenderToTexture.Shutdown();
 		mRenderToTexture.Initialize(mGDI, ClientX, ClientY);

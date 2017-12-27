@@ -6,7 +6,7 @@ namespace XGF
 {
 	namespace Shape
 	{
-		Shape::Shape(int n, int indexCount) :mPolygonPleIndex(indexCount), mIsWriteToVertex(false), mPolygon(n)
+		Shape::Shape(int n, int indexCount) :mPolygonPleIndex(indexCount), mPolygon(n)
 		{
 		}
 		Shape::~Shape()
@@ -35,20 +35,22 @@ namespace XGF
 		}
 		void Shape::Render(Batch & batch, const XMMATRIX * matirix, const BindingBridge & bbrige, ID3D11ShaderResourceView * tex)
 		{
-			batch.GetShaderStage()->SetPSSRV(0, tex);
+			batch.GetShaderStage()->SetPSSRV(0, tex);//if srv index is 0
 			Render(batch, matirix, bbrige);
 		}
 		void Shape::Render(Batch & batch, const XMMATRIX * matirix, const BindingBridge & bbrige)
 		{
 			PolygonPlePoint3 ppe(mPolygon.mCount);
+			PolygonPlePoint3 * pPPe;
 			if (matirix != nullptr)
 			{
 				mPolygon.MulTo(&ppe, *matirix);
+				pPPe = &ppe;
 			}
 			else
-				mPolygon.CopyTo(ppe);
+				pPPe = &mPolygon;//≤ª‘Ÿcopy
 			BindingBridge bbr(bbrige);
-			bbr.InsertBinder(ppe, 0);
+			bbr.InsertBinder(*pPPe, 0);
 			batch.DrawPolygon(GetIndex(), bbr);
 		}
 		float triangleArea(Point a, Point b, Point c)

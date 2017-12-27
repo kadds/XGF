@@ -20,7 +20,7 @@ namespace XGF
 	typedef char* VertexDate;
 
 	typedef D3D_PRIMITIVE_TOPOLOGY TopologyMode;
-
+	//暂时不可用
 	enum class InstanceMode
 	{
 		None,
@@ -28,9 +28,11 @@ namespace XGF
 	};
 	/*
 	渲染批次类
-	使用DrawPolygon渲染图形
-	所有导致状态改变的函数可能间接调用Flush函数，从而增加Call Batch的机会
+	使用DrawPolygon写入缓存，渲染图形
+	所有导致状态改变的函数可能间接调用Flush函数，从而增加Call Batch的次数
 	请搭配Begin End 使用
+	由shaderstage保存的资源如 cbuffer，srv，uav改变时需要显式调用Flush函数
+	未完成 Instance Render
 	*/
 	class Batch
 	{
@@ -65,6 +67,7 @@ namespace XGF
 			return mClientHeight / 2.f;
 		}
 		void End(ID3D11Buffer * c, int count = 0);
+		void StepVetices(int count);
 		static void SetClientSize(SIZE size) { mClientHeight = size.cy; mClientWidth = size.cx; }
 	protected:
 		static int mClientWidth;
@@ -80,7 +83,6 @@ namespace XGF
 
 		int mMaxVertices;
 		int mMaxIndexCount;
-		//int mNowFrame;
 
 		VertexDate mVertexData;
 		int mPosInVertices;
@@ -91,9 +93,7 @@ namespace XGF
 		bool mIsBegin;
 		bool mIsMap;
 		bool mUsingZBuffer;
-		bool mDisabledBlend;
 
-		bool mNullTexture;
 		bool mUsingIndex;
 		TopologyMode mTopologyMode;
 

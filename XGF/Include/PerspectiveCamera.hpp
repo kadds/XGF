@@ -33,15 +33,8 @@ namespace XGF
 		void SetFovAngle(float va);
 		//获取视角大小 ：  弧度
 		float GetFovAngle() { return mFovAngle; }
-		//设置摄像机位置
-		void SetPos(DirectX::XMFLOAT3 & pos);
-
-		Point GetPosition() { return mPos; };
+		
 	protected:
-		DirectX::XMFLOAT3 mPos;
-		DirectX::XMFLOAT3 mRight;
-		DirectX::XMFLOAT3 mLook;
-		DirectX::XMFLOAT3 mUp;
 		float mFovAngle;
 
 	};

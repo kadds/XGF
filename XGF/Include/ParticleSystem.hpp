@@ -7,6 +7,7 @@
 #include <random>
 namespace XGF
 {
+	//没有完成的功能
 	//Emitter base
 	class Emitter
 	{
@@ -22,20 +23,14 @@ namespace XGF
 		void SetGravity(XMFLOAT3 g, float w);
 		void SetFrequency(int countPerframe);
 		float mAliveTime;
-		float mPastTime;
-		bool isAlive;
-		float width;
+		float mPastTime;//过去的时间
+		bool isAlive;//是否渲染
+		float width;//
 		float height;
 		Point pos;
-		int mMaxParticle;
 		//XMFLOAT3 density;//xyz方向上的密度
 		int frequency;//频率每秒释放粒子个数
 		XMFLOAT3 gravity;//重力 方向 xyz
-		XMFLOAT3 direction;
-		float startAngleMin;//角度制
-		float startAngleMax;
-		float endAngleMin;
-		float endAngleMax;
 		bool mIgnoreZ;
 
 		float delta;
@@ -53,23 +48,30 @@ namespace XGF
 		GeometryShader mGeometryShader;
 		Shaders mShaders;
 		PixelShader mPixelShader;
-		//ComputeShader mComputerShader;
+		ComputeShader mComputerShader;
+		ComputeGPU mCgpu;
 		bool firstRun;
 		bool mUseCPU;//使用CPU计算？？？
-
+		int mMaxParticle;
 		std::random_device rdDevice;
 		std::mt19937 mtRandom;
 	private:
 		
 	};
+	enum class ParticleDevice
+	{
+		CPU,
+		GPU,
+		Auto
+	};
 
-	class ParticleExplosion : public ParticleSystem
+	class ParticleFire : public ParticleSystem
 	{
 	public:
-		class ExplosionEmitter : public Emitter
+		class FireEmitter : public Emitter
 		{
 		public:
-			ExplosionEmitter();
+			FireEmitter();
 			float speed;
 			float radialAccel;
 			float startRadius;
@@ -104,17 +106,17 @@ namespace XGF
 		void Draw();
 		void Begin(const WVPMatrix & matrix);
 		void End();
-		void Initialize(GDI * gdi, int count);
+		void Initialize(GDI * gdi, int count = 1024, ParticleDevice particleDevice = ParticleDevice::Auto);
 		void Shutdown();
 		void Reset();
-		void AddEmitter(ExplosionEmitter *e) { mEmitter = e; }
+		void AddEmitter(FireEmitter *e) { mEmitter = e; }
 		void Updata(float time);
 		void SetTexture(Texture *t) { mTexture = t; }
 
 	private:
 		GDI * mGDI;
 		Texture *mTexture;
-		ExplosionEmitter * mEmitter;
+		FireEmitter * mEmitter;
 		std::vector<ParticleData> mParticles;
 		bool mFirst;
 	};

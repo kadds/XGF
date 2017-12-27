@@ -14,7 +14,7 @@ namespace XGF
 	public:
 		AxisRenderer();
 		~AxisRenderer();
-		void Initialize(GDI * gdi);
+		void Initialize(GDI * gdi, float len = 1e5);
 		void SetAxisXColor(Color color, Color colorb);
 		void SetAxisYColor(Color color, Color colorb);
 		void SetAxisZColor(Color color, Color colorb);

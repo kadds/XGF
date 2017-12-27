@@ -71,6 +71,8 @@ void SecondScene::OnCreate()
 		.EndBuild(sceneact);
 	mSceneAnimationIn.OnColorChange(Color(1.0, 1.0, 1.0, 0.f), 0);
 	mSceneAnimationIn.SetAction(std::move(sceneact));
+
+	mCamera3D.SetPos(XMFLOAT3(1, 1, 10));
 }
 void SecondScene::OnDestory()
 {

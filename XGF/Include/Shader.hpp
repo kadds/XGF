@@ -3,6 +3,9 @@
 #include <d3d11_1.h>
 #include <d3dcompiler.h>
 #include "gdi.hpp"
+#include "Log.hpp"
+#include <vector>
+#include <string>
 namespace XGF
 {
 	class IConstantBuffer;
@@ -10,18 +13,25 @@ namespace XGF
 	class ConstantBuffer;
 	struct CBufferInfo
 	{
-		const char * name;
+		std::string name;
 		unsigned int slot;
 		unsigned int size;
 	};
 	struct TextureInfo
 	{
-		const char * name;
+		std::string name;
 		unsigned int slot;
+	};
+	struct UAVInfo
+	{
+		std::string name;
+		unsigned int slot;
+		D3D_SHADER_INPUT_TYPE flags;
+		unsigned int size;
 	};
 	struct SamplerInfo
 	{
-		const char * name;
+		std::string name;
 		unsigned int slot;
 	};
 	class Shader
@@ -39,14 +49,15 @@ namespace XGF
 		int GetTextureCount();
 		unsigned int GetTextureSlot(int index);
 	protected:
+		friend class ComputeGPU;
+		friend class ShaderStage;
 		GDI *mGDI;
-		CBufferInfo * mCBufferInfo;
 
-		TextureInfo * mTexture2D;//SRV in slot
-		SamplerInfo * mSamplerState;//ss in slot
-		int mCBufferCount;
-		int mBindTextureCount;
-		int mBindSamplerCount;
+		std::vector<CBufferInfo> mCBufferInfo;
+		std::vector<UAVInfo> mUAVInfo;
+		std::vector<TextureInfo> mTexture2D;
+		std::vector<SamplerInfo> mSamplerState;
+
 		DISALLOW_COPY_AND_ASSIGN(Shader);
 	};
 	class PixelShader : public Shader
@@ -58,13 +69,12 @@ namespace XGF
 		PixelShader() {};
 	private:
 		friend class ShaderStage;
-		ID3D11ShaderResourceView **mResviews;
-		ID3D11PixelShader *mPixelShader;
+		std::vector<ID3D11ShaderResourceView *> mResviews;
+		ID3D11PixelShader * mPixelShader;
 	};
 	class VertexShader : public Shader
 	{
 	public:
-		//多slot 输入ShaderSlot 位模式 置 0 1
 		void Initialize(GDI* gdi, const wchar_t* VSname);
 		void Initialize(GDI* gdi, const unsigned char* VScode, unsigned int codeLen);
 
@@ -74,8 +84,8 @@ namespace XGF
 		unsigned int GetStrideAllSize();
 	private:
 		friend class ShaderStage;
-		ID3D11VertexShader *mVertexShader;
-		ID3D11InputLayout *mInputLayout;
+		ID3D11VertexShader * mVertexShader;
+		ID3D11InputLayout * mInputLayout;
 		
 		unsigned int * mSlotStride;
 		int mCount;
@@ -94,21 +104,24 @@ namespace XGF
 		friend class ShaderStage;
 		ID3D11GeometryShader * mGeometryShader;
 		D3D11_PRIMITIVE mPrimitive;
+		//2个实现缓冲区交换
 		ID3D11Buffer * mOutBuffer[2];
 	};
-
-
-	class ComputeShader : Shader
+	
+	class ComputeShader : public Shader
 	{
 	public:
 		void Initialize(GDI* gdi, const wchar_t* CSname);
 		void Initialize(GDI* gdi, const unsigned char* CScode, unsigned int codeLen);
 		void Shutdown();
-		void Run();
+		ID3D11ComputeShader * GetShader() { return mComputeShader; }
 		
 	private:
+		friend class ComputeGPU;
 		ID3D11ComputeShader * mComputeShader;
 	};
+
+
 	class ShaderResourceView
 	{
 	public:
@@ -118,39 +131,51 @@ namespace XGF
 	{
 	public:
 		ID3D11UnorderedAccessView * uav;
+		ID3D11ShaderResourceView * srv;
+		ID3D11Buffer * buffer;
 	};
-	struct Shaders
+	struct Shaders // 一系列shader
 	{
 		VertexShader * vs;
 		PixelShader * ps;
 		GeometryShader * gs;
 	};
+	//gpu通用计算
+	//不会负责建立UAV和SRV
 	class ComputeGPU
 	{
 	private:
 		ComputeShader *cs;
-		SamplerState * mCSSamplerState;
-		ConstantBuffer * mCSCBuffer;
-		UnorderedAccessView *mCSUAV;
-		ShaderResourceView *mCSSRV;
+		std::vector<SamplerState> mCSSamplerState;
+		std::vector<ConstantBuffer> mCSCBuffer;
+		std::vector<UnorderedAccessView> mCSUAV;
+		std::vector<ShaderResourceView> mCSSRV;
 	public:
-		void Initialize(ComputeShader * cs);
+		void Initialize(ComputeShader * cs, unsigned int buffersize);
 		void Shutdown();
 		void SetCSSRV(int index, ID3D11ShaderResourceView * srv);
 		void SetCSUAV(int index, ID3D11UnorderedAccessView * uav);
+		void SetCSSamplerState(int index, SamplerState state);
+		void Run(bool asyn);
+		void Bind();
+		void UnBind();
+		UnorderedAccessView * GetUnorderedAccessViews(int index);
+		int GetUnorderedAccessViewCount();
 	};
+	//自动建立buffer
+	//可编程阶段
 	class ShaderStage
 	{
 	private:
 		VertexShader * vs;
 		PixelShader * ps;
 		GeometryShader * gs;
+		RasterizerState mRasterizerState;
 		BlendState mBlendState;
 		DepthStencilState mDepthStencilState;
-		SamplerState *mVSSamplerState, *mPSSamplerState, *mGSSamplerState;
-		ConstantBuffer * mVSCBuffer, *mPSCBuffer,* mGSCBuffer;
-		ShaderResourceView * mVSSRV, * mPSSRV, * mGSSRV;
-		UnorderedAccessView * mPSUAV;
+		std::vector<SamplerState> mVSSamplerState, mPSSamplerState, mGSSamplerState;
+		std::vector<ConstantBuffer> mVSCBuffer, mPSCBuffer, mGSCBuffer;
+		std::vector<ShaderResourceView> mVSSRV, mPSSRV, mGSSRV;
 	public:
 		void Initialize(VertexShader * vs, PixelShader * ps = nullptr, GeometryShader * gs = nullptr);
 		void Shutdown();
@@ -159,19 +184,66 @@ namespace XGF
 		GeometryShader * GetGSShader() { return gs; };
 		void SetBlendState(BlendState  bs);
 		void SetDepthStencilState(DepthStencilState ds);
+		void SetRasterizerState(RasterizerState rs);
 		BlendState GetBlendState();
 		void SetVSConstantBuffer(int index, const void * data);
 		void SetGSConstantBuffer(int index, const void * data);
 		void SetPSConstantBuffer(int index, const void * data);
-
+		template<typename Tshader>
+		Shader * GetTemplateShader()
+		{
+			if (typeid(Tshader) == typeid(VertexShader))
+				return vs;
+			else if (typeid(Tshader) == typeid(PixelShader))
+				return ps;
+			else if (typeid(Tshader) == typeid(GeometryShader))
+				return gs;
+			return nullptr;
+		}
+		template<typename Tshader>
+		int GetConstantBufferIndexByName(const char * name)
+		{
+			int i = 0;
+			Shader * shader = GetTemplateShader<Tshader>();
+			
+			for (; i < shader->mCBufferInfo.size(); i++)
+				if (shader->mCBufferInfo[i].name == name)
+					return i;
+			if (i == shader->mCBufferInfo.size()) XGF_ReportWarn0("can't find Cbuffer index");
+			return 0;
+		};
+		
 		void SetVSSamplerState(int index, SamplerState ss);
 		void SetPSSamplerState(int index, SamplerState ss);
 		void SetGSSamplerState(int index, SamplerState ss);
+		template<typename Tshader>
+		int GetSamplerStateIndexByName(const char * name)
+		{
+			int i;
+			Shader * shader = GetTemplateShader<Tshader>();
+
+			for (; i < shader->mSamplerState.size(); i++)
+				if (shader->mSamplerState[i].name == name)
+					return i;
+			if (i == shader->mSamplerState.size()) XGF_ReportWarn0("can't find SamplerState index");
+			return 0;
+		};
 
 		void SetVSSRV(int index, ID3D11ShaderResourceView * srv );
 		void SetGSSRV(int index, ID3D11ShaderResourceView * srv);
 		void SetPSSRV(int index, ID3D11ShaderResourceView * srv);
+		template<typename Tshader>
+		int GetSRVIndexByName(const char * name)
+		{
+			int i;
+			Shader * shader = GetTemplateShader<Tshader>();
 
+			for (; i < shader->mTexture2D.size(); i++)
+				if (shader->mTexture2D[i].name == name)
+					return i;
+			if (i == shader->mTexture2D.size()) XGF_ReportWarn0("can't find srv index");
+			return 0;
+		}
 		
 		void BindStage();
 		void UnBindStage();

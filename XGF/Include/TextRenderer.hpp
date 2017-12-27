@@ -19,8 +19,8 @@ namespace XGF
 		~TextRenderer();
 		void Initialize(GDI * gdi, Font * font, int MaxCount);
 		void Shutdown();
-		void DrawString(const wchar_t * str, float x, float y, float z = 0.f);
-		void DrawString(const wchar_t * str, Color color, float x, float y, float z = 0.f);
+		void DrawString(const wchar_t * str, float x, float y, float z = 0.01f);
+		void DrawString(const wchar_t * str, Color color, float x, float y, float z = 0.01f);
 		//低性能，不推荐
 		template <typename T>
 		void DrawStringWithNum(const wchar_t * str, T c, float x, float y)

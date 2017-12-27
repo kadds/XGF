@@ -513,7 +513,7 @@
       <Filter>源文件\UI</Filter>
     </ClCompile>
     <ClCompile Include="Src\Shape\Triangle.cpp">
-      <Filter>源文件</Filter>
+      <Filter>源文件\Shape</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

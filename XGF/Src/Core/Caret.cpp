@@ -18,6 +18,7 @@ namespace XGF
 		mColorBatch.Initialize(gdi, ConstantData::GetInstance().GetPCShaders(), 16, 16, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 		mColorBatch.GetShaderStage()->SetBlendState(BlendState::AddOneOneAdd);
 		mColorBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthDisable);
+		
 		mHide = false;
 		mHeight = 16;
 		mBbrg.AddBinder(mLine.mPolygon);
@@ -38,7 +39,6 @@ namespace XGF
 		}
 		mColorBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
 		mColorBatch.Begin();
-		//mColorBatch.SetTexture(nullptr);
 		mColorBatch.DrawPolygon(mLine.mPolygonPleIndex, mBbrg);
 		mColorBatch.End();
 	}
@@ -55,8 +55,8 @@ namespace XGF
 
 	void Caret::SetPosition(float x, float y)
 	{
-		mLine.SetPosition(Point(x, y, 0.0f));
-		mLine.SetEndPosition(Point(x, y + mHeight, 0.f));
+		mLine.SetPosition(Point(x, y, 0.1f));
+		mLine.SetEndPosition(Point(x, y + mHeight, 0.1f));
 	}
 
 	void Caret::ResetTime()

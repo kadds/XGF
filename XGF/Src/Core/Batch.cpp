@@ -63,6 +63,7 @@ namespace XGF
 
 	void Batch::Initialize(GDI * gdi, Shaders shaders, int MaxVertices, int MaxIndexCount, TopologyMode tm)
 	{
+		XGF_ASSERT(MaxVertices > 0);
 		mGDI = gdi;
 		mMaxVertices = MaxVertices;
 		mMaxIndexCount = MaxIndexCount;
@@ -74,8 +75,6 @@ namespace XGF
 		mFramePosition = 0;
 		mIsBegin = false;
 		mIsMap = false;
-		mDisabledBlend = false;
-		mNullTexture = true;
 		mVertexBuffer = nullptr;
 		mVertexData = nullptr;
 		if (MaxIndexCount <= 0)
@@ -144,6 +143,11 @@ namespace XGF
 		mVertexBuffer = c;
 		EndWithoutFrame(true);
 		mVertexBuffer = nullptr;
+	}
+
+	void Batch::StepVetices(int count)
+	{
+		mPosInVertices += count;
 	}
 
 	Batch::Batch()

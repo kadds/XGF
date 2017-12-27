@@ -14,6 +14,11 @@ namespace XGF
 
 		void SetMaxDistance(float f) { mMaxDistance = f; }
 		void SetMinDistance(float f) { mMinDistance = f; }
+
+		//…Ë÷√…„œÒª˙Œª÷√
+		void SetPos(DirectX::XMFLOAT3 & pos);
+
+		Point GetPosition() { return mPos; };
 	protected:
 		DirectX::XMFLOAT4X4 viewMatrix;
 		DirectX::XMFLOAT4X4 proMatrix;
@@ -21,6 +26,12 @@ namespace XGF
 		float mMinDistance;
 		int mLastWidth;
 		int mLastHeight;
+
+		DirectX::XMFLOAT3 mPos;
+		DirectX::XMFLOAT3 mRight;
+		DirectX::XMFLOAT3 mLook;
+		DirectX::XMFLOAT3 mUp;
+		
 	};
 
 

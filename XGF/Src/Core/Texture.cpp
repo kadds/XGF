@@ -25,7 +25,7 @@ namespace XGF
 	}
 	Texture::~Texture()
 	{
-		//Release();
+		//Release();don't use
 	}
 
 	void Texture::LoadDDS(GDI * gdi, const wchar_t * name)

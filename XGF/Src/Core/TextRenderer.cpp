@@ -24,7 +24,7 @@ namespace XGF
 	{
 		mFont = font;
 		mBatch.Initialize(gdi, ConstantData::GetInstance().GetFontShaders(), MaxCount * 4, MaxCount * 6, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		mBatch.GetShaderStage()->SetBlendState(BlendState::AddOneOneAdd);
+		mBatch.GetShaderStage()->SetBlendState(BlendState::AddZeroOneAdd);
 		mBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthEnable);
 		bbridge.AddBinder(colorBinder);// just for seize positon 0 while next can SetBinder at position 0: (In Function AddCharToBatch)
 		bbridge.AddBinder(colorBinder);

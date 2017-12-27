@@ -13,11 +13,13 @@ namespace XGF
 	{
 	}
 
-	void AxisRenderer::Initialize(GDI * gdi)
+	void AxisRenderer::Initialize(GDI * gdi, float len)
 	{
 		auto p = DirectX::XMMatrixIdentity();
 		mBatch.Initialize(gdi, ConstantData::GetInstance().GetPCShaders(), 2 * 3 * 2, 2 * 3 * 2, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 		mBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthEnable);
+		mBatch.GetShaderStage()->SetBlendState(BlendState::NoneBlend);
+		
 		Color c = Color(0.f, 0.f, 0.f, 1.f);
 		auto fun = [&](float x, float y, float z) {
 
@@ -26,13 +28,13 @@ namespace XGF
 			line->SetEndPosition(Point(x, y, z));
 			lines.push_back(std::move(line));
 		};
-		fun(1e5f, 0.f, 0.f);
-		fun(-1e5f, 0.f, 0.f);
-		fun(0.f, 1e5f, 0.f);
+		fun(len, 0.f, 0.f);
+		fun(-len, 0.f, 0.f);
+		fun(0.f, len, 0.f);
 
-		fun(0.f, -1e5f, 0.f);
-		fun(0.f, 0.f, 1e5f);
-		fun(0.f, 0.f, -1e5f);
+		fun(0.f, -len, 0.f);
+		fun(0.f, 0.f, len);
+		fun(0.f, 0.f, -len);
 	}
 
 	void AxisRenderer::SetAxisXColor(Color color, Color colorb)

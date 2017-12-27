@@ -14,18 +14,18 @@ GameScene::~GameScene()
 void GameScene::MyRender(WVPMatrix & wvp, bool end)
 {
 	mFramework->ClearDepthStencilBuffer();
-	mShapeRenderer.DrawCircle(240, 240, 40, GetPrecision(40, 5), 0.f, Color(1.f, 1.f, 0.f, 1.f), Color(0.f, 1.f, 0.f, 1.f));
+	mShapeRenderer.DrawCircle(240, 240, 40, GetPrecision(40, 5), 0.01f, Color(1.f, 1.f, 0.f, 1.f), Color(0.f, 1.f, 0.f, 1.f));
 	mTextRenderer.DrawString(L"Circle", 200, 180);
 	mShapeRenderer.DrawRectangleB(50, 50, 100, 100, 0.1f, Color(1.f, 0.f, 0.0f, 1.f), 8.f, Color(0.f, 0.f, 1.f, 1.f), Color(0.f, 1.f, 0.f, 1.f));
 	mTextRenderer.DrawString(L"RectangleB", 50, 100);
 	mShapeRenderer.DrawRectangle(250, 50, 100, 100, 0.1f, Color(0.f, 0.2f, 0.7f, 1.f));
 	mTextRenderer.DrawString(L"Rectangle", 280, 100);
-	mShapeRenderer.DrawLine(160, 0, 160, 180, 0.f, Color(1.f, 1.f, 1.f, 1.f));
+	mShapeRenderer.DrawLine(160, 0, 160, 180, 0.2f, Color(1.f, 1.f, 1.f, 1.f));
 	mTextRenderer.DrawString(L"Line", 140, 188);
 	mShapeRenderer.DrawTriangle(Position(40,200), Position(70, 210), Position(40, 240), 0.1f, Color(0.4f, 0.8f, 0.1f, 1.f));
 	mTextRenderer.DrawString(L"Triangle", 40, 220);
 	Position p[5] = { {0,50},{ 50,50 },{ 40,100 },{ 100,100 },{ 100,80 } };
-	mShapeRenderer.DrawLineList(p, 5, 0, Color(0.0, 0.0, 0.0, 1.0));
+	mShapeRenderer.DrawLineList(p, 5, 0.001f, Color(0.0, 0.0, 0.0, 1.0));
 	mTextRenderer.DrawString(L"LineList", 4, 70);
 	Position p2[5] = { { 0,150 },{ 50,120 },{ 40,200 },{ 100,200 },{ 100,220 } };
 	mShapeRenderer.DrawPolygonList(p2, 5, 0.1f, Color(0.0, 0.1, 0.6, 1.0));
@@ -47,10 +47,12 @@ void GameScene::OnCreate()
 	mTextRenderer.Initialize(mFramework->GetGDI(), &mFont, 240);
 
 	mTextureBatch.Initialize(mFramework->GetGDI(), ConstantData::GetInstance().GetPTShaders(), 200, 400);
+	mTextureBatch.GetShaderStage()->SetBlendState(BlendState::AddZeroOneAdd);
+	mTextureBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthDisable);
 	mRenderToTexture.Initialize(mFramework->GetGDI(), mFramework->GetGDI()->GetWidth(), mFramework->GetGDI()->GetHeight());
 
 	mRc.SetPositionAndSize(0, mFramework->GetGDI()->GetHeight() - 100, 130, 100);
-	mRc.SetZ(0.0f);
+	mRc.SetZ(0.001f);
 	mTime = 0.f;
 }
 

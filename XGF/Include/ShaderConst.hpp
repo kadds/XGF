@@ -1,6 +1,6 @@
 /*
 This header file is made by ShaderToCpp
-DateTime:2017-12-15 20:15:47
+DateTime:2017-12-24 17:36:55
 */
 
 namespace XGF{
@@ -11,6 +11,12 @@ extern const unsigned char fontPS[] ;
 extern const unsigned int fontPSSize;
 extern const unsigned char ParticleComputerCS[] ;
 extern const unsigned int ParticleComputerCSSize;
+extern const unsigned char ParticleComputerDoVS[] ;
+extern const unsigned int ParticleComputerDoVSSize;
+extern const unsigned char ParticleComputerDoPS[] ;
+extern const unsigned int ParticleComputerDoPSSize;
+extern const unsigned char ParticleComputerDoGS[] ;
+extern const unsigned int ParticleComputerDoGSSize;
 extern const unsigned char ParticleFireworksVS[] ;
 extern const unsigned int ParticleFireworksVSSize;
 extern const unsigned char ParticleFireworksPS[] ;

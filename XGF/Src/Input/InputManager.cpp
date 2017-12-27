@@ -21,6 +21,7 @@ namespace XGF
 		mCaret.Initialize(gdi);
 		mCursor.Initialize(gdi);
 		mCaretPosInText = 0;
+		mCamera.SetMinDistance(0.00001);
 		SetMouseMode(MouseMode::Default);
 		return true;
 	}

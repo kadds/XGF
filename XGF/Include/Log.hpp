@@ -130,11 +130,20 @@ namespace XGF {
 #define XGF_ReportWarn(WarnStr, WarnStr2) ::XGF::Log::Record(::XGF::Log::LogLevel::Warn, ::XGF::Log::LogData(WarnStr, WarnStr2, __LINE__, __FILE__, _FUNNAME_XGF_))
 #define XGF_ReportInfo0(InfoStr) ::XGF::Log::Record(::XGF::Log::LogLevel::Info, ::XGF::Log::LogData(InfoStr, __LINE__, __FILE__, _FUNNAME_XGF_))
 #define XGF_ReportInfo(InfoStr, InfoStr2) ::XGF::Log::Record(::XGF::Log::LogLevel::Info, ::XGF::Log::LogData(InfoStr, InfoStr2, __LINE__, __FILE__, _FUNNAME_XGF_))
+
 #ifdef _DEBUG
 #define XGF_ReportDebug(DebugStr, DebugStr2) ::XGF::Log::Record(::XGF::Log::LogLevel::Debug, ::XGF::Log::LogData(DebugStr, DebugStr2, __LINE__, __FILE__, _FUNNAME_XGF_))
 #define XGF_ReportDebug0(DebugStr) ::XGF::Log::Record(::XGF::Log::LogLevel::Debug, ::XGF::Log::LogData(DebugStr, __LINE__, __FILE__, _FUNNAME_XGF_))
 #else
-#define XGF_ReportDebug0(DebugStr) ;
-#define XGF_ReportDebug(DebugStr, DebugStr2) ;
+#define XGF_ReportDebug0(DebugStr) ((void)0)
+#define XGF_ReportDebug(DebugStr, DebugStr2) ((void)0)
 #endif
 
+#ifdef _DEBUG
+#define XGF_ASSERT(expression) (void)(                                                       \
+            (!!(expression)) ||                                                              \
+            (_wassert(_CRT_WIDE(#expression), _CRT_WIDE(__FILE__), (unsigned)(__LINE__)), 0) \
+        )
+#else
+#define XGF_ASSERT(expression) ((void)0)
+#endif

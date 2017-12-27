@@ -52,8 +52,8 @@ private:
 	Texture tt;
 	PolygonPleTextureBinder cb;
 	FPSCamera camera3d;
-	ParticleExplosion ps;
-	ParticleExplosion::ExplosionEmitter eemitter;
+	ParticleFire ps;
+	ParticleFire::FireEmitter eemitter;
 	Texture particleT;
 public:
 	GameScene() :cb(cube.mPolygon.mCount){};
@@ -79,7 +79,7 @@ public:
 		textureBatch.Initialize(gdi, ConstantData::GetInstance().GetPTShaders(), 20, 24);
 		textureBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthDisable);
 		textureBatch.GetShaderStage()->SetBlendState(BlendState::AddZeroOneAdd);
-		ps.Initialize(gdi, 50);
+		ps.Initialize(gdi, 1024, ParticleDevice::Auto);
 		ar.Initialize(gdi);
 		
 		tt.LoadDDS(gdi, GetFilePath(L"grasscube1024.dds", wbuffer, MAX_PATH));
@@ -97,7 +97,6 @@ public:
 		eemitter.SetEmitterAngle(0, 0, 360, 360);
 		eemitter.accelerationMin = 10;
 		eemitter.accelerationMax = 40;
-		eemitter.mMaxParticle = 4096;
 		eemitter.velocityMin = 50;
 		eemitter.velocityMax = 50;
 		eemitter.SetGravity({ 0,1,0 }, 200);
@@ -146,7 +145,7 @@ public:
 		textRenderer.Begin(wvp2d);
 		textRenderer.DrawStringEx(4, 4, Color(0.8f, 0.8f, 0.9f, 1.0f), L"FPS:%d", (int)DebugInscriber::GetInstance()->GetAverageFPS());
 		textRenderer.End();
-		ps.Begin(wvp2d);
+		ps.Begin(wvp3d);
 		ps.Draw();
 		ps.End();
 		BindingBridge bbr;
@@ -168,8 +167,8 @@ public:
 	{
 		camera2d.Updata();
 		camera3d.Updata();
-		cube.SetCenterPositionAndSize(camera3d.GetPosition(), XMFLOAT3( 200,200,200 ));
-		batch.GetShaderStage()->SetVSConstantBuffer(1,&camera3d.GetPosition());
+		cube.SetCenterPositionAndSize(camera3d.GetPosition(), XMFLOAT3( 5,5,5 ));
+		batch.GetShaderStage()->SetVSConstantBuffer(batch.GetShaderStage()->GetConstantBufferIndexByName<VertexShader>("CBCameraPos"),&camera3d.GetPosition());
 		auto ip = GetFramework()->GetInputManager();
 		if (ip->IskeyDowm(DIK_ESCAPE))
 			GetFramework()->Exit(0);
@@ -238,12 +237,12 @@ int RunGame(HINSTANCE hInstance)
 {
 	Application app;
 	GDI gdi;
-	GameScene * gs = new GameScene();
+	GameScene gs;//储存在栈中
 	XGFramework framework;
-	framework.SetSceneDeleter([](Scene * sc) {delete sc;});
+	framework.SetSceneDeleter([](Scene * sc) {});//不需要显示delete
 	framework.SetOnClose([]() {return true;});
 	int rt = -1;
 	rt = app.CreateWindowsAndRunApplication(framework, gdi, hInstance, L"sky", L"sky_xgf",
-		0, 0, { 300,100 }, { 600,400 }, false, gs);
+		0, 0, { 300,100 }, { 600,400 }, false, &gs);
 	return rt;
 }

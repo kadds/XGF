@@ -31,7 +31,7 @@ namespace XGF
 			{
 				dxgi_adapter->GetDesc1(&dc);
 				XGF_ReportDebug_Ex(L"Adapter List", "Adpapter:", i, ",DeviceID:", dc.DeviceId, ",DedicatedSystemMemory:", (dc.DedicatedSystemMemory >> 20), "MB,DedicatedVideoMemory", (dc.DedicatedVideoMemory >> 20)
-				, "MB,SharedSystemMemory:", dc.SharedSystemMemory, "MB,AdapterLuid:", dc.AdapterLuid.LowPart, ",Revision:", dc.Revision, ",VendorId:", dc.VendorId, ",SubSysId:", dc.SubSysId, ",Description:", (wchar_t *)dc.Description);
+				, "MB,SharedSystemMemory:", dc.SharedSystemMemory >> 20, "MB,AdapterLuid:", dc.AdapterLuid.LowPart, ",Revision:", dc.Revision, ",VendorId:", dc.VendorId, ",SubSysId:", dc.SubSysId, ",Description:", ((wchar_t *)dc.Description));
 				
 				mAdapters.push_back(dxgi_adapter);
 
@@ -72,7 +72,7 @@ namespace XGF
 		{
 			if (curLevel == featureLevels[i])
 			{
-				XGF_ReportDebug_Ex("Level:%s\n", levelstr[i]);
+				XGF_ReportDebug_Ex("D3D Level:", levelstr[i]);
 				break;
 			}
 		}
@@ -82,30 +82,13 @@ namespace XGF
 		PutDebugString(mDeviceContext);
 		PutDebugString(mD3dDevice);
 		CreateSwapChain();
-		D3D11_RASTERIZER_DESC rasterDesc;
-		// 设置光栅化描述，指定多边形如何被渲染. 
-		rasterDesc.AntialiasedLineEnable = false;
-		rasterDesc.CullMode = D3D11_CULL_BACK;
-		rasterDesc.DepthBias = 0;
-		rasterDesc.DepthBiasClamp = 0.0f;
-		rasterDesc.DepthClipEnable = true;
-		rasterDesc.FillMode = D3D11_FILL_SOLID;
-		rasterDesc.FrontCounterClockwise = false;
-		rasterDesc.MultisampleEnable = false;
-		rasterDesc.ScissorEnable = false;
-		rasterDesc.SlopeScaledDepthBias = 0.0f;
-		// 创建sold光栅化状态 
-		XGF_Error_Check(mD3dDevice->CreateRasterizerState(&rasterDesc, &mRasterState), "CreateRasterizerState Error");
-		//创建Frame光栅化状态
-		rasterDesc.FillMode = D3D11_FILL_WIREFRAME;
-		XGF_Error_Check(mD3dDevice->CreateRasterizerState(&rasterDesc, &mFrameRasterState), "CreateRasterizerState Error");
-		PutDebugString(mRasterState);
-		PutDebugString(mFrameRasterState);
+		
 		
 		memset(mSamplerState, 0, sizeof(mSamplerState));
 		memset(mBlendState, 0, sizeof(mBlendState));
 		memset(mDepthStencilState, 0, sizeof(mDepthStencilState));
-
+		memset(mRasterizerState, 0, sizeof(mRasterizerState));
+		
 		SizeChanged(mWidth, mHeight);
 	}
 	void GDI::SaveDisplayMode(int c, IDXGIOutput1 * pDXGIOutput)
@@ -143,6 +126,13 @@ namespace XGF
 			if (mDepthStencilState[i] != nullptr)
 				mDepthStencilState[i]->Release();
 		}
+
+		for (int i = 0; i < (int)RasterizerState::InvalidValue; i++)
+		{
+			if (mRasterizerState[i] != nullptr)
+				mRasterizerState[i]->Release();
+		}
+
 		if (mDepthStencilView)
 			mDepthStencilView->Release();
 		mDepthStencilView = nullptr;
@@ -152,12 +142,6 @@ namespace XGF
 		if (mRenderTargetView)
 			mRenderTargetView->Release();
 		mRenderTargetView = nullptr;
-		if (mRasterState)
-			mRasterState->Release();
-		mRasterState = nullptr;
-		if (mFrameRasterState)
-			mFrameRasterState->Release();
-		mFrameRasterState = nullptr;
 		
 		for each (auto var in mAdapters)
 		{
@@ -262,8 +246,7 @@ namespace XGF
 		//交换链为空直接返回 
 		if (!mSwapChain)
 			return;
-		XGF_ReportDebug_Ex("***SIZE***:%d,%d\n", ClientWidth, ClientHeight);
-		//窗口最小化时候为0，会创建缓冲失败 
+		XGF_ReportDebug_Ex("SIZE Changed:", ClientWidth, ",", ClientHeight);
 		if (ClientWidth < 1)
 			ClientWidth = 1;
 		if (ClientHeight < 1)
@@ -284,10 +267,8 @@ namespace XGF
 			mDepthStencilBuffer->Release();
 			mDepthStencilBuffer = 0;
 		}
-		//重新创建渲染目标视图 
 		XGF_Error_Check(mSwapChain->ResizeBuffers(1, ClientWidth, ClientHeight, mDisplayFormat, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH), "ResizeBuffers Error");
 		PutDebugString(mSwapChain);
-		// 得到交换链中的后缓冲指针. 
 		ID3D11Texture2D* backBufferPtr;
 		XGF_Error_Check(mSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBufferPtr), "GetSwapChainBuffer is Error");
 
@@ -301,7 +282,7 @@ namespace XGF
 		D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
 
 		ZeroMemory(&depthBufferDesc, sizeof(depthBufferDesc));
-		//设置深度缓冲 
+
 		depthBufferDesc.Width = ClientWidth;
 		depthBufferDesc.Height = ClientHeight;
 		depthBufferDesc.MipLevels = 1;  
@@ -655,6 +636,71 @@ namespace XGF
 		return mDepthStencilState[(int) ds];
 	}
 
+	ID3D11RasterizerState * GDI::GetRasterizerState(RasterizerState rs)
+	{
+		if (mRasterizerState[(int) rs] == nullptr)
+		{
+			if (rs != RasterizerState::InvalidValue)
+			{
+				D3D11_RASTERIZER_DESC rasterDesc;
+				// 设置光栅化描述，指定多边形如何被渲染. 
+				rasterDesc.AntialiasedLineEnable = false;
+				rasterDesc.CullMode = D3D11_CULL_BACK;
+				rasterDesc.DepthBias = 0;
+				rasterDesc.DepthBiasClamp = 0.0f;
+				rasterDesc.DepthClipEnable = true;
+				rasterDesc.FillMode = D3D11_FILL_SOLID;
+				rasterDesc.FrontCounterClockwise = false;
+				rasterDesc.MultisampleEnable = false;
+				rasterDesc.ScissorEnable = false;
+				rasterDesc.SlopeScaledDepthBias = 0.0f;
+				if (rs == RasterizerState::SolidAndCutBack)
+				{
+					XGF_Error_Check(mD3dDevice->CreateRasterizerState(&rasterDesc, &mRasterizerState[(int)rs]), "CreateRasterizerState Error");
+					return mRasterizerState[(int)rs];
+				}
+				if (rs == RasterizerState::SolidAndCutFront)
+				{
+					rasterDesc.CullMode = D3D11_CULL_FRONT;
+					XGF_Error_Check(mD3dDevice->CreateRasterizerState(&rasterDesc, &mRasterizerState[(int)rs]), "CreateRasterizerState Error");
+					return mRasterizerState[(int)rs];
+				}
+				if (rs == RasterizerState::SolidAndCutNone)
+				{
+					rasterDesc.CullMode = D3D11_CULL_NONE;
+					XGF_Error_Check(mD3dDevice->CreateRasterizerState(&rasterDesc, &mRasterizerState[(int)rs]), "CreateRasterizerState Error");
+					return mRasterizerState[(int)rs];
+				}
+				if (rs == RasterizerState::FrameAndCutBack)
+				{
+					rasterDesc.FillMode = D3D11_FILL_WIREFRAME;
+					XGF_Error_Check(mD3dDevice->CreateRasterizerState(&rasterDesc, &mRasterizerState[(int)rs]), "CreateRasterizerState Error");
+					return mRasterizerState[(int)rs];
+				}
+				if (rs == RasterizerState::FrameAndCutFront)
+				{
+					rasterDesc.FillMode = D3D11_FILL_WIREFRAME;
+					rasterDesc.CullMode = D3D11_CULL_FRONT;
+					XGF_Error_Check(mD3dDevice->CreateRasterizerState(&rasterDesc, &mRasterizerState[(int)rs]), "CreateRasterizerState Error");
+					return mRasterizerState[(int)rs];
+				}
+				if (rs == RasterizerState::FrameAndCutNone)
+				{
+					rasterDesc.FillMode = D3D11_FILL_WIREFRAME;
+					rasterDesc.CullMode = D3D11_CULL_NONE;
+					XGF_Error_Check(mD3dDevice->CreateRasterizerState(&rasterDesc, &mRasterizerState[(int)rs]), "CreateRasterizerState Error");
+					return mRasterizerState[(int)rs];
+				}
+				XGF_ReportWarn0("RasterizerState is incorrect");
+				return mRasterizerState[0];
+
+			}
+			else XGF_ReportWarn0("RasterizerState is a invalid value!");
+
+		}
+		return mRasterizerState[(int)rs];
+	}
+
 
 
 	void GDI::PushRTTLayer(RenderToTexture * rtt)
@@ -702,6 +748,12 @@ namespace XGF
 	{
 		auto dds = GetRawDepthStencilState(ds);
 		mDeviceContext->OMSetDepthStencilState(dds, 0);
+	}
+
+	void GDI::SetRasterizerState(RasterizerState rs)
+	{
+		auto rss = GetRasterizerState(rs);
+		mDeviceContext->RSSetState(rss);
 	}
 
 	void GDI::CreateSwapChain()

@@ -27,11 +27,10 @@ namespace XGF
 		DirectX::XMVECTOR up, right, pos;
 		up = DirectX::XMLoadFloat3(&mUp);
 		right = DirectX::XMLoadFloat3(&mRight);
-		look = DirectX::XMVector3Normalize(look);
 		pos = DirectX::XMLoadFloat3(&mPos);
-
 		up = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(look, right));
 		right = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(up, look));
+		look = DirectX::XMVector3Normalize(look);
 		DirectX::XMStoreFloat3(&mUp, up);
 		DirectX::XMStoreFloat3(&mRight, right);
 		DirectX::XMStoreFloat3(&mLook, look);
@@ -95,9 +94,5 @@ namespace XGF
 		mFovAngle = va;
 	}
 
-	void PerspectiveCamera::SetPos(DirectX::XMFLOAT3 & pos)
-	{
-		mPos = pos;
-	}
 };
 

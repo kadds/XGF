@@ -45,6 +45,16 @@ namespace XGF
 
 		InvalidValue
 	};
+	enum class RasterizerState
+	{
+		SolidAndCutBack,
+		SolidAndCutFront,
+		SolidAndCutNone,
+		FrameAndCutBack,
+		FrameAndCutFront,
+		FrameAndCutNone,
+		InvalidValue
+	};
 	/*
 	底层图形接口
 	调整窗口尺寸可使用ResizeTarget函数
@@ -94,12 +104,14 @@ namespace XGF
 		ID3D11BlendState * GetRawBlendState(BlendState bs);
 		ID3D11SamplerState * GetRawSamplerState(SamplerState ss);
 		ID3D11DepthStencilState * GetRawDepthStencilState(DepthStencilState ds);
+		ID3D11RasterizerState * GetRasterizerState(RasterizerState rs);
 		void PushRTTLayer(RenderToTexture *rtt);
 		void PopRTTLayer();
 		void DrawRTT();
 		D3D_FEATURE_LEVEL CheckFeatureLevel();
 		void SetBlendState(BlendState bs);
 		void SetDepthStencilState(DepthStencilState ds);
+		void SetRasterizerState(RasterizerState rs);
 		void CreateSwapChain();
 	protected:
 		IDXGIFactory2 * mFactory2;
@@ -119,12 +131,8 @@ namespace XGF
 
 		ID3D11DepthStencilState * mDepthStencilState[(int)DepthStencilState::InvalidValue];
 
-		//普通模式渲染的RasterState
-		ID3D11RasterizerState * mRasterState;
-		//线框模式渲染的RasterState
-		ID3D11RasterizerState * mFrameRasterState;
-		bool mIsOpenFillSold = true;
-		bool mIsOpenZBuffer = true;
+		ID3D11RasterizerState * mRasterizerState[(int)RasterizerState::InvalidValue];
+
 		bool mIsStandby = false;
 		//显示的窗口句柄
 		HWND mHwnd;

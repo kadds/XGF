@@ -26,10 +26,9 @@ namespace XGF
 			virtual void Render(Batch & batch, const XMMATRIX * matirix, const BindingBridge & bbrige, ID3D11ShaderResourceView * tex);
 			virtual void Render(Batch & batch, const XMMATRIX * matirix, const BindingBridge & bbrige);
 		private:
-			bool mIsWriteToVertex;
-			int mPosInVertex;
 		};
 		float triangleArea(Point a, Point b, Point c);
+		//A Point is in Polygon inner?
 		bool pInPolygon(const PolygonPlePoint3& ql, int x, int y);
 	}
 	

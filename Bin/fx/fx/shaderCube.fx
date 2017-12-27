@@ -1,35 +1,35 @@
-TextureCube gCubeMap:register(t0);  //纹理资源
-SamplerState SampleType:register(s0);   //采样方式
-cbuffer CBMatrix:register(b0)
+TextureCube gCubeMap;
+SamplerState gSampleType;
+cbuffer CBMatrix
 {
-	matrix World;
-	matrix View;
-	matrix Proj;
+	row_major float4x4 cbWorld;
+	row_major float4x4 cbView;
+	row_major float4x4 cbProj;
 };
-cbuffer CBMatrix2:register(b1)
+cbuffer CBCameraPos
 {
-	float3 cpos;
+	float3 vCameraPos;
 };
 struct VertexIn
 {
-	float3 Pos : POSITION;
+	float3 vPos : POSITION;
 };
 struct VertexOut
 {
-	float4 Pos : SV_POSITION;
-    float3 texCoord : TEXCOORD; 
+	float4 vPos : SV_POSITION;
+    float3 vTexCoord : TEXCOORD; 
 };
 VertexOut VS(VertexIn vin)
 {
 	VertexOut vout;
-	vout.Pos = mul(float4(vin.Pos,1.0f), World);
-	vout.Pos = mul(float4(vin.Pos,1.0f), View);
-	vout.Pos = mul(vout.Pos, Proj).xyww;
-	vout.texCoord = -cpos + vin.Pos;
+	vout.vPos = mul(float4(vin.vPos,1.0f), cbWorld);
+	vout.vPos = mul(float4(vin.vPos,1.0f), cbView);
+	vout.vPos = mul(vout.vPos, cbProj).xyww;
+	vout.vTexCoord = -vCameraPos + vin.vPos;
 	return vout;
 }
 
 float4 PS(VertexOut pin) : SV_Target
 {
-	return gCubeMap.Sample(SampleType, pin.texCoord);
+	return gCubeMap.Sample(gSampleType, pin.vTexCoord);
 }

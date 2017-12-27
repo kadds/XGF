@@ -1,5 +1,6 @@
 #pragma once
 #include "Shader.hpp"
+#include "Texture.hpp"
 namespace XGF
 {
 	/*
@@ -20,6 +21,7 @@ namespace XGF
 		static ConstantData & GetInstance() {
 			return mConstantData;
 		};
+		ID3D11ShaderResourceView * GetRandomSRV() { return mRandomSRV; };
 	private:
 		VertexShader mFontVShader;
 		PixelShader mFontPShader;
@@ -35,7 +37,9 @@ namespace XGF
 		Shaders mPCShaders;
 		Shaders mPCTShaders;
 
+		ID3D11ShaderResourceView * mRandomSRV;
 		static ConstantData mConstantData;
+		static UINT mRanowmSize;
 	};
 }
 

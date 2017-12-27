@@ -34,7 +34,7 @@ void FirstScene::OnCreate()
 	mLb.SetText(L"Direct3D11");
     mLb.SetPositionAndSize(50, 200, 150, 40);
 	mLb.SetMouseEventable(true);
-	mLb.SetZ(0.05f);
+	mLb.SetZ(0.4f);
 
 	mLxb.SetText(L"X Game Render Framework\nClick here switch next scene.");
     mLxb.SetPositionAndSize(0, 240, 240, 40);
@@ -144,6 +144,8 @@ void FirstScene::OnCreate()
 		.EndBuild(sceneact2);
 	mSceneAnimationOut.OnColorChange(Color(1.0, 1.0, 1.0, 1.f),0);
 	mSceneAnimationOut.SetAction(std::move(sceneact2));
+
+	mCamera.SetPos(XMFLOAT3(1,1,-10));
 }
 
 void FirstScene::OnDestory()
@@ -210,7 +212,7 @@ void FirstScene::Render(float deltaTime)
 	str << L"PolygonRenderCountPerFrame:" << debug->GetPolygonRenderCountPerFrame();
 	mTextRenderer_s.DrawString(str.str().c_str(), 2, mFramework->GetWindowsHeight() - 20);
 
-	mTextRenderer_s.End();
+	
 	
 	mAxisRenderer.Begin(wvp3D);
 	mAxisRenderer.SetAxisXColor(Color(1.f, 0.f, 0.f, 1.0), Color(0.5f, 0.f, 0.f, 1.f));
@@ -236,7 +238,7 @@ void FirstScene::Render(float deltaTime)
 	mBatch3D.Begin();
 	mBatch3D.DrawPolygon(mCube.mPolygonPleIndex, bbr);
 	mBatch3D.End();
-	
+	mTextRenderer_s.End();
 
 	mTextRenderer_b.Begin(wvp2D);
 	
@@ -284,6 +286,7 @@ void FirstScene::OnMouseMove(const MousePoint & mm, int pk)
 	float w = GetFramework()->GetWindowsWidth();
 	mCamera.Pitch(mCamera.GetFovAngle() / h);
 	mCamera.Yaw(mCamera.GetFovAngle() / w);
+	
 }
 
 void FirstScene::OnKeyDowm(Key k)
