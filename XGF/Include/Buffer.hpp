@@ -1,4 +1,5 @@
 #pragma once
+#include "Defines.hpp"
 #include <d3d11_1.h>
 #include "GDI.hpp"
 namespace XGF

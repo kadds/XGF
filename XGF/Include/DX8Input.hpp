@@ -9,7 +9,7 @@
 #define COOPERATIVE_LEVEL_NONEXCLUSIVE false
 #define COOPERATIVE_LEVEL_FOREGROUND false
 #define COOPERATIVE_LEVEL_BACKGROUND true
-#include "InputListener.hpp"
+#include "ClickHelper.hpp"
 namespace XGF
 {
 	/*
@@ -18,9 +18,9 @@ namespace XGF
 
 	struct MouseState
 	{
-		long px;
-		long py;
-		long pz;
+		int px;
+		int py;
+		int pz;
 		int dowm;
 		bool dowms[4];
 		MouseState() {};
@@ -61,7 +61,7 @@ namespace XGF
 		Asyn mInputThread;
 		DIMOUSESTATE dimouse;
 
-		BYTE keys[256];
+		bool keys[256];
 		MouseState mouseState;
 		int width, height;
 		bool mRelativeMode;

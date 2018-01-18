@@ -2,7 +2,6 @@
 #include "Timer.hpp"
 #include "Defines.hpp"
 #include "InputManager.hpp"
-#include "InputListener.hpp"
 #include "Asyn.hpp"
 #include "SceneAnimation.hpp"
 #include "Batch.hpp"
@@ -11,6 +10,8 @@
 #include "Rectangle.hpp"
 #include "RenderToTexture.hpp"
 #include "ConstantData.hpp"
+#include "EventDispatcher.hpp"
+#include "UIBatches.hpp"
 #include <list>
 #include <memory>
 namespace XGF
@@ -31,17 +32,17 @@ namespace XGF
 		//Application框架调用
 		void _OnCreate(GDI *gdi, Asyn * asyn);
 		//Application框架调用
-		void _OnDestory();
-		//Application框架调用
+		void _OnDestroy();
+
 		void _OnActivate(bool isActivate);
-		//Application框架调用
+
 		void _OnSize(int ClientX, int ClientY);
 		//Application框架调用
 		void _OnMessage(const Event& ev);
 		//框架调用，处理感兴趣的消息，系统消息均被过滤
-		virtual void OnMessage(const Event& ev) {};
 		//Application框架调用
-		bool _OnInput(const Event &ev);
+		void _OnMouseMessage(const Event &ev);
+		void _OnKeyBoardMessage(const Event &ev);
 		//Application框架调用
 		void _OnClose();
 
@@ -56,12 +57,11 @@ namespace XGF
 		HINSTANCE GetInstance();
 		Asyn * GetTheard() { return mTheard; }
 		GDI * GetGDI();
+
 		int GetWindowsWidth();
 		int GetWindowsHeight();
 		//退出循环
 		void Exit(int code);
-		void AddInputListener(InputListener* il);
-		void RemoveInputListener(InputListener* il);
 		//切换Scene。注意，该函数只是在消息队列中添加了消息，下一帧才会切换，实际切换代码在ISwithScene中
 		//可确保在Click事件中调用不会破坏迭代器
 		void SwitchScene(Scene * scene);
@@ -77,6 +77,9 @@ namespace XGF
 		void SetOnClose(std::function<bool()> f) { mOnClose = f; };
 		void SetOnInput(std::function<bool(const Event &ev)> f) { mOnInput = f; };
 
+		EventDispatcher & GetEventDispatcher() { return mEventDispatcher; }
+
+		UIBatches & GetUIBatches() { return mUIBatches; };
 	protected://来自外部初始化的变量
 		GDI *mGDI;
 	protected:
@@ -86,7 +89,7 @@ namespace XGF
 		Timer mainTimer;
 		float mDeltaTime;
 		InputManager mInputManager;
-		std::list<InputListener* > mInputs;
+
 		Asyn * mTheard;
 		bool mIsVsync;
 		std::function<void(Scene *)> mSceneDeleter;
@@ -97,7 +100,12 @@ namespace XGF
 		Batch mSceneBatch;
 		OrthoCamera mRenderCamera;
 		Shape::Rectangle mRenderRectangle, mLastRenderRectangle;
+
+		UIBatches mUIBatches;
 	private:
+		EventDispatcher mEventDispatcher;
+
+		EventDispatcher mFrameWorkEventDispatcher;
 		void DrawSceneAnimation();
 		DISALLOW_COPY_AND_ASSIGN(XGFramework);
 	};

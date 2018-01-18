@@ -14,7 +14,7 @@ namespace XGF
 			void SetEndPosition(Point p);
 			virtual void GetPosition(Point & p) const override;
 		private:
-			virtual bool IsInBBox(const Point & p, const XMFLOAT4X4 * matrix) const { return false; };
+			virtual bool IsInBoundBox(const Point & p, const FXMMATRIX matrix) const { return false; };
 		};
 	}
 	

@@ -15,7 +15,7 @@ namespace XGF
 		if (mTheard->HandleMessage()) return true;
 		mInputManager.Tick(time);
 		if (mScene != nullptr)
-			mScene->Updata(time);
+			mScene->_Updata(time);
 		if (mSceneAnimation != nullptr)
 		{
 			mSceneAnimation->Updata(time);
@@ -26,13 +26,13 @@ namespace XGF
 		}
 		if (mLastScene != nullptr)
 		{
-			mLastScene->Updata(time);
+			mLastScene->_Updata(time);
 			if (mLastSceneAnimation != nullptr)
 			{
 				mLastSceneAnimation->Updata(time);
 				if (mLastSceneAnimation->IsEnd())//动画执行完毕，结束
 				{
-					mLastScene->OnDestory();
+					mLastScene->OnDestroy();
 					if (mSceneDeleter != nullptr)
 					{
 						mSceneDeleter(mLastScene);
@@ -53,16 +53,19 @@ namespace XGF
 			if (_Update(mDeltaTime))
 				return;
 			DebugInscriber_Begin(mDeltaTime);
+			WVPMatrix wvp;
+			mRenderCamera.GetCameraMatrix(wvp);
+			mUIBatches.Begin(wvp);
 			if (mLastScene != nullptr)
 			{
 				mGDI->PushRTTLayer(&mRenderToTexture);
 				mGDI->PushRTTLayer(&mLastRenderToTexture);
 				mGDI->DrawRTT();
-				mLastScene->Render(mDeltaTime);
+				mLastScene->_Render(mDeltaTime);
 				mGDI->PopRTTLayer();
 				mGDI->DrawRTT();
 				if (mScene != nullptr)
-					mScene->Render(mDeltaTime);
+					mScene->_Render(mDeltaTime);
 				mGDI->PopRTTLayer();
 				mGDI->DrawRTT();
 				DrawSceneAnimation();
@@ -73,16 +76,17 @@ namespace XGF
 				{
 					mGDI->PushRTTLayer(&mRenderToTexture);
 					mGDI->DrawRTT();
-					mScene->Render(mDeltaTime);
+					mScene->_Render(mDeltaTime);
 					mGDI->PopRTTLayer();
 					mGDI->DrawRTT();
 					DrawSceneAnimation();
 				}
 				else
 				{
-					mScene->Render(mDeltaTime);//无动画
+					mScene->_Render(mDeltaTime);//无动画
 				}
 			}
+			mUIBatches.End();
 			mInputManager.Draw();
 			mGDI->Present(mIsVsync);
 			DebugInscriber_End();
@@ -93,7 +97,8 @@ namespace XGF
 		CoInitializeEx(nullptr, COINITBASE_MULTITHREADED);
 		mGDI = gdi;
 		mTheard = asyn;
-		asyn->SetCallBackFunc(std::bind(&XGFramework::_OnMessage, this, std::placeholders::_1));
+		asyn->SetCallBackFunc(std::bind(&EventDispatcher::Dispatch, &mFrameWorkEventDispatcher, std::placeholders::_1));
+		mFrameWorkEventDispatcher.InsertAllEventListener(std::bind(&XGFramework::_OnMessage, this, std::placeholders::_1));
 		mGDI->Create();
 		ConstantData::GetInstance().Initialize(gdi);
 		mInputManager.Initialize(gdi, gdi->GetInstance(), gdi->GetTopHwnd(), mTheard);
@@ -102,18 +107,20 @@ namespace XGF
 		mSceneBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthDisable);
 		mRenderToTexture.Initialize(mGDI, mGDI->GetWidth(), mGDI->GetHeight());
 		mLastRenderToTexture.Initialize(mGDI, mGDI->GetWidth(), mGDI->GetHeight());
+		mUIBatches.Initialize(gdi);
 	}
 
-	void XGFramework::_OnDestory()
+	void XGFramework::_OnDestroy()
 	{
+		mUIBatches.Shutdown();
 		if (mScene != nullptr)
 		{
-			mScene->OnDestory();
+			mScene->OnDestroy();
 			if (mSceneDeleter != nullptr)
 				mSceneDeleter(mScene);
 			if (mLastScene != nullptr)
 			{
-				mLastScene->OnDestory();
+				mLastScene->OnDestroy();
 				if (mSceneDeleter != nullptr)
 					mSceneDeleter(mLastScene);
 			}
@@ -124,20 +131,14 @@ namespace XGF
 		mLastRenderToTexture.Shutdown();
 		mInputManager.Shutdown();
 		ConstantData::GetInstance().Shutdown();
-		mGDI->Destory();
+		mGDI->Destroy();
 
 	}
-
-
 
 	void XGFramework::_OnActivate(bool isActivate)
 	{
 		mGDI->CheckFullScreenForce(isActivate);
 		mInputManager.OnActivate(isActivate);
-		if (mScene != nullptr)
-			mScene->OnActivate(isActivate);
-		if (mLastScene != nullptr)
-			mLastScene->OnActivate(isActivate);
 	}
 
 	void XGFramework::_OnSize(int ClientX, int ClientY)
@@ -148,10 +149,6 @@ namespace XGF
 		mInputManager.UpdateCameraMatrix(ClientX, ClientY);
 		mRenderCamera.UpdataProject(ClientX, ClientY);
 		Batch::SetClientSize({ ClientX, ClientY });
-		if (mScene != nullptr)
-			mScene->OnSize(ClientX, ClientY);
-		if (mLastScene != nullptr)
-			mLastScene->OnSize(ClientX, ClientY);
 		mLastRenderRectangle.SetPositionAndSize(0.f, 0.f, static_cast<float>(ClientX), static_cast<float>(ClientY));
 		mLastRenderRectangle.SetZ(0.1f);
 		mRenderRectangle.SetPositionAndSize(0, 0, static_cast<float>(ClientX), static_cast<float>(ClientY));
@@ -164,81 +161,48 @@ namespace XGF
 
 	void XGFramework::_OnMessage(const Event& ev)
 	{
-		switch (ev.Message)
+		if (ev.mEventType == EventGroup::System)
+			switch (ev.GetSystemEventId())
+			{
+			case SystemEventId::Size:
+				_OnSize(ev.GetDataInt(0), ev.GetDataInt(1));
+				break;
+			case SystemEventId::Activate:
+				_OnActivate(ev.GetData<bool>(0));
+				break;
+			case SystemEventId::Close:
+				_OnClose();
+				break;
+			case SystemEventId::AsynFinish:
+				AsyncTask::DoFinishTaskEvent(ev);
+				break;
+			case SystemEventId::AsynReport:
+				AsyncTask::DoReportTaskEvent(ev);
+				break;
+			case SystemEventId::SwitchScene:
+				ISwitchScene(ev.GetData<Scene *>(0));
+				break;
+			default:
+				break;
+			}
+		else if (ev.mEventType == EventGroup::KeyBoard)
+			_OnKeyBoardMessage(ev);
+		else if (ev.mEventType == EventGroup::Mouse)
+			_OnMouseMessage(ev);
+		mEventDispatcher.Dispatch(ev);
+	}
+
+	void XGFramework::_OnMouseMessage(const Event & ev)
+	{
+		if (ev.GetMouseEventId() == MouseEventId::MouseDown)
 		{
-		case EVENT_ONSIZE:
-			_OnSize(ev.Content.x.num, ev.Content.y.num);
-			break;
-		case EVENT_ONACTIVATE:
-			_OnActivate(ev.Content.x.num == 0 ? false : true);
-			break;
-		case EVENT_ONCLOSE:
-			_OnClose();
-			break;
-		case EVENT_ONASYNCTASKFINISH:
-			AsyncTask::DoFinishTaskEvent(ev);
-			break;
-		case EVENT_ONASYNCTASKREPORT:
-			AsyncTask::DoReportTaskEvent(ev);
-			break;
-		case EVENT_SWITCHSCENE:
-			ISwitchScene((Scene *)ev.Content.y.address);
-			break;
-		default:
-			if (!_OnInput(ev))
-				OnMessage(ev);
-			break;
+			mInputManager.SetForce(nullptr);
 		}
 	}
 
-	bool XGFramework::_OnInput(const Event & ev)
+	void XGFramework::_OnKeyBoardMessage(const Event & ev)
 	{
-		MousePoint mp;
-		switch (ev.Message)
-		{
-		case EVENT_ONMOUSEDOWM:
-			mp.x = ev.Content.x.num;
-			mp.y = ev.Content.y.num;
-			GetInputManager()->StartForForce();
-			for each (auto var in mInputs)
-			{
-				var->OnMouseDowm(mp, ev.Content.z.num);
-			}
-			GetInputManager()->StopForForce();
-			break;
-		case EVENT_ONMOUSEMOVE:
-			mp.x = ev.Content.x.num;
-			mp.y = ev.Content.y.num;
-			mInputManager.OnMouseMove(static_cast<float>(mp.x), static_cast<float>(mp.y));
-			for each (auto var in mInputs)
-			{
-				var->OnMouseMove(mp, ev.Content.z.num);
-			}
-			break;
-		case EVENT_ONMOUSEUP:
-			mp.x = ev.Content.x.num;
-			mp.y = ev.Content.y.num;
-			for each (auto var in mInputs)
-			{
-				var->OnMouseUp(mp, ev.Content.z.num);
-			}
-			break;
-		case EVENT_ONKEYDOWM:
-			for each (auto var in mInputs)
-			{
-				var->OnKeyDowm(ev.Content.x.num);
-			}
-			break;
-		case EVENT_ONKEYUP:
-			for each (auto var in mInputs)
-			{
-				var->OnKeyUp(ev.Content.x.num);
-			}
-			break;
-		default:
-			return false;
-		}
-		return true;
+		//Nothing to do
 	}
 
 	void XGFramework::_OnClose()
@@ -248,8 +212,8 @@ namespace XGF
 	}
 	void XGFramework::ISwitchScene(Scene * scene)
 	{
-		scene->SetFramework(this);
-		scene->OnCreate();
+		scene->_OnCreate(this);
+		scene->OnSize(mGDI->GetWidth(), mGDI->GetHeight());
 		SceneAnimation * sa = scene->OnSwitchIn();
 		SceneAnimation * la = mScene->OnSwitchOut();
 		mLastSceneAnimation = la;
@@ -267,7 +231,7 @@ namespace XGF
 		}
 		if (!k)
 		{
-			mScene->OnDestory();
+			mScene->_OnDestroy();
 			if (mSceneDeleter != nullptr)
 				mSceneDeleter(mScene);
 			mScene = scene;
@@ -277,7 +241,6 @@ namespace XGF
 			mLastScene = mScene;
 			mScene = scene;
 		}
-		mScene->OnSize(mGDI->GetWidth(), mGDI->GetHeight());
 	}
 	void XGFramework::DrawSceneAnimation()
 	{
@@ -320,8 +283,7 @@ namespace XGF
 	}
 	void XGFramework::AddScene(Scene * scene)
 	{
-		scene->SetFramework(this);
-		scene->OnCreate();
+		scene->_OnCreate(this);
 		SceneAnimation * sa = scene->OnSwitchIn();
 		if (sa != nullptr)
 		{
@@ -336,7 +298,7 @@ namespace XGF
 	}
 	void XGFramework::SwitchScene(Scene * scene)
 	{
-		mTheard->PostEvent(EVENT_SWITCHSCENE, 0, scene, 0);
+		mTheard->PostEvent(SystemEventId::SwitchScene, { scene });
 	}
 	void XGFramework::Clear(float color[])
 	{
@@ -389,15 +351,6 @@ namespace XGF
 		mTheard->PostExitEvent();
 	}
 
-	void XGFramework::AddInputListener(InputListener * il)
-	{
-		mInputs.push_back(il);
-	}
-
-	void XGFramework::RemoveInputListener(InputListener * il)
-	{
-		mInputs.remove(il);
-	}
 
 	XGFramework::XGFramework() :mSceneDeleter(nullptr), mOnClose(nullptr), mOnInput(nullptr)
 	{

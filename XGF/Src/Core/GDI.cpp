@@ -107,7 +107,7 @@ namespace XGF
 		}
 #endif
 	}
-	void GDI::Destory()
+	void GDI::Destroy()
 	{
 		if (mSwapChain)
 			mSwapChain->SetFullscreenState(false, nullptr);

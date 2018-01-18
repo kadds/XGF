@@ -20,6 +20,7 @@ namespace XGF
 	{
 		mInstance = hInstance;
 		mFramework = &framework;
+		SetProcessDPIAware();
 		EventPool::Initialize(100);
 		RegisterWindowsClass(hInstance, className, ICON, sICON);
 		HWND hWnd = CreateWindowW(className, title, !CanChangeSize ? WS_OVERLAPPEDWINDOW &~WS_THICKFRAME & ~WS_MAXIMIZEBOX : WS_OVERLAPPEDWINDOW,
@@ -55,7 +56,7 @@ namespace XGF
 			//DebugOut("FrameworkLoop\n");
 			mFramework->_Loop2();
 			//DebugOut("FrameworkDestory\n");
-			mFramework->_OnDestory();
+			mFramework->_OnDestroy();
 			//通知主线程退出
 			//DebugOut("RenderThreadExit\n");
 			RenderThread->Notify();
@@ -107,7 +108,6 @@ namespace XGF
 	//  函数: WndProc(HWND, UINT, WPARAM, LPARAM)
 	//
 	//  目的:    处理主窗口的消息。
-	bool in = false;
 	LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		Application * app;
@@ -132,7 +132,7 @@ namespace XGF
 			app = WndAppMap.find(hWnd)->second;
 			if (app != nullptr)
 			{
-				//DebugOut("WM_DESTROY IN\n");
+				XGF_ReportDebug0("WM_DESTROY IN");
 				WndAppMap.erase(hWnd);
 			}
 			PostQuitMessage(0);
@@ -141,8 +141,7 @@ namespace XGF
 			app = WndAppMap.find(hWnd)->second;
 			if (app != nullptr)
 			{
-
-				app->GetRenderThread()->PostEvent(EVENT_ONACTIVATE, LOWORD(wParam) == 0 ? 0 : 1, 0);
+				app->GetRenderThread()->PostEvent(SystemEventId::Activate, { LOWORD(wParam) != WA_INACTIVE});
 			}
 			break;
 		case WM_SIZE:
@@ -152,14 +151,13 @@ namespace XGF
 			GetClientRect(hWnd, &rc);
 			if (app != nullptr && SIZE_MINIMIZED != wParam && SIZE_MAXHIDE != wParam)
 			{
-				//DebugOut("WM_SIZE IN\n");
-				app->GetRenderThread()->PostWithoutRepeat(EVENT_ONSIZE, rc.right - rc.left, rc.bottom - rc.top);
+				XGF_ReportDebug0("WM_SIZE IN");
+				app->GetRenderThread()->PostWithoutRepeat(SystemEventId::Size, { static_cast<int>(rc.right - rc.left), static_cast<int>(rc.bottom - rc.top) });
 			}
 		}
 		break;
 		case WM_CREATE:
 		{
-			//DebugOut("WM_CREATE\n");
 			app = (Application *)((CREATESTRUCT*)lParam)->lpCreateParams;
 			if (app != nullptr)
 				WndAppMap.insert(std::make_pair(hWnd, app));
@@ -168,17 +166,20 @@ namespace XGF
 		case WM_SETCURSOR:
 		{
 			app = WndAppMap.find(hWnd)->second;
-			if (app != NULL && app->IsSetHideCursor())
+			if (app != NULL)
 			{
-				if (LOWORD(lParam) == HTCLIENT)
+				if (app->IsSetHideCursor())
 				{
-					SetCursor(NULL);
+					if (LOWORD(lParam) == HTCLIENT)
+						SetCursor(NULL);
+					else
+						return DefWindowProc(hWnd, message, wParam, lParam);
 				}
 				else
-					SetCursor(app->GetSysCursor());
+				{
+					return DefWindowProc(hWnd, message, wParam, lParam);
+				}
 			}
-			else
-				SetCursor(app->GetSysCursor());
 			break;
 		}
 		case WM_CLOSE:
@@ -189,13 +190,13 @@ namespace XGF
 				{
 					app->SetExitCode((int)lParam);
 					app->GetRenderThread()->Wait();
-					//DebugOut("Wait End\n")
-						DestroyWindow(hWnd);
+					XGF_ReportDebug0("Wait End Close Window");
+					DestroyWindow(hWnd);
 				}
 				else
 				{
-					//DebugOut("WM_CLOSE IN\n");
-					app->GetRenderThread()->PostEvent(EVENT_ONCLOSE, wParam == FALSE ? 0 : 1, 0);
+					XGF_ReportDebug0("Send CloseMessage to System");
+					app->GetRenderThread()->PostEvent(SystemEventId::Close, { wParam != 0 });
 				}
 			}
 			break;

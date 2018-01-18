@@ -71,7 +71,7 @@ namespace XGF
 	void RenderToTexture::Clear(float color[])
 	{
 		mGDI->GetDeviceContext()->ClearRenderTargetView(mRenderTargetView, color);
-		//清除深度缓存和模板缓存  
+
 		mGDI->GetDeviceContext()->ClearDepthStencilView(mGDI->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 		ID3D11ShaderResourceView *const pSRV[1] = { nullptr };
 		mGDI->GetDeviceContext()->PSSetShaderResources(0, 1, pSRV);

@@ -30,3 +30,26 @@
 *.exe
 *.out
 *.app
+
+#log files
+*.log
+*.tlog
+
+#debug files
+*.pdb
+*.idb
+*.sbr
+*.ilk
+*.exp
+*.bsc
+*.iobj
+*.ipdb
+Debug
+Release
+
+#vs files
+.vs
+*.vcxproj.user
+
+#db
+*.db

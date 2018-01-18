@@ -7,6 +7,7 @@
 namespace XGF
 {
 	class GDI;
+
 	/*
 	纹理用类
 	*/
@@ -39,6 +40,11 @@ namespace XGF
 		float top;
 		float right;
 		float bottom;
+		Position LeftTop;
+		Position RightBottom;
+
+		Position LeftTop9Path;
+		Position RightBottom9Path;
 		//标示是否清理Texture
 		bool isCreateResourceView;
 	};

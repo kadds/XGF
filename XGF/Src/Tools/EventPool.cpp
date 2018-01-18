@@ -1,13 +1,15 @@
 #include "../../Include/EventPool.hpp"
 #include "../../Include/Log.hpp"
 #include <algorithm>
+#include <time.h>
 #include "../../Include/Defines.hpp"
 namespace XGF
 {
-	Event EventPool::nullEvent(0);
+	Event EventPool::nullEvent;
 	StateList<Event *> * EventPool::events;
 	EventPool::EventPool()
 	{
+		nullEvent.mEventType = EventGroup::Null;
 	}
 
 	EventPool::~EventPool()
@@ -33,54 +35,33 @@ namespace XGF
 		events->DelAll();
 		delete events;
 	}
-	Event & EventPool::CreateAEvent(int msg)
+	Event & EventPool::CreateAEvent(std::any id, EventGroup evGroup, std::initializer_list<std::any> init)
 	{
 		Event *e = NewAEvent();
-		e->Message = msg;
+		e->mEventId = id;
+		e->mEventType = evGroup;
+		e->mMaxLiveTime = -1;
+		e->mRecipteFrame = 1;
+		e->mTimeStamp = time(0);
+		e->mData.clear();
+		e->mData = init;
+		e->mPriority = 10;
 		return *e;
 	}
-	Event & EventPool::CreateAEvent(int msg, int data)
+	Event & EventPool::CreateAEvent(std::any id, EventGroup evGroup, int frameLimit, long maxLiveTime, std::initializer_list<std::any> init)
 	{
-		Event *e = NewAEvent();
-		e->Message = msg;
-		e->Content.x.num = data;
-		return *e;
-	}
+		XGF_ASSERT(frameLimit >= 0);
+		XGF_ASSERT(maxLiveTime >= 0);
 
-	Event & EventPool::CreateAEvent(int msg, int data1, int data2)
-	{
+		auto nowTime = time(0);
 		Event *e = NewAEvent();
-		e->Message = msg;
-		e->Content.x.num = data1;
-		e->Content.y.num = data2;
-		return *e;
-	}
-	Event & EventPool::CreateAEvent(int msg, int data1, int data2, int data3)
-	{
-		Event *e = NewAEvent();
-		e->Message = msg;
-		e->Content.x.num = data1;
-		e->Content.y.num = data2;
-		e->Content.z.num = data3;
-
-		return *e;
-	}
-	Event & EventPool::CreateAEvent(int msg, int data1, int data2, void * address)
-	{
-		Event *e = NewAEvent();
-		e->Message = msg;
-		e->Content.x.num = data1;
-		e->Content.y.num = data2;
-		e->Content.z.address = address;
-		return *e;
-	}
-	Event & EventPool::CreateAEvent(int msg, int data1, void * address, void * address2)
-	{
-		Event *e = NewAEvent();
-		e->Message = msg;
-		e->Content.x.num = data1;
-		e->Content.y.address = address;
-		e->Content.z.address = address2;
+		e->mEventId = id;
+		e->mEventType = evGroup;
+		e->mMaxLiveTime = maxLiveTime + nowTime;
+		e->mRecipteFrame = frameLimit;
+		e->mTimeStamp = nowTime;
+		e->mData.clear();
+		e->mData = init;
 		return *e;
 	}
 	Event& EventPool::GetNullEvent()
@@ -101,7 +82,8 @@ namespace XGF
 		Event *e;
 		if (events->EmptyInA())
 		{
-			e = new Event(0);
+			e = new Event();
+			e->mEventType = EventGroup::Null;
 			events->PushBackToB(e);
 		}
 		else

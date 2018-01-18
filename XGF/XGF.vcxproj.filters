@@ -99,12 +99,6 @@
     <ClInclude Include="Include\GDI.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Include\InputListener.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Layer.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Include\LinkedList.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -160,9 +154,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\Tools.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\UILayer.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\WICTextureLoader.h">
@@ -288,11 +279,29 @@
     <ClInclude Include="Include\Triangle.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Include\TextColorButton.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Event.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GObject.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\EventDispatcher.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Container.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Skin.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ResourceManager.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Src\UI\UILayer.cpp">
-      <Filter>源文件\UI</Filter>
-    </ClCompile>
     <ClCompile Include="Src\UI\Button.cpp">
       <Filter>源文件\UI</Filter>
     </ClCompile>
@@ -318,9 +327,6 @@
       <Filter>源文件\Core</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\GDI.cpp">
-      <Filter>源文件\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Core\Layer.cpp">
       <Filter>源文件\Core</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\MsgQueue.cpp">
@@ -514,6 +520,30 @@
     </ClCompile>
     <ClCompile Include="Src\Shape\Triangle.cpp">
       <Filter>源文件\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\UI\TextColorButton.cpp">
+      <Filter>源文件\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\Event.cpp">
+      <Filter>源文件\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\GObject.cpp">
+      <Filter>源文件\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\EventDispatcher.cpp">
+      <Filter>源文件\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\UI\Container.cpp">
+      <Filter>源文件\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\Transform.cpp">
+      <Filter>源文件\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\UI\Skin.cpp">
+      <Filter>源文件\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\ResourceManager.cpp">
+      <Filter>源文件\Core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

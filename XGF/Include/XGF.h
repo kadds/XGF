@@ -22,10 +22,9 @@
 //********************************
 
 //*********** UI *******************
-#include "Layer.hpp"
-#include "UILayer.hpp"
 #include "Label.hpp"
 #include "Button.hpp"
+#include "TextColorButton.hpp"
 #include "EditText.hpp"
 #include "UIBatches.hpp"
 //**********************************
@@ -45,7 +44,6 @@
 
 //************ Tools ******************
 #include "DX8Input.hpp"
-#include "InputListener.hpp"
 #include "Application.hpp"
 #include "Tools.hpp"
 #include "DebugInscriber.hpp"

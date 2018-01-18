@@ -12,7 +12,7 @@ namespace XGF
 			Circle(int precision);
 			~Circle();
 			void SetPosiotionAndRadius(float x, float y, float r);
-			virtual bool IsInBBox(const Point & p, const XMFLOAT4X4 * matrix) const;
+			virtual bool IsInBoundBox(const Point & p, const FXMMATRIX matrix) const override;
 			virtual void SetPosition(const Point & p);
 			//always return 2
 			int GetLayer(int layer[]);

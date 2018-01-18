@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -21,32 +21,32 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4ADD6D63-DB8A-48A6-BFBC-667B9058112B}</ProjectGuid>
     <RootNamespace>XGF</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -88,6 +88,9 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalIncludeDirectories>$(SolutionDir)Other\freetype\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ExceptionHandling>false</ExceptionHandling>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>
@@ -103,6 +106,9 @@
       <AdditionalIncludeDirectories>$(SolutionDir)Other\freetype\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BrowseInformation>true</BrowseInformation>
       <MinimalRebuild>false</MinimalRebuild>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ExceptionHandling>false</ExceptionHandling>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Bscmake>
       <PreserveSbr>true</PreserveSbr>
@@ -117,6 +123,9 @@
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalIncludeDirectories>$(SolutionDir)Other\freetype\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ExceptionHandling>false</ExceptionHandling>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -132,6 +141,9 @@
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalIncludeDirectories>$(SolutionDir)Other\freetype\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ExceptionHandling>false</ExceptionHandling>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -173,17 +185,18 @@
     <ClInclude Include="Include\DX8Input.hpp" />
     <ClInclude Include="Include\dxerr.h" />
     <ClInclude Include="Include\EditText.hpp" />
+    <ClInclude Include="Include\Event.hpp" />
+    <ClInclude Include="Include\EventDispatcher.hpp" />
     <ClInclude Include="Include\EventPool.hpp" />
     <ClInclude Include="Include\Font.hpp" />
     <ClInclude Include="Include\FPS.hpp" />
     <ClInclude Include="Include\FPSCamera.hpp" />
     <ClInclude Include="Include\GDI.hpp" />
+    <ClInclude Include="Include\GObject.hpp" />
     <ClInclude Include="Include\GridRenderer.hpp" />
     <ClInclude Include="Include\InputManager.hpp" />
-    <ClInclude Include="Include\InputListener.hpp" />
     <ClInclude Include="Include\Interpolator\Interpolator.hpp" />
     <ClInclude Include="Include\Label.hpp" />
-    <ClInclude Include="Include\Layer.hpp" />
     <ClInclude Include="Include\Line.hpp" />
     <ClInclude Include="Include\LinkedList.hpp" />
     <ClInclude Include="Include\Log.hpp" />
@@ -198,6 +211,7 @@
     <ClInclude Include="Include\RectangleB.hpp" />
     <ClInclude Include="Include\RenderToTexture.hpp" />
     <ClInclude Include="Include\RepeatAction.hpp" />
+    <ClInclude Include="Include\ResourceManager.hpp" />
     <ClInclude Include="Include\RotateToAction.hpp" />
     <ClInclude Include="Include\ScaleToAction.hpp" />
     <ClInclude Include="Include\Scene.hpp" />
@@ -208,7 +222,9 @@
     <ClInclude Include="Include\ShaderConst.hpp" />
     <ClInclude Include="Include\Shape.hpp" />
     <ClInclude Include="Include\ShapeRenderer.hpp" />
+    <ClInclude Include="Include\Skin.hpp" />
     <ClInclude Include="Include\StateList.hpp" />
+    <ClInclude Include="Include\TextColorButton.hpp" />
     <ClInclude Include="Include\TextInputInterface.hpp" />
     <ClInclude Include="Include\TextLayoutShaper.hpp" />
     <ClInclude Include="Include\TextRenderer.hpp" />
@@ -217,7 +233,7 @@
     <ClInclude Include="Include\Tools.hpp" />
     <ClInclude Include="Include\Triangle.hpp" />
     <ClInclude Include="Include\UIBatches.hpp" />
-    <ClInclude Include="Include\UILayer.hpp" />
+    <ClInclude Include="Include\Container.hpp" />
     <ClInclude Include="Include\WICTextureLoader.h" />
     <ClInclude Include="Include\XGF.h" />
     <ClInclude Include="Include\XGFramework.hpp" />
@@ -247,17 +263,20 @@
     <ClCompile Include="Src\Core\Caret.cpp" />
     <ClCompile Include="Src\Core\ConstantData.cpp" />
     <ClCompile Include="Src\Core\Cursor.cpp" />
+    <ClCompile Include="Src\Core\Event.cpp" />
+    <ClCompile Include="Src\Core\EventDispatcher.cpp" />
     <ClCompile Include="Src\Core\Font.cpp" />
     <ClCompile Include="Src\Core\FPS.cpp" />
     <ClCompile Include="Src\Core\FPSCamera.cpp" />
     <ClCompile Include="Src\Core\GDI.cpp" />
-    <ClCompile Include="Src\Core\Layer.cpp" />
+    <ClCompile Include="Src\Core\GObject.cpp" />
     <ClCompile Include="Src\Core\MsgQueue.cpp" />
     <ClCompile Include="Src\Core\OrthoCamera.cpp" />
     <ClCompile Include="Src\Core\ParticleSystem.cpp" />
     <ClCompile Include="Src\Core\PerspectiveCamera.cpp" />
     <ClCompile Include="Src\Core\Polygon.cpp" />
     <ClCompile Include="Src\Core\RenderToTexture.cpp" />
+    <ClCompile Include="Src\Core\ResourceManager.cpp" />
     <ClCompile Include="Src\Core\Scene.cpp" />
     <ClCompile Include="Src\Core\Shader.cpp" />
     <ClCompile Include="Src\Core\ShaderConst.cpp" />
@@ -265,6 +284,7 @@
     <ClCompile Include="Src\Core\TextLayoutShaper.cpp" />
     <ClCompile Include="Src\Core\TextRenderer.cpp" />
     <ClCompile Include="Src\Core\Texture.cpp" />
+    <ClCompile Include="Src\Core\Transform.cpp" />
     <ClCompile Include="Src\Core\XGFramework.cpp" />
     <ClCompile Include="Src\Helper\Application.cpp" />
     <ClCompile Include="Src\Helper\ClickHelper.cpp" />
@@ -296,8 +316,10 @@
     <ClCompile Include="Src\UI\Control.cpp" />
     <ClCompile Include="Src\UI\EditText.cpp" />
     <ClCompile Include="Src\UI\Label.cpp" />
+    <ClCompile Include="Src\UI\Skin.cpp" />
+    <ClCompile Include="Src\UI\TextColorButton.cpp" />
     <ClCompile Include="Src\UI\UIBatches.cpp" />
-    <ClCompile Include="Src\UI\UILayer.cpp" />
+    <ClCompile Include="Src\UI\Container.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

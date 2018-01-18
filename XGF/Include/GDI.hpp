@@ -67,7 +67,7 @@ namespace XGF
 		//框架调用
 		void Create();
 		//框架调用
-		void Destory();
+		void Destroy();
 		void Clear(float color[]);
 		void Clear(Color & c);
 		void ClearDepthStencilBuffer();

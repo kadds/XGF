@@ -29,7 +29,7 @@ namespace XGF
 	{
 		Event * e = const_cast<Event *>(&msg);
 		std::lock_guard<std::mutex>lk(mutex);
-		auto rt = std::find_if(mQueue.begin(), mQueue.end(), [e](Event * msg) {return msg->Message > e->Message;});
+		auto rt = std::find_if(mQueue.begin(), mQueue.end(), [e](Event * msg) {return msg->mPriority > e->mPriority; });
 		mQueue.insert(rt, e);
 	}
 	void MsgQueue::InsertMsgWithoutRepeat(const Event & msg)
@@ -38,7 +38,7 @@ namespace XGF
 		std::lock_guard<std::mutex>lk(mutex);
 		auto rt = mQueue.begin();
 		for (;;) {
-			rt = std::find_if(rt, mQueue.end(), [e](Event * msg) {return msg->Message == e->Message;});
+			rt = std::find_if(rt, mQueue.end(), [e](Event * msg) {return msg->mPriority > e->mPriority; });
 			if (rt != mQueue.end())
 			{
 				rt = mQueue.erase(rt);

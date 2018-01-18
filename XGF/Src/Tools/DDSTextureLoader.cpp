@@ -190,9 +190,9 @@ namespace
         {
             return E_FAIL;
         }
-
+		//std::nothrow
         // create enough space for the file data
-        ddsData.reset(new (std::nothrow) uint8_t[fileInfo.EndOfFile.LowPart]);
+        ddsData.reset(new uint8_t[fileInfo.EndOfFile.LowPart]);
         if (!ddsData)
         {
             return E_OUTOFMEMORY;
@@ -1432,8 +1432,9 @@ namespace
         }
         else
         {
+			//std::nothrow
             // Create the texture
-            std::unique_ptr<D3D11_SUBRESOURCE_DATA[]> initData(new (std::nothrow) D3D11_SUBRESOURCE_DATA[mipCount * arraySize]);
+            std::unique_ptr<D3D11_SUBRESOURCE_DATA[]> initData(new D3D11_SUBRESOURCE_DATA[mipCount * arraySize]);
             if (!initData)
             {
                 return E_OUTOFMEMORY;

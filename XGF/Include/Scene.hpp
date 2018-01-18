@@ -3,6 +3,7 @@
 #include "Defines.hpp"
 #include "Actions.hpp"
 #include "SceneAnimation.hpp"
+#include "Container.hpp"
 #include <vector>
 namespace XGF
 {
@@ -10,15 +11,13 @@ namespace XGF
 	/*
 	* ≥°æ∞¿‡
 	*/
-	class Layer;
 	class XGFramework;
 	class Scene
 	{
 	public:
 		Scene();
 		virtual ~Scene();
-		virtual void UpdataLayer(float dt);
-		virtual void RenderLayer(WVPMatrix & wvp);
+
 		void _Render(float deltaTime);
 		virtual void Render(float deltaTime) = 0;
 		void _Updata(float deltaTime);
@@ -26,24 +25,29 @@ namespace XGF
 		virtual SceneAnimation * OnSwitchIn();
 		virtual SceneAnimation * OnSwitchOut();
 
-		virtual void OnCreate();
-		virtual void OnDestory();
+		void _OnSize(const Event & ev);
 		virtual void OnSize(int ClientX, int ClientY) = 0;
-		virtual void OnActivate(bool isActivate) = 0;
-		int GetWidth();
-		int GetHeight();
+
+		void _OnCreate(XGFramework * framework);
+		virtual void OnCreate() = 0;
+		void _OnDestroy();
+		virtual void OnDestroy() = 0;
+
+		void _OnActivate(const Event & ev);
+		virtual void OnActivate(bool isActivate) {};
 		XGFramework * GetFramework()
 		{
 			return mFramework;
 		}
-		void SetFramework(XGFramework * framework);
-		void AddLayer(Layer * layer);
+		void AddChild(Container * container);
 		void SwitchScene(Scene * scene);
 		void Clear(Color & c);
 		void ClearDepthStencilBuffer();
 
+		Container & GetRootContainer() { return mRootContainer; };
 	protected:
-		vector<Layer *> mLayerList;
+		Container mRootContainer;
+
 		XGFramework *mFramework;
 	private:
 		DISALLOW_COPY_AND_ASSIGN(Scene);

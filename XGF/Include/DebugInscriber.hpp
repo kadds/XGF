@@ -1,4 +1,5 @@
 #pragma once
+#include "Defines.hpp"
 //#define XGF_DEBUG_USE_INSCRIBER
 namespace XGF
 {

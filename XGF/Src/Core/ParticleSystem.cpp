@@ -242,7 +242,7 @@ namespace XGF
 	void Emitter::SetFrequency(int countPerframe)
 	{
 		frequency = countPerframe;
-	}
+	} 
 
 	ParticleFire::FireEmitter::FireEmitter():startRadius(0), endRadius(100),
 		accelerationMax(0.04), accelerationMin(0.01), velocityMax(0.03), velocityMin(0.018),

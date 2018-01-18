@@ -26,29 +26,29 @@ namespace XGF
 	}
 	void AsyncTask::Report(int process, void * data)
 	{
-		mainThread->PostEvent(EVENT_ONASYNCTASKREPORT, process, data, this);
+		mainThread->PostEvent(SystemEventId::AsynReport, { process, data, this });
 	}
 
 	void AsyncTask::Finish(int code, void * data)
 	{
-		mainThread->PostEvent(EVENT_ONASYNCTASKFINISH, code, data, this);
+		mainThread->PostEvent(SystemEventId::AsynFinish, { code, data, this });
 	}
 
 	void AsyncTask::DoFinishTaskEvent(const Event & ev)
 	{
-		AsyncTask * tk = (AsyncTask *)(ev.Content.z.address);
+		AsyncTask * tk = ev.GetData<AsyncTask *>(2);
 		auto fun = tk->GetFinishTaskListener();
 		if (fun != nullptr)
-			fun(ev.Content.x.num, ev.Content.y.address);
+			fun(ev.GetDataInt(0), ev.mData[1]);
 		delete tk;
 	}
 
 	void AsyncTask::DoReportTaskEvent(const Event & ev)
 	{
-		AsyncTask * tk = (AsyncTask *)(ev.Content.z.address);
-		auto fun = tk->GetReportTaskProcessListene();
+		AsyncTask * tk = ev.GetData<AsyncTask *>(2);
+		auto fun = tk->GetReportTaskProcessListener();
 		if (fun != nullptr)
-			fun(ev.Content.x.num, ev.Content.y.address);
+			fun(ev.GetDataInt(0), ev.mData[1]);
 	}
 
 }

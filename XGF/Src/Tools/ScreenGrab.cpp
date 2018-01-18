@@ -859,9 +859,9 @@ HRESULT DirectX::SaveDDSTextureToFile( _In_ ID3D11DeviceContext* pContext,
         header->flags |= DDS_HEADER_FLAGS_PITCH;
         header->pitchOrLinearSize = static_cast<uint32_t>( rowPitch );
     }
-
+	//std::nothrow
     // Setup pixels
-    std::unique_ptr<uint8_t[]> pixels( new (std::nothrow) uint8_t[ slicePitch ] );
+    std::unique_ptr<uint8_t[]> pixels( new uint8_t[ slicePitch ] );
     if (!pixels)
         return E_OUTOFMEMORY;
 

@@ -12,13 +12,15 @@ namespace XGF
 	public:
 		EditText();
 		~EditText();
-		virtual void Render(const XMMATRIX * matrix, Batches & batches) override;
-		virtual void OnMouseDowm(const MousePoint & mp, int c, bool isIn) override;
-		virtual void OnMouseUp(const MousePoint & mp, int c, bool isIn) override;
-		virtual void OnMouseMove(const MousePoint & mp, int cp, bool isIn) override;
+		virtual void Render(const XMMATRIX * matrix) override;
 		virtual void OnForce(bool isForce);
 		virtual void GetInerBox(::XGF::Shape::Rectangle & rc);
 		virtual TextRenderer * GetTextRenderer() override { return mTextRenderer; };
+
+		virtual void OnAddToContainer() override;
+		virtual void OnRemoveFromContainer() override;
+
+		virtual void OnMouseDown(const Event & ev) override;
 	protected:
 		virtual Shape * GetShape() const override
 		{

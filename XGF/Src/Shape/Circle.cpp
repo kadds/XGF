@@ -35,18 +35,15 @@ namespace XGF
 				mPolygon.mPoint[i] = { px, py, 0.1f };
 			}
 		}
-		bool Circle::IsInBBox(const Point & p, const XMFLOAT4X4 * matrix) const
+		bool Circle::IsInBoundBox(const Point & p, const FXMMATRIX matrix) const
 		{
 			float x = mPolygon.mPoint[0].x;
 			float y = mPolygon.mPoint[0].y;
-			if (matrix == nullptr)
-			{
+			
 				return (p.x - x)*(p.x - x) + (p.y - y)*(p.y - y) <= mRadius * mRadius;
-			}
-			else
-			{
-				return false;//偷了个懒
-			}
+			
+				//return false;//偷了个懒 TODO::
+			
 
 		}
 		void Circle::SetPosition(const Point & p)

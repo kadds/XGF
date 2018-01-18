@@ -1,4 +1,5 @@
 #pragma once
+#include "Defines.hpp"
 #include <DirectXMath.h>
 
 #define COLOR_RED DirectX::XMFLOAT4(1.0f,0.0f,0.0f,1.0f)

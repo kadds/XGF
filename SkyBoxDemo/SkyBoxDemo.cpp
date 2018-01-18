@@ -34,7 +34,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 }
 using namespace XGF;
 
-class GameScene : public Scene, public InputListener
+class GameScene : public Scene
 {
 private:
 	Font font;
@@ -86,7 +86,7 @@ public:
 
 		mFramework->GetInputManager()->GetCursor()->SetStaticTexture(mFramework->GetGDI(), GetFilePath(L"cursor.png", wbuffer, MAX_PATH));
 		mFramework->GetInputManager()->SetMouseMode(MouseMode::CustomCenter);
-		mFramework->AddInputListener(this);
+		
 		eemitter.pos = Point(200, 200, 0);
 		eemitter.SetWidthAndHeight(15, 15);
 		eemitter.startRadius = 20;
@@ -105,11 +105,11 @@ public:
 		GetFilePath(L"particle.png", wbuffer, MAX_PATH);
 		particleT.LoadWIC(gdi, wbuffer);
 		ps.SetTexture(&particleT);
+
+		mFramework->GetEventDispatcher().InsertMouseEventListener(MouseEventId::MouseMove, std::bind(&GameScene::OnMouseMove, this, std::placeholders::_1));
 	}
-	virtual void OnDestory() override
+	virtual void OnDestroy() override
 	{
-		Scene::OnDestory();
-		mFramework->RemoveInputListener(this);
 		batch.Shutdown();
 		ps.Shutdown();
 		textRenderer.Shutdown();
@@ -213,25 +213,13 @@ public:
 		camera3d.UpdataProject(ClientX, ClientY);
 		
 	}
-	virtual void OnActivate(bool isActivate) override 
+	void OnMouseMove(const Event & ev)
 	{
-
-	}
-	virtual void OnMouseDowm(const MousePoint &mp, int pk)  override {};
-	virtual void OnMouseUp(const MousePoint &mp, int pk) override {};
-	virtual void OnMouseMove(const MousePoint &mm, int pk) override 
-	{
-
 		float h = GetFramework()->GetWindowsHeight();
 		float w = GetFramework()->GetWindowsWidth();
-		camera3d.Pitch(camera3d.GetFovAngle() / h *mm.y);
-		camera3d.Yaw(camera3d.GetFovAngle() / w *mm.x);
+		camera3d.Pitch(camera3d.GetFovAngle() / h * ev.GetDataInt(1));
+		camera3d.Yaw(camera3d.GetFovAngle() / w * ev.GetDataInt(0));
 	}
-	virtual void OnKeyDowm(Key k) override 
-	{
-		
-	}
-	virtual void OnKeyUp(Key k)  override {};
 };
 int RunGame(HINSTANCE hInstance)
 {

@@ -63,25 +63,6 @@ namespace XGF
 			shapePos[8].y = shapePos[11].y = shapePos[4].y = shapePos[7].y = shapePos[0].y + width;
 			shapePos[10].y = shapePos[9].y = shapePos[5].y = shapePos[6].y = shapePos[2].y - width;
 		}
-		bool RectangleB::IsInBBox(const Point & p, const XMFLOAT4X4 * matrix) const
-		{
-			if (matrix != nullptr)
-			{
-				PolygonPlePoint3 ple(4);
-
-				for (int i = 0; i < 4; i++)
-				{
-					ple.mPoint[i] = mPolygon.mPoint[i];
-				}
-				ple.Mul(DirectX::XMLoadFloat4x4(matrix));
-				return pInPolygon(ple, static_cast<int>(p.x), static_cast<int>(p.y));
-			}
-			else
-			{
-				auto shapePos = mPolygon.mPoint;
-				return p.x >= shapePos[0].x && p.x <= shapePos[2].x && p.y >= shapePos[0].y && p.y <= shapePos[1].y;
-			}
-		}
 		int RectangleB::GetBorderLayer(int layer[])
 		{
 			layer[0] = 4;
@@ -107,6 +88,18 @@ namespace XGF
 		void RectangleB::GetPosition(Point & p) const
 		{
 			p = mPolygon.mPoint[0];
+		}
+		bool RectangleB::IsInBoundBox(const Point & p, const FXMMATRIX matrix) const
+	{
+			PolygonPlePoint3 ple(4);
+
+			for (int i = 0; i < 4; i++)
+			{
+				ple.mPoint[i] = mPolygon.mPoint[i];
+			}
+			ple.Mul(matrix);
+			return pInPolygon(ple, static_cast<int>(p.x), static_cast<int>(p.y));
+
 		}
 	}
 

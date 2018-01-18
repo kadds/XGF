@@ -9,46 +9,42 @@ namespace XGF {
 	Asyn::~Asyn()
 	{
 	}
-	void Asyn::PostEvent(UINT msg, int data1, int data2, int data3)
+
+	void Asyn::PostEvent(std::any id, EventGroup evGroup, std::initializer_list<std::any> init)
 	{
 		if (isExit) return;
-		Event& ev = EventPool::CreateAEvent(msg, data1, data2, data3);
+		Event& ev = EventPool::CreateAEvent(id, evGroup, init);
 		msgQueue.InsertMsg(ev);
 	}
-	void Asyn::PostEvent(UINT msg, int data1, void * address, void * address2)
+	 template<typename T>
+	inline constexpr EventGroup GetType(T t)
 	{
-		if (isExit) return;
-		Event& ev = EventPool::CreateAEvent(msg, data1, address, address2);
-		msgQueue.InsertMsg(ev);
+		if (t.type() == typeid(SystemEventId))
+			return EventGroup::System;
+		if (t.type() == typeid(KeyBoardEventId))
+			return EventGroup::KeyBoard;
+		if (t.type() == typeid(MouseEventId))
+			return EventGroup::Mouse;
+		return EventGroup::Custom;
 	}
-	void Asyn::PostEvent(UINT msg, int data1, int data2, void * address)
+	
+	void Asyn::PostEvent(std::any id, std::initializer_list<std::any> init)
 	{
-		if (isExit) return;
-		Event& ev = EventPool::CreateAEvent(msg, data1, data2, address);
-		msgQueue.InsertMsg(ev);
+		PostEvent(id, GetType(id), init);
 	}
 	void Asyn::PostExitEvent()
 	{
-		//DebugOut("Post Exit Event!\n")
-			isExit = true;
-		Event& ev = EventPool::CreateAEvent(EVENT_EXIT);
-		msgQueue.InsertMsg(ev);
-
-	}
-	void Asyn::PostEvent(UINT msg, int data1, int data2)
-	{
-		if (isExit) return;
-		Event& ev = EventPool::CreateAEvent(msg, data1, data2);
+		isExit = true;
+		Event& ev = EventPool::CreateAEvent(SystemEventId::Exit, EventGroup::System, {});
+		ev.mPriority = -1;
 		msgQueue.InsertMsg(ev);
 	}
 
-	void Asyn::PostWithoutRepeat(UINT msg, int data1, int data2)
+	void Asyn::PostWithoutRepeat(std::any id, std::initializer_list<std::any> init)
 	{
-		Event& ev = EventPool::CreateAEvent(msg, data1, data2);
+		Event& ev = EventPool::CreateAEvent(id, GetType(id), init);
 		msgQueue.InsertMsgWithoutRepeat(ev);
 	}
-
-
 
 	void Asyn::Wait()
 	{
@@ -72,7 +68,7 @@ namespace XGF {
 		{
 			const Event &ev = msgQueue.GetMsg();
 			if (!EventPool::IsNullEvent(ev))
-				if (ev.Message == EVENT_EXIT)
+				if (ev.GetEventGroup() == EventGroup::System && ev.GetSystemEventId() == SystemEventId::Exit)
 				{
 					EventPool::DistoryAEvent(ev);
 					return true;

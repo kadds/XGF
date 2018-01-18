@@ -13,7 +13,7 @@ namespace XGF
 			void SetThreePoint(Point &p1, Point &p2, Point &p3);
 			virtual void SetPosition(const Point & p);
 			virtual void GetPosition(Point & p) const override;
-			virtual bool IsInBBox(const Point & p, const XMFLOAT4X4 * matrix) const override;
+			virtual bool IsInBoundBox(const Point & p, const FXMMATRIX matrix) const override;
 		};
 	}
 }

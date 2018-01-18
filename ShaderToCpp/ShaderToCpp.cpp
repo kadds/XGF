@@ -20,7 +20,6 @@
 #pragma comment(lib,"lib/Release/gflags.lib")
 #endif
 
-
 typedef std::string string;
 DEFINE_string(O, "out.cpp", "output source file name");
 DEFINE_string(OH, "out.h", "output header file  name");
@@ -84,7 +83,7 @@ int main(int argc, char *argv[])
 
 	GetModuleFileNameA(NULL, exeFullPath, MAX_PATH);
 	std::string Exefilepath = exeFullPath;
-	Exefilepath = std::tr2::sys::path(Exefilepath).parent_path().string();
+	Exefilepath = std::experimental::filesystem::path(Exefilepath).parent_path().string();
 	
 	std::vector<string> inputFiles;
 	if (input != "")
@@ -98,7 +97,7 @@ int main(int argc, char *argv[])
 		while (!inputDirs.empty())//搜索目录下所有文件
 		{
 			string str = inputDirs.back();
-			std::tr2::sys::path path(str);
+			std::experimental::filesystem::path path(str);
 			std::cout << "Finding files at Dir " << str << std::endl;
 			inputDirs.pop_back();
 			_finddata_t fd;
@@ -130,7 +129,7 @@ int main(int argc, char *argv[])
 	string infile;
 	for each (auto var in inputFiles)
 	{
-		if (std::tr2::sys::path(var).is_relative())
+		if (std::experimental::filesystem::path(var).is_relative())
 		{
 			infile = Exefilepath + "\\" + var;
 			std::cout << "handle relative dir..." << std::endl <<std::flush;
@@ -139,10 +138,10 @@ int main(int argc, char *argv[])
 		{
 			infile = var;
 		}
-		TransformAShader(out, outh, infile, std::tr2::sys::path(var).stem().string() + "VS", VSEntryPoint, VSVersion);
-		TransformAShader(out, outh, infile, std::tr2::sys::path(var).stem().string() + "PS", PSEntryPoint, PSVersion);
-		TransformAShader(out, outh, infile, std::tr2::sys::path(var).stem().string() + "GS", GSEntryPoint, GSVersion);
-		TransformAShader(out, outh, infile, std::tr2::sys::path(var).stem().string() + "CS", CSEntryPoint, CSVersion);
+		TransformAShader(out, outh, infile, std::experimental::filesystem::path(var).stem().string() + "VS", VSEntryPoint, VSVersion);
+		TransformAShader(out, outh, infile, std::experimental::filesystem::path(var).stem().string() + "PS", PSEntryPoint, PSVersion);
+		TransformAShader(out, outh, infile, std::experimental::filesystem::path(var).stem().string() + "GS", GSEntryPoint, GSVersion);
+		TransformAShader(out, outh, infile, std::experimental::filesystem::path(var).stem().string() + "CS", CSEntryPoint, CSVersion);
 	}
 	out << "}" << std::endl << "}" << std::endl;
 	outh << "}" << std::endl << "}" << std::endl;
@@ -152,16 +151,16 @@ int main(int argc, char *argv[])
 	{
 		std::ofstream outfile;
 		std::ofstream outhfile;
-
-		if (std::tr2::sys::path(output).is_relative())
+		
+		if (std::experimental::filesystem::path(output).is_relative())
 		{
 			output = Exefilepath + "\\" + output;
-			output = std::tr2::sys::path(output).make_preferred().string();
+			output = std::experimental::filesystem::path(output).make_preferred().string();
 		}
-		if (std::tr2::sys::path(outputh).is_relative())
+		if (std::experimental::filesystem::path(outputh).is_relative())
 		{
 			outputh = Exefilepath + "\\" + outputh;
-			outputh = std::tr2::sys::path(outputh).make_preferred().string();
+			outputh = std::experimental::filesystem::path(outputh).make_preferred().string();
 		}
 
 		outfile.open(output, std::ios::out);
@@ -204,7 +203,7 @@ void OutputInformation(std::ostream & os, std::ostream & osh)
 		os << "/*" << FLAGS_ExStr << "*/" << std::endl;
 		osh << "/*" << FLAGS_ExStr << "*/" << std::endl;
 	}
-	os << "#include \""<< FLAGS_IP << std::tr2::sys::path(FLAGS_OH).filename() <<"\"" << std::endl;
+	os << "#include \""<< FLAGS_IP << std::experimental::filesystem::path(FLAGS_OH).filename() <<"\"" << std::endl;
 	os << "namespace " << FLAGS_ANS << "{" << std::endl;
 	os << "namespace "<< FLAGS_NS <<"{" << std::endl;
 	osh << "namespace " << FLAGS_ANS << "{" << std::endl;

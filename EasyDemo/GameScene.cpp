@@ -56,7 +56,7 @@ void GameScene::OnCreate()
 	mTime = 0.f;
 }
 
-void GameScene::OnDestory()
+void GameScene::OnDestroy()
 {
 	mRenderToTexture.Shutdown();
 	mTextureBatch.Shutdown();
@@ -136,8 +136,4 @@ void GameScene::OnSize(int ClientX, int ClientY)
 	mRenderToTexture.Shutdown();
 	mRenderToTexture.Initialize(mFramework->GetGDI(), mFramework->GetGDI()->GetWidth(), mFramework->GetGDI()->GetHeight());
 	mRc.SetPositionAndSize(0, ClientY * 2 / 3, ClientX / 3, ClientY / 3);
-}
-
-void GameScene::OnActivate(bool isActivate)
-{
 }

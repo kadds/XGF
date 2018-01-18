@@ -1,4 +1,5 @@
 #pragma once
+#include "Defines.hpp"
 #include <unordered_map>
 #include "ConstantData.hpp"
 #include "Batch.hpp"

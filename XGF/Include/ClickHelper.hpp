@@ -1,24 +1,33 @@
 #pragma once
 #include "Defines.hpp"
-#include "InputListener.hpp"
 #include <vector>
+#include <functional>
 namespace XGF
 {
+	struct MousePoint
+	{
+		int x;
+		int y;
+	};
+	// DIK_?
+	typedef unsigned Key;
 	class ClickHelper
 	{
 	public:
 		ClickHelper();
 		~ClickHelper();
+		
 
-		void OnMouseDowm(const MousePoint & mp, int c, bool isIn);
-		void OnMouseUp(const MousePoint & mp, int c, bool isIn);
-		void OnMouseMove(bool isIn);
+		typedef std::function<void(const MousePoint &mm, int mouseButton)> OnClickListener;
+		void OnMouseDowm(const MousePoint & mp, bool isInTarget);
+		void OnMouseUp(const MousePoint & mp, bool isInTarget);
+		void OnMouseMove(bool isInTarget);
 		void AddOnClickListener(OnClickListener l) {
 			mOnClickListener.push_back(l);
 		}
 		int GetState() { return mState; }
 	private:
-		void OnClick(const MousePoint & mp, int c);
+		void OnClick(const MousePoint & mp);
 		int mState;
 		std::vector<OnClickListener> mOnClickListener;
 	};

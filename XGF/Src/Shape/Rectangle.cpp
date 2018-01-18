@@ -31,19 +31,17 @@ namespace XGF
 		}
 
 
-		bool Rectangle::IsInBBox(const Point & p, const XMFLOAT4X4 * matrix) const
+		bool Rectangle::IsInBoundBox(const Point & p, const FXMMATRIX matrix) const
 		{
-			if (matrix == nullptr)
+			/*if (matrix == nullptr)
 			{
 				auto shapePos = mPolygon.mPoint;
 				return p.x >= shapePos[0].x && p.x <= shapePos[2].x && p.y >= shapePos[0].y && p.y <= shapePos[1].y;
-			}
-			else
-			{
-				PolygonPlePoint3 ple(4);
-				mPolygon.MulTo(&ple, DirectX::XMLoadFloat4x4(matrix));
-				return pInPolygon(ple, static_cast<int>(p.x), static_cast<int>(p.y));
-			}
+			}*/
+			
+			PolygonPlePoint3 ple(4);
+			mPolygon.MulTo(&ple, matrix);
+			return pInPolygon(ple, static_cast<int>(p.x), static_cast<int>(p.y));
 		}
 
 		bool Rectangle::SubRectangle(Rectangle * pol, float x, float y, float width, float height) const

@@ -14,32 +14,28 @@ void SecondScene::OnCreate()
 {
 	char cbuffer[MAX_PATH];
 	wchar_t buffer[MAX_PATH];
-	GetFramework()->AddInputListener(&mUILayer);
-	AddLayer(&mUILayer);
 	mLabel.SetPositionAndSize(20, 60, 100, 40);
 	mLabel.SetText(L"第二个界面 按Esc退出");
-	mUILayer.Add(&mLabel);
+	mLabel.SetZ(0.5);
+	mLabel2.SetZ(0.4);
 	//mCamera3D.FixYAxis(true);
 	mLabel2.SetPositionAndSize(20, 100, 100, 40);
 	mLabel2.SetText(L"Activate!");
-	mLabel2.SetClickable(true);
-	mLabel2.SetMouseEventable(true);
-	mLabel2.AddOnClickListener([this](const MousePoint & ms, int pk)
-	{
-		mLabel2.SetText(L"Click!");
-		//this->GetFramework()->GetGDI()->SetFullScreen(false);
-	});
-	mUILayer.Add(&mLabel2);
+
+	GetRootContainer().AddChild(mLabel2);
+	GetRootContainer().AddChild(mLabel);
+
 	Tools::GetInstance()->GetFontPath("Dengb.ttf", cbuffer, MAX_PATH);
 	mFont.Initialize(mFramework->GetGDI(), cbuffer, 16);
 	mTextRenderer.Initialize(mFramework->GetGDI(), &mFont, 140);
 	mUITextRenderer.Initialize(mFramework->GetGDI(), &mFont, 140);
+	mFramework->GetUIBatches().SetTextRenderer(BATCHES_TEXTRENDERER_DEFAULT_SIZE, &mUITextRenderer);
 
 	mGridRender.Initialize(mFramework->GetGDI(), 10, 10, 5, 5);
 	mAxisRenderer.Initialize(mFramework->GetGDI());
 
 	mCursorTexture.LoadWIC(mFramework->GetGDI(), GetFilePath(L"tcursor.png", buffer, MAX_PATH));
-	mUILayer.GetUIBatches()->SetTextRenderer(BATCHES_TEXTRENDERER_DEFAULT_SIZE, &mUITextRenderer);
+	//mUILayer.GetUIBatches()->SetTextRenderer(BATCHES_TEXTRENDERER_DEFAULT_SIZE, &mUITextRenderer);
 	AnimationStage stage[4];
 	float c = 34.0 / 64.0;
 	float b = 32.0 / 64.0;
@@ -63,32 +59,25 @@ void SecondScene::OnCreate()
 	GetFramework()->GetInputManager()->GetCursor()->SetAnimation(&mAnimation);
 	GetFramework()->GetInputManager()->GetCursor()->SetPointDeviation(Position(3.f, 0.f));
 	GetFramework()->GetInputManager()->SetMouseMode(MouseMode::CustomCenter);
-	mFramework->AddInputListener(this);
-	std::unique_ptr<Action> sceneact;
-	ActionBuilder::Builder()
-		.BeginBuild()
-		.ChangeColorTo(1.f, 1.f, 1.f, 1.f, 2.f, LinearInterpolator::GetInterpolator())
-		.EndBuild(sceneact);
-	mSceneAnimationIn.OnColorChange(Color(1.0, 1.0, 1.0, 0.f), 0);
-	mSceneAnimationIn.SetAction(std::move(sceneact));
 
 	mCamera3D.SetPos(XMFLOAT3(1, 1, 10));
+
+	mFramework->GetEventDispatcher().InsertMouseEventListener(MouseEventId::MouseMove, std::bind(&SecondScene::OnMouseMove, this, std::placeholders::_1));
 }
-void SecondScene::OnDestory()
+void SecondScene::OnDestroy()
 {
-	Scene::OnDestory();
+	mFramework->GetEventDispatcher().RemoveMouseEventListener(MouseEventId::MouseMove, std::bind(&SecondScene::OnMouseMove, this, std::placeholders::_1));
 	mTextRenderer.Shutdown();
 	mFont.Shutdown();
 	mCursorTexture.Release();
 	mAxisRenderer.Shutdown();
 	mUITextRenderer.Shutdown();
 	mGridRender.Shutdown();
-	GetFramework()->RemoveInputListener(&mUILayer);
 }
 
 void SecondScene::Render(float deltaTime)
 {
-	Clear(Color(0.5f, 0.5f, 0.5f, 0.0f));
+	Clear(Color(0.5f, 0.5f, 0.5f, 1.0f));
 	WVPMatrix wvp, wvp3D;
 	mCamera.GetCameraMatrix(wvp);
 	mCamera3D.GetCameraMatrix(wvp3D);
@@ -108,14 +97,12 @@ void SecondScene::Render(float deltaTime)
 	str << std::fixed << std::setprecision(1) << L"FPS:" << debug->GetAverageFPS() <<"\n"<< L"FC:" << std::setprecision(4) <<debug->GetFrameCost() << "ms";
 	mTextRenderer.DrawString(str.str().c_str(), 4, 4);
 	
-	RenderLayer(wvp);
 	mTextRenderer.End();
 	
 }
 
 void SecondScene::Updata(float deltaTime)
 {
-	UpdataLayer(deltaTime);
 	mCamera.Updata();
 	mCamera3D.Updata();
 	auto ip = GetFramework()->GetInputManager();
@@ -131,58 +118,17 @@ void SecondScene::OnSize(int ClientX, int ClientY)
 
 void SecondScene::OnActivate(bool isActivate)
 {
-	if (isActivate)
-	{
-		mLabel2.SetText(L"Activate!");
-	}
+	if(isActivate)
+		mLabel2.SetText(L"Activate");
 	else
-	{
-		mLabel2.SetText(L"No Activate!");
-	}
+		mLabel2.SetText(L"Un Activate");
 }
-void SecondScene::OnMouseMove(const MousePoint & mm, int pk)
+
+void SecondScene::OnMouseMove(const Event & ev)
 {
 	float h = GetFramework()->GetWindowsHeight();
 	float w = GetFramework()->GetWindowsWidth();
-	mCamera3D.Pitch(mCamera3D.GetFovAngle() / h *mm.y);
-	mCamera3D.Yaw(mCamera3D.GetFovAngle() / w *mm.x);
+	mCamera3D.Pitch(mCamera3D.GetFovAngle() / h * ev.GetDataInt(1));
+	mCamera3D.Yaw(mCamera3D.GetFovAngle() / w * ev.GetDataInt(0));
 }
 
-void SecondScene::OnKeyDowm(Key k)
-{
-	switch (k)
-	{
-	case DIK_W:
-		mCamera3D.Walk(1);
-		break;
-	case DIK_S:
-		mCamera3D.Walk(-1);
-		break;
-	case DIK_A:
-		mCamera3D.Strafe(-1);
-		break;
-	case DIK_D:
-		mCamera3D.Strafe(1);
-		break;
-	case DIK_Z:
-		mCamera3D.Fly(-1);
-		break;
-	case DIK_X:
-		mCamera3D.Fly(1);
-		break;
-	case DIK_R:
-		mCamera3D.Pitch(1);
-		break;
-	case DIK_Y:
-		mCamera3D.Pitch(-1);
-		break;
-	case DIK_F:
-		mCamera3D.Yaw(1);
-		break;
-	case DIK_H:
-		mCamera3D.Yaw(-1);
-		break;
-	default:
-		break;
-	}
-}

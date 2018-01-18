@@ -1,6 +1,5 @@
 #pragma once
 #include "Defines.hpp"
-#include "Defines.hpp"
 namespace XGF
 {
 	class ActionInterface

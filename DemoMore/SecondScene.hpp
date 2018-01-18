@@ -2,25 +2,21 @@
 #include "../XGF/include/XGF.h"
 using namespace XGF;
 class SecondScene :
-	public Scene, public InputListener
+	public Scene
 {
 public:
 	SecondScene();
 	~SecondScene();
 
 	virtual void OnCreate() override;
-	virtual void OnDestory() override;
+	virtual void OnDestroy() override;
 	virtual void Render(float deltaTime) override;
 	virtual void Updata(float deltaTime) override;
 	virtual void OnSize(int ClientX, int ClientY) override;
+
 	virtual void OnActivate(bool isActivate) override;
 
-	virtual void OnMouseDowm(const MousePoint &mp, int pk)  override {};
-	virtual void OnMouseUp(const MousePoint &mp, int pk) override {};
-	virtual void OnMouseMove(const MousePoint &mm, int pk) override;
-	virtual void OnKeyDowm(Key k) override;
-	virtual void OnKeyUp(Key k)  override {};
-	virtual SceneAnimation * OnSwitchIn() { return &mSceneAnimationIn; };
+	void OnMouseMove(const Event & ev);
 private:
 	GridRenderer mGridRender;
 	Font mFont;
@@ -33,10 +29,8 @@ private:
 
 	OrthoCamera mCamera;
 	FPSCamera mCamera3D;
-	UILayer mUILayer;
 
 	Label mLabel;
 	Label mLabel2;
-	SceneAnimation mSceneAnimationIn;
 };
 

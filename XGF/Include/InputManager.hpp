@@ -2,8 +2,7 @@
 #include "Defines.hpp"
 #include "DX8Input.hpp"
 #include "TextInputInterface.hpp"
-
-
+#include "ClickHelper.hpp"
 #include "OrthoCamera.hpp"
 #include "Caret.hpp"
 #include "Cursor.hpp"

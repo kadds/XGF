@@ -38,9 +38,9 @@ namespace XGF
 		{
 			p = mPolygon.mPoint[0];
 		}
-		bool Triangle::IsInBBox(const Point & p, const XMFLOAT4X4 * matrix) const
+		bool Triangle::IsInBoundBox(const Point & p, const FXMMATRIX matrix) const
 		{
-			return pInPolygon(mPolygon, p.x, p.y);
+			return pInPolygon(mPolygon, p.x, p.y);//TODO::EX
 		}
 	}
 }

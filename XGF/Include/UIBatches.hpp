@@ -20,7 +20,7 @@ namespace XGF
 	/*
 	用于UI系统（包括字体渲染）的Batch集合
 	*/
-	class UIBatches : Batches
+	class UIBatches : public Batches
 	{
 	public:
 		UIBatches();

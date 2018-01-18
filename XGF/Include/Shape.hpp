@@ -15,13 +15,15 @@ namespace XGF
 		public:
 			Shape(int n, int indexCount);
 			virtual ~Shape();
-			virtual bool IsInBBox(const Point & p, const XMFLOAT4X4 * matrix) const {return false;};
+			virtual bool IsInBoundBox(const Point & p, const FXMMATRIX matrix) const {return false;};
 			virtual void SetPosition(const Point & p) {};
 			virtual void GetPosition(Point & p) const;
 			PolygonPlePoint3 mPolygon;
 			PolygonPleIndex mPolygonPleIndex;
 			const PolygonPleIndex & GetIndex() const;
+			virtual void GetBoundBox(PolygonPlePoint3 & ppe) const {};
 			void SetZ(float z);
+			float GetZ() { return mPolygon.mPoint[0].z; }
 			void Render(Batch & batch, const XMMATRIX * matirix, const BindingBridge & bbrige, const Texture & tx);
 			virtual void Render(Batch & batch, const XMMATRIX * matirix, const BindingBridge & bbrige, ID3D11ShaderResourceView * tex);
 			virtual void Render(Batch & batch, const XMMATRIX * matirix, const BindingBridge & bbrige);

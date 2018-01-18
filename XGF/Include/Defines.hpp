@@ -6,10 +6,17 @@
 
 #ifdef _XGF_DEBUG_ALLOC
 #define _CRTDBG_MAP_ALLOC  
-#pragma warning(disable:4005)
 #include <stdlib.h>  
 #include <crtdbg.h>  
 #define new new(_CLIENT_BLOCK, __FILE__, __LINE__)  
+#endif
+
+#pragma warning(disable:4005)
+#ifdef _DEBUG
+/*some else*/
+#else
+/*Òì³£¾¯¸æ*/
+#pragma warning(disable:4530)
 #endif
 
 namespace XGF
@@ -25,6 +32,7 @@ namespace XGF
 	using DirectX::XMFLOAT4;
 
 	typedef XMFLOAT2 Position;
+	typedef XMFLOAT2 Size;
 	typedef XMFLOAT3 Point;
 	typedef XMFLOAT4 Point4;
 	typedef XMFLOAT4 Color;

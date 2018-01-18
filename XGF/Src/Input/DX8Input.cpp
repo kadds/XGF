@@ -13,18 +13,19 @@ namespace XGF
 
 	bool DX8Input::Initialize(HINSTANCE hs, HWND hwnd)
 	{
+		XGF_ASSERT(hwnd != NULL);
+		XGF_ASSERT(hs != NULL);
 		hInstance = hs;
 		mHwnd = hwnd;
 		XGF_Error_Check(DirectInput8Create(hs, DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&mDxInput, nullptr),"DxInputCreate Failed");
+		//查询
 		//Check(dxInput->QueryInterface(IID_IDirectInputDevice2, (void **)&mDxInput));
 		XGF_Error_Check(mDxInput->CreateDevice(GUID_SysMouse, &mMouse, nullptr),"DxInputCreateDevice Failed");
 		XGF_Error_Check(mDxInput->CreateDevice(GUID_SysKeyboard, &mKeyBoard, nullptr), "DxInputCreateDevice Failed");
-		// 设定为通过一个 256 字节的数组返回查询状态值
+
 		XGF_Error_Check(mKeyBoard->SetDataFormat(&c_dfDIKeyboard), "DxInput SetDataFormat Failed");
 		XGF_Error_Check(mKeyBoard->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND), "SetCooperativeLevel Failed");
-		// 设定缓冲区大小
-		// 如果不设定，缓冲区大小默认值为 0，程序就只能按立即模式工作
-		// 如果要用缓冲模式工作，必须使缓冲区大小超过 0
+
 		DIPROPDWORD     property;
 		property.diph.dwSize = sizeof(DIPROPDWORD);
 		property.diph.dwHeaderSize = sizeof(DIPROPHEADER);
@@ -33,9 +34,8 @@ namespace XGF
 		property.dwData = 128;
 		XGF_Error_Check(mKeyBoard->SetProperty(DIPROP_BUFFERSIZE, &property.diph), "SetKeyBoardProperty Failed");
 
-		XGF_Error_Check(mMouse->SetDataFormat(&c_dfDIMouse), "SetDataFormat Failed");
+		XGF_Error_Check(mMouse->SetDataFormat(&c_dfDIMouse2), "SetDataFormat Failed");
 
-		// 设定协作模式
 		XGF_Error_Check(mMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND), "SetMouseCooperativeLevel Failed");
 		DIPROPDWORD     propertys;
 
@@ -54,6 +54,7 @@ namespace XGF
 		ScreenToClient(mHwnd, &p);
 		mouseState.px = p.x;
 		mouseState.py = p.y;
+		mouseState.pz = 0;
 		mouseState.dowm = 0;
 		RECT rc;
 		GetClientRect(hwnd, &rc);
@@ -71,14 +72,12 @@ namespace XGF
 		{
 			if (mKeyBoard)
 			{
-				// Always unacquire the device before calling Release().
 				mKeyBoard->Unacquire();
 				mKeyBoard->Release();
 				mKeyBoard = NULL;
 			}
 			if (mMouse)
 			{
-				// Always unacquire the device before calling Release().
 				mMouse->Unacquire();
 				mMouse->Release();
 				mMouse = NULL;
@@ -205,7 +204,7 @@ namespace XGF
 
 	bool DX8Input::IsPress(Key key)
 	{
-		return keys[key] & 0x80;
+		return keys[key];
 	}
 
 	void DX8Input::HandleMouseEvent(DIDEVICEOBJECTDATA * didod, int len, Asyn * asyn)
@@ -227,29 +226,24 @@ namespace XGF
 			switch (didod[i].dwOfs)
 			{
 			case DIMOFS_X:
-				//hasMove = true;
 				if (mRelativeMode)
 					mouseState.px = didod[i].dwData;
 				else
 					mouseState.px += didod[i].dwData;
 				UpdatePos();
-				asyn->PostEvent(EVENT_ONMOUSEMOVE, mouseState.px, mouseState.py, mouseState.dowm);
+				asyn->PostEvent(MouseEventId::MouseMove, { mouseState.px, mouseState.py, mouseState.dowm });
 				break;
 			case DIMOFS_Y:
-				//hasMove = true;
 				if (mRelativeMode)
 					mouseState.py = didod[i].dwData;
 				else
 					mouseState.py += didod[i].dwData;
 				UpdatePos();
-				asyn->PostEvent(EVENT_ONMOUSEMOVE, mouseState.px, mouseState.py, mouseState.dowm);
+				asyn->PostEvent(MouseEventId::MouseMove, { mouseState.px, mouseState.py, mouseState.dowm });
 				break;
 			case DIMOFS_Z:
-				if (mRelativeMode)
-					mouseState.py = didod[i].dwData;
-				else
-					mouseState.py += didod[i].dwData;
-				asyn->PostEvent(EVENT_ONMOUSEMOVE, mouseState.px, mouseState.py, mouseState.dowm);
+				mouseState.pz = didod[i].dwData;
+				asyn->PostEvent(MouseEventId::MouseWheel, { mouseState.pz});
 				break;
 			case DIMOFS_BUTTON0:
 				isDowm = static_cast<bool>(didod[i].dwData & 0x80);
@@ -257,12 +251,12 @@ namespace XGF
 				if (isDowm)
 				{
 					mouseState.dowm |= MOUSE_BUTTON_LEFT;
-					asyn->PostEvent(EVENT_ONMOUSEDOWM, mouseState.px, mouseState.py, MOUSE_BUTTON_LEFT);
+					asyn->PostEvent(MouseEventId::MouseDown, { mouseState.px, mouseState.py, MOUSE_BUTTON_LEFT });
 				}
 				else
 				{
 					mouseState.dowm ^= MOUSE_BUTTON_LEFT;
-					asyn->PostEvent(EVENT_ONMOUSEUP, mouseState.px, mouseState.py, MOUSE_BUTTON_LEFT);
+					asyn->PostEvent(MouseEventId::MouseUp, {mouseState.px, mouseState.py, MOUSE_BUTTON_LEFT});
 				}
 				break;
 			case DIMOFS_BUTTON1:
@@ -271,12 +265,12 @@ namespace XGF
 				if (isDowm)
 				{
 					mouseState.dowm |= MOUSE_BUTTON_RIGHT;
-					asyn->PostEvent(EVENT_ONMOUSEDOWM, mouseState.px, mouseState.py, MOUSE_BUTTON_RIGHT);
+					asyn->PostEvent(MouseEventId::MouseDown, { mouseState.px, mouseState.py, MOUSE_BUTTON_RIGHT });
 				}
 				else
 				{
 					mouseState.dowm ^= MOUSE_BUTTON_RIGHT;
-					asyn->PostEvent(EVENT_ONMOUSEUP, mouseState.px, mouseState.py, MOUSE_BUTTON_RIGHT);
+					asyn->PostEvent(MouseEventId::MouseUp, { mouseState.px, mouseState.py, MOUSE_BUTTON_RIGHT });
 				}
 				break;
 			case DIMOFS_BUTTON2:
@@ -286,12 +280,12 @@ namespace XGF
 				if (isDowm)
 				{
 					mouseState.dowm |= MOUSE_BUTTON_MIDDLE;
-					asyn->PostEvent(EVENT_ONMOUSEDOWM, mouseState.px, mouseState.py, MOUSE_BUTTON_MIDDLE);
+					asyn->PostEvent(MouseEventId::MouseDown, { mouseState.px, mouseState.py, MOUSE_BUTTON_MIDDLE });
 				}
 				else
 				{
 					mouseState.dowm ^= MOUSE_BUTTON_MIDDLE;
-					asyn->PostEvent(EVENT_ONMOUSEUP, mouseState.px, mouseState.py, MOUSE_BUTTON_MIDDLE);
+					asyn->PostEvent(MouseEventId::MouseUp, { mouseState.px, mouseState.py, MOUSE_BUTTON_MIDDLE });
 				}
 				break;
 			default:
@@ -305,13 +299,13 @@ namespace XGF
 		{
 			if (didod[i].dwData & 0x80)
 			{
-				keys[didod[i].dwOfs] |= 0x80;
-				asyn->PostEvent(EVENT_ONKEYDOWM, didod[i].dwOfs, 0);
+				keys[didod[i].dwOfs] = true;
+				asyn->PostEvent(KeyBoardEventId::KeyDown, { (int)didod[i].dwOfs });
 			}
 			else
 			{
-				keys[didod[i].dwOfs] &= ~0x80;
-				asyn->PostEvent(EVENT_ONKEYUP, didod[i].dwOfs, 0);
+				keys[didod[i].dwOfs] = false;
+				asyn->PostEvent(KeyBoardEventId::KeyUp, { (int)(didod[i].dwOfs) });
 			}
 		}
 	}

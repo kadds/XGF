@@ -27,132 +27,76 @@ void FirstScene::OnCreate()
 	mUITextRenderer.Initialize(mFramework->GetGDI(), &mFont, 1000);
     mTextRenderer_s.Initialize(mFramework->GetGDI(), &mFont_s, 1000);
 	mTextRenderer_b.Initialize(mFramework->GetGDI(), &mFont_b, 200);
-	mFramework->AddInputListener(&mUILayer);
-	mFramework->AddInputListener(this);
-	AddLayer(&mUILayer);
+	mFramework->GetUIBatches().SetTextRenderer(BATCHES_TEXTRENDERER_DEFAULT_SIZE, &mUITextRenderer);
 
 	mLb.SetText(L"Direct3D11");
     mLb.SetPositionAndSize(50, 200, 150, 40);
-	mLb.SetMouseEventable(true);
 	mLb.SetZ(0.4f);
-
+	//mLb.GetTransform().mRotation = Point(0, 0, 0.4);
+	GetRootContainer().AddChild(mLb);
+	mLb.GetClickHelper().AddOnClickListener([this](const MousePoint & ms, int mouseButton) {
+		AsyncTask::NewTask(mFramework->GetTheard(), [this](AsyncTask * asyn) {
+			MessageBox(NULL, L"YOU CLICK Label!!",L"Exe",0);
+			asyn->Finish(0, 0);
+		});
+	});
 	mLxb.SetText(L"X Game Render Framework\nClick here switch next scene.");
     mLxb.SetPositionAndSize(0, 240, 240, 40);
-	mLxb.SetMouseEventable(true);
-	mLxb.SetClickable(true);
-	mLxb.AddOnClickListener([=](const MousePoint& mp, int p) {
-		SecondScene * sc = new SecondScene();
-		SwitchScene(sc);
-	});
+	GetRootContainer().AddChild(mLxb);
 	mLxb.SetZ(0.06f);
-	mLb.SetMouseDowmListener([=](const MousePoint& mp, int p) {
-		mLb.StartAction();
+	mLxb.GetClickHelper().AddOnClickListener([this](const MousePoint & ms, int mouseButton) {
+		this->GetFramework()->SwitchScene(new SecondScene());
 	});
-	std::unique_ptr<Action> act;
-	
-	ActionBuilder::Builder()
-	.BeginBuild()
-		.ParallelActionTo()
-			.SequenceActionTo()
-				.MoveTo(180.f, 0.f, 0.4f, 1.0f, AnticipateOvershootInterpolator::GetInterpolator(4))
-				.DelayActionTo(0.2f)
-				.RotateBy(0.f, 0.f, -DirectX::XM_PI * 2 , 1.0f, AnticipateOvershootInterpolator::GetInterpolator(2.5))
-				.DelayActionTo(0.2f)
-				.MoveTo(0.f, 180.f, 0.4f, 1.4f, AnticipateOvershootInterpolator::GetInterpolator(4))
-				.DelayActionTo(0.2f)
-				.RotateBy(0.f, 0.f, -DirectX::XM_PI * 2, 1.0f, AnticipateOvershootInterpolator::GetInterpolator(2.5))
-				.DelayActionTo(0.2f)
-				.MoveTo(180.f, 180.f, 0.4f, 1.4f, AnticipateOvershootInterpolator::GetInterpolator(4))
-				.DelayActionTo(0.2f)
-				.RotateBy(0.f, 0.f, -DirectX::XM_PI * 2, 1.0f, AnticipateOvershootInterpolator::GetInterpolator(2.5))
-				.BackUp()
-			.SequenceActionTo()
-				.ChangeColorTo(1.f,1.f,0.f,1.f,1.f, AccelerateDecelerateInterpolator::GetInterpolator())
-				.ChangeColorTo(1.f, 0.f, 1.f, 1.f, 1.f, AccelerateDecelerateInterpolator::GetInterpolator())
-				.ChangeColorTo(0.f, 1.f, 1.f, 1.f, 1.f, AccelerateDecelerateInterpolator::GetInterpolator())
-				.ChangeColorTo(1.f, 1.f, 1.f, 1.f, 1.f, AccelerateDecelerateInterpolator::GetInterpolator())
-				.AlphaTo(0.f, 1.2f, AccelerateDecelerateInterpolator::GetInterpolator())
-				.AlphaTo(1.f, 1.2f, AccelerateDecelerateInterpolator::GetInterpolator())
-		.EndBuild(act);
-	mLb.SetAction(std::move(act));
-	
-	mLb.SetRotationOrigin(Point(10,10,0));
-    
+
 	mBt.SetPositionAndSize(10,100,60,30);
 	btNormal.LoadWIC(mFramework->GetGDI(), GetFilePath(L"a.png", buffer, 100));
     btMove.LoadWIC(mFramework->GetGDI(), GetFilePath(L"a1.png", buffer, 100));
     btPress.LoadWIC(mFramework->GetGDI(), GetFilePath(L"a2.png", buffer, 100));
-	std::unique_ptr<Action> animbt;
-	ActionBuilder::Builder().BeginBuild()
-		.ParallelActionTo()
-			.RotateBy(0, 0, DirectX::XM_2PI, 3.f, AnticipateOvershootInterpolator::GetInterpolator(2.5))
-			.ScaleBy(0.1f,0.1f,1.0f,3.f, AnticipateOvershootInterpolator::GetInterpolator(2.5))
-		.EndBuild(animbt);
-	mBt.SetAction(std::move(animbt));
-	mBt.SetTexture(&btNormal, &btMove, &btPress);
-	mBt.AddOnClickListener([=](const MousePoint &mm, int pk) {
-		mBt.StartAction();
+
+	mBt.GetClickHelper().AddOnClickListener([this](const MousePoint & ms, int mouseButton) {
 		if (mFramework->GetGDI()->GetDisplayMode() == DisplayMode::Borderless)
-			mFramework->GetGDI()->SetDisplayMode(DisplayMode::Windowed, 0, 0, 600, 400, false);
-		else if(mFramework->GetGDI()->GetDisplayMode() == DisplayMode::FullScreen)
-			mFramework->GetGDI()->SetDisplayMode(DisplayMode::Borderless ,0 ,0 , 1920, 1080, true);
-		else
-			mFramework->GetGDI()->SetDisplayMode(DisplayMode::FullScreen, 0, 0, 1920, 1080, true);
+				mFramework->GetGDI()->SetDisplayMode(DisplayMode::Windowed, 0, 0, 600, 400, false);
+			else if(mFramework->GetGDI()->GetDisplayMode() == DisplayMode::FullScreen)
+				mFramework->GetGDI()->SetDisplayMode(DisplayMode::Borderless ,0 ,0 , 1920, 1080, true);
+			else
+				mFramework->GetGDI()->SetDisplayMode(DisplayMode::FullScreen, 0, 0, 1920, 1080, true);
+	});
+	//mBt.AddOnClickListener([=](const MousePoint &mm, int pk) {
+	//	mBt.StartAction();
+	//	if (mFramework->GetGDI()->GetDisplayMode() == DisplayMode::Borderless)
+	//		mFramework->GetGDI()->SetDisplayMode(DisplayMode::Windowed, 0, 0, 600, 400, false);
+	//	else if(mFramework->GetGDI()->GetDisplayMode() == DisplayMode::FullScreen)
+	//		mFramework->GetGDI()->SetDisplayMode(DisplayMode::Borderless ,0 ,0 , 1920, 1080, true);
+	//	else
+	//		mFramework->GetGDI()->SetDisplayMode(DisplayMode::FullScreen, 0, 0, 1920, 1080, true);
 		//AsyncTask::NewTask(mFramework->GetTheard(), [this](AsyncTask * asyn) {
 			
 			//MessageBox(NULL, L"YOU CLICK BUTTOM!!",L"E",0);
 			//asyn->Finish(0, 0);
 		//});
 		
-    });
+   // });
 	mBt.SetZ(0.07f);
+	mBt.SetSkin(Skin::CreateFromTextures(&btNormal, &btMove, &btPress));
+	GetRootContainer().AddChild(mBt);
 	mEdit.SetPositionAndSize(300, 20, 200, 40);
 	mEdit.SetBorderSize(2);
 	mEdit.SetZ(0.08f);
-
+	
 	mEdit2.SetPositionAndSize(140, 20, 120, 40);
 	mEdit2.SetBorderSize(2);
 	mEdit2.SetZ(0.08f);
 
-	mUILayer.Add(&mEdit);
-	mUILayer.Add(&mEdit2);
-	mUILayer.Add(&mBt);
-	mUILayer.Add(&mLxb);
-	mUILayer.Add(&mLb);
-	mUILayer.GetUIBatches()->SetTextRenderer(BATCHES_TEXTRENDERER_DEFAULT_SIZE, &mUITextRenderer);
+	GetRootContainer().AddChild(mEdit2);
+	GetRootContainer().AddChild(mEdit);
+
 	mFramework->GetInputManager()->GetCursor()->SetStaticTexture(mFramework->GetGDI(), GetFilePath(L"cursor.png", buffer, 100));
-	std::unique_ptr<Action> sceneact;
-
-	ActionBuilder::Builder()
-		.BeginBuild()
-			.ParallelActionTo()
-				.SequenceActionTo()
-					.MoveTo(0.f, 0.f, 0.0f, 2.0f, AnticipateOvershootInterpolator::GetInterpolator(4))
-					.BackUp()
-				.SequenceActionTo()
-					.ChangeColorTo(1.f, 1.f, 1.f, 1.f, 2.f, LinearInterpolator::GetInterpolator())
-		.EndBuild(sceneact);
-	mSceneAnimationIn.OnPositionChange(Point(-500.f, 0.f, 0.f), 0);
-	mSceneAnimationIn.OnColorChange(Color(0.0, 0.0, 0.0, 0.f),0);
-	mSceneAnimationIn.SetAction(std::move(sceneact));
-	
-	std::unique_ptr<Action> sceneact2;
-
-	ActionBuilder::Builder()
-		.BeginBuild()
-		.ChangeColorTo(1.f, 1.f, 1.f, 0.f, 2.f, LinearInterpolator::GetInterpolator())
-		.EndBuild(sceneact2);
-	mSceneAnimationOut.OnColorChange(Color(1.0, 1.0, 1.0, 1.f),0);
-	mSceneAnimationOut.SetAction(std::move(sceneact2));
 
 	mCamera.SetPos(XMFLOAT3(1,1,-10));
 }
 
-void FirstScene::OnDestory()
+void FirstScene::OnDestroy()
 {
-	Scene::OnDestory();
-	mFramework->RemoveInputListener(this);
-	mFramework->RemoveInputListener(&mUILayer);
     mTextRenderer_s.Shutdown();
 	mUITextRenderer.Shutdown();
 	mTextRenderer_b.Shutdown();
@@ -171,7 +115,7 @@ void FirstScene::OnDestory()
 
 void FirstScene::Render(float deltaTime)
 {
-	Clear(Color(0.5f, 0.5f, 0.5f, 0.0f));
+	Clear(Color(0.5f, 0.5f, 0.5f, 1.0f));
 	WVPMatrix wvp2D, wvp3D;
 	mCamera2D.GetCameraMatrix(wvp2D);
 	mCamera.GetCameraMatrix(wvp3D);
@@ -242,8 +186,6 @@ void FirstScene::Render(float deltaTime)
 
 	mTextRenderer_b.Begin(wvp2D);
 	
-	UpdataLayer(deltaTime);
-	RenderLayer(wvp2D);
 	str.clear();
 	str.str(L"");
 	str << std::fixed << std::setprecision(1) << L"FPS:" << debug->GetAverageFPS() << "\n" << L"FC:" << std::setprecision(4) << debug->GetFrameCost() << "ms";
@@ -266,65 +208,3 @@ void FirstScene::OnSize(int ClientX, int ClientY)
 	mCamera.UpdataProject(ClientX, ClientY);
 }
 
-void FirstScene::OnActivate(bool isActivate)
-{
-}
-
-SceneAnimation * FirstScene::OnSwitchIn()
-{
-	return &mSceneAnimationIn;
-}
-
-SceneAnimation * FirstScene::OnSwitchOut()
-{
-	return &mSceneAnimationOut;
-}
-
-void FirstScene::OnMouseMove(const MousePoint & mm, int pk)
-{
-	float h = GetFramework()->GetWindowsHeight();
-	float w = GetFramework()->GetWindowsWidth();
-	mCamera.Pitch(mCamera.GetFovAngle() / h);
-	mCamera.Yaw(mCamera.GetFovAngle() / w);
-	
-}
-
-void FirstScene::OnKeyDowm(Key k)
-{
-	switch (k)
-	{
-	case DIK_W:
-		mCamera.Walk(1);
-		break;
-	case DIK_S:
-		mCamera.Walk(-1);
-		break;
-	case DIK_A:
-		mCamera.Strafe(-1);
-		break;
-	case DIK_D:
-		mCamera.Strafe(1);
-		break;
-	case DIK_Z:
-		mCamera.Fly(-1);
-		break;
-	case DIK_X:
-		mCamera.Fly(1);
-		break;
-	case DIK_R:
-		mCamera.Pitch(1);
-		break;
-	case DIK_Y:
-		mCamera.Pitch(-1);
-		break;
-	case DIK_F:
-		mCamera.Yaw(1);
-		break;
-	case DIK_H:
-		mCamera.Yaw(-1);
-		break;
-	default:
-		break;
-	}
-	
-}

@@ -1,4 +1,5 @@
 #pragma once
+#include "Defines.hpp"
 #include "Actions.hpp"
 #include "ActionInterface.hpp"
 #include <DirectXMath.h>

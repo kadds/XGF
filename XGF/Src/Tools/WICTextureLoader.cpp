@@ -498,8 +498,8 @@ namespace
         // Allocate temporary memory for image
         size_t rowPitch = (twidth * bpp + 7) / 8;
         size_t imageSize = rowPitch * theight;
-
-        std::unique_ptr<uint8_t[]> temp(new (std::nothrow) uint8_t[imageSize]);
+		//std::nothrow
+        std::unique_ptr<uint8_t[]> temp(new  uint8_t[imageSize]);
         if (!temp)
             return E_OUTOFMEMORY;
 

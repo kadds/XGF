@@ -14,7 +14,7 @@
 // This version only supports UNICODE.
 
 #pragma once
-
+#include "Defines.hpp"
 #if !defined(NOMINMAX)
 #define NOMINMAX
 #endif

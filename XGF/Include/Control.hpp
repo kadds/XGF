@@ -1,25 +1,30 @@
 #pragma once
 #include "Defines.hpp"
 #include "Actor.hpp"
+#include "Skin.hpp"
 #include <math.h>
 namespace XGF
 {
-	class Layer;
-	class UILayer;
-	class Animation;
-	class Rectangle;
 	class Control : public Actor
 	{
 	public:
-		friend class UILayer;
 		Control();
 		virtual ~Control();
-		//Texture * GetTexture() { return &mTexture; }
-		void SetLayer(Layer * l) { mLayer = l; }
+		std::shared_ptr<Skin> SetSkin(std::shared_ptr<Skin>);
+		virtual void OnMouseDown(const Event & ev);
+		virtual void OnMouseUp(const Event & ev);
+		virtual void OnMouseMove(const Event & ev);
+		/*
+		* 绑定事件，在添加到容器时调用
+		*/
+		virtual void OnAddToContainer() override;
+		virtual void OnRemoveFromContainer() override;
+
+		ClickHelper & GetClickHelper() { return mClickHelper; }
 	protected:
-		virtual XMMATRIX CalculateMatrix()  const override;;
-		bool mIsForce;
-		Layer * mLayer;
+		std::shared_ptr<Skin> mSkin;
+		SkinState mNowState;
+		ClickHelper mClickHelper;
 	};
 
 

@@ -3,12 +3,13 @@
 #include <thread>
 #include <future>
 #include <functional>
+#include <any>
 #include "Asyn.hpp"
 namespace XGF
 {
 
-	typedef std::function<void(int code, void * tsk)> OnFinishTaskListener;
-	typedef std::function<void(int process, void * tsk)> OnReportTaskProcessListener;
+	typedef std::function<void(int code, std::any)> OnFinishTaskListener;
+	typedef std::function<void(int process, std::any)> OnReportTaskProcessListener;
 	/*
 	异步任务类
 	在TaskThread 结束前 务必调用一次Finish函数释放Task资源
@@ -26,7 +27,7 @@ namespace XGF
 		static void DoFinishTaskEvent(const Event & ev);
 		static void DoReportTaskEvent(const Event & ev);
 		OnFinishTaskListener GetFinishTaskListener() { return onFinishTaskListener; }
-		OnReportTaskProcessListener GetReportTaskProcessListene() { return onReportTaskProcessListener; }
+		OnReportTaskProcessListener GetReportTaskProcessListener() { return onReportTaskProcessListener; }
 	private:
 		AsyncTask();
 		~AsyncTask();
@@ -36,6 +37,7 @@ namespace XGF
 		Asyn mThread;
 
 		Asyn *mainThread;
+		DISALLOW_COPY_AND_ASSIGN(AsyncTask);
 	};
 
 
