@@ -13,9 +13,9 @@ namespace XGF
 		bool IsEnd() { return isend; };
 		void BeginAnimation();
 		void SetAction(std::unique_ptr<Action> ac);
-		void Updata(float time)
+		void Update(float time)
 		{
-			mActions.Updata(time);
+			mActions.Update(time);
 		}
 		Actions * GetActions() { return &mActions; };
 		XMMATRIX GetMatrix();

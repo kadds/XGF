@@ -12,11 +12,11 @@ namespace XGF
 	{
 	}
 
-	void FPSCamera::Updata()
+	void FPSCamera::Update()
 	{
 		mUp.x = 0;
 		mRight.y = 0;
-		PerspectiveCamera::Updata();
+		PerspectiveCamera::Update();
 	}
 
 }

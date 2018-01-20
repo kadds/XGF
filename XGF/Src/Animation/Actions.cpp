@@ -12,7 +12,7 @@ namespace XGF
 		//delete mAction;
 	}
 
-	void Actions::Updata(float time)
+	void Actions::Update(float time)
 	{
 		if (mIsActionBegan && mAction != nullptr)
 		{

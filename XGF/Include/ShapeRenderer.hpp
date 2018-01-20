@@ -20,7 +20,7 @@ namespace XGF
 		void End();
 		void Flush();
 		void DrawRectangle(float x, float y, float w, float h, float z, Color & color);
-		void DrawRectangleB(float x, float y, float w, float h, float z, Color & bkcolor, float borderWidth, Color & boderColor, Color & boderOuterColor);
+		void DrawRectangleC(float x, float y, float w, float h, float z, Color & bkcolor, float borderWidth, Color & boderColor, Color & boderOuterColor);
 		void DrawCircle(float x, float y, float r, int precision, float z, Color & color);
 		void DrawCircle(float x, float y, float r, int precision, float z, Color & color, Color & centerColor);
 		void DrawLine(float x, float y, float endx, float endy, float z, Color & color);

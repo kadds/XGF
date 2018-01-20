@@ -24,15 +24,19 @@ namespace XGF
 		void _OnDestory();
 
 		void _Render();
-		void _Updata(float deltaTime);
+		void _Update(float deltaTime);
 
 		void SetParent(Container * c);
 
-		Actor & AddChild(Actor & actor);
-		void AddChild(Container & container);
+		Actor * AddChild(Actor * actor);
+		void AddChild(Container * container);
 
 		void RemoveChild(Actor & actor);
 		void RemoveChild(Container & container);
+
+		void RemoveAllChild();
+		void RemoveAllActor();
+		void RemoveAllContainer();
 
 		EventDispatcher & GetEventDispatcher() { return mEventDispatcher; };
 		Transform & GetTransform() { return mTransform; };
@@ -43,6 +47,9 @@ namespace XGF
 		void SetSize(Point & size) {};
 
 		float GetZOrder() { return mZOrder; };
+
+		Actor * GetActorById(int Id, bool includeChildContainer = false);
+
 	protected:
 		float mZOrder;
 	private:
@@ -56,6 +63,4 @@ namespace XGF
 		Scene * mScene;
 		Transform mTransform;
 	};
-
-
 }

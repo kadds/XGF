@@ -10,7 +10,7 @@ public:
 	virtual void OnCreate() override;
 	virtual void OnDestroy() override;
 	virtual void Render(float deltaTime) override;
-	virtual void Updata(float deltaTime) override;
+	virtual void Update(float deltaTime) override;
 	virtual void OnSize(int ClientX, int ClientY) override;
 
 private:
@@ -27,18 +27,8 @@ private:
     TextRenderer mTextRenderer_s;
 	Font mFont_b;
 	TextRenderer mTextRenderer_b;
-	//TextColorButton mTCBtn;
-	Button mBt;
-	Label mLb;
-	Label mLxb;
-	EditText mEdit;
-	EditText mEdit2;
 
-	Texture btNormal;
-	Texture btPress;
-	Texture btMove;
-
-
+	TextureResourceManager mTextureResourceManager;
 public:
 };
 

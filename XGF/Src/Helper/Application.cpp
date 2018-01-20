@@ -25,7 +25,6 @@ namespace XGF
 		RegisterWindowsClass(hInstance, className, ICON, sICON);
 		HWND hWnd = CreateWindowW(className, title, !CanChangeSize ? WS_OVERLAPPEDWINDOW &~WS_THICKFRAME & ~WS_MAXIMIZEBOX : WS_OVERLAPPEDWINDOW,
 			pos.x, pos.y, size.cx, size.cy, nullptr, nullptr, hInstance, this);
-		//DebugOut("CreateWindowsEnd\n");
 		mHwnd = hWnd;
 		if (!hWnd)
 		{
@@ -41,24 +40,22 @@ namespace XGF
 
 		py = wndRc.bottom - wndRc.top - (clientRc.bottom - clientRc.top);
 		SetWindowPos(mHwnd, HWND_TOP, pos.x, pos.y, size.cx + px, size.cy + py, SWP_NOCOPYBITS | SWP_NOMOVE);
-		//DebugOut("ApplicationStart\n");
-
+		XGF_ReportDebug0("ApplicationStart");
 		gdi.Initialize(mInstance, mHwnd, mHwnd, clientRc.right - clientRc.left, clientRc.bottom - clientRc.top);
 
 		mHideCursor = false;
 		//开启渲染线程==============================================
 		mRenderThread.DoAsyn(std::bind([this, &gdi, &firstScene](Asyn * RenderThread) {
-			//DebugOut("FrameworkStart\n");
+			XGF_ReportDebug0("FrameworkStart");
 			mFramework->_OnCreate(&gdi, RenderThread);
 			mFramework->AddScene(firstScene);
 			RenderThread->Notify();
 			//消息循环
-			//DebugOut("FrameworkLoop\n");
+			XGF_ReportDebug0("FrameworkLoop");
 			mFramework->_Loop2();
-			//DebugOut("FrameworkDestory\n");
+			XGF_ReportDebug0("FrameworkDestroy");
 			mFramework->_OnDestroy();
 			//通知主线程退出
-			//DebugOut("RenderThreadExit\n");
 			RenderThread->Notify();
 		}, std::placeholders::_1));
 		//======================================================
@@ -75,7 +72,7 @@ namespace XGF
 				DispatchMessage(&msg);
 			}
 		}
-		//DebugOut("ApplicationEnd\n");
+		XGF_ReportDebug0("ApplicationEnd");
 		EventPool::Shutdown();
 		return exitCode;
 

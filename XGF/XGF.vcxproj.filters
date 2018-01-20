@@ -192,9 +192,6 @@
     <ClInclude Include="Include\DelayAction.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Include\TextInputInterface.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Include\InputManager.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -279,9 +276,6 @@
     <ClInclude Include="Include\Triangle.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Include\TextColorButton.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Event.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -298,6 +292,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\ResourceManager.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\TextInputProcessor.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\RectangleC.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -437,9 +437,6 @@
     <ClCompile Include="Src\Animation\DelayAction.cpp">
       <Filter>源文件\Animation</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Input\TextInputInterface.cpp">
-      <Filter>源文件\Input</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Input\InputManager.cpp">
       <Filter>源文件\Input</Filter>
     </ClCompile>
@@ -521,9 +518,6 @@
     <ClCompile Include="Src\Shape\Triangle.cpp">
       <Filter>源文件\Shape</Filter>
     </ClCompile>
-    <ClCompile Include="Src\UI\TextColorButton.cpp">
-      <Filter>源文件\UI</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Core\Event.cpp">
       <Filter>源文件\Core</Filter>
     </ClCompile>
@@ -533,9 +527,6 @@
     <ClCompile Include="Src\Core\EventDispatcher.cpp">
       <Filter>源文件\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Src\UI\Container.cpp">
-      <Filter>源文件\UI</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Core\Transform.cpp">
       <Filter>源文件\Core</Filter>
     </ClCompile>
@@ -544,6 +535,15 @@
     </ClCompile>
     <ClCompile Include="Src\Core\ResourceManager.cpp">
       <Filter>源文件\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\Container.cpp">
+      <Filter>源文件\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Input\TextInputProcessor.cpp">
+      <Filter>源文件\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Shape\RectangleC.cpp">
+      <Filter>源文件\Shape</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

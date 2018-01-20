@@ -176,10 +176,17 @@ namespace XGF
 	}
 	void PolygonPleTextureBinder::FromTexture(const Texture * tx)
 	{
-		mPoint[0].x = mPoint[1].x = tx->GetTexturePosLeft();
-		mPoint[2].x = mPoint[3].x = tx->GetTexturePosRight();
-		mPoint[0].y = mPoint[3].y = tx->GetTexturePosTop();
-		mPoint[1].y = mPoint[2].y = tx->GetTexturePosBottom();
+		mPoint[0].x = mPoint[1].x = tx->GetLeft();
+		mPoint[2].x = mPoint[3].x = tx->GetRight();
+		mPoint[0].y = mPoint[3].y = tx->GetTop();
+		mPoint[1].y = mPoint[2].y = tx->GetBottom();
+		if (tx->Is9Path() && this->mCount >= 8)
+		{
+			mPoint[4].x = mPoint[5].x = tx->Get9PathLeft();
+			mPoint[6].x = mPoint[7].x = tx->Get9PathRight();
+			mPoint[4].y = mPoint[7].y = tx->Get9PathTop();
+			mPoint[5].y = mPoint[6].y = tx->Get9PathBottom();
+		}
 	}
 	void PolygonPleTextureBinder::CopyTo(void * Des, unsigned int chunk) const
 	{

@@ -12,14 +12,14 @@ namespace XGF
 	{
 	}
 
-	void OrthoCamera::UpdataProject(int cx, int cy)
+	void OrthoCamera::UpdateProject(int cx, int cy)
 	{
 		DirectX::XMStoreFloat4x4(&viewMatrix, DirectX::XMMatrixLookToLH(DirectX::XMLoadFloat3(&mPos),
 			DirectX::XMLoadFloat3(&mLook), DirectX::XMLoadFloat3(&mUp)));
 		DirectX::XMStoreFloat4x4(&proMatrix, DirectX::XMMatrixOrthographicOffCenterLH(0, (cx)* mScaleFactor,
 			(cy)* mScaleFactor, 0, mMinDistance, mMaxDistance));
 	}
-	void OrthoCamera::Updata()
+	void OrthoCamera::Update()
 	{
 	}
 

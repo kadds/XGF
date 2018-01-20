@@ -17,12 +17,13 @@ namespace XGF
 	{
 	public:
 		Actor();
+		Actor(int id);
 		virtual ~Actor();
 		//框架调用
 		void _Render();
 		//框架调用
-		void _Updata(float deltaTime);
-
+		void _Update(float deltaTime);
+		virtual void Update(float deltaTime) {};
 		virtual void Render(const XMMATRIX * matrix) = 0;
 		
 		Transform & GetTransform() { return mTransform; };
@@ -33,8 +34,10 @@ namespace XGF
 
 		virtual void OnAddToContainer() = 0;
 		virtual void OnRemoveFromContainer() = 0;
+
+		int GetId() { return mId; };
+		void SetId(int id) { mId = id; };
 	protected:
-		
 		Container * mParent;
 		Transform mTransform;
 		int mId;

@@ -1,19 +1,59 @@
 #pragma once
 #include "Defines.hpp"
+#include "AsyncTask.hpp"
+#include <functional>
 #include <vector>
 #include <memory>
 #include <map>
 #include <functional>
-
+#include <unordered_map>
+#include <any>
 namespace XGF
 {
-	class ResourceManager
+	class TextureResource;
+	struct ResourceInfo
+	{
+		std::wstring name;
+		std::wstring alias;
+		bool inMemory;
+		void * mem;
+		size_t memSize;
+		ResourceInfo(std::wstring name, std::wstring alias = L"") :name(name), alias(alias), inMemory(false)
+		{
+
+		}
+	};
+	template<typename Type>
+	class ResourceManagerBase
+	{
+		void ReleaseAllResource();
+
+	protected:
+		std::map<std::wstring, std::wstring> mNameToAliasMap;
+		std::unordered_map<std::wstring, Type> mResourceMap;
+
+		std::mutex mutex;
+	};
+	class TextureResourceManager
 	{
 	public:
-		void GetResource(wchar_t * name);
-		void LoadResource(wchar_t * name);
+		
+		TextureResource * GetResource(const wchar_t * name);
+		TextureResource * GetResourceByAlias(const wchar_t * alias);
+		void LoadResourceAsync(GDI * gdi, std::vector<ResourceInfo> & infoArray, Asyn * gameThread,std::function<void(std::vector<ResourceInfo>, int success)> finishFunction);
+		void LoadResource(GDI * gdi, std::vector<ResourceInfo> & infoArray);
+
 		void ReleaseAllResource();
+
+		void InsertResource(std::wstring name, std::wstring alias, TextureResource & tRes);
 	private:
+		
+		std::map<std::wstring, std::wstring> mNameToAliasMap;
+		std::unordered_map<std::wstring, TextureResource> mResourceMap;
+
+		std::mutex mutex;
+		
+		bool mIsLoadingResource = false;
 		//std::map<const wchar_t *, std::>
 	};
 }

@@ -13,17 +13,19 @@ namespace XGF
 	{
 	public:
 		Label();
+		Label(int id, wchar_t * text = L"", Color textColor = Color(0.f,0.f,0.f,1.f));
 		~Label();
 		virtual void Render(const XMMATRIX * matrix) override;
 		void SetText(wchar_t * text);
+		void SetTextColor(Color & color);
 	protected:
 		virtual Shape * GetShape() const override
 		{
 			return (::XGF::Shape::Rectangle *)this;
 		};
 	private:
-		void SetShape(::XGF::Shape::ShapeType st) {};
 		wchar_t * mText;
+		Color mTextColor;
 	};
 
 

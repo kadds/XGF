@@ -4,6 +4,7 @@
 #include "Rectangle.hpp"
 #include <string>
 #include <vector>
+#include <functional>
 namespace XGF
 {
 	struct PointI
@@ -15,30 +16,35 @@ namespace XGF
 	/*
 	具有接受输入Text 和渲染Text的类
 	*/
-	class TextInputInterface
+	class TextInputProcessor
 	{
 	public:
-		TextInputInterface();
-		~TextInputInterface();
+		TextInputProcessor();
+		TextInputProcessor(wchar_t * text);
+		~TextInputProcessor();
 		void SetCaretPosInText(int posx);
 		void AppendInputStr(wchar_t * str, int count);
 		void AppendInputStr(wchar_t str);
 		void DelInputStr();
-		void RenderText(const XMMATRIX * matrix, Shape::Rectangle & rc, Color & color);
+		void RenderText(const XMMATRIX * matrix, Color & color);
 		void BackUp();
 		void Delete();
 		void CaretToLeft();
 		void CaretToRight();
-		virtual TextRenderer * GetTextRenderer() = 0;
 		void CaretToUp();
 		void CaretToDowm();
 		int GetCaretPosInText() { return mCaretPos; }
 
 		void GetCaretProperty(float &x, float &y, int &size);
 		const wchar_t* GetText();
-		//框架调用
-		virtual void OnForce(bool isForce) = 0;
-		virtual void GetInerBox(::XGF::Shape::Rectangle & rc) = 0;
+
+		void OnFocus(bool isFocus);
+
+		void SetInnerRectangle(std::function<void(Shape::Rectangle &)> fun) { mGetInnerRectangle = fun; };
+		void SetTextRenderer(TextRenderer * textRenderer) { mTextRenderer = textRenderer; };
+		void SetOnFocusListener(std::function<void(bool)> fun) { mOnFocusListener = fun; };
+
+		void SetText(const wchar_t * text);
 	private:
 		std::wstring mInputString;
 		bool layoutCallBack(int i, wchar_t ch, Position * p, bool c, Position & temp);
@@ -46,7 +52,10 @@ namespace XGF
 		int mFirstCharPos;
 		Position mCaretPosition;
 		std::pair<int, Position> mCallBackBuffer;
-	};
+		std::function<void(bool)> mOnFocusListener;
+		std::function<void(Shape::Rectangle &)> mGetInnerRectangle;
+		TextRenderer * mTextRenderer;
 
+	};
 
 }

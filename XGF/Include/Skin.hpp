@@ -18,8 +18,8 @@ namespace XGF
 		//static Skin & CreateFromSkinPack();
 		static std::shared_ptr<Skin> CreateFromTextures(Texture * normal, Texture * hover = nullptr, Texture * active = nullptr, Texture * disable = nullptr);
 
-		Texture & GetTexture(SkinState state);
+		Texture * GetTexture(SkinState state);
 	private:
-		std::map<SkinState, Texture *> mSkinStates;
+		std::map<SkinState, Texture> mSkinStates;
 	};
 }

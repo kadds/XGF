@@ -5,6 +5,7 @@
 #include "gdi.hpp"
 #include "Log.hpp"
 #include <vector>
+#include <functional>
 #include <string>
 namespace XGF
 {
@@ -176,9 +177,13 @@ namespace XGF
 		std::vector<SamplerState> mVSSamplerState, mPSSamplerState, mGSSamplerState;
 		std::vector<ConstantBuffer> mVSCBuffer, mPSCBuffer, mGSCBuffer;
 		std::vector<ShaderResourceView> mVSSRV, mPSSRV, mGSSRV;
+
+		std::function<void()> mOnFlush;
 	public:
 		void Initialize(VertexShader * vs, PixelShader * ps = nullptr, GeometryShader * gs = nullptr);
 		void Shutdown();
+		void SetOnFlushListener(std::function<void()> f) { mOnFlush = f; };
+
 		VertexShader * GetVSShader() { return vs; };
 		PixelShader * GetPSShader() { return ps; };
 		GeometryShader * GetGSShader() { return gs; };
@@ -247,5 +252,6 @@ namespace XGF
 		
 		void BindStage();
 		void UnBindStage();
+
 	};
 }

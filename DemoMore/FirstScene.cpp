@@ -2,6 +2,11 @@
 #include "SecondScene.hpp"
 #include <memory>
 #include <iomanip>
+
+void Deleter(Control * c) {
+	delete c;
+}
+
 FirstScene::FirstScene()
 {
 }
@@ -13,9 +18,8 @@ FirstScene::~FirstScene()
 
 void FirstScene::OnCreate()
 {
-	wchar_t buffer[MAX_PATH];
 	char cbuffer[MAX_PATH];
-	Tools::GetInstance()->GetFontPath("Dengb.ttf", cbuffer, MAX_PATH);
+	Tools::GetFontPath("Dengb.ttf", cbuffer, MAX_PATH);
 	mAxisRenderer.Initialize(mFramework->GetGDI());
 	
 	mBatch3D.Initialize(mFramework->GetGDI(), ConstantData::GetInstance().GetPCShaders(), 100, 100);
@@ -27,33 +31,40 @@ void FirstScene::OnCreate()
 	mUITextRenderer.Initialize(mFramework->GetGDI(), &mFont, 1000);
     mTextRenderer_s.Initialize(mFramework->GetGDI(), &mFont_s, 1000);
 	mTextRenderer_b.Initialize(mFramework->GetGDI(), &mFont_b, 200);
-	mFramework->GetUIBatches().SetTextRenderer(BATCHES_TEXTRENDERER_DEFAULT_SIZE, &mUITextRenderer);
+	mFramework->GetUIBatches().SetTextRenderer(FontSize::Default, &mUITextRenderer);
 
-	mLb.SetText(L"Direct3D11");
-    mLb.SetPositionAndSize(50, 200, 150, 40);
-	mLb.SetZ(0.4f);
+	Label * label = new Label();
+	label->SetOnRemoveFromContainerLisener(Deleter);
+	label->SetId(0);
+	label->SetText(L"Direct3D11");
+	label->SetPositionAndSize(50, 200, 150, 40);
+	label->SetZ(0.4f);
 	//mLb.GetTransform().mRotation = Point(0, 0, 0.4);
-	GetRootContainer().AddChild(mLb);
-	mLb.GetClickHelper().AddOnClickListener([this](const MousePoint & ms, int mouseButton) {
+	GetRootContainer().AddChild(label);
+
+	label->GetClickHelper().AddOnClickListener([this](const MousePoint & ms, int mouseButton) {
 		AsyncTask::NewTask(mFramework->GetTheard(), [this](AsyncTask * asyn) {
 			MessageBox(NULL, L"YOU CLICK Label!!",L"Exe",0);
 			asyn->Finish(0, 0);
 		});
 	});
-	mLxb.SetText(L"X Game Render Framework\nClick here switch next scene.");
-    mLxb.SetPositionAndSize(0, 240, 240, 40);
-	GetRootContainer().AddChild(mLxb);
-	mLxb.SetZ(0.06f);
-	mLxb.GetClickHelper().AddOnClickListener([this](const MousePoint & ms, int mouseButton) {
+	Label * labelText = new Label(20, L"X Game Render Framework\nClick here switch next scene.");
+	GetRootContainer().AddChild(labelText);
+	labelText->SetOnRemoveFromContainerLisener(Deleter);
+	labelText->SetPositionAndSize(0, 240, 240, 40);
+	labelText->SetZ(0.06f);
+	labelText->GetClickHelper().AddOnClickListener([this](const MousePoint & ms, int mouseButton) {
 		this->GetFramework()->SwitchScene(new SecondScene());
 	});
 
-	mBt.SetPositionAndSize(10,100,60,30);
-	btNormal.LoadWIC(mFramework->GetGDI(), GetFilePath(L"a.png", buffer, 100));
-    btMove.LoadWIC(mFramework->GetGDI(), GetFilePath(L"a1.png", buffer, 100));
-    btPress.LoadWIC(mFramework->GetGDI(), GetFilePath(L"a2.png", buffer, 100));
+	auto button = new Button(1, L"Button");
+	button->SetOnRemoveFromContainerLisener(Deleter);
+	GetRootContainer().AddChild(button);
 
-	mBt.GetClickHelper().AddOnClickListener([this](const MousePoint & ms, int mouseButton) {
+	button->SetPositionAndSize(10,100,60,30);
+	button->SetBorderSize(3);
+	button->SetZ(0.07f);
+	button->GetClickHelper().AddOnClickListener([this](const MousePoint & ms, int mouseButton) {
 		if (mFramework->GetGDI()->GetDisplayMode() == DisplayMode::Borderless)
 				mFramework->GetGDI()->SetDisplayMode(DisplayMode::Windowed, 0, 0, 600, 400, false);
 			else if(mFramework->GetGDI()->GetDisplayMode() == DisplayMode::FullScreen)
@@ -61,38 +72,43 @@ void FirstScene::OnCreate()
 			else
 				mFramework->GetGDI()->SetDisplayMode(DisplayMode::FullScreen, 0, 0, 1920, 1080, true);
 	});
-	//mBt.AddOnClickListener([=](const MousePoint &mm, int pk) {
-	//	mBt.StartAction();
-	//	if (mFramework->GetGDI()->GetDisplayMode() == DisplayMode::Borderless)
-	//		mFramework->GetGDI()->SetDisplayMode(DisplayMode::Windowed, 0, 0, 600, 400, false);
-	//	else if(mFramework->GetGDI()->GetDisplayMode() == DisplayMode::FullScreen)
-	//		mFramework->GetGDI()->SetDisplayMode(DisplayMode::Borderless ,0 ,0 , 1920, 1080, true);
-	//	else
-	//		mFramework->GetGDI()->SetDisplayMode(DisplayMode::FullScreen, 0, 0, 1920, 1080, true);
-		//AsyncTask::NewTask(mFramework->GetTheard(), [this](AsyncTask * asyn) {
-			
-			//MessageBox(NULL, L"YOU CLICK BUTTOM!!",L"E",0);
-			//asyn->Finish(0, 0);
-		//});
-		
-   // });
-	mBt.SetZ(0.07f);
-	mBt.SetSkin(Skin::CreateFromTextures(&btNormal, &btMove, &btPress));
-	GetRootContainer().AddChild(mBt);
-	mEdit.SetPositionAndSize(300, 20, 200, 40);
-	mEdit.SetBorderSize(2);
-	mEdit.SetZ(0.08f);
 	
-	mEdit2.SetPositionAndSize(140, 20, 120, 40);
-	mEdit2.SetBorderSize(2);
-	mEdit2.SetZ(0.08f);
+	EditText * edit1 = new EditText(10);
+	EditText * edit2 = new EditText(11);
+	edit1->SetOnRemoveFromContainerLisener(Deleter);
+	edit2->SetOnRemoveFromContainerLisener(Deleter);
 
-	GetRootContainer().AddChild(mEdit2);
-	GetRootContainer().AddChild(mEdit);
+	edit1->SetPositionAndSize(300, 20, 200, 40);
+	edit1->SetBorderSize(1);
+	edit1->SetZ(0.08f);
+	
+	edit2->SetPositionAndSize(140, 20, 120, 40);
+	edit2->SetBorderSize(1);
+	edit2->SetZ(0.08f);
 
-	mFramework->GetInputManager()->GetCursor()->SetStaticTexture(mFramework->GetGDI(), GetFilePath(L"cursor.png", buffer, 100));
+	GetRootContainer().AddChild(edit1);
+	GetRootContainer().AddChild(edit2);
+
+	//mFramework->GetInputManager()->GetCursor()->SetStaticTexture(mFramework->GetGDI(), GetFilePath(L"cursor.png", buffer, 100));
 
 	mCamera.SetPos(XMFLOAT3(1,1,-10));
+
+	//resource loading
+	auto res = std::vector<ResourceInfo>();
+	res.push_back(ResourceInfo(L"a.png", L"_button_normal"));
+	res.push_back(ResourceInfo(L"a1.png", L"_button_hover"));
+	res.push_back(ResourceInfo(L"a2.png", L"_button_activate"));
+	mTextureResourceManager.LoadResourceAsync(mFramework->GetGDI(), res, mFramework->GetTheard(), [this](std::vector<ResourceInfo> ress, int success) {
+		auto t1 = Texture(*mTextureResourceManager.GetResourceByAlias(L"_button_normal"));
+		auto t2 = Texture(*mTextureResourceManager.GetResourceByAlias(L"_button_hover"));
+		auto t3 = Texture(*mTextureResourceManager.GetResourceByAlias(L"_button_activate"));
+		t1.Set9PathBorderSize(3);
+		t2.Set9PathBorderSize(3);
+		t3.Set9PathBorderSize(3);
+		static_cast<Control *>(GetRootContainer().GetActorById(1))->SetSkin(Skin::CreateFromTextures(&t1, &t2, &t3));
+		static_cast<Control *>(GetRootContainer().GetActorById(10))->SetSkin(Skin::CreateFromTextures(&t1, &t2, &t3));
+		static_cast<Control *>(GetRootContainer().GetActorById(11))->SetSkin(Skin::CreateFromTextures(&t1, &t2, &t3));
+	});
 }
 
 void FirstScene::OnDestroy()
@@ -106,11 +122,9 @@ void FirstScene::OnDestroy()
 	mFont_b.Shutdown();
 
 	mAxisRenderer.Shutdown();
-    btNormal.Release();
-    btMove.Release();
-    btPress.Release();
 
 	mBatch3D.Shutdown();
+	mTextureResourceManager.ReleaseAllResource();
 }
 
 void FirstScene::Render(float deltaTime)
@@ -193,10 +207,10 @@ void FirstScene::Render(float deltaTime)
 	mTextRenderer_b.End();
 }
 
-void FirstScene::Updata(float deltaTime)
+void FirstScene::Update(float deltaTime)
 {
-    mCamera.Updata();
-    mCamera2D.Updata();
+    mCamera.Update();
+    mCamera2D.Update();
 	auto ip = GetFramework()->GetInputManager();
 	if (ip->IskeyDowm(DIK_ESCAPE))
 		GetFramework()->Exit(0);
@@ -204,7 +218,7 @@ void FirstScene::Updata(float deltaTime)
 
 void FirstScene::OnSize(int ClientX, int ClientY)
 {
-	mCamera2D.UpdataProject(ClientX, ClientY);
-	mCamera.UpdataProject(ClientX, ClientY);
+	mCamera2D.UpdateProject(ClientX, ClientY);
+	mCamera.UpdateProject(ClientX, ClientY);
 }
 

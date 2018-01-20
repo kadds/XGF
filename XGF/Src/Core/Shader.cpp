@@ -507,38 +507,49 @@ namespace XGF {
 	void ShaderStage::SetVSSamplerState(int index, SamplerState ss)
 	{
 		XGF_ASSERT(index < vs->mSamplerState.size());
+		if (mVSSamplerState[index] != ss)
+			mOnFlush();
 		mVSSamplerState[index] = ss;
 	}
 
 	void ShaderStage::SetPSSamplerState(int index, SamplerState ss)
 	{
 		XGF_ASSERT(index < ps->mSamplerState.size());
+		if (mPSSamplerState[index] != ss)
+			mOnFlush();
 		mPSSamplerState[index] = ss;
 	}
 
 	void ShaderStage::SetGSSamplerState(int index, SamplerState ss)
 	{
 		XGF_ASSERT(index < gs->mSamplerState.size());
+		if (mGSSamplerState[index] != ss)
+			mOnFlush();
 		mGSSamplerState[index] = ss;
 	}
 
 	void ShaderStage::SetVSSRV(int index, ID3D11ShaderResourceView * srv)
 	{
 		XGF_ASSERT(index < vs->mTexture2D.size());
+		if (mVSSRV[index].srv != srv)
+			mOnFlush();
 		mVSSRV[index].srv = srv;
 	}
 	void ShaderStage::SetPSSRV(int index, ID3D11ShaderResourceView * srv)
 	{
 		XGF_ASSERT(index < ps->mTexture2D.size());
+		if (mPSSRV[index].srv != srv)
+			mOnFlush();
 		mPSSRV[index].srv = srv;
 	}
 	
 	void ShaderStage::SetGSSRV(int index, ID3D11ShaderResourceView * srv)
 	{
 		XGF_ASSERT(index < gs->mTexture2D.size());
+		if (mGSSRV[index].srv != srv)
+			mOnFlush();
 		mGSSRV[index].srv = srv;
 	}
-	
 
 	void ShaderStage::BindStage()
 	{
@@ -640,6 +651,7 @@ namespace XGF {
 			dev->PSSetShader((ID3D11PixelShader *)null, 0, 0);
 		if (gs != nullptr)
 			dev->GSSetShader((ID3D11GeometryShader *)null, 0, 0);
+
 	}
 
 	void ComputeGPU::Initialize(ComputeShader * cs, unsigned int buffersize)
@@ -695,6 +707,7 @@ namespace XGF {
 	void ComputeGPU::SetCSSRV(int index, ID3D11ShaderResourceView * srv)
 	{
 		XGF_ASSERT(index < cs->mTexture2D.size());
+
 		mCSSRV[index].srv = srv;
 	}
 	void ComputeGPU::SetCSUAV(int index, ID3D11UnorderedAccessView * uav)

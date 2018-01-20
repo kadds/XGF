@@ -17,7 +17,7 @@ namespace XGF
 		void SetPosition(float x, float y);
 		void Show();
 		void Tick(float time);
-		void SetStaticTexture(GDI * gdi, const wchar_t * t);
+		void SetStaticTexture(TextureResource * res);
 		void SetAnimation(Animation * mm);
 		void SetPointDeviation(Position & p) { mPointDeviation = p; };
 		void Hide();
@@ -32,6 +32,8 @@ namespace XGF
 		bool mIsShow;
 		bool mUsedStaticTexture;
 		PolygonPleTextureBinder mPtBinder;
+
+		TextureResource * mTextureResource;
 		Texture mTexture;
 		Animation *mAnimation;
 		DISALLOW_COPY_AND_ASSIGN(Cursor);

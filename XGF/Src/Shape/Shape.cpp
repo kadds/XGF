@@ -31,7 +31,7 @@ namespace XGF
 
 		void Shape::Render(Batch & batch, const XMMATRIX * matirix, const BindingBridge & bbrige, const Texture & tx)
 		{
-			Render(batch, matirix, bbrige, tx.GetShaderResourceView());
+			Render(batch, matirix, bbrige, tx.GetRawTexture());
 		}
 		void Shape::Render(Batch & batch, const XMMATRIX * matirix, const BindingBridge & bbrige, ID3D11ShaderResourceView * tex)
 		{

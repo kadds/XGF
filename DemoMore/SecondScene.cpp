@@ -13,7 +13,6 @@ SecondScene::~SecondScene()
 void SecondScene::OnCreate()
 {
 	char cbuffer[MAX_PATH];
-	wchar_t buffer[MAX_PATH];
 	mLabel.SetPositionAndSize(20, 60, 100, 40);
 	mLabel.SetText(L"第二个界面 按Esc退出");
 	mLabel.SetZ(0.5);
@@ -22,20 +21,23 @@ void SecondScene::OnCreate()
 	mLabel2.SetPositionAndSize(20, 100, 100, 40);
 	mLabel2.SetText(L"Activate!");
 
-	GetRootContainer().AddChild(mLabel2);
-	GetRootContainer().AddChild(mLabel);
+	GetRootContainer().AddChild(&mLabel2);
+	GetRootContainer().AddChild(&mLabel);
 
-	Tools::GetInstance()->GetFontPath("Dengb.ttf", cbuffer, MAX_PATH);
+	Tools::GetFontPath("Dengb.ttf", cbuffer, MAX_PATH);
 	mFont.Initialize(mFramework->GetGDI(), cbuffer, 16);
 	mTextRenderer.Initialize(mFramework->GetGDI(), &mFont, 140);
 	mUITextRenderer.Initialize(mFramework->GetGDI(), &mFont, 140);
-	mFramework->GetUIBatches().SetTextRenderer(BATCHES_TEXTRENDERER_DEFAULT_SIZE, &mUITextRenderer);
+	mFramework->GetUIBatches().SetTextRenderer(FontSize::Default, &mUITextRenderer);
 
 	mGridRender.Initialize(mFramework->GetGDI(), 10, 10, 5, 5);
 	mAxisRenderer.Initialize(mFramework->GetGDI());
+	std::vector<ResourceInfo> res;
+	res.push_back(ResourceInfo(L"tcursor.png", L"cursor"));
+	mTextureResourceManager.LoadResource(mFramework->GetGDI(), res);
+	//mFramework->GetInputManager()->GetCursor()->SetStaticTexture(mTextureResourceManager.GetResourceByAlias(L"cursor"));
+	mCursorTexture.SetTextureResource(mTextureResourceManager.GetResourceByAlias(L"cursor"));
 
-	mCursorTexture.LoadWIC(mFramework->GetGDI(), GetFilePath(L"tcursor.png", buffer, MAX_PATH));
-	//mUILayer.GetUIBatches()->SetTextRenderer(BATCHES_TEXTRENDERER_DEFAULT_SIZE, &mUITextRenderer);
 	AnimationStage stage[4];
 	float c = 34.0 / 64.0;
 	float b = 32.0 / 64.0;
@@ -66,10 +68,11 @@ void SecondScene::OnCreate()
 }
 void SecondScene::OnDestroy()
 {
+	mTextureResourceManager.ReleaseAllResource();
 	mFramework->GetEventDispatcher().RemoveMouseEventListener(MouseEventId::MouseMove, std::bind(&SecondScene::OnMouseMove, this, std::placeholders::_1));
 	mTextRenderer.Shutdown();
 	mFont.Shutdown();
-	mCursorTexture.Release();
+	//mCursorTexture.Release();
 	mAxisRenderer.Shutdown();
 	mUITextRenderer.Shutdown();
 	mGridRender.Shutdown();
@@ -101,10 +104,10 @@ void SecondScene::Render(float deltaTime)
 	
 }
 
-void SecondScene::Updata(float deltaTime)
+void SecondScene::Update(float deltaTime)
 {
-	mCamera.Updata();
-	mCamera3D.Updata();
+	mCamera.Update();
+	mCamera3D.Update();
 	auto ip = GetFramework()->GetInputManager();
 	if (ip->IskeyDowm(DIK_ESCAPE))
 		GetFramework()->Exit(0);
@@ -112,8 +115,8 @@ void SecondScene::Updata(float deltaTime)
 
 void SecondScene::OnSize(int ClientX, int ClientY)
 {
-	mCamera3D.UpdataProject(ClientX, ClientY);
-	mCamera.UpdataProject(ClientX, ClientY);
+	mCamera3D.UpdateProject(ClientX, ClientY);
+	mCamera.UpdateProject(ClientX, ClientY);
 }
 
 void SecondScene::OnActivate(bool isActivate)

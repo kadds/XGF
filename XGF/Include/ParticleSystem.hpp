@@ -9,6 +9,7 @@
 namespace XGF
 {
 	//没有完成的功能
+	//随时更改
 	//Emitter base
 	class Emitter
 	{
@@ -111,7 +112,7 @@ namespace XGF
 		void Shutdown();
 		void Reset();
 		void AddEmitter(FireEmitter *e) { mEmitter = e; }
-		void Updata(float time);
+		void Update(float time);
 		void SetTexture(Texture *t) { mTexture = t; }
 
 	private:

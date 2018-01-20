@@ -12,8 +12,8 @@ namespace XGF
 		PerspectiveCamera();
 
 		~PerspectiveCamera();
-		virtual void UpdataProject(int cx, int cy);
-		virtual void Updata();
+		virtual void UpdateProject(int cx, int cy);
+		virtual void Update();
 		// вСср 
 		void Strafe(float units);
 		// иооб 

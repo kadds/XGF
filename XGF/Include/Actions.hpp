@@ -13,7 +13,7 @@ namespace XGF
 		Actions();
 		~Actions();
 
-		void Updata(float time);
+		void Update(float time);
 		void SetOnActionCompletedListener(OnActionCompletedListener l) { onActionCompletedListener = l; }
 		void Start();
 		void Stop();

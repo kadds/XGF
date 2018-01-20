@@ -14,10 +14,10 @@ namespace XGF
 	Scene::~Scene()
 	{
 	}
-	void Scene::_Updata(float dt)
+	void Scene::_Update(float dt)
 	{
-		Updata(dt);
-		mRootContainer._Updata(dt);
+		Update(dt);
+		mRootContainer._Update(dt);
 	}
 	void Scene::_Render(float deltaTime)
 	{
@@ -54,7 +54,7 @@ namespace XGF
 	{
 		container->SetParent(&mRootContainer);
 
-		mRootContainer.AddChild(*container);
+		mRootContainer.AddChild(container);
 		container->_OnCreate(this);
 	}
 

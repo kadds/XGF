@@ -3,12 +3,19 @@
 #include "Actor.hpp"
 #include "Skin.hpp"
 #include <math.h>
+#include "UIBatches.hpp"
+#include <functional>
 namespace XGF
 {
+	class TextRenderer;
+	/*
+		控件基类
+	*/
 	class Control : public Actor
 	{
 	public:
 		Control();
+		Control(int id);
 		virtual ~Control();
 		std::shared_ptr<Skin> SetSkin(std::shared_ptr<Skin>);
 		virtual void OnMouseDown(const Event & ev);
@@ -21,10 +28,24 @@ namespace XGF
 		virtual void OnRemoveFromContainer() override;
 
 		ClickHelper & GetClickHelper() { return mClickHelper; }
+
+
+		virtual TextRenderer * GetTextRenderer(FontSize fs);
+		UIBatches & GetUIBatches();
+
+		void SetOnRemoveFromContainerLisener(std::function<void(Control *)> rm) { mOnRemoveFromContainerLisener = rm; }
 	protected:
 		std::shared_ptr<Skin> mSkin;
 		SkinState mNowState;
 		ClickHelper mClickHelper;
+		FontSize mFontSize;
+
+		std::function<void(Control *)> mOnRemoveFromContainerLisener;
+
+		static inline float minZdivision = 0.001f;
+	protected:
+		//子类调用
+		void DrawSkin(const XMMATRIX * matrix);
 	};
 
 

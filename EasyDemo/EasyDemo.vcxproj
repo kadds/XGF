@@ -145,12 +145,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="EasyDemo.h" />
-    <ClInclude Include="GameScene.h" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="EasyDemo.cpp" />
-    <ClCompile Include="GameScene.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

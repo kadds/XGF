@@ -11,7 +11,7 @@ public:
 	virtual void OnCreate() override;
 	virtual void OnDestroy() override;
 	virtual void Render(float deltaTime) override;
-	virtual void Updata(float deltaTime) override;
+	virtual void Update(float deltaTime) override;
 	virtual void OnSize(int ClientX, int ClientY) override;
 
 	virtual void OnActivate(bool isActivate) override;
@@ -26,7 +26,7 @@ private:
 	Texture mCursorTexture;
 	AxisRenderer mAxisRenderer;
 
-
+	TextureResourceManager mTextureResourceManager;
 	OrthoCamera mCamera;
 	FPSCamera mCamera3D;
 

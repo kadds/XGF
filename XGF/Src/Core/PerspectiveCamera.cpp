@@ -16,12 +16,12 @@ namespace XGF
 	{
 	}
 
-	void PerspectiveCamera::UpdataProject(int cx, int cy)
+	void PerspectiveCamera::UpdateProject(int cx, int cy)
 	{
 		DirectX::XMStoreFloat4x4(&proMatrix, DirectX::XMMatrixPerspectiveFovLH(mFovAngle, cx / float(cy), mMinDistance, mMaxDistance));
 	}
 
-	void PerspectiveCamera::Updata()
+	void PerspectiveCamera::Update()
 	{
 		DirectX::XMVECTOR look = DirectX::XMLoadFloat3(&mLook);
 		DirectX::XMVECTOR up, right, pos;

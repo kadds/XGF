@@ -7,7 +7,7 @@ namespace XGF
 	public:
 		FPSCamera();
 		~FPSCamera();
-		virtual void Updata();
+		virtual void Update();
 	};
 }
 

@@ -14,7 +14,7 @@
     * Lable
     * EditText
     * Button
-	* More Control can be added simply 
+	* ...  Skin support
 * Text renderer based on Freetype
 * Basic shape render
     * Line
@@ -24,12 +24,11 @@
 * Scene manager
     * Switch scene with aniamtion
 * Particle
-    * Different ParticleEffect
-* Lua support (Uncompletely)
+    * Different ParticleEffect (Uncompletely)
   
 ## How To Compile
-Compiler： VC++14 or later(Only Support MSVC14+. In the future, it may be migrated to cmake tools)
-If you have Visual Studio 14 or later, you can just open the Soltion(.sln) file. Selecting compiling mode, then compiling with x64 mode.
+Compiler： VC++14.1 or later(Only Support MSVC14.1+. In the future, it may be migrated to cmake tools)  
+#### We recommend to using Visual Studio 2017.
   
 ###### notic: Please Copy resorce files to run directory. The resorce files always in Bin directory.
  

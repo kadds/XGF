@@ -16,6 +16,7 @@
 #include "Scene.hpp"
 #include "ShaderConst.hpp"
 #include "ShapeRenderer.hpp"
+#include "ResourceManager.hpp"
 #include "RenderToTexture.hpp"
 #include "ParticleSystem.hpp"
 #include "ConstantData.hpp"
@@ -24,7 +25,6 @@
 //*********** UI *******************
 #include "Label.hpp"
 #include "Button.hpp"
-#include "TextColorButton.hpp"
 #include "EditText.hpp"
 #include "UIBatches.hpp"
 //**********************************

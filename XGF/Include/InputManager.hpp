@@ -1,7 +1,7 @@
 #pragma once
 #include "Defines.hpp"
 #include "DX8Input.hpp"
-#include "TextInputInterface.hpp"
+#include "TextInputProcessor.hpp"
 #include "ClickHelper.hpp"
 #include "OrthoCamera.hpp"
 #include "Caret.hpp"
@@ -25,18 +25,18 @@ namespace XGF
 		void Shutdown();
 		LRESULT ProcessInputMessage(UINT msg, WPARAM wParam, LPARAM lParam);
 		void OnActivate(bool isActivate);
-		bool IsForce(TextInputInterface * in);
+		bool IsFocus(TextInputProcessor * in);
 		void SetCaretPosition(float x, float y);
 		void SetExclusiveMouseMode();
 		void SetNoExclusiveMouseMode();
 		bool IskeyDowm(Key k);
-		void ClearForce(TextInputInterface * tei);
-		void SetForce(TextInputInterface * tei);
+		void ClearFocus(TextInputProcessor * tei);
+		void SetFocus(TextInputProcessor * tei);
 		void UpdateCameraMatrix(int x, int y);
 		void Draw();
 		void Tick(float time);
-		void StartForForce();
-		void StopForForce();
+		void StartForFocus();
+		void StopForFocus();
 		Cursor * GetCursor() { return &mCursor; };
 		void ShowCursor() {
 			mCursor.Show();
@@ -59,15 +59,15 @@ namespace XGF
 	private:
 		DX8Input dinput;
 		HWND mHwnd;
-		TextInputInterface * mForce;
-		bool mHasSetForce;
+		TextInputProcessor * mFocus;
+		bool mHasSetFocus;
 		int mCaretPosInText;
 		Cursor mCursor;
 		Caret mCaret;
 		MouseMode mMouseMode;
 
 		OrthoCamera mCamera;
-		std::vector<TextInputInterface *> mInputs;
+		std::vector<TextInputProcessor *> mInputs;
 		DISALLOW_COPY_AND_ASSIGN(InputManager);
 	};
 

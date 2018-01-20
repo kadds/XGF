@@ -19,8 +19,8 @@ namespace XGF
 	public:
 		static AsyncTask * NewTask(Asyn * mainThread, std::function<void(AsyncTask * asyncTask)> fun);
 
-		void Report(int process, void *data);
-		void Finish(int code, void * data);
+		void Report(int process, std::any data);
+		void Finish(int code, std::any data);
 
 		AsyncTask & SetFinshListener(OnFinishTaskListener ls) { onFinishTaskListener = ls; return *this; }
 		AsyncTask & SetReportListener(OnReportTaskProcessListener ls) { onReportTaskProcessListener = ls; return *this; }

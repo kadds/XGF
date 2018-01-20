@@ -31,7 +31,6 @@ namespace XGF
 	使用DrawPolygon写入缓存，渲染图形
 	所有导致状态改变的函数可能间接调用Flush函数，从而增加Call Batch的次数
 	请搭配Begin End 使用
-	由shaderstage保存的资源如 cbuffer，srv，uav改变时需要显式调用Flush函数
 	未完成 Instance Render
 	*/
 	class Batch

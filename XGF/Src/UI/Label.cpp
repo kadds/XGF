@@ -6,7 +6,11 @@
 #include "../../Include/Container.hpp"
 namespace XGF
 {
-	Label::Label()
+	Label::Label():mText(nullptr), mTextColor(Color(0.f, 0.f, 0.f, 1.f))
+	{
+	}
+
+	Label::Label(int id, wchar_t * text, Color textColor):Control(id), mTextColor(textColor), mText(text)
 	{
 	}
 
@@ -16,12 +20,19 @@ namespace XGF
 
 	void Label::Render(const XMMATRIX * matrix)
 	{
-		this->mParent->GetScene()->GetFramework()->GetUIBatches().GetTextRenderer(BATCHES_TEXTRENDERER_DEFAULT_SIZE)->DrawString(mText, Color(1,1,1,1), this, matrix);
+		DrawSkin(matrix);
+		auto renderer = this->mParent->GetScene()->GetFramework()->GetUIBatches().GetTextRenderer(mFontSize);
+		if(renderer != nullptr)
+			renderer->DrawString(mText, mTextColor, this, matrix);
 	}
 
 	void Label::SetText(wchar_t * text)
 	{
 		mText = text;
+	}
+	void Label::SetTextColor(Color & color)
+	{
+		mTextColor = color;
 	}
 }
 

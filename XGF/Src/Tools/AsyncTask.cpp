@@ -24,12 +24,12 @@ namespace XGF
 		as->Start(mainThread, fun);
 		return as;
 	}
-	void AsyncTask::Report(int process, void * data)
+	void AsyncTask::Report(int process, std::any data)
 	{
 		mainThread->PostEvent(SystemEventId::AsynReport, { process, data, this });
 	}
 
-	void AsyncTask::Finish(int code, void * data)
+	void AsyncTask::Finish(int code, std::any data)
 	{
 		mainThread->PostEvent(SystemEventId::AsynFinish, { code, data, this });
 	}

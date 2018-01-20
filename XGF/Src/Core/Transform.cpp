@@ -6,7 +6,7 @@ namespace XGF
 	{
 		DirectX::XMStoreFloat4x4(&mMatrix, DirectX::XMMatrixIdentity());
 		mActions.SetOnActionCompletedListener(std::bind(&Transform::OnActionCompleted, this));
-		//mActions.Updata(deltaTime);
+		//mActions.Update(deltaTime);
 	}
 	void Transform::SetRotationAngle(Point angle)
 	{

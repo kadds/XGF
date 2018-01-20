@@ -209,6 +209,7 @@
     <ClInclude Include="Include\Polygon.hpp" />
     <ClInclude Include="Include\Rectangle.hpp" />
     <ClInclude Include="Include\RectangleB.hpp" />
+    <ClInclude Include="Include\RectangleC.hpp" />
     <ClInclude Include="Include\RenderToTexture.hpp" />
     <ClInclude Include="Include\RepeatAction.hpp" />
     <ClInclude Include="Include\ResourceManager.hpp" />
@@ -224,8 +225,7 @@
     <ClInclude Include="Include\ShapeRenderer.hpp" />
     <ClInclude Include="Include\Skin.hpp" />
     <ClInclude Include="Include\StateList.hpp" />
-    <ClInclude Include="Include\TextColorButton.hpp" />
-    <ClInclude Include="Include\TextInputInterface.hpp" />
+    <ClInclude Include="Include\TextInputProcessor.hpp" />
     <ClInclude Include="Include\TextLayoutShaper.hpp" />
     <ClInclude Include="Include\TextRenderer.hpp" />
     <ClInclude Include="Include\Texture.hpp" />
@@ -262,6 +262,7 @@
     <ClCompile Include="Src\Core\Camera.cpp" />
     <ClCompile Include="Src\Core\Caret.cpp" />
     <ClCompile Include="Src\Core\ConstantData.cpp" />
+    <ClCompile Include="Src\Core\Container.cpp" />
     <ClCompile Include="Src\Core\Cursor.cpp" />
     <ClCompile Include="Src\Core\Event.cpp" />
     <ClCompile Include="Src\Core\EventDispatcher.cpp" />
@@ -290,13 +291,14 @@
     <ClCompile Include="Src\Helper\ClickHelper.cpp" />
     <ClCompile Include="Src\Input\DX8Input.cpp" />
     <ClCompile Include="Src\Input\InputManager.cpp" />
-    <ClCompile Include="Src\Input\TextInputInterface.cpp" />
+    <ClCompile Include="Src\Input\TextInputProcessor.cpp" />
     <ClCompile Include="Src\Interpolator\Interpolator.cpp" />
     <ClCompile Include="Src\Shape\Circle.cpp" />
     <ClCompile Include="Src\Shape\Cube.cpp" />
     <ClCompile Include="Src\Shape\Line.cpp" />
     <ClCompile Include="Src\Shape\Rectangle.cpp" />
     <ClCompile Include="Src\Shape\RectangleB.cpp" />
+    <ClCompile Include="Src\Shape\RectangleC.cpp" />
     <ClCompile Include="Src\Shape\Shape.cpp" />
     <ClCompile Include="Src\Shape\Triangle.cpp" />
     <ClCompile Include="Src\Tools\AsyncTask.cpp" />
@@ -317,9 +319,7 @@
     <ClCompile Include="Src\UI\EditText.cpp" />
     <ClCompile Include="Src\UI\Label.cpp" />
     <ClCompile Include="Src\UI\Skin.cpp" />
-    <ClCompile Include="Src\UI\TextColorButton.cpp" />
     <ClCompile Include="Src\UI\UIBatches.cpp" />
-    <ClCompile Include="Src\UI\Container.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

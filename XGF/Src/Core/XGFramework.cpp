@@ -15,10 +15,10 @@ namespace XGF
 		if (mTheard->HandleMessage()) return true;
 		mInputManager.Tick(time);
 		if (mScene != nullptr)
-			mScene->_Updata(time);
+			mScene->_Update(time);
 		if (mSceneAnimation != nullptr)
 		{
-			mSceneAnimation->Updata(time);
+			mSceneAnimation->Update(time);
 			if (mSceneAnimation->IsEnd())
 			{
 				mSceneAnimation = nullptr;
@@ -26,10 +26,10 @@ namespace XGF
 		}
 		if (mLastScene != nullptr)
 		{
-			mLastScene->_Updata(time);
+			mLastScene->_Update(time);
 			if (mLastSceneAnimation != nullptr)
 			{
-				mLastSceneAnimation->Updata(time);
+				mLastSceneAnimation->Update(time);
 				if (mLastSceneAnimation->IsEnd())//动画执行完毕，结束
 				{
 					mLastScene->OnDestroy();
@@ -115,12 +115,12 @@ namespace XGF
 		mUIBatches.Shutdown();
 		if (mScene != nullptr)
 		{
-			mScene->OnDestroy();
+			mScene->_OnDestroy();
 			if (mSceneDeleter != nullptr)
 				mSceneDeleter(mScene);
 			if (mLastScene != nullptr)
 			{
-				mLastScene->OnDestroy();
+				mLastScene->_OnDestroy();
 				if (mSceneDeleter != nullptr)
 					mSceneDeleter(mLastScene);
 			}
@@ -147,7 +147,7 @@ namespace XGF
 		if (ClientY <= 0) ClientY = 1;
 		mGDI->SizeChanged(ClientX, ClientY);
 		mInputManager.UpdateCameraMatrix(ClientX, ClientY);
-		mRenderCamera.UpdataProject(ClientX, ClientY);
+		mRenderCamera.UpdateProject(ClientX, ClientY);
 		Batch::SetClientSize({ ClientX, ClientY });
 		mLastRenderRectangle.SetPositionAndSize(0.f, 0.f, static_cast<float>(ClientX), static_cast<float>(ClientY));
 		mLastRenderRectangle.SetZ(0.1f);
@@ -196,7 +196,7 @@ namespace XGF
 	{
 		if (ev.GetMouseEventId() == MouseEventId::MouseDown)
 		{
-			mInputManager.SetForce(nullptr);
+			mInputManager.SetFocus(nullptr);
 		}
 	}
 

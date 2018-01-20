@@ -2,7 +2,7 @@
 #include "..\..\Include\ConstantData.hpp"
 namespace XGF
 {
-	Cursor::Cursor() :mPtBinder(4), mIsShow(false), mUsedStaticTexture(true), mAnimation(0), mPointDeviation(0.f, 0.f), mPassTime(0.f)
+	Cursor::Cursor() :mPtBinder(4), mIsShow(false), mUsedStaticTexture(true), mAnimation(0), mPointDeviation(0.f, 0.f), mPassTime(0.f), mTextureResource(nullptr)
 	{
 	}
 
@@ -23,7 +23,6 @@ namespace XGF
 
 	void Cursor::Shutdown()
 	{
-		mTexture.Release();
 		mTextureBatch.Shutdown();
 	}
 
@@ -31,13 +30,13 @@ namespace XGF
 	{
 		if (mUsedStaticTexture)
 		{
-			if (!mIsShow || mTexture.GetShaderResourceView() == nullptr)  return;
+			if (!mIsShow || mTextureResource == nullptr || mTexture.GetRawTexture() == nullptr)  return;
 			mTextureBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
 			mTextureBatch.Begin();
 			mRc.SetPositionAndSize(mPosition.x - mPointDeviation.x, mPosition.y - mPointDeviation.y, mSize.x, mSize.y);
 			mPtBinder.FromTexture(&mTexture);
 			mRc.SetZ(0.1f);
-			mRc.Render(mTextureBatch, nullptr, mBbrg, mTexture.GetShaderResourceView());
+			mRc.Render(mTextureBatch, nullptr, mBbrg, mTexture.GetRawTexture());
 			mTextureBatch.End();
 		}
 		else
@@ -52,7 +51,7 @@ namespace XGF
 			mTextureBatch.Begin();
 			mRc.SetPositionAndSize(mPosition.x - mPointDeviation.x, mPosition.y - mPointDeviation.y, mSize.x, mSize.y);
 			mRc.SetZ(0.1f);
-			mRc.Render(mTextureBatch, nullptr, mBbrg, mAnimation->GetTexture()->GetShaderResourceView());
+			mRc.Render(mTextureBatch, nullptr, mBbrg, mAnimation->GetTexture()->GetRawTexture());
 			mTextureBatch.End();
 		}
 	}
@@ -78,15 +77,15 @@ namespace XGF
 		}
 	}
 
-	void Cursor::SetStaticTexture(GDI * gdi, const wchar_t * t)
+	void Cursor::SetStaticTexture(TextureResource * tres)
 	{
-		mTexture.LoadWIC(gdi, t);
+		mTextureResource = tres;
+		mTexture.SetTextureResource(tres);
 		mUsedStaticTexture = true;
 	}
 
 	void Cursor::SetAnimation(Animation * mm)
 	{
-		if (mAnimation == nullptr) return;
 		mAnimation = mm;
 		mUsedStaticTexture = false;
 	}

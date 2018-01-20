@@ -1,70 +1,117 @@
 #include "../../Include/Texture.hpp"
 #include "../../Include/Log.hpp"
 #include "../../Include/GDI.hpp"
+#include <algorithm>
+#include <fstream>
 namespace XGF
 {
-	Texture::Texture() :isCreateResourceView(false)
+	Texture::Texture():mIs9Path(false), mTextureResource(nullptr)
 	{
+
+		mTextureRectangleNormalization = Point4(0.f, 0.f, 1.f, 1.f);
 	}
-	Texture::Texture(const Texture & t) : isCreateResourceView(false)
+
+	Texture::Texture(TextureResource & tres, Rect & rc) :mIs9Path(false)
 	{
-		mShaderResourceView = t.mShaderResourceView;
-		left = t.left;
-		top = t.top;
-		right = t.right;
-		bottom = t.bottom;
+		SetRectangle(rc);
+		mTextureResource = &tres;
 	}
-	void Texture::operator=(const Texture & t)
+	Texture::Texture(TextureResource & tres) : mIs9Path(false)
 	{
-		mShaderResourceView = t.mShaderResourceView;
-		left = t.left;
-		top = t.top;
-		right = t.right;
-		bottom = t.bottom;
-		isCreateResourceView = false;
+		mTextureRectangleNormalization = Point4(0.f, 0.f, 1.f, 1.f);
+		mTextureResource = &tres;
 	}
 	Texture::~Texture()
 	{
-		//Release();don't use
 	}
 
-	void Texture::LoadDDS(GDI * gdi, const wchar_t * name)
+	void Texture::SetRectangle(Rect & rc)
 	{
-		//ID3D11Resource * texture;
-		XGF_Warn_Check(DirectX::CreateDDSTextureFromFile(gdi->GetDevice(), gdi->GetDeviceContext(), name, nullptr, &mShaderResourceView), "LoadFile failed");
-		PutDebugString(mShaderResourceView);
-		left = top = 0.0f;
-		right = bottom = 1.0f;
-		isCreateResourceView = true;
+		mTextureRectangleNormalization.x = rc.Left / static_cast<float>(mTextureResource->mSize.Width);
+		mTextureRectangleNormalization.y = rc.Top / static_cast<float>(mTextureResource->mSize.Height);
+		mTextureRectangleNormalization.z = rc.Right / static_cast<float>(mTextureResource->mSize.Width);
+		mTextureRectangleNormalization.w = rc.Bottom / static_cast<float>(mTextureResource->mSize.Height);
+
+		std::clamp(mTextureRectangleNormalization.x, 0.f, 1.f);
+		std::clamp(mTextureRectangleNormalization.y, 0.f, 1.f);
+		std::clamp(mTextureRectangleNormalization.z, m9Path.x, 1.f);
+		std::clamp(mTextureRectangleNormalization.w, m9Path.y, 1.f);//TODO:: Maybe have problem here
+	}
+	void Texture::Set9PathInnerRect(Rect & rc)
+	{
+		m9Path.x = rc.Left / static_cast<float>(mTextureResource->mSize.Width);
+		m9Path.y = rc.Top / static_cast<float>(mTextureResource->mSize.Height);
+		m9Path.z = rc.Right / static_cast<float>(mTextureResource->mSize.Width);
+		m9Path.w = rc.Bottom / static_cast<float>(mTextureResource->mSize.Height);
+
+		std::clamp(m9Path.x, 0.f, 1.f);
+		std::clamp(m9Path.y, 0.f, 1.f);
+		std::clamp(m9Path.z, m9Path.x, 1.f);
+		std::clamp(m9Path.w, m9Path.y, 1.f);//TODO:: Maybe have problem here
+
+		mIs9Path = true;
 	}
 
-	void Texture::Load(ID3D11ShaderResourceView * ShaderResource)
+	void Texture::Set9PathBorderSize(int border)
 	{
-		mShaderResourceView = ShaderResource;
+		m9Path.x = border / static_cast<float>(mTextureResource->mSize.Width);
+		m9Path.y = border / static_cast<float>(mTextureResource->mSize.Height);
+		m9Path.z = (mTextureResource->mSize.Width - border) / static_cast<float>(mTextureResource->mSize.Width);
+		m9Path.w = (mTextureResource->mSize.Height - border) / static_cast<float>(mTextureResource->mSize.Height);
+
+		std::clamp(m9Path.x, 0.f, 1.f);
+		std::clamp(m9Path.y, 0.f, 1.f);
+		std::clamp(m9Path.z, m9Path.x, 1.f);
+		std::clamp(m9Path.w, m9Path.y, 1.f);//TODO:: Maybe have problem here
+		mIs9Path = true;
 	}
-	void Texture::LoadFrom(const Texture & texture, float left, float top, float right, float bottom)
+
+	TextureResource::TextureResource():mShaderResourceView(nullptr)
 	{
-		mShaderResourceView = texture.mShaderResourceView;
-		this->left = left;
-		this->top = top;
-		this->right = right;
-		this->bottom = bottom;
+
 	}
-	void Texture::LoadFromPosition(const Texture & texture, int left, int top, int right, int bottom)
+
+	bool TextureResource::Load(GDI * gdi, void * mem, size_t size)
 	{
-		mShaderResourceView = texture.mShaderResourceView;
-		this->left = static_cast<float>(left);
-		this->top = static_cast<float>(top);
-		this->right = static_cast<float>(right);
-		this->bottom = static_cast<float>(bottom);
+		if (FAILED(DirectX::CreateDDSTextureFromMemory(gdi->GetDevice(), (uint8_t *)mem, size, (ID3D11Resource **)&mTexture, &mShaderResourceView)))
+		{
+			if (FAILED(DirectX::CreateWICTextureFromMemory(gdi->GetDevice(), (uint8_t *)mem, size, (ID3D11Resource **)&mTexture, &mShaderResourceView)))
+			{
+				return false;
+			}
+		}
+		D3D11_TEXTURE2D_DESC desc;
+		mTexture->GetDesc(&desc);
+		mSize.Height = desc.Height;
+		mSize.Width = desc.Width;
+		return true;
 	}
-	void Texture::LoadWIC(GDI * gdi, const wchar_t * name)
+
+	bool TextureResource::Load(GDI * gdi, std::wstring fullPath)
 	{
-		XGF_Warn_Check(DirectX::CreateWICTextureFromFile(gdi->GetDevice(), gdi->GetDeviceContext(), name, nullptr, &mShaderResourceView), "Load File Failed");
-		PutDebugString(mShaderResourceView);
-		left = top = 0.0f;
-		right = bottom = 1.0f;
-		isCreateResourceView = true;
+		std::ifstream inFile;
+		inFile.open(fullPath, std::ios::binary);
+		inFile.seekg(0, std::ios::end);  
+		size_t length = inFile.tellg();
+		inFile.seekg(0, std::ios::beg);
+		if (length < (1U << 24) && length > 0)
+		{
+			char * buffer = new char[length];
+			inFile.read(buffer, length);
+			bool isok = Load(gdi, buffer, length);
+			delete[] buffer;
+			inFile.close();
+			return isok;
+		}
+		inFile.close();
+		return false;
+	}
+
+	void TextureResource::Release()
+	{
+		if (mShaderResourceView != nullptr)
+			mShaderResourceView->Release();
+		mShaderResourceView = nullptr;
 	}
 
 };

@@ -55,6 +55,8 @@ private:
 	ParticleFire ps;
 	ParticleFire::FireEmitter eemitter;
 	Texture particleT;
+
+	TextureResourceManager mTextureResourceManager;
 public:
 	GameScene() :cb(cube.mPolygon.mCount){};
 	virtual ~GameScene() {};
@@ -63,7 +65,7 @@ public:
 		char buffer[MAX_PATH];
 		auto gdi = mFramework->GetGDI();
 		wchar_t wbuffer[MAX_PATH];
-		Tools::GetInstance()->GetFontPath("Dengb.ttf", buffer, MAX_PATH);
+		Tools::GetFontPath("Dengb.ttf", buffer, MAX_PATH);
 		font.Initialize(gdi, buffer, 14);
 		textRenderer.Initialize(gdi, &font, 100);
 		GetFilePath(L"../../fx/fx/shaderCube.fx", wbuffer, MAX_PATH);
@@ -79,12 +81,15 @@ public:
 		textureBatch.Initialize(gdi, ConstantData::GetInstance().GetPTShaders(), 20, 24);
 		textureBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthDisable);
 		textureBatch.GetShaderStage()->SetBlendState(BlendState::AddZeroOneAdd);
-		ps.Initialize(gdi, 1024, ParticleDevice::Auto);
+		ps.Initialize(gdi, 1024, ParticleDevice::CPU);
 		ar.Initialize(gdi);
-		
-		tt.LoadDDS(gdi, GetFilePath(L"grasscube1024.dds", wbuffer, MAX_PATH));
+		std::vector<ResourceInfo> res;
+		res.push_back(ResourceInfo(L"grasscube1024.dds"));
+		res.push_back(ResourceInfo(L"cursor.png"));
+		res.push_back(ResourceInfo(L"particle.png"));
+		mTextureResourceManager.LoadResource(mFramework->GetGDI(), res);
 
-		mFramework->GetInputManager()->GetCursor()->SetStaticTexture(mFramework->GetGDI(), GetFilePath(L"cursor.png", wbuffer, MAX_PATH));
+		mFramework->GetInputManager()->GetCursor()->SetStaticTexture(mTextureResourceManager.GetResource(L"cursor.png"));
 		mFramework->GetInputManager()->SetMouseMode(MouseMode::CustomCenter);
 		
 		eemitter.pos = Point(200, 200, 0);
@@ -102,24 +107,23 @@ public:
 		eemitter.SetGravity({ 0,1,0 }, 200);
 		ps.AddEmitter(&eemitter);
 		bbg.AddBinder(cube.mPolygon);
-		GetFilePath(L"particle.png", wbuffer, MAX_PATH);
-		particleT.LoadWIC(gdi, wbuffer);
+
+		particleT.SetTextureResource(mTextureResourceManager.GetResource(L"particle.png"));
 		ps.SetTexture(&particleT);
 
 		mFramework->GetEventDispatcher().InsertMouseEventListener(MouseEventId::MouseMove, std::bind(&GameScene::OnMouseMove, this, std::placeholders::_1));
 	}
 	virtual void OnDestroy() override
 	{
+		mTextureResourceManager.ReleaseAllResource();
 		batch.Shutdown();
 		ps.Shutdown();
 		textRenderer.Shutdown();
 		font.Shutdown();
-		tt.Release();
 		ar.Shutdown();
 		vss.Shutdown();
 		textureBatch.Shutdown();
 		pss.Shutdown();
-		particleT.Release();
 	}
 	virtual void Render(float deltaTime) override
 	{
@@ -130,7 +134,7 @@ public:
 		camera3d.GetCameraMatrix(wvp3d);
 		
 		batch.GetShaderStage()->SetVSConstantBuffer(0, &wvp3d);
-		batch.GetShaderStage()->SetPSSRV(0, tt.GetShaderResourceView());
+		batch.GetShaderStage()->SetPSSRV(0, mTextureResourceManager.GetResource(L"grasscube1024.dds")->GetShaderResourceView());
 		batch.Begin();
 		batch.DrawPolygon(cube.mPolygonPleIndex, bbg);
 		
@@ -159,14 +163,14 @@ public:
 		textureBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp3d);
 		textureBatch.Begin();
 		textureBatch.DrawPolygon( rc.mPolygonPleIndex,bbr);
-		textureBatch.GetShaderStage()->SetPSSRV(0, particleT.GetShaderResourceView());
+		textureBatch.GetShaderStage()->SetPSSRV(0, mTextureResourceManager.GetResource(L"particle.png")->GetShaderResourceView());
 		textureBatch.End();
 
 	}
-	virtual void Updata(float deltaTime) override
+	virtual void Update(float deltaTime) override
 	{
-		camera2d.Updata();
-		camera3d.Updata();
+		camera2d.Update();
+		camera3d.Update();
 		cube.SetCenterPositionAndSize(camera3d.GetPosition(), XMFLOAT3( 5,5,5 ));
 		batch.GetShaderStage()->SetVSConstantBuffer(batch.GetShaderStage()->GetConstantBufferIndexByName<VertexShader>("CBCameraPos"),&camera3d.GetPosition());
 		auto ip = GetFramework()->GetInputManager();
@@ -205,12 +209,12 @@ public:
 		{
 			camera3d.Fly(dt);
 		}
-		ps.Updata(deltaTime);
+		ps.Update(deltaTime);
 	}
 	virtual void OnSize(int ClientX, int ClientY) override
 	{
-		camera2d.UpdataProject(ClientX, ClientY);
-		camera3d.UpdataProject(ClientX, ClientY);
+		camera2d.UpdateProject(ClientX, ClientY);
+		camera3d.UpdateProject(ClientX, ClientY);
 		
 	}
 	void OnMouseMove(const Event & ev)

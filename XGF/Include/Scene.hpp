@@ -20,8 +20,8 @@ namespace XGF
 
 		void _Render(float deltaTime);
 		virtual void Render(float deltaTime) = 0;
-		void _Updata(float deltaTime);
-		virtual void Updata(float deltaTime) = 0;
+		void _Update(float deltaTime);
+		virtual void Update(float deltaTime) = 0;
 		virtual SceneAnimation * OnSwitchIn();
 		virtual SceneAnimation * OnSwitchOut();
 

@@ -2,18 +2,23 @@
 
 #include "../../Include/Batch.hpp"
 namespace XGF{
-	Actor::Actor()
+	Actor::Actor():mParent(nullptr)
 	{
-		
+	}
+
+	Actor::Actor(int id):mId(id), mParent(nullptr)
+	{
 	}
 	
 	Actor::~Actor()
 	{
 	}
-	void Actor::_Updata(float deltaTime)
+
+	void Actor::_Update(float deltaTime)
 	{
-		
+		Update(deltaTime);
 	}
+
 	void Actor::_Render()
 	{
 		DirectX::XMMATRIX matrix;

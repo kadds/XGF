@@ -3,62 +3,51 @@
 #include "..\..\Include\XGFramework.hpp"
 #include "..\..\Include\Batch.hpp"
 #include "../../Include/UIBatches.hpp"
+#include "../../Include/RectangleB.hpp"
 namespace XGF
 {
-	EditText::EditText() :mTextColor(Color(0.f, 0.f, 0.f, 1.f)), mBoderColor(0.5f, 0.7f, 0.7f, 1.0f), mInerBoderColor(0.5f, 0.6f, 0.6f, 1.0f), mbkColor(0.2f, 0.2f, 0.5f, 0.2f)
+	EditText::EditText():Control(), mTextColor(Color(0.f, 0.f, 0.f, 1.f))
 	{
+		mTextInputProcessor.SetInnerRectangle(std::bind(&EditText::GetInnerRectangle, this, std::placeholders::_1));
+		mTextInputProcessor.SetOnFocusListener(std::bind(&EditText::OnFocus, this, std::placeholders::_1));
+	}
+
+	EditText::EditText(int id, wchar_t * text, Color textColor):Control(id), mTextInputProcessor(text), mTextColor(textColor)
+	{
+		mTextInputProcessor.SetInnerRectangle(std::bind(&EditText::GetInnerRectangle, this, std::placeholders::_1));
+		mTextInputProcessor.SetOnFocusListener(std::bind(&EditText::OnFocus, this, std::placeholders::_1));
 	}
 
 	EditText::~EditText()
 	{
-		//mParent->GetScene()->GetFramework()->GetInputManager()->ClearForce(this);
+	}
+
+	void EditText::SetText(const wchar_t * text)
+	{
+		mTextInputProcessor.SetText(text);
+	}
+
+	void EditText::SetTextColor(Color & color)
+	{
+		mTextColor = color;
 	}
 
 	void EditText::Render(const XMMATRIX * matrix)
 	{
-		mTextRenderer = this->mParent->GetScene()->GetFramework()->GetUIBatches().GetTextRenderer(BATCHES_TEXTRENDERER_DEFAULT_SIZE);
-		auto input = mParent->GetScene()->GetFramework()->GetInputManager();
-		BindingBridge bbr;
-		int layer[3];
-		PolygonPleConstantExColorBinder cb(layer, GetBorderLayer(layer));
-		cb.SetLayerColor(0, mBoderColor);
-		cb.SetLayerColor(1, mInerBoderColor);
-		cb.SetLayerColor(2, mbkColor);
-		bbr.AddBinder(cb);
-		if (input->IsForce(this))
-		{
-			::XGF::Shape::Shape::Render(*this->mParent->GetScene()->GetFramework()->GetUIBatches().GetBatch(BATCHES_BATCH_DEFAULT_PC), matrix, bbr);
-			::XGF::Shape::Rectangle rc;
-			GetInerBorderRectangle(rc);
-			rc.SetZ(mPolygon.mPoint[0].z - 0.0001f);
-			RenderText(matrix, rc, mTextColor);
-		}
-		else
-		{
-			::XGF::Shape::Shape::Render(*this->mParent->GetScene()->GetFramework()->GetUIBatches().GetBatch(BATCHES_BATCH_DEFAULT_PC), matrix, bbr);
-			::XGF::Shape::Rectangle rc;
-			GetInerBorderRectangle(rc);
-			rc.SetZ(mPolygon.mPoint[0].z - 0.0001f);
-			RenderText(matrix, rc, mTextColor);
-		}
+		DrawSkin(matrix);
+		mTextInputProcessor.SetTextRenderer(GetTextRenderer(this->mFontSize));
 
-
+		mTextInputProcessor.RenderText(matrix, mTextColor);
 	}
-
-
-	void EditText::OnForce(bool isForce)
+	void EditText::OnFocus(bool isForce)
 	{
 		if (isForce)
 		{
-			mbkColor = Color(0.1f, 0.1f, 0.1f, 0.1f);
-			mBoderColor = Color(0.8f, 0.9f, 0.9f, 1.0f);
-			mInerBoderColor = Color(0.7f, 0.8f, 0.8f, 1.0f);
+			mNowState = SkinState::active;
 		}
 		else
 		{
-			mbkColor = Color(0.2f, 0.2f, 0.5f, 0.2f);
-			mBoderColor = Color(0.5f, 0.7f, 0.7f, 1.0f);
-			mInerBoderColor = Color(0.5f, 0.6f, 0.6f, 1.0f);
+			mNowState = SkinState::normal;
 		}
 	}
 
@@ -70,22 +59,46 @@ namespace XGF
 	void EditText::OnAddToContainer()
 	{
 		Control::OnAddToContainer();
-		
 	}
 
 	void EditText::OnRemoveFromContainer()
 	{
 		Control::OnRemoveFromContainer();
-		mParent->GetScene()->GetFramework()->GetInputManager()->ClearForce(this);
+		mParent->GetScene()->GetFramework()->GetInputManager()->ClearFocus(&mTextInputProcessor);
+	}
+
+	void EditText::OnMouseUp(const Event & ev)
+	{
+	}
+
+	void EditText::OnMouseMove(const Event & ev)
+	{
+		if (!mParent->GetScene()->GetFramework()->GetInputManager()->IsFocus(&mTextInputProcessor))
+		{
+			if(this->IsInBoundBox(Point(ev.GetDataInt(0), ev.GetDataInt(1), 0.f), mTransform.GetMatrix()))
+				mNowState = SkinState::hover;
+			else
+				mNowState = SkinState::normal;
+		}
+		else
+		{
+			mNowState = SkinState::active;
+		}
 	}
 
 	void EditText::OnMouseDown(const Event & ev)
 	{
-		Control::OnMouseDown(ev);
-		if (this->IsInBoundBox(Point(ev.GetDataInt(0), ev.GetDataInt(1), 0.f),mTransform.GetMatrix()))
+		if (this->IsInBoundBox(Point(ev.GetDataInt(0), ev.GetDataInt(1), 0.f), mTransform.GetMatrix()))
 		{
-			mParent->GetScene()->GetFramework()->GetInputManager()->SetForce(this);
+			mParent->GetScene()->GetFramework()->GetInputManager()->SetFocus(&mTextInputProcessor);
+			mNowState = SkinState::active;
 		}
+	}
+
+	void EditText::GetInnerRectangle(::XGF::Shape::Rectangle & rc)
+	{
+		GetInerBorderRectangle(rc);
+		rc.SetZ(GetZ() - minZdivision);
 	}
 
 }

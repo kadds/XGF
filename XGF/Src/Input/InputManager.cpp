@@ -3,7 +3,7 @@
 #include "../../Include/Application.hpp"
 namespace XGF
 {
-	InputManager::InputManager() :mForce(nullptr), mHasSetForce(false)
+	InputManager::InputManager() :mFocus(nullptr), mHasSetFocus(false)
 	{
 	}
 
@@ -38,32 +38,32 @@ namespace XGF
 		switch (msg)
 		{
 		case WM_KEYDOWN:
-			if (mForce == nullptr) break;
+			if (mFocus == nullptr) break;
 			if (wParam == VK_DELETE)
-				mForce->Delete(), mCaret.ResetTime();
+				mFocus->Delete(), mCaret.ResetTime();
 			else if (wParam == VK_LEFT)
-				mForce->CaretToLeft(), mCaret.ResetTime();
+				mFocus->CaretToLeft(), mCaret.ResetTime();
 			else  if (wParam == VK_RIGHT)
-				mForce->CaretToRight(), mCaret.ResetTime();
+				mFocus->CaretToRight(), mCaret.ResetTime();
 			else if (wParam == VK_UP)
-				mForce->CaretToUp(), mCaret.ResetTime();
+				mFocus->CaretToUp(), mCaret.ResetTime();
 			else  if (wParam == VK_DOWN)
-				mForce->CaretToDowm(), mCaret.ResetTime();
+				mFocus->CaretToDowm(), mCaret.ResetTime();
 			break;
 		case WM_CHAR:
 		{
-			if (mForce == nullptr) break;
+			if (mFocus == nullptr) break;
 			if (wParam == VK_BACK)
 			{
-				mForce->BackUp();
+				mFocus->BackUp();
 			}
 			else if (wParam == VK_ESCAPE || wParam == VK_LWIN || wParam == VK_RWIN || wParam == VK_TAB)
 			{
 			}
 			else if (wParam == VK_RETURN)
-				mForce->AppendInputStr(L'\n');
+				mFocus->AppendInputStr(L'\n');
 			else
-				mForce->AppendInputStr(static_cast<wchar_t>(wParam));
+				mFocus->AppendInputStr(static_cast<wchar_t>(wParam));
 			mCaret.ResetTime();
 			break;
 		}
@@ -79,8 +79,11 @@ namespace XGF
 		dinput.OnActivate(isActivate);
 	}
 
-	bool InputManager::IsForce(TextInputInterface * in)
+	bool InputManager::IsFocus(TextInputProcessor * in)
 	{
+		if (mFocus != nullptr)
+			if (mFocus == in)
+				return true;
 		return false;
 	}
 
@@ -91,15 +94,15 @@ namespace XGF
 	}
 
 
-	void InputManager::ClearForce(TextInputInterface * tei)
+	void InputManager::ClearFocus(TextInputProcessor * tei)
 	{
 		auto ret = std::find(std::begin(mInputs), std::end(mInputs), tei);
 		if (ret != std::end(mInputs))
 			mInputs.erase(ret);
-		if (mForce == tei)
-			mForce = nullptr;
+		if (mFocus == tei)
+			mFocus = nullptr;
 	}
-	void InputManager::SetForce(TextInputInterface * tei)
+	void InputManager::SetFocus(TextInputProcessor * tei)
 	{
 		if (tei != nullptr)
 		{
@@ -109,9 +112,9 @@ namespace XGF
 		else
 		{
 			mCaret.Hide();
-			if (mForce != nullptr)
-				mForce->OnForce(false);
-			mForce = nullptr;
+			if (mFocus != nullptr)
+				mFocus->OnFocus(false);
+			mFocus = nullptr;
 			return;
 		}
 		auto ret = std::find(std::begin(mInputs), std::end(mInputs), tei);
@@ -121,20 +124,20 @@ namespace XGF
 		{
 			if (var != tei)
 			{
-				var->OnForce(false);
+				var->OnFocus(false);
 			}
 			else
 			{
-				var->OnForce(true);
+				var->OnFocus(true);
 			}
 		}
-		mForce = tei;
-		mHasSetForce = true;
+		mFocus = tei;
+		mHasSetFocus = true;
 	}
 	void InputManager::UpdateCameraMatrix(int x, int y)
 	{
 		dinput.UpdateSize(x, y);
-		mCamera.UpdataProject(x, y);
+		mCamera.UpdateProject(x, y);
 		if (mMouseMode == CustomCenter)
 		{
 			mCursor.SetPosition(x / 2.f, y / 2.f);
@@ -144,11 +147,11 @@ namespace XGF
 	{
 		WVPMatrix wvp;
 		mCamera.GetCameraMatrix(wvp);
-		if (mForce != nullptr)
+		if (mFocus != nullptr)
 		{
 			float x, y;
 			int size;
-			mForce->GetCaretProperty(x, y, size);
+			mFocus->GetCaretProperty(x, y, size);
 			mCaret.SetPosition(x, y);
 			mCaret.SetHeight(size);
 			mCaret.Draw(wvp);
@@ -160,15 +163,15 @@ namespace XGF
 		mCaret.Tick(time);
 		mCursor.Tick(time);
 	}
-	void InputManager::StartForForce()
+	void InputManager::StartForFocus()
 	{
-		mHasSetForce = false;
+		mHasSetFocus = false;
 	}
-	void InputManager::StopForForce()
+	void InputManager::StopForFocus()
 	{
-		if (!mHasSetForce)
+		if (!mHasSetFocus)
 		{
-			SetForce(nullptr);
+			SetFocus(nullptr);
 		}
 	}
 	void InputManager::SetMouseMode(MouseMode mm)

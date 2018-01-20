@@ -95,7 +95,7 @@ namespace XGF
 			return;
 		auto vs = mShaderStage.GetVSShader();
 		CreateVertexBuffer(vs->GetStrideAllSize(), &mVertexBuffer);
-
+		mShaderStage.SetOnFlushListener(std::bind(&Batch::Flush, this));
 	}
 	void Batch::Begin()
 	{

@@ -35,13 +35,13 @@ namespace XGF
 			else
 				mFirst = false;
 			mBatch.GetShaderStage()->SetVSSRV(0, mCgpu.GetUnorderedAccessViews(0)->srv);
-			mBatch.GetShaderStage()->SetPSSRV(0, mTexture->GetShaderResourceView());
+			mBatch.GetShaderStage()->SetPSSRV(0, mTexture->GetRawTexture());
 			mBatch.StepVetices(100);
 			mBatch.End();
 		}
 		else
 		{
-			mBatch.GetShaderStage()->SetPSSRV(0, mTexture->GetShaderResourceView());
+			mBatch.GetShaderStage()->SetPSSRV(0, mTexture->GetRawTexture());
 			mBatch.End();
 			
 		}
@@ -91,7 +91,7 @@ namespace XGF
 		if (!mUseCPU)//gpu
 		{
 			wchar_t buffer[MAX_PATH];
-			Tools::GetInstance()->GetPathBy(L"../../fx/fx/ParticleComputer.fx", buffer, MAX_PATH);
+			Tools::GetPathBy(L"../../fx/fx/ParticleCompute.fx", buffer, MAX_PATH);
 			mComputerShader.Initialize(gdi, buffer);
 			mCgpu.Initialize(&mComputerShader, 10000);
 
@@ -135,7 +135,7 @@ namespace XGF
 		mParticles.clear();
 	}
 
-	void ParticleFire::Updata(float time)
+	void ParticleFire::Update(float time)
 	{
 
 		mEmitter->mPastTime += time;

@@ -1,7 +1,7 @@
 #include "..\..\Include\ShapeRenderer.hpp"
 #include "..\..\Include\ShaderConst.hpp"
 #include "..\..\Include\Rectangle.hpp"
-#include "..\..\Include\RectangleB.hpp"
+#include "..\..\Include\RectangleC.hpp"
 #include "..\..\Include\Circle.hpp"
 #include "..\..\Include\Triangle.hpp"
 #include "..\..\Include\Line.hpp"
@@ -58,9 +58,9 @@ namespace XGF
 		mBatch.DrawPolygon(rc.mPolygonPleIndex, bb);
 	}
 
-	void ShapeRenderer::DrawRectangleB(float x, float y, float w, float h, float z, Color & bkcolor, float borderWidth, Color & boderColor, Color & boderOuterColor)
+	void ShapeRenderer::DrawRectangleC(float x, float y, float w, float h, float z, Color & bkcolor, float borderWidth, Color & boderColor, Color & boderOuterColor)
 	{
-		Shape::RectangleB rc;
+		Shape::RectangleC rc;
 		rc.SetPositionAndSize(x, y, w, h);
 		rc.SetBorderSize(borderWidth);
 		rc.SetZ(z);

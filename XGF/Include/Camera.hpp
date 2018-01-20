@@ -9,8 +9,8 @@ namespace XGF
 		Camera();
 		~Camera();
 		void GetCameraMatrix(WVPMatrix & wvp, const DirectX::XMFLOAT4X4 * pro = nullptr);
-		virtual void UpdataProject(int cx, int cy) = 0;
-		virtual void Updata() = 0;
+		virtual void UpdateProject(int cx, int cy) = 0;
+		virtual void Update() = 0;
 
 		void SetMaxDistance(float f) { mMaxDistance = f; }
 		void SetMinDistance(float f) { mMinDistance = f; }

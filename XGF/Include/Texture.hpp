@@ -1,4 +1,5 @@
 #pragma once
+#define NOMINMAX
 #include <d3d11_1.h>
 #include "Defines.hpp"
 #include "../Include/DDSTextureLoader.h"
@@ -6,7 +7,27 @@
 #include <vector>
 namespace XGF
 {
+
 	class GDI;
+	class TextureResource
+	{
+	private:
+		ID3D11ShaderResourceView * mShaderResourceView;
+		ID3D11Texture2D * mTexture;
+		struct Size
+		{
+			UINT Width;
+			UINT Height;
+		};
+	public:
+		Size mSize;
+		TextureResource();
+		bool Load(GDI * gdi, void * mem, size_t size);
+		bool Load(GDI * gdi, std::wstring fullPath);
+		void Release();
+		ID3D11ShaderResourceView * GetShaderResourceView()const { return mShaderResourceView; }
+		ID3D11Texture2D * GetTexture() const { return mTexture; }
+	};
 
 	/*
 	纹理用类
@@ -14,39 +35,47 @@ namespace XGF
 	class Texture
 	{
 	public:
+		struct Rect
+		{
+			int Left;
+			int Right;
+			int Top;
+			int Bottom;
+		};
+
 		Texture();
-		Texture(const Texture & t);
-		void operator = (const Texture & tx);
 		~Texture();
+		Texture(TextureResource & tres);
+		Texture(TextureResource & tres, Rect & rc);
+	public:
+		void SetTextureResource(TextureResource * tres) { mTextureResource = tres; };
+		// In Point4, x is left, y is top, z is right, w is bottom
+		void SetRectangleNormalization(Point4 & p4) { mTextureRectangleNormalization = p4; };
+		void Set9PathInnerRect(Rect & rc);
+		void Set9PathBorderSize(int border);
 
-		void LoadFrom(const Texture & texture, float left, float top, float right, float bottom);
-		void LoadFromPosition(const Texture & texture, int left, int top, int right, int bottom);
+		void SetRectangle(Rect & rc);
 
-		void LoadDDS(GDI * gdi, const wchar_t * name);
-		void Load(ID3D11ShaderResourceView * ShaderResource);
-		//加载普通图像文件 如png，jpg，bmp
-		void LoadWIC(GDI * gdi, const wchar_t * name);
-		ID3D11ShaderResourceView * GetShaderResourceView()const { return mShaderResourceView; }
-		void Release() { if (mShaderResourceView && isCreateResourceView) { mShaderResourceView->Release(); mShaderResourceView = nullptr; } }
-		float GetTexturePosLeft() const { return left; }
-		float GetTexturePosTop() const { return top; }
-		float GetTexturePosRight() const { return right; }
-		float GetTexturePosBottom() const { return bottom; }
-		//void Binding();
+		float GetLeft() const  { return mTextureRectangleNormalization.x; };
+		float GetTop() const  { return mTextureRectangleNormalization.y; };
+		float GetRight() const  { return mTextureRectangleNormalization.z; };
+		float GetBottom() const  { return mTextureRectangleNormalization.w; };
+
+		bool Is9Path() const{ return mIs9Path; };
+
+		float Get9PathLeft() const { return m9Path.x; };
+		float Get9PathTop() const { return m9Path.y; };
+		float Get9PathRight() const { return m9Path.z; };
+		float Get9PathBottom() const { return m9Path.w; };
+
+		ID3D11ShaderResourceView * GetRawTexture() const { return mTextureResource->GetShaderResourceView(); };
 	private:
-		ID3D11ShaderResourceView * mShaderResourceView;
-		//std::vector<std::pair<int,>> mBindingTexturePos;
-		float left;
-		float top;
-		float right;
-		float bottom;
-		Position LeftTop;
-		Position RightBottom;
+		TextureResource * mTextureResource;
+		// x : left, y:top, z: right, w: bottom
+		Point4 mTextureRectangleNormalization;
 
-		Position LeftTop9Path;
-		Position RightBottom9Path;
-		//标示是否清理Texture
-		bool isCreateResourceView;
+		bool mIs9Path;
+		Point4 m9Path;
 	};
 
 
