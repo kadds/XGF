@@ -2,7 +2,7 @@
 #include "../../Include/Action.hpp"
 namespace XGF
 {
-	Actions::Actions() :onActionCompletedListener(nullptr), mIsActionBegan(false)
+	Actions::Actions() :mIsActionBegan(false)
 	{
 	}
 
@@ -14,32 +14,19 @@ namespace XGF
 
 	void Actions::Update(float time)
 	{
-		if (mIsActionBegan && mAction != nullptr)
+		if (mIsActionBegan )
 		{
-			mPassedTime += time;
-			if (mAction->Tick(mPassedTime))
+			for (auto & it = mAction.begin(); it != mAction.end();)
 			{
-				mIsActionBegan = false;
-				if (onActionCompletedListener != nullptr)
+				if (it->second->Tick(it->first, time))
 				{
-					onActionCompletedListener();
+					it = mAction.erase(it);
 				}
+				else ++it;
 			}
+			mIsActionBegan = !mAction.empty();
 		}
-	}
-
-	void Actions::Start()
-	{
-		if (mAction != nullptr)
-		{
-			mAction->Reset();
-			mIsActionBegan = true;
-			mPassedTime = 0.f;
-		}
-	}
-
-	void Actions::Stop()
-	{
+		
 	}
 
 	bool Actions::IsStart()
@@ -47,11 +34,11 @@ namespace XGF
 		return mIsActionBegan;
 	}
 
-	void Actions::SetAction(std::unique_ptr<Action> action, ActionInterface * ainterface)
+	void Actions::AddAction(Point & From, std::unique_ptr<Action> act)
 	{
-		mAction = std::move(action);
-		if (mAction != nullptr)
-			mAction->SetTarget(ainterface);
+		act->SetFrom(From);
+		mAction.push_back(std::make_pair(&From, std::move(act)));
+		mIsActionBegan = true;
 	}
 
 }

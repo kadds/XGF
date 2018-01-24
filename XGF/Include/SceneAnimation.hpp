@@ -1,11 +1,10 @@
 #pragma once
 #include "Defines.hpp"
 #include "Actions.hpp"
-#include "ActionInterface.hpp"
 #include <DirectXMath.h>
 namespace XGF
 {
-	class SceneAnimation : public ActionInterface
+	class SceneAnimation
 	{
 	public:
 		SceneAnimation();

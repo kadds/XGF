@@ -13,14 +13,11 @@ namespace XGF
 
 	void SceneAnimation::BeginAnimation()
 	{
-		mActions.Start();
 	}
 
 	void SceneAnimation::SetAction(std::unique_ptr<Action> ac)
 	{
 		isend = false;
-		mActions.SetAction(std::move(ac), this);
-		mActions.SetOnActionCompletedListener(std::bind(&SceneAnimation::ok, this));
 	}
 
 	XMMATRIX SceneAnimation::GetMatrix()

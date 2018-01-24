@@ -154,10 +154,7 @@
     <ClInclude Include="Include\Action.hpp" />
     <ClInclude Include="Include\Actions.hpp" />
     <ClInclude Include="Include\Actor.hpp" />
-    <ClInclude Include="Include\AlphaAction.hpp" />
     <ClInclude Include="Include\Animation.hpp" />
-    <ClInclude Include="Include\ActionBuilder.hpp" />
-    <ClInclude Include="Include\ActionInterface.hpp" />
     <ClInclude Include="Include\Application.hpp" />
     <ClInclude Include="Include\Asyn.hpp" />
     <ClInclude Include="Include\AsyncTask.hpp" />
@@ -169,7 +166,6 @@
     <ClInclude Include="Include\Button.hpp" />
     <ClInclude Include="Include\Camera.hpp" />
     <ClInclude Include="Include\Caret.hpp" />
-    <ClInclude Include="Include\ChangeColorAction.hpp" />
     <ClInclude Include="Include\Circle.hpp" />
     <ClInclude Include="Include\ClickHelper.hpp" />
     <ClInclude Include="Include\Color.hpp" />
@@ -200,10 +196,8 @@
     <ClInclude Include="Include\Line.hpp" />
     <ClInclude Include="Include\LinkedList.hpp" />
     <ClInclude Include="Include\Log.hpp" />
-    <ClInclude Include="Include\MoveToAction.hpp" />
     <ClInclude Include="Include\MsgQueue.hpp" />
     <ClInclude Include="Include\OrthoCamera.hpp" />
-    <ClInclude Include="Include\ParallelAction.hpp" />
     <ClInclude Include="Include\ParticleSystem.hpp" />
     <ClInclude Include="Include\PerspectiveCamera.hpp" />
     <ClInclude Include="Include\Polygon.hpp" />
@@ -213,12 +207,9 @@
     <ClInclude Include="Include\RenderToTexture.hpp" />
     <ClInclude Include="Include\RepeatAction.hpp" />
     <ClInclude Include="Include\ResourceManager.hpp" />
-    <ClInclude Include="Include\RotateToAction.hpp" />
-    <ClInclude Include="Include\ScaleToAction.hpp" />
     <ClInclude Include="Include\Scene.hpp" />
     <ClInclude Include="Include\SceneAnimation.hpp" />
     <ClInclude Include="Include\ScreenGrab.h" />
-    <ClInclude Include="Include\SequenceAction.hpp" />
     <ClInclude Include="Include\Shader.hpp" />
     <ClInclude Include="Include\ShaderConst.hpp" />
     <ClInclude Include="Include\Shape.hpp" />
@@ -241,19 +232,8 @@
   <ItemGroup>
     <ClCompile Include="Src\Animation\Action.cpp" />
     <ClCompile Include="Src\Animation\Actions.cpp" />
-    <ClCompile Include="Src\Animation\AlphaAction.cpp" />
     <ClCompile Include="Src\Animation\Animation.cpp" />
-    <ClCompile Include="Src\Animation\ActionBuilder.cpp" />
-    <ClCompile Include="Src\Animation\ChangeColorAction.cpp" />
-    <ClCompile Include="Src\Animation\CompositeAction.cpp" />
-    <ClCompile Include="Src\Animation\DelayAction.cpp" />
-    <ClCompile Include="Src\Animation\MoveToAction.cpp" />
-    <ClCompile Include="Src\Animation\ParallelAction.cpp" />
-    <ClCompile Include="Src\Animation\RepeatAction.cpp" />
-    <ClCompile Include="Src\Animation\RotateToAction.cpp" />
-    <ClCompile Include="Src\Animation\ScaleToAction.cpp" />
     <ClCompile Include="Src\Animation\SceneAnimation.cpp" />
-    <ClCompile Include="Src\Animation\SequenceAction.cpp" />
     <ClCompile Include="Src\Core\Actor.cpp" />
     <ClCompile Include="Src\Core\Asyn.cpp" />
     <ClCompile Include="Src\Core\Batch.cpp" />

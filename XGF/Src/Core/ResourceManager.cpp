@@ -93,6 +93,8 @@ namespace XGF
 
 	void TextureResourceManager::ReleaseAllResource()
 	{
+		for (auto it : mResourceMap)
+			it.second.Release();
 	}
 
 	void TextureResourceManager::InsertResource(std::wstring name, std::wstring alias, TextureResource & tRes)

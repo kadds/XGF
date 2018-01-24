@@ -5,8 +5,6 @@
 #include "Action.hpp"
 namespace XGF
 {
-	class ActionInterface;
-	typedef std::function<void(void)> OnActionCompletedListener;
 	class Actions
 	{
 	public:
@@ -14,16 +12,13 @@ namespace XGF
 		~Actions();
 
 		void Update(float time);
-		void SetOnActionCompletedListener(OnActionCompletedListener l) { onActionCompletedListener = l; }
-		void Start();
-		void Stop();
+
 		bool IsStart();
-		void SetAction(std::unique_ptr<Action> action, ActionInterface * ainterface);
+		void AddAction(Point & From, std::unique_ptr<Action> act);
 	private:
 		bool mIsActionBegan;
-		float mPassedTime;
-		std::unique_ptr<Action> mAction;
-		OnActionCompletedListener onActionCompletedListener;
+		std::vector<std::pair<Point *, std::unique_ptr<Action>>> mAction;
+
 	};
 
 

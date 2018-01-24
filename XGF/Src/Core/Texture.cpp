@@ -52,7 +52,7 @@ namespace XGF
 		mIs9Path = true;
 	}
 
-	void Texture::Set9PathBorderSize(int border)
+	void Texture::Set9PathBorderSize(float border)
 	{
 		m9Path.x = border / static_cast<float>(mTextureResource->mSize.Width);
 		m9Path.y = border / static_cast<float>(mTextureResource->mSize.Height);

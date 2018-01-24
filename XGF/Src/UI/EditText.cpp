@@ -63,8 +63,8 @@ namespace XGF
 
 	void EditText::OnRemoveFromContainer()
 	{
-		Control::OnRemoveFromContainer();
 		mParent->GetScene()->GetFramework()->GetInputManager()->ClearFocus(&mTextInputProcessor);
+		Control::OnRemoveFromContainer();
 	}
 
 	void EditText::OnMouseUp(const Event & ev)

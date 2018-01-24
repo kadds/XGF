@@ -31,14 +31,7 @@
 
 //****** Animation And Interpolator *********
 #include "Interpolator\Interpolator.hpp"
-#include "ActionBuilder.hpp"
 #include "Action.hpp"
-#include "SequenceAction.hpp"
-#include "ParallelAction.hpp"
-#include "ChangeColorAction.hpp"
-#include "RotateToAction.hpp"
-#include "ScaleToAction.hpp"
-#include "MoveToAction.hpp"
 #include "Animation.hpp"
 //***********************************
 

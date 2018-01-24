@@ -23,7 +23,7 @@ namespace XGF
 		void _Render();
 		//¿ò¼Üµ÷ÓÃ
 		void _Update(float deltaTime);
-		virtual void Update(float deltaTime) {};
+		virtual void Update(float deltaTime);
 		virtual void Render(const XMMATRIX * matrix) = 0;
 		
 		Transform & GetTransform() { return mTransform; };

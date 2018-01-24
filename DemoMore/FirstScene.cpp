@@ -37,23 +37,24 @@ void FirstScene::OnCreate()
 	label->SetOnRemoveFromContainerLisener(Deleter);
 	label->SetId(0);
 	label->SetText(L"Direct3D11");
-	label->SetPositionAndSize(50, 200, 150, 40);
+	label->SetPositionAndSize(200, 200, 100, 20);
 	label->SetZ(0.4f);
-	//mLb.GetTransform().mRotation = Point(0, 0, 0.4);
 	GetRootContainer().AddChild(label);
 
-	label->GetClickHelper().AddOnClickListener([this](const MousePoint & ms, int mouseButton) {
+	label->GetClickHelper().AddOnClickListener([this, label](const MousePoint & ms, int mouseButton) {
 		AsyncTask::NewTask(mFramework->GetTheard(), [this](AsyncTask * asyn) {
 			MessageBox(NULL, L"YOU CLICK Label!!",L"Exe",0);
 			asyn->Finish(0, 0);
 		});
+		label->GetTransform().AddTranslationAction(Action::Make(Point(200, 2, 0), 2.0, false, LinearInterpolator::GetInterpolator()));
 	});
-	Label * labelText = new Label(20, L"X Game Render Framework\nClick here switch next scene.");
-	GetRootContainer().AddChild(labelText);
-	labelText->SetOnRemoveFromContainerLisener(Deleter);
-	labelText->SetPositionAndSize(0, 240, 240, 40);
-	labelText->SetZ(0.06f);
-	labelText->GetClickHelper().AddOnClickListener([this](const MousePoint & ms, int mouseButton) {
+	Button * nextButton = new Button(2, L"X Game Render Framework\nClick here switch next scene.");
+	GetRootContainer().AddChild(nextButton);
+	nextButton->SetOnRemoveFromContainerLisener(Deleter);
+	nextButton->SetPositionAndSize(0, 240, 230, 40);
+	nextButton->SetZ(0.06f);
+	nextButton->SetBorderSize(1.f);
+	nextButton->GetClickHelper().AddOnClickListener([this](const MousePoint & ms, int mouseButton) {
 		this->GetFramework()->SwitchScene(new SecondScene());
 	});
 
@@ -61,8 +62,8 @@ void FirstScene::OnCreate()
 	button->SetOnRemoveFromContainerLisener(Deleter);
 	GetRootContainer().AddChild(button);
 
-	button->SetPositionAndSize(10,100,60,30);
-	button->SetBorderSize(3);
+	button->SetPositionAndSize(10,100,60,40);
+	button->SetBorderSize(2);
 	button->SetZ(0.07f);
 	button->GetClickHelper().AddOnClickListener([this](const MousePoint & ms, int mouseButton) {
 		if (mFramework->GetGDI()->GetDisplayMode() == DisplayMode::Borderless)
@@ -83,7 +84,7 @@ void FirstScene::OnCreate()
 	edit1->SetZ(0.08f);
 	
 	edit2->SetPositionAndSize(140, 20, 120, 40);
-	edit2->SetBorderSize(1);
+	edit2->SetBorderSize(2);
 	edit2->SetZ(0.08f);
 
 	GetRootContainer().AddChild(edit1);
@@ -95,17 +96,23 @@ void FirstScene::OnCreate()
 
 	//resource loading
 	auto res = std::vector<ResourceInfo>();
-	res.push_back(ResourceInfo(L"a.png", L"_button_normal"));
-	res.push_back(ResourceInfo(L"a1.png", L"_button_hover"));
-	res.push_back(ResourceInfo(L"a2.png", L"_button_activate"));
+	res.push_back(ResourceInfo(L"_normal.png", L"normal"));
+	res.push_back(ResourceInfo(L"_hover.png", L"hover"));
+	res.push_back(ResourceInfo(L"_activate.png", L"activate"));
+
 	mTextureResourceManager.LoadResourceAsync(mFramework->GetGDI(), res, mFramework->GetTheard(), [this](std::vector<ResourceInfo> ress, int success) {
-		auto t1 = Texture(*mTextureResourceManager.GetResourceByAlias(L"_button_normal"));
-		auto t2 = Texture(*mTextureResourceManager.GetResourceByAlias(L"_button_hover"));
-		auto t3 = Texture(*mTextureResourceManager.GetResourceByAlias(L"_button_activate"));
+		auto t1 = Texture(*mTextureResourceManager.GetResourceByAlias(L"normal"));
+		auto t2 = Texture(*mTextureResourceManager.GetResourceByAlias(L"hover"));
+		auto t3 = Texture(*mTextureResourceManager.GetResourceByAlias(L"activate"));
 		t1.Set9PathBorderSize(3);
 		t2.Set9PathBorderSize(3);
 		t3.Set9PathBorderSize(3);
 		static_cast<Control *>(GetRootContainer().GetActorById(1))->SetSkin(Skin::CreateFromTextures(&t1, &t2, &t3));
+		static_cast<Control *>(GetRootContainer().GetActorById(2))->SetSkin(Skin::CreateFromTextures(&t1, &t2, &t3));
+
+		t1.Set9PathBorderSize(3.5);
+		t2.Set9PathBorderSize(3.5);
+		t3.Set9PathBorderSize(3.5);
 		static_cast<Control *>(GetRootContainer().GetActorById(10))->SetSkin(Skin::CreateFromTextures(&t1, &t2, &t3));
 		static_cast<Control *>(GetRootContainer().GetActorById(11))->SetSkin(Skin::CreateFromTextures(&t1, &t2, &t3));
 	});

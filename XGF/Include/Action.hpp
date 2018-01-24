@@ -2,13 +2,10 @@
 #include "Defines.hpp"
 #include <DirectXMath.h>
 #include "Interpolator\Interpolator.hpp"
-#include "ActionInterface.hpp"
 #include <memory>
 namespace XGF
 {
 	/*
-	行为基类， 定义行为
-	所有Action对象都使用智能指针包裹
 	*/
 	class Action
 	{
@@ -16,22 +13,25 @@ namespace XGF
 		Action();
 		virtual ~Action();
 		//返回True ：已经结束Action
-		virtual bool Tick(float time) = 0;
-		virtual void Reset();
-		void SetRelativeMode(bool RelativeMode) {
-			mIsRelativeMode = RelativeMode;
+		bool Tick(Point * out, float deltaTime);
+		static std::unique_ptr<Action> Make(Point & to, float duration, bool isRelative,std::shared_ptr<Interpolator> interpolator)
+		{
+			std::unique_ptr<Action> action = std::make_unique<Action>();
+			action->mDuration = duration;
+			action->mTo = to;
+			action->mInterpolator = interpolator;
+			action->mIsRelative = isRelative;
+			return action;
 		}
-		virtual void SetTarget(ActionInterface * target) { mTarget = target; }
-		bool IsComplete() { return mComplete; }
-		bool IsBegan() { return mBegan; }
+		void SetFrom(Point &from);
 	protected:
-		float mTime;
-		bool mBegan;
-		bool mComplete;
-		bool mIsRelativeMode;
 		std::shared_ptr<Interpolator> mInterpolator;
-		ActionInterface * mTarget;
-		int mID;
+		Point mTo;
+		Point mFrom;
+		Point mFromDelta;
+		float mDuration;
+		float mTime;
+		bool mIsRelative;
 	private:
 		DISALLOW_COPY_AND_ASSIGN(Action);
 	};

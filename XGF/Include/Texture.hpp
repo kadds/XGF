@@ -52,7 +52,7 @@ namespace XGF
 		// In Point4, x is left, y is top, z is right, w is bottom
 		void SetRectangleNormalization(Point4 & p4) { mTextureRectangleNormalization = p4; };
 		void Set9PathInnerRect(Rect & rc);
-		void Set9PathBorderSize(int border);
+		void Set9PathBorderSize(float border);
 
 		void SetRectangle(Rect & rc);
 

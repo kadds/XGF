@@ -105,16 +105,10 @@
     <ClInclude Include="Include\Log.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Include\MoveToAction.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Include\MsgQueue.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\OrthoCamera.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\ParallelAction.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\PerspectiveCamera.hpp">
@@ -124,12 +118,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\Rectangle.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\RotateToAction.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\ScaleToAction.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\Scene.hpp">
@@ -177,13 +165,7 @@
     <ClInclude Include="Include\Interpolator\Interpolator.hpp">
       <Filter>头文件\Interpolator</Filter>
     </ClInclude>
-    <ClInclude Include="Include\SequenceAction.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Include\CompositeAction.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\ChangeColorAction.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\StateList.hpp">
@@ -211,15 +193,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\Bresenham.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\ActionInterface.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\AlphaAction.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\ActionBuilder.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\Actions.hpp">
@@ -398,18 +371,6 @@
     <ClCompile Include="Src\Animation\Animation.cpp">
       <Filter>源文件\Animation</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Animation\MoveToAction.cpp">
-      <Filter>源文件\Animation</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Animation\ParallelAction.cpp">
-      <Filter>源文件\Animation</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Animation\RotateToAction.cpp">
-      <Filter>源文件\Animation</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Animation\ScaleToAction.cpp">
-      <Filter>源文件\Animation</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Tools\AsyncTask.cpp">
       <Filter>源文件\Tools</Filter>
     </ClCompile>
@@ -424,18 +385,6 @@
     </ClCompile>
     <ClCompile Include="Src\Shape\Cube.cpp">
       <Filter>源文件\Shape</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Animation\SequenceAction.cpp">
-      <Filter>源文件\Animation</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Animation\CompositeAction.cpp">
-      <Filter>源文件\Animation</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Animation\ChangeColorAction.cpp">
-      <Filter>源文件\Animation</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Animation\DelayAction.cpp">
-      <Filter>源文件\Animation</Filter>
     </ClCompile>
     <ClCompile Include="Src\Input\InputManager.cpp">
       <Filter>源文件\Input</Filter>
@@ -458,20 +407,11 @@
     <ClCompile Include="Src\Tools\Bresenham.cpp">
       <Filter>源文件\Tools</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Animation\ActionBuilder.cpp">
-      <Filter>源文件\Animation</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Animation\AlphaAction.cpp">
-      <Filter>源文件\Animation</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Animation\Actions.cpp">
       <Filter>源文件\Animation</Filter>
     </ClCompile>
     <ClCompile Include="Src\UI\UIBatches.cpp">
       <Filter>源文件\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Animation\RepeatAction.cpp">
-      <Filter>源文件\Animation</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\ShapeRenderer.cpp">
       <Filter>源文件\Core</Filter>
