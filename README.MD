@@ -1,36 +1,34 @@
 #           XGF
-## What's it?
-### X Game render Framework(XGF) is based on direct3d11 API for study game devolopment
+### X Game render Framework(XGF) is a framework which based on direct3d11 API for study game development
   
-## What Funtions Does It Have？
+## Features
 
 * A great batch renderer
     *  Texture combine
 * Complete animation system
-    * Texture animaion
     * Action animation
 * DirectInput support
 * UI system
-    * Lable
+    * Label
     * EditText
     * Button
 	* ...  Skin support
-* Text renderer based on Freetype
+* Text renderer based on FreeType
 * Basic shape render
     * Line
-    * Rectange
+    * Rectangle
     * Circle
 	* More...
 * Scene manager
-    * Switch scene with aniamtion
+    * Switch scene with animation
 * Particle
     * Different ParticleEffect (Uncompletely)
   
 ## How To Compile
-Compiler： VC++14.1 or later(Only Support MSVC14.1+. In the future, it may be migrated to cmake tools)  
+Compiler:  VC++14.1 or later(Only Support MSVC14.1+)  
 #### We recommend to using Visual Studio 2017.
   
-###### notic: Please Copy resorce files to run directory. The resorce files always in Bin directory.
+###### Tip: Please Copy resource files to run directory. The resource files always in Bin directory.
  
 ## Some Thumbnail Preview
  Demo1:  
@@ -43,9 +41,8 @@ Compiler： VC++14.1 or later(Only Support MSVC14.1+. In the future, it may be m
 Feedback is welcome. You can use the following contact way to communicate with me  
   
 * Email: <itmyxyf@gmail.com>
-* QQ: 1346144952
   
-## Thankes
-* [Freetype](https://sourceforge.net/projects/freetype/) 
+## Thanks
+* [FreeType](https://sourceforge.net/projects/freetype/) 
 * [DirectXTK](https://github.com/Microsoft/DirectXT)
 * [DirectXTex](https://github.com/Microsoft/DirectXTex)

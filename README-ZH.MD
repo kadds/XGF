@@ -6,15 +6,14 @@
 *  渲染器
     *  纹理合并
 * 动画系统
-    * 纹理动画
     * Action 动画
 * DirectInput支持
 * 简易的 UI 系统
     * Lable
     * EditText
     * Button
-    * 皮肤扩展
-* 基于 Freetype 的文本渲染
+    * 皮肤扩展 (开发中)
+* 基于 Freetype 的简单文本渲染
 * 图元
     * Line
     * Rectange
@@ -25,9 +24,8 @@
     * 基于GPU的粒子系统 (开发中)
   
 ## 如何编译
-编译器： VC++14.1或更高 (仅支持 MSVC14+. 未来可能部署到 cmake)  
+编译器： VC++14.1或更高 (仅支持 MSVC14.1+)  
 推荐使用VS2017  
-编译：打开.sln文件，选择X64模式编译即可  
   
 ###### 注意：Demo 需要复制Bin目录的资源到执行目录
  预览图
@@ -40,7 +38,6 @@
 ## 联系方式
   
 * Email: <itmyxyf@gmail.com>
-* QQ: 1346144952
   
 ## 感谢
 * [Freetype](https://sourceforge.net/projects/freetype/) 
