@@ -229,3 +229,4 @@ void FirstScene::OnSize(int ClientX, int ClientY)
 	mCamera.UpdateProject(ClientX, ClientY);
 }
 
+

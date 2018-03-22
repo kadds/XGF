@@ -4,15 +4,21 @@
 namespace XGF
 {
 	class Texture;
-
+	/**
+	* 可绑定资源基类
+	*/
 	class PolygonPleBinder
 	{
 	public:
 		PolygonPleBinder() {}
 		virtual ~PolygonPleBinder() {}
 		int mCount;
+		// 把数据复制到 Des 处 且长度为chunk
 		virtual void CopyTo(void * Des, unsigned int chunk) const = 0;
 	};
+	/**
+	* 通用的 Float4 数据绑定器
+	*/
 	class PolygonPleDataBinder : public PolygonPleBinder
 	{
 	public:
@@ -35,18 +41,21 @@ namespace XGF
 			return  true;
 		}
 	};
-	/*
-	索引结构
+	/**
+	* 索引结构
 	*/
 	class PolygonPleIndex
 	{
 	public:
+		// 起始地址
 		index *mIndex;
+		// 索引个数
 		int mCount;
 		PolygonPleIndex(int n);
 		~PolygonPleIndex();
-		void CopyTo(void * Des, int offset) const;
 		PolygonPleIndex(const PolygonPleIndex& tb);
+
+		void CopyTo(void * Des, int offset) const;
 		bool operator ==(const PolygonPleIndex &rx) const {
 			if (&rx == this)
 				return true;
@@ -60,9 +69,9 @@ namespace XGF
 		}
 		index Get(int n) const;
 	};
-	//////////////////
-	/*
-	纹理结构
+
+	/**
+	* 纹理UV绑定器
 	*/
 	class PolygonPleTextureBinder : public PolygonPleBinder
 	{
@@ -87,8 +96,8 @@ namespace XGF
 		void SetPosition(float left, float right, float top, float bottom);
 	};
 
-	/*
-	颜色结构
+	/**
+	* 颜色数据绑定器
 	*/
 	class PolygonPleColorBinder : public PolygonPleBinder
 	{
@@ -112,8 +121,8 @@ namespace XGF
 			return  true;
 		}
 	};
-	/*
-	恒定颜色结构
+	/**
+	* 恒定颜色结构
 	*/
 	class PolygonPleConstantColorBinder : public PolygonPleColorBinder
 	{
@@ -155,8 +164,8 @@ namespace XGF
 		int mLayerCount;
 	};
 
-	/*
-	顶点绑定器
+	/**
+	* 顶点数据 - 桥
 	*/
 	class BindingBridge
 	{
@@ -170,6 +179,7 @@ namespace XGF
 		void SetBinder(const  PolygonPleBinder & c, int pos);
 		void InsertBinder(const  PolygonPleBinder & c, int pos);
 		void AddBinder(const  PolygonPleBinder & c);
+		void AddPlaceHolder();
 		const PolygonPleBinder * GetBinder(int tp) const;
 	private:
 		const PolygonPleBinder* binders[16];//max is 16

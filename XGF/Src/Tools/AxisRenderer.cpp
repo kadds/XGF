@@ -59,7 +59,7 @@ namespace XGF
 	{
 		BindingBridge bbr;
 		PolygonPleConstantColorBinder cbb(Color(0, 0, 0, 0), 2);
-		bbr.AddBinder(cbb);//same as seize: Don't Delete
+		bbr.AddPlaceHolder();
 		bbr.AddBinder(cbb);
 		int i = 0;
 		std::for_each(lines.begin(), lines.end(), [this, &cbb, &i, &bbr](std::unique_ptr<Shape::Line> &var) {

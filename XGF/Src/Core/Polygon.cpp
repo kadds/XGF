@@ -238,6 +238,11 @@ namespace XGF
 		mCount++;
 	}
 
+	void BindingBridge::AddPlaceHolder()
+	{
+		mCount++;
+	}
+
 	const PolygonPleBinder * BindingBridge::GetBinder(int tp) const
 	{
 		return binders[tp];
