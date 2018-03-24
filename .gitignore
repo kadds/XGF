@@ -46,6 +46,7 @@
 *.ipdb
 Debug
 Release
+
 !/Bin/resource/
 !/Bin/fx/
 

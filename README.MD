@@ -32,10 +32,10 @@ Compiler:  VC++14.1 or later(Only Support MSVC14.1+)
  
 ## Some Thumbnail Preview
  Demo1:  
-![DemoMore](https://raw.githubusercontent.com/kadds/XGF/master/Preview/TT.PNG)
+![Demo](https://raw.githubusercontent.com/kadds/XGF/master/Preview/Preview1.PNG)
   
   Demo2:  
-![EasyDemo](https://raw.githubusercontent.com/kadds/XGF/master/Preview/TT2.PNG)
+![Demo](https://raw.githubusercontent.com/kadds/XGF/master/Preview/Preview2.PNG)
  
 ## Problem Feedback
 Feedback is welcome. You can use the following contact way to communicate with me  
@@ -43,6 +43,6 @@ Feedback is welcome. You can use the following contact way to communicate with m
 * Email: <itmyxyf@gmail.com>
   
 ## Thanks
-* [FreeType](https://sourceforge.net/projects/freetype/) 
+* [FreeType](https://www.freetype.org/) 
 * [DirectXTK](https://github.com/Microsoft/DirectXT)
 * [DirectXTex](https://github.com/Microsoft/DirectXTex)

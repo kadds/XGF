@@ -9,14 +9,14 @@
     * Action 动画
 * DirectInput支持
 * 简易的 UI 系统
-    * Lable
+    * Label
     * EditText
     * Button
     * 皮肤扩展 (开发中)
 * 基于 Freetype 的简单文本渲染
 * 图元
     * Line
-    * Rectange
+    * Rectangle
     * Circle
 * 场景管理
     * 场景切换动画 (开发中)
@@ -30,16 +30,16 @@
 ###### 注意：Demo 需要复制Bin目录的资源到执行目录
  预览图
  Demo1:  
-![DemoMore](https://raw.githubusercontent.com/kadds/XGF/master/Preview/TT.PNG)
+![DemoMore](https://raw.githubusercontent.com/kadds/XGF/master/Preview/Preview1.PNG)
   
   Demo2:  
-![EasyDemo](https://raw.githubusercontent.com/kadds/XGF/master/Preview/TT2.PNG)
+![EasyDemo](https://raw.githubusercontent.com/kadds/XGF/master/Preview/Preview2.PNG)
  
 ## 联系方式
   
 * Email: <itmyxyf@gmail.com>
   
 ## 感谢
-* [Freetype](https://sourceforge.net/projects/freetype/) 
+* [Freetype](https://www.freetype.org/) 
 * [DirectXTK](https://github.com/Microsoft/DirectXT)
 * [DirectXTex](https://github.com/Microsoft/DirectXTex)
