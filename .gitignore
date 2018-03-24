@@ -1,3 +1,5 @@
+
+!/External/
 # Prerequisites
 *.d
 
@@ -44,11 +46,14 @@
 *.bsc
 *.iobj
 *.ipdb
+
 Debug
 Release
 
+Bin
 !/Bin/resource/
 !/Bin/fx/
+!/External/
 
 #vs files
 .vs
