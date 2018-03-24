@@ -14,7 +14,7 @@ namespace XGF
 			void SetCenterPositionAndSize(XMFLOAT3 center, XMFLOAT3 & whd);
 
 
-			virtual bool IsInBoundBox(const Point & p, const FXMMATRIX matrix) const override { return false; };
+			virtual bool IsInBoundBox(const Point & p) override { return false; };
 			virtual void SetPosition(const Point & p) override;
 			void Filp();
 		};

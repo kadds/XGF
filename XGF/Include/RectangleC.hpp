@@ -16,7 +16,7 @@ namespace XGF
 			void SetBorderSize(float width);
 			virtual void SetPosition(const Point & p) override;
 			virtual void GetPosition(Point & p) const override;
-			virtual bool IsInBoundBox(const Point & p, const FXMMATRIX matrix) const override;
+			virtual bool IsInBoundBox(const Point & p) override;
 			//always return 3
 			int GetBorderLayer(int layer[]);
 			//获取内矩形

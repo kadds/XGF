@@ -7,17 +7,18 @@ namespace XGF
 {
 	Texture::Texture():mIs9Path(false), mTextureResource(nullptr)
 	{
-
 		mTextureRectangleNormalization = Point4(0.f, 0.f, 1.f, 1.f);
 	}
 
 	Texture::Texture(TextureResource & tres, Rect & rc) :mIs9Path(false)
 	{
+		if (&tres == nullptr) XGF_ReportWarn0("resource is not defined");
 		SetRectangle(rc);
 		mTextureResource = &tres;
 	}
 	Texture::Texture(TextureResource & tres) : mIs9Path(false)
 	{
+		if (&tres == nullptr) XGF_ReportWarn0("resource is not defined");
 		mTextureRectangleNormalization = Point4(0.f, 0.f, 1.f, 1.f);
 		mTextureResource = &tres;
 	}
@@ -32,10 +33,10 @@ namespace XGF
 		mTextureRectangleNormalization.z = rc.Right / static_cast<float>(mTextureResource->mSize.Width);
 		mTextureRectangleNormalization.w = rc.Bottom / static_cast<float>(mTextureResource->mSize.Height);
 
-		std::clamp(mTextureRectangleNormalization.x, 0.f, 1.f);
-		std::clamp(mTextureRectangleNormalization.y, 0.f, 1.f);
-		std::clamp(mTextureRectangleNormalization.z, m9Path.x, 1.f);
-		std::clamp(mTextureRectangleNormalization.w, m9Path.y, 1.f);//TODO:: Maybe have problem here
+		mTextureRectangleNormalization.x = std::clamp(mTextureRectangleNormalization.x, 0.f, 1.f);
+		mTextureRectangleNormalization.y = std::clamp(mTextureRectangleNormalization.y, 0.f, 1.f);
+		mTextureRectangleNormalization.z = std::clamp(mTextureRectangleNormalization.z, m9Path.x, 1.f);
+		mTextureRectangleNormalization.w = std::clamp(mTextureRectangleNormalization.w, m9Path.y, 1.f);//TODO:: Maybe have problem here
 	}
 	void Texture::Set9PathInnerRect(Rect & rc)
 	{
@@ -44,10 +45,10 @@ namespace XGF
 		m9Path.z = rc.Right / static_cast<float>(mTextureResource->mSize.Width);
 		m9Path.w = rc.Bottom / static_cast<float>(mTextureResource->mSize.Height);
 
-		std::clamp(m9Path.x, 0.f, 1.f);
-		std::clamp(m9Path.y, 0.f, 1.f);
-		std::clamp(m9Path.z, m9Path.x, 1.f);
-		std::clamp(m9Path.w, m9Path.y, 1.f);//TODO:: Maybe have problem here
+		m9Path.x = std::clamp(m9Path.x, 0.f, 1.f);
+		m9Path.y = std::clamp(m9Path.y, 0.f, 1.f);
+		m9Path.z = std::clamp(m9Path.z, m9Path.x, 1.f);
+		m9Path.w = std::clamp(m9Path.w, m9Path.y, 1.f);//TODO:: Maybe have problem here
 
 		mIs9Path = true;
 	}
@@ -59,10 +60,10 @@ namespace XGF
 		m9Path.z = (mTextureResource->mSize.Width - border) / static_cast<float>(mTextureResource->mSize.Width);
 		m9Path.w = (mTextureResource->mSize.Height - border) / static_cast<float>(mTextureResource->mSize.Height);
 
-		std::clamp(m9Path.x, 0.f, 1.f);
-		std::clamp(m9Path.y, 0.f, 1.f);
-		std::clamp(m9Path.z, m9Path.x, 1.f);
-		std::clamp(m9Path.w, m9Path.y, 1.f);//TODO:: Maybe have problem here
+		m9Path.x = std::clamp(m9Path.x, 0.f, 1.f);
+		m9Path.y = std::clamp(m9Path.y, 0.f, 1.f);
+		m9Path.z = std::clamp(m9Path.z, m9Path.x, 1.f);
+		m9Path.w = std::clamp(m9Path.w, m9Path.y, 1.f);//TODO:: Maybe have problem here
 		mIs9Path = true;
 	}
 

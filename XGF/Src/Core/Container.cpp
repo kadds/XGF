@@ -51,7 +51,7 @@ namespace XGF
 		mParent = c;
 	}
 
-	Actor * Container::AddChild(Actor * actor)
+	std::shared_ptr<Actor> Container::AddChild(std::shared_ptr<Actor> actor)
 	{
 		mChild.push_back(actor);
 		actor->SetParent(this);
@@ -59,29 +59,29 @@ namespace XGF
 		return actor;
 	}
 
-	void Container::AddChild(Container * container)
+	void Container::AddChild(std::shared_ptr<Container> container)
 	{
 		mContainerChild.push_back(container);
 		container->SetParent(this);
 		
 	}
 
-	void Container::RemoveChild(Actor & actor)
+	void Container::RemoveChild(std::shared_ptr<Actor> actor)
 	{
-		auto it = std::find(mChild.begin(), mChild.end(), &actor);
+		auto it = std::find(mChild.begin(), mChild.end(), actor);
 		if (it != mChild.end())
 		{
-			actor.OnRemoveFromContainer();
+			actor->OnRemoveFromContainer();
 			mChild.erase(it);
 		}
 	}
 
-	void Container::RemoveChild(Container & container)
+	void Container::RemoveChild(std::shared_ptr<Container> container)
 	{
-		auto it = std::find(mContainerChild.begin(), mContainerChild.end(), &container);
+		auto it = std::find(mContainerChild.begin(), mContainerChild.end(), container);
 		if (it != mContainerChild.end())
 		{
-			container._OnDestory();
+			container->_OnDestory();
 			mContainerChild.erase(it);
 		}
 	}
@@ -106,14 +106,14 @@ namespace XGF
 		mContainerChild.clear();
 	}
 
-	Actor * Container::GetActorById(int Id, bool includeChildContainer)
+	std::shared_ptr<Actor> Container::GetActorById(int Id, bool includeChildContainer)
 	{
 		for (auto it : mChild)
 			if (it->GetId() == Id)
 				return it;
 		if (includeChildContainer)
 		{
-			Actor * actor = nullptr;
+			std::shared_ptr<Actor> actor;
 			for (auto it : mContainerChild)
 			{
 				actor = it->GetActorById(Id, true);

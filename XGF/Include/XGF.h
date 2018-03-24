@@ -52,6 +52,8 @@
 #include "Shape.hpp"
 #include "Rectangle.hpp"
 #include "RectangleB.hpp"
+#include "RectangleC.hpp"
+#include "Line.hpp"
 #include "Cube.hpp"
 #include "Circle.hpp"
 //***********************************

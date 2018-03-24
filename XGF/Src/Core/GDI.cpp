@@ -173,7 +173,7 @@ namespace XGF
 
 	}
 
-	void GDI::Clear(float color[])
+	void GDI::Clear(const float color[])
 	{
 		mDeviceContext->ClearRenderTargetView(mRenderTargetView, color);
 		//Çå³ýÉî¶È»º³å.  
@@ -184,7 +184,7 @@ namespace XGF
 
 		mDeviceContext->PSSetShaderResources(0, 1, pSRV);
 	}
-	void GDI::Clear(Color & c)
+	void GDI::Clear(const Color & c)
 	{
 		if (!mRTTs.empty())
 		{

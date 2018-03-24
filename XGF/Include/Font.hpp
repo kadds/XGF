@@ -5,20 +5,35 @@
 #include "freetype/freetype.h"
 #include "freetype/ftglyph.h"
 #include <d3d11_1.h>
+#ifdef XGF_USE_FREETYPE_STATIC
 #ifdef _DEBUG
 #ifdef _WIN64
-#pragma comment(lib,"../Other/freetype/libs/dll/x64/freetype28MTD.lib")
+#pragma comment(lib,"./../../External/freetype/libs/lib/x64/Debug/freetyped.lib")
 #else
-#pragma comment(lib,"../Other/freetype/libs/dll/Win32/freetype28MTD.lib")
+#pragma comment(lib,"./../../External/freetype/libs/lib/Win32/Debug/freetyped.lib")
 #endif
 #else
 #ifdef _WIN64
-#pragma comment(lib,"../Other/freetype/libs/dll/x64/freetype28MT.lib")
+#pragma comment(lib,"./../../External/freetype/libs/lib/x64/Release/freetype.lib")
 #else
-#pragma comment(lib,"../Other/freetype/libs/dll/Win32/freetype28MT.lib")
+#pragma comment(lib,"./../../External/freetype/libs/lib/Win32/Release/freetype.lib")
 #endif
 #endif
-
+#else //×ÔÐÐ±àÒë
+#ifdef _DEBUG
+#ifdef _WIN64
+#pragma comment(lib,"./../../External/freetype/libs/dll/x64/Debug/freetyped.lib")
+#else
+#pragma comment(lib,"./../../External/freetype/libs/dll/Win32/Debug/freetyped.lib")
+#endif
+#else
+#ifdef _WIN64
+#pragma comment(lib,"./../../External/freetype/libs/dll/x64/Release/freetype.lib")
+#else
+#pragma comment(lib,"./../../External/freetype/libs/dll/Win32/Release/freetype.lib")
+#endif
+#endif
+#endif
 #include <iostream>  
 #include <fstream>  
 #include <unordered_map>

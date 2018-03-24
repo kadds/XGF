@@ -34,6 +34,10 @@ namespace XGF
 		mIsChange = false;
 		return matrix;
 	}
+	void Transform::SetMatrix(CXMMATRIX matrix)
+	{
+		DirectX::XMStoreFloat4x4(&mMatrix ,matrix);
+	}
 	void Transform::AddScaleAction(std::unique_ptr<Action> action)
 	{
 		mActions.AddAction(mScale, std::move(action));

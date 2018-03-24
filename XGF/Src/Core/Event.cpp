@@ -16,19 +16,19 @@ namespace XGF {
 		XGF_ASSERT(mEventId.type() == typeid(MouseEventId));
 		return std::any_cast<MouseEventId>(mEventId);
 	}
-	int Event::GetDataInt(int index) const
+	int Event::GetDataInt(unsigned int index) const
 	{
 		XGF_ASSERT(index < mData.size());
 		XGF_ASSERT(index >= 0);
 		return std::any_cast<int>(mData[index]);
 	}
-	float Event::GetDataFloat(int index) const
+	float Event::GetDataFloat(unsigned int index) const
 	{
 		XGF_ASSERT(index < mData.size());
 		XGF_ASSERT(index >= 0);
 		return std::any_cast<float>(mData[index]);
 	}
-	unsigned int Event::GetDataUint(int index) const
+	unsigned int Event::GetDataUint(unsigned int index) const
 	{
 		XGF_ASSERT(index < mData.size());
 		XGF_ASSERT(index >= 0);

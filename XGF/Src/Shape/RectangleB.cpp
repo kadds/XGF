@@ -33,6 +33,10 @@ namespace XGF
 			{
 				mPolygonPleIndex.mIndex[i] = ide[i];
 			}
+			for (int i = 0; i < mPolygon.mCount; i++) 
+			{
+				mPolygon.mPoint[i] = Point(0.f, 0.f, 0.f);
+			}
 		}
 
 
@@ -86,16 +90,16 @@ namespace XGF
 		{
 			p = mPolygon.mPoint[0];
 		}
-		bool RectangleB::IsInBoundBox(const Point & p, const FXMMATRIX matrix) const
-	{
+		bool RectangleB::IsInBoundBox(const Point & p)
+		{
 			PolygonPlePoint3 ple(4);
 
 			for (int i = 0; i < 4; i++)
 			{
 				ple.mPoint[i] = mPolygon.mPoint[i];
 			}
-			ple.Mul(matrix);
-			return pInPolygon(ple, static_cast<int>(p.x), static_cast<int>(p.y));
+			ple.Mul(mTransform.GetMatrix());
+			return pInPolygon(ple, p.x, p.y);
 
 		}
 	}

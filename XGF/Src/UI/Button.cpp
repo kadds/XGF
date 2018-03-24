@@ -9,7 +9,7 @@ namespace XGF
 	{
 	}
 
-	Button::Button(int id, wchar_t * text, Color textColor):Control(id), mText(text), mTextColor(textColor)
+	Button::Button(int id, const string & text, Color textColor):Control(id), mText(text), mTextColor(textColor)
 	{
 	}
 
@@ -17,22 +17,22 @@ namespace XGF
 	{
 	}
 	
-	void Button::Render(const XMMATRIX * matrix)
+	void Button::Render()
 	{
-		DrawSkin(matrix);
+		DrawSkin();
 		::XGF::Shape::Rectangle rc;
 		RectangleB::GetInerBorderRectangle(rc);
 		rc.SetZ(GetZ() - minZdivision);
 		auto renderer = this->mParent->GetScene()->GetFramework()->GetUIBatches().GetTextRenderer(mFontSize);
-		if (renderer != nullptr && mText != nullptr)
-			renderer->DrawString(mText, mTextColor, &rc, matrix);
+		if (renderer != nullptr && !mText.empty())
+			renderer->DrawString(mText.c_str(), mTextColor, &rc, &mTransform.GetMatrix());
 	}
 
-	void Button::SetText(wchar_t * text)
+	void Button::SetText(const string & text)
 	{
 		mText = text;
 	}
-	void Button::SetTextColor(Color & color)
+	void Button::SetTextColor(const Color & color)
 	{
 		mTextColor = color;
 	}

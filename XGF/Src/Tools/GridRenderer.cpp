@@ -13,7 +13,7 @@ namespace XGF
 	{
 	}
 
-	void GridRenderer::Initialize(GDI * gdi, float width, float height, unsigned xcount, unsigned zcount, Point & origin)
+	void GridRenderer::Initialize(GDI * gdi, float width, float height, unsigned xcount, unsigned zcount, const Point & origin)
 	{
 		XGF_ASSERT(width > 0 && height > 0);
 		mBatch.Initialize(gdi, ConstantData::GetInstance().GetPCShaders(), (xcount * 2 + zcount * 2) + 4, xcount * 2 + zcount * 2 + 4, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);

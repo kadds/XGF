@@ -25,7 +25,7 @@ namespace XGF
 
 	void Control::OnMouseDown(const Event & ev)
 	{
-		bool isInControl = GetShape()->IsInBoundBox(Point(ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f), mTransform.GetMatrix());
+		bool isInControl = GetShape()->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f));
 		if (isInControl)
 		{
 			mNowState = SkinState::active;
@@ -39,7 +39,7 @@ namespace XGF
 
 	void Control::OnMouseUp(const Event & ev)
 	{
-		bool isInControl = GetShape()->IsInBoundBox(Point(ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f), mTransform.GetMatrix());
+		bool isInControl = GetShape()->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f));
 		if (isInControl)
 		{
 			mNowState = SkinState::hover;
@@ -49,7 +49,7 @@ namespace XGF
 
 	void Control::OnMouseMove(const Event & ev)
 	{
-		bool isInControl = GetShape()->IsInBoundBox(Point(ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f), mTransform.GetMatrix());
+		bool isInControl = GetShape()->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f));
 		if (isInControl)
 		{
 			if(mNowState != SkinState::active)
@@ -86,7 +86,7 @@ namespace XGF
 	{
 		return mParent->GetScene()->GetFramework()->GetUIBatches();
 	}
-	void Control::DrawSkin(const XMMATRIX * matrix)
+	void Control::DrawSkin()
 	{
 		Texture * skin = nullptr;
 		if (mSkin)
@@ -98,7 +98,7 @@ namespace XGF
 				BindingBridge bbrige;
 				textureBinder.FromTexture(skin);
 				bbrige.AddBinder(textureBinder);
-				GetShape()->Render(*(this->mParent->GetScene()->GetFramework()->GetUIBatches().GetBatch(BATCHES_BATCH_DEFAULT_PT)), matrix, bbrige, *skin);
+				GetShape()->Render(*(this->mParent->GetScene()->GetFramework()->GetUIBatches().GetBatch(BATCHES_BATCH_DEFAULT_PT)), bbrige, *skin);
 			}
 		}
 	}

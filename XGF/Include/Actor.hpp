@@ -23,10 +23,8 @@ namespace XGF
 		void _Render();
 		//框架调用
 		void _Update(float deltaTime);
-		virtual void Update(float deltaTime);
-		virtual void Render(const XMMATRIX * matrix) = 0;
-		
-		Transform & GetTransform() { return mTransform; };
+		virtual void Update(float deltaTime) {};
+		virtual void Render() = 0;
 
 		//返回 对this做static_cast<YouShapeClass>
 		virtual Shape::Shape *GetShape() const = 0;
@@ -39,7 +37,7 @@ namespace XGF
 		void SetId(int id) { mId = id; };
 	protected:
 		Container * mParent;
-		Transform mTransform;
+		
 		int mId;
 	};
 

@@ -10,7 +10,7 @@ namespace XGF
 		public Control, public Shape::RectangleB
 	{
 	public:
-		virtual void Render(const XMMATRIX * matrix) override;
+		virtual void Render() override;
 		virtual void OnFocus(bool isForce);
 		virtual void GetInerBox(::XGF::Shape::Rectangle & rc);
 
@@ -24,10 +24,10 @@ namespace XGF
 		void GetInnerRectangle(::XGF::Shape::Rectangle & rc);
 
 		EditText();
-		EditText(int id, wchar_t * text = L"", Color textColor = Color(0.f,0.f,0.f,1.f));
+		EditText(int id, const string & text = string(), const Color & textColor = Color(0.f,0.f,0.f,1.f));
 		~EditText();
-		void SetText(const wchar_t * text);
-		void SetTextColor(Color & color);
+		void SetText(const string & text);
+		void SetTextColor(const Color & color);
 	protected:
 		virtual Shape * GetShape() const override
 		{

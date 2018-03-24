@@ -36,7 +36,7 @@ namespace XGF
 			mRc.SetPositionAndSize(mPosition.x - mPointDeviation.x, mPosition.y - mPointDeviation.y, mSize.x, mSize.y);
 			mPtBinder.FromTexture(&mTexture);
 			mRc.SetZ(0.1f);
-			mRc.Render(mTextureBatch, nullptr, mBbrg, mTexture.GetRawTexture());
+			mRc.Render(mTextureBatch, mBbrg, mTexture.GetRawTexture());
 			mTextureBatch.End();
 		}
 		else
@@ -51,7 +51,7 @@ namespace XGF
 			mTextureBatch.Begin();
 			mRc.SetPositionAndSize(mPosition.x - mPointDeviation.x, mPosition.y - mPointDeviation.y, mSize.x, mSize.y);
 			mRc.SetZ(0.1f);
-			mRc.Render(mTextureBatch, nullptr, mBbrg, mAnimation->GetTexture()->GetRawTexture());
+			mRc.Render(mTextureBatch, mBbrg, mAnimation->GetTexture()->GetRawTexture());
 			mTextureBatch.End();
 		}
 	}

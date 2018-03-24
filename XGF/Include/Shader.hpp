@@ -41,14 +41,14 @@ namespace XGF
 		Shader();
 		~Shader();
 		void ReflectStage(ID3D11ShaderReflection *reflector);
-		unsigned int GetCBufferSize(int index);
+		unsigned int GetCBufferSize(unsigned int index);
 		unsigned int GetCBufferCount();
 		GDI* GetGDI();
-		unsigned int GetCBufferSlot(int index);
+		unsigned int GetCBufferSlot(unsigned int index);
 		int GetSamplerStateCount();
-		unsigned int GetSamplerStateSlot(int index);
+		unsigned int GetSamplerStateSlot(unsigned int index);
 		int GetTextureCount();
-		unsigned int GetTextureSlot(int index);
+		unsigned int GetTextureSlot(unsigned int index);
 	protected:
 		friend class ComputeGPU;
 		friend class ShaderStage;
@@ -154,9 +154,9 @@ namespace XGF
 	public:
 		void Initialize(ComputeShader * cs, unsigned int buffersize);
 		void Shutdown();
-		void SetCSSRV(int index, ID3D11ShaderResourceView * srv);
-		void SetCSUAV(int index, ID3D11UnorderedAccessView * uav);
-		void SetCSSamplerState(int index, SamplerState state);
+		void SetCSSRV(unsigned int index, ID3D11ShaderResourceView * srv);
+		void SetCSUAV(unsigned int index, ID3D11UnorderedAccessView * uav);
+		void SetCSSamplerState(unsigned int index, SamplerState state);
 		void Run(bool asyn);
 		void Bind();
 		void UnBind();
@@ -191,9 +191,9 @@ namespace XGF
 		void SetDepthStencilState(DepthStencilState ds);
 		void SetRasterizerState(RasterizerState rs);
 		BlendState GetBlendState();
-		void SetVSConstantBuffer(int index, const void * data);
-		void SetGSConstantBuffer(int index, const void * data);
-		void SetPSConstantBuffer(int index, const void * data);
+		void SetVSConstantBuffer(unsigned int index, const void * data);
+		void SetGSConstantBuffer(unsigned int index, const void * data);
+		void SetPSConstantBuffer(unsigned int index, const void * data);
 		template<typename Tshader>
 		Shader * GetTemplateShader()
 		{
@@ -208,7 +208,7 @@ namespace XGF
 		template<typename Tshader>
 		int GetConstantBufferIndexByName(const char * name)
 		{
-			int i = 0;
+			unsigned int i = 0;
 			Shader * shader = GetTemplateShader<Tshader>();
 			
 			for (; i < shader->mCBufferInfo.size(); i++)
@@ -218,9 +218,9 @@ namespace XGF
 			return 0;
 		};
 		
-		void SetVSSamplerState(int index, SamplerState ss);
-		void SetPSSamplerState(int index, SamplerState ss);
-		void SetGSSamplerState(int index, SamplerState ss);
+		void SetVSSamplerState(unsigned int index, SamplerState ss);
+		void SetPSSamplerState(unsigned int index, SamplerState ss);
+		void SetGSSamplerState(unsigned int index, SamplerState ss);
 		template<typename Tshader>
 		int GetSamplerStateIndexByName(const char * name)
 		{
@@ -234,9 +234,9 @@ namespace XGF
 			return 0;
 		};
 
-		void SetVSSRV(int index, ID3D11ShaderResourceView * srv );
-		void SetGSSRV(int index, ID3D11ShaderResourceView * srv);
-		void SetPSSRV(int index, ID3D11ShaderResourceView * srv);
+		void SetVSSRV(unsigned int index, ID3D11ShaderResourceView * srv );
+		void SetGSSRV(unsigned int index, ID3D11ShaderResourceView * srv);
+		void SetPSSRV(unsigned int index, ID3D11ShaderResourceView * srv);
 		template<typename Tshader>
 		int GetSRVIndexByName(const char * name)
 		{

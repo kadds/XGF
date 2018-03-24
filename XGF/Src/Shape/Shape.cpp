@@ -29,26 +29,22 @@ namespace XGF
 			}
 		}
 
-		void Shape::Render(Batch & batch, const XMMATRIX * matirix, const BindingBridge & bbrige, const Texture & tx)
+		void Shape::Render(Batch & batch, const BindingBridge & bbrige, const Texture & tx)
 		{
-			Render(batch, matirix, bbrige, tx.GetRawTexture());
+			Render(batch, bbrige, tx.GetRawTexture());
 		}
-		void Shape::Render(Batch & batch, const XMMATRIX * matirix, const BindingBridge & bbrige, ID3D11ShaderResourceView * tex)
+		void Shape::Render(Batch & batch, const BindingBridge & bbrige, ID3D11ShaderResourceView * tex)
 		{
 			batch.GetShaderStage()->SetPSSRV(0, tex);//if srv index is 0
-			Render(batch, matirix, bbrige);
+			Render(batch, bbrige);
 		}
-		void Shape::Render(Batch & batch, const XMMATRIX * matirix, const BindingBridge & bbrige)
+		void Shape::Render(Batch & batch, const BindingBridge & bbrige)
 		{
 			PolygonPlePoint3 ppe(mPolygon.mCount);
 			PolygonPlePoint3 * pPPe;
-			if (matirix != nullptr)
-			{
-				mPolygon.MulTo(&ppe, *matirix);
-				pPPe = &ppe;
-			}
-			else
-				pPPe = &mPolygon;//不再copy
+			auto matirix = mTransform.GetMatrix();
+			mPolygon.MulTo(&ppe, matirix);
+			pPPe = &ppe;
 			BindingBridge bbr(bbrige);
 			bbr.InsertBinder(*pPPe, 0);
 			batch.DrawPolygon(GetIndex(), bbr);
@@ -59,23 +55,36 @@ namespace XGF
 				- c.x * b.y - a.x * c.y) / 2.0f);
 			return result;
 		}
-		//判断2维点是否在图元内部
-		bool pInPolygon(const PolygonPlePoint3& ql, int x, int y)
+		// 判断2维点是否在图元内部
+		// 使用 PNPoly 算法
+		bool pInPolygon(const PolygonPlePoint3& ql, float x, float y)
 		{
-			Point p = Point(static_cast<float>(x), static_cast<float>(y), 0.f);
-			float t = 0.00f, rf = 0.00f;
-			for (int i = 0; i < ql.mCount - 1; i++)
+			// 生成最小包围盒
+			Position minPosition = { ql.mPoint[0].x, ql.mPoint[0].y }, maxPosition = { ql.mPoint[0].x, ql.mPoint[0].y };
+			for (int i = 1; i < ql.mCount; i++) 
 			{
-				t += triangleArea(ql.mPoint[i], ql.mPoint[i + 1], p);
+				if (ql.mPoint[i].x < minPosition.x)
+					minPosition.x = ql.mPoint[i].x;
+				if (ql.mPoint[i].y < minPosition.y)
+					minPosition.y = ql.mPoint[i].y;
+				if (ql.mPoint[i].x > maxPosition.x)
+					maxPosition.x = ql.mPoint[i].x;
+				if (ql.mPoint[i].y > maxPosition.y)
+					maxPosition.y = ql.mPoint[i].y;
 			}
-			t += triangleArea(ql.mPoint[ql.mCount - 1], ql.mPoint[0], p);
-			for (int i = 0; i < ql.mCount - 2; i++)
-			{
-				rf += triangleArea(ql.mPoint[i], ql.mPoint[i + 1], ql.mPoint[i + 2]);
+
+			if (x < minPosition.x || x > maxPosition.x || y < minPosition.y || y > maxPosition.y)
+				return false;
+			bool k = false;
+			int i = 0;
+			int j = ql.mCount - 1;
+			for (; i < ql.mCount; j = i++) {
+				if (((ql.mPoint[i].y > y) != (ql.mPoint[j].y > y)) &&
+					(x < (ql.mPoint[j].x - ql.mPoint[i].x) * (y - ql.mPoint[i].y) /
+					(ql.mPoint[j].y - ql.mPoint[i].y) + ql.mPoint[i].x))
+					k = !k;
 			}
-			if (abs(t - rf) < 0.1f)
-				return true;
-			return false;
+			return k;
 		}
 	}
 }

@@ -216,8 +216,8 @@ namespace XGF
 		if (mRelativeMode)
 		{
 			POINT p;
-			p.x = Batch::GetClientWidthD2();
-			p.y = Batch::GetClientHeightD2();
+			p.x = static_cast<LONG>(Batch::GetClientWidthD2());
+			p.y = static_cast<LONG>(Batch::GetClientHeightD2());
 			ClientToScreen(mHwnd, &p);
 			SetCursorPos(p.x, p.y);
 		}

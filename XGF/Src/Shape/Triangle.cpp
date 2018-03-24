@@ -4,7 +4,6 @@ namespace XGF
 {
 	namespace Shape
 	{
-		bool pInPolygon(const PolygonPlePoint3& ql, int x, int y);
 		Triangle::Triangle() :Shape(3, 3)
 		{
 			mPolygonPleIndex.mIndex[0] = 0;
@@ -38,7 +37,7 @@ namespace XGF
 		{
 			p = mPolygon.mPoint[0];
 		}
-		bool Triangle::IsInBoundBox(const Point & p, const FXMMATRIX matrix) const
+		bool Triangle::IsInBoundBox(const Point & p)
 		{
 			return pInPolygon(mPolygon, p.x, p.y);//TODO::EX
 		}

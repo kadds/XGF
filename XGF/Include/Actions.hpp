@@ -1,7 +1,7 @@
 #pragma once
+#include "Defines.hpp"
 #include <functional>
 #include <memory>
-#include "Defines.hpp"
 #include "Action.hpp"
 namespace XGF
 {

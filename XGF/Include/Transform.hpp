@@ -29,6 +29,7 @@ namespace XGF
 		void SetScaleOrigin(Point &p) { mScaleOrigin = p; }
 		void SetRotationOrigin(Point &p) { mRotationOrigin = p; }
 		XMMATRIX GetMatrix();
+		void SetMatrix(CXMMATRIX matrix);
 		void AddScaleAction(std::unique_ptr<Action> action);
 		void AddRotationAction(std::unique_ptr<Action> action);
 		void AddTranslationAction(std::unique_ptr<Action> action);

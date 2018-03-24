@@ -72,7 +72,7 @@ namespace XGF {
 
 		
 	}
-	unsigned int Shader::GetCBufferSize(int index)
+	unsigned int Shader::GetCBufferSize(unsigned int index)
 	{
 		return mCBufferInfo[index].size;
 	}
@@ -85,7 +85,7 @@ namespace XGF {
 		return mGDI;
 	}
 
-	unsigned int Shader::GetCBufferSlot(int index)
+	unsigned int Shader::GetCBufferSlot(unsigned int index)
 	{
 		return mCBufferInfo[index].slot;
 	}
@@ -95,7 +95,7 @@ namespace XGF {
 		return mSamplerState.size();
 	}
 
-	unsigned int Shader::GetSamplerStateSlot(int index)
+	unsigned int Shader::GetSamplerStateSlot(unsigned int index)
 	{
 		return mSamplerState[index].slot;
 	}
@@ -105,7 +105,7 @@ namespace XGF {
 		return mTexture2D.size();
 	}
 
-	unsigned int Shader::GetTextureSlot(int index)
+	unsigned int Shader::GetTextureSlot(unsigned int index)
 	{
 		return mTexture2D[index].slot;
 	}
@@ -479,7 +479,7 @@ namespace XGF {
 		return mBlendState;
 	}
 
-	void ShaderStage::SetVSConstantBuffer(int index, const void * data)
+	void ShaderStage::SetVSConstantBuffer(unsigned int index, const void * data)
 	{
 		if (index < vs->GetCBufferCount())
 			memcpy(mVSCBuffer[index].GetBufferPoint(), data, mVSCBuffer[index].GetSize());
@@ -487,7 +487,7 @@ namespace XGF {
 			XGF_ReportWarn0("index out of range in GS ContantBuffer");
 	}
 
-	void ShaderStage::SetGSConstantBuffer(int index, const void * data)
+	void ShaderStage::SetGSConstantBuffer(unsigned int index, const void * data)
 	{
 		if (index < gs->GetCBufferCount())
 			memcpy(mGSCBuffer[index].GetBufferPoint(), data, mGSCBuffer[index].GetSize());
@@ -495,7 +495,7 @@ namespace XGF {
 			XGF_ReportWarn0("index out of range in GS ContantBuffer");
 	}
 
-	void ShaderStage::SetPSConstantBuffer(int index, const void * data)
+	void ShaderStage::SetPSConstantBuffer(unsigned int index, const void * data)
 	{
 		if (index < ps->GetCBufferCount())
 			memcpy(mPSCBuffer[index].GetBufferPoint(), data, mPSCBuffer[index].GetSize());
@@ -504,7 +504,7 @@ namespace XGF {
 	}
 
 
-	void ShaderStage::SetVSSamplerState(int index, SamplerState ss)
+	void ShaderStage::SetVSSamplerState(unsigned int index, SamplerState ss)
 	{
 		XGF_ASSERT(index < vs->mSamplerState.size());
 		if (mVSSamplerState[index] != ss)
@@ -512,7 +512,7 @@ namespace XGF {
 		mVSSamplerState[index] = ss;
 	}
 
-	void ShaderStage::SetPSSamplerState(int index, SamplerState ss)
+	void ShaderStage::SetPSSamplerState(unsigned int index, SamplerState ss)
 	{
 		XGF_ASSERT(index < ps->mSamplerState.size());
 		if (mPSSamplerState[index] != ss)
@@ -520,7 +520,7 @@ namespace XGF {
 		mPSSamplerState[index] = ss;
 	}
 
-	void ShaderStage::SetGSSamplerState(int index, SamplerState ss)
+	void ShaderStage::SetGSSamplerState(unsigned int index, SamplerState ss)
 	{
 		XGF_ASSERT(index < gs->mSamplerState.size());
 		if (mGSSamplerState[index] != ss)
@@ -528,14 +528,14 @@ namespace XGF {
 		mGSSamplerState[index] = ss;
 	}
 
-	void ShaderStage::SetVSSRV(int index, ID3D11ShaderResourceView * srv)
+	void ShaderStage::SetVSSRV(unsigned int index, ID3D11ShaderResourceView * srv)
 	{
 		XGF_ASSERT(index < vs->mTexture2D.size());
 		if (mVSSRV[index].srv != srv)
 			mOnFlush();
 		mVSSRV[index].srv = srv;
 	}
-	void ShaderStage::SetPSSRV(int index, ID3D11ShaderResourceView * srv)
+	void ShaderStage::SetPSSRV(unsigned int index, ID3D11ShaderResourceView * srv)
 	{
 		XGF_ASSERT(index < ps->mTexture2D.size());
 		if (mPSSRV[index].srv != srv)
@@ -543,7 +543,7 @@ namespace XGF {
 		mPSSRV[index].srv = srv;
 	}
 	
-	void ShaderStage::SetGSSRV(int index, ID3D11ShaderResourceView * srv)
+	void ShaderStage::SetGSSRV(unsigned int index, ID3D11ShaderResourceView * srv)
 	{
 		XGF_ASSERT(index < gs->mTexture2D.size());
 		if (mGSSRV[index].srv != srv)
@@ -704,18 +704,18 @@ namespace XGF {
 		ShutdownConstantBuffer(cs, mCSCBuffer);
 		ShutdownSampler(cs, mCSSamplerState);
 	}
-	void ComputeGPU::SetCSSRV(int index, ID3D11ShaderResourceView * srv)
+	void ComputeGPU::SetCSSRV(unsigned int index, ID3D11ShaderResourceView * srv)
 	{
 		XGF_ASSERT(index < cs->mTexture2D.size());
 
 		mCSSRV[index].srv = srv;
 	}
-	void ComputeGPU::SetCSUAV(int index, ID3D11UnorderedAccessView * uav)
+	void ComputeGPU::SetCSUAV(unsigned int index, ID3D11UnorderedAccessView * uav)
 	{
 		XGF_ASSERT(index < cs->mUAVInfo.size());
 		mCSUAV[index].uav = uav;
 	}
-	void ComputeGPU::SetCSSamplerState(int index, SamplerState state)
+	void ComputeGPU::SetCSSamplerState(unsigned int index, SamplerState state)
 	{
 		mCSSamplerState[index] = state;
 	}

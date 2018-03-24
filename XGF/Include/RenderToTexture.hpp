@@ -17,8 +17,8 @@ namespace XGF
 		void Shutdown();
 		//把图像绘制到Texture
 		void SetRenderTarget();
-		void Clear(float color[]);
-		void Clear(Color & c);
+		void Clear(const float color[]);
+		void Clear(const Color & c);
 		//恢复原RenderTagetView
 		void SetDefaultRenderTarget();
 		ID3D11ShaderResourceView* GetShaderResourceView();

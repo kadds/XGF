@@ -14,7 +14,7 @@ namespace XGF
 		virtual ~Action();
 		//返回True ：已经结束Action
 		bool Tick(Point * out, float deltaTime);
-		static std::unique_ptr<Action> Make(Point & to, float duration, bool isRelative,std::shared_ptr<Interpolator> interpolator)
+		static std::unique_ptr<Action> Make(const Point & to, float duration, bool isRelative,std::shared_ptr<Interpolator> interpolator)
 		{
 			std::unique_ptr<Action> action = std::make_unique<Action>();
 			action->mDuration = duration;
@@ -23,7 +23,7 @@ namespace XGF
 			action->mIsRelative = isRelative;
 			return action;
 		}
-		void SetFrom(Point &from);
+		void SetFrom(const Point &from);
 	protected:
 		std::shared_ptr<Interpolator> mInterpolator;
 		Point mTo;

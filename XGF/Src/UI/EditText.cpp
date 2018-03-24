@@ -12,7 +12,7 @@ namespace XGF
 		mTextInputProcessor.SetOnFocusListener(std::bind(&EditText::OnFocus, this, std::placeholders::_1));
 	}
 
-	EditText::EditText(int id, wchar_t * text, Color textColor):Control(id), mTextInputProcessor(text), mTextColor(textColor)
+	EditText::EditText(int id, const string & text, const Color & textColor):Control(id), mTextInputProcessor(text), mTextColor(textColor)
 	{
 		mTextInputProcessor.SetInnerRectangle(std::bind(&EditText::GetInnerRectangle, this, std::placeholders::_1));
 		mTextInputProcessor.SetOnFocusListener(std::bind(&EditText::OnFocus, this, std::placeholders::_1));
@@ -22,22 +22,22 @@ namespace XGF
 	{
 	}
 
-	void EditText::SetText(const wchar_t * text)
+	void EditText::SetText(const string & text)
 	{
 		mTextInputProcessor.SetText(text);
 	}
 
-	void EditText::SetTextColor(Color & color)
+	void EditText::SetTextColor(const Color & color)
 	{
 		mTextColor = color;
 	}
 
-	void EditText::Render(const XMMATRIX * matrix)
+	void EditText::Render()
 	{
-		DrawSkin(matrix);
+		DrawSkin();
 		mTextInputProcessor.SetTextRenderer(GetTextRenderer(this->mFontSize));
 
-		mTextInputProcessor.RenderText(matrix, mTextColor);
+		mTextInputProcessor.RenderText(mTextColor);
 	}
 	void EditText::OnFocus(bool isForce)
 	{
@@ -75,7 +75,7 @@ namespace XGF
 	{
 		if (!mParent->GetScene()->GetFramework()->GetInputManager()->IsFocus(&mTextInputProcessor))
 		{
-			if(this->IsInBoundBox(Point(ev.GetDataInt(0), ev.GetDataInt(1), 0.f), mTransform.GetMatrix()))
+			if(this->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f)))
 				mNowState = SkinState::hover;
 			else
 				mNowState = SkinState::normal;
@@ -88,7 +88,7 @@ namespace XGF
 
 	void EditText::OnMouseDown(const Event & ev)
 	{
-		if (this->IsInBoundBox(Point(ev.GetDataInt(0), ev.GetDataInt(1), 0.f), mTransform.GetMatrix()))
+		if (this->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f)))
 		{
 			mParent->GetScene()->GetFramework()->GetInputManager()->SetFocus(&mTextInputProcessor);
 			mNowState = SkinState::active;

@@ -14,7 +14,7 @@ namespace XGF
 		~Timer();
 		float Tick();
 		void SetFactor(float factor);
-		long GetTimeCount();
+		LONGLONG GetTimeCount();
 		float GetTime(long delta);
 	private:
 		LARGE_INTEGER mFreq;

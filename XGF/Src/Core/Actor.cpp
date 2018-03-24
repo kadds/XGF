@@ -19,16 +19,10 @@ namespace XGF{
 		Update(deltaTime);
 	}
 
-	void Actor::Update(float deltaTime)
-	{
-		mTransform.UpdateAction(deltaTime);
-	}
 
 	void Actor::_Render()
 	{
-		DirectX::XMMATRIX matrix;
-		matrix = mTransform.GetMatrix();
-		Render(&matrix);
+		Render();
 	}
 
 }

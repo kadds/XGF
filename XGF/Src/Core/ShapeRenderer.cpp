@@ -45,7 +45,7 @@ namespace XGF
 		mBatch.Flush();
 	}
 
-	void ShapeRenderer::DrawRectangle(float x, float y, float w, float h, float z, Color & color)
+	void ShapeRenderer::DrawRectangle(float x, float y, float w, float h, float z, const Color & color)
 	{
 		Shape::Rectangle rc;
 		rc.SetPositionAndSize(x, y, w, h);
@@ -58,7 +58,7 @@ namespace XGF
 		mBatch.DrawPolygon(rc.mPolygonPleIndex, bb);
 	}
 
-	void ShapeRenderer::DrawRectangleC(float x, float y, float w, float h, float z, Color & bkcolor, float borderWidth, Color & boderColor, Color & boderOuterColor)
+	void ShapeRenderer::DrawRectangleC(float x, float y, float w, float h, float z, const Color & bkcolor, float borderWidth, const Color & boderColor, const Color & boderOuterColor)
 	{
 		Shape::RectangleC rc;
 		rc.SetPositionAndSize(x, y, w, h);
@@ -76,7 +76,7 @@ namespace XGF
 		mBatch.DrawPolygon(rc.mPolygonPleIndex, bb);
 	}
 
-	void ShapeRenderer::DrawCircle(float x, float y, float r, int precision, float z, Color & color)
+	void ShapeRenderer::DrawCircle(float x, float y, float r, int precision, float z, const Color & color)
 	{
 		Shape::Circle ce(precision);
 		ce.SetPosiotionAndRadius(x, y, r);
@@ -89,7 +89,7 @@ namespace XGF
 		mBatch.DrawPolygon(ce.mPolygonPleIndex, bb);
 	}
 
-	void ShapeRenderer::DrawCircle(float x, float y, float r, int precision, float z, Color & color, Color & centerColor)
+	void ShapeRenderer::DrawCircle(float x, float y, float r, int precision, float z, const Color & color, const Color & centerColor)
 	{
 		Shape::Circle ce(precision);
 		ce.SetPosiotionAndRadius(x, y, r);
@@ -105,7 +105,7 @@ namespace XGF
 		mBatch.DrawPolygon(ce.mPolygonPleIndex, bb);
 	}
 
-	void ShapeRenderer::DrawLine(float x, float y, float ex, float ey, float z, Color & color)
+	void ShapeRenderer::DrawLine(float x, float y, float ex, float ey, float z, const Color & color)
 	{
 		Shape::Line line;
 		line.SetPosition(Point(x, y, z));
@@ -117,12 +117,12 @@ namespace XGF
 		mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
 		mBatch.DrawPolygon(line.mPolygonPleIndex, bb);
 	}
-	void ShapeRenderer::DrawLineList(Position * p, int count, float z, Color & color)
+	void ShapeRenderer::DrawLineList(const Position & points, int count, float z, const Color & color)
 	{
 		Shape::Shape shape(count, count);
 		for (int i = 0; i < count; i++)
 		{
-			shape.mPolygon.mPoint[i] = Point(p[i].x, p[i].y, z);
+			shape.mPolygon.mPoint[i] = Point((&points)[i].x, (&points)[i].y, z);
 			shape.mPolygonPleIndex.mIndex[i] = i;
 		}
 		PolygonPleConstantColorBinder cb(color, count);
@@ -132,7 +132,7 @@ namespace XGF
 		mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
 		mBatch.DrawPolygon(shape.mPolygonPleIndex, bb);
 	}
-	void ShapeRenderer::DrawTriangle(Position & a, Position & b, Position & c, float z, Color & ca, Color & cb, Color & cc)
+	void ShapeRenderer::DrawTriangle(const Position & a, const Position & b, const Position & c, float z, const Color & ca, const Color & cb, const Color & cc)
 	{
 		Shape::Triangle tr;
 		tr.SetThreePoint(Point(a.x, a.y, z), Point(b.x, b.y, z), Point(c.x, c.y, z));
@@ -146,16 +146,16 @@ namespace XGF
 		mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 		mBatch.DrawPolygon(tr.mPolygonPleIndex, bbr);
 	}
-	void ShapeRenderer::DrawTriangle(Position & a, Position & b, Position & c, float z, Color & cc)
+	void ShapeRenderer::DrawTriangle(const Position & a, const Position & b, const Position & c, float z, const Color & cc)
 	{
 		DrawTriangle(a, b, c, z, cc, cc, cc);
 	}
-	void ShapeRenderer::DrawPolygonList(Position * p, int count, float z, Color & color)
+	void ShapeRenderer::DrawPolygonList(const Position & points, int count, float z, const Color & color)
 	{
 		Shape::Shape shape(count, count);
 		for (int i = 0; i < count; i++)
 		{
-			shape.mPolygon.mPoint[i] = Point(p[i].x, p[i].y, z);
+			shape.mPolygon.mPoint[i] = Point((&points)[i].x, (&points)[i].y, z);
 			shape.mPolygonPleIndex.mIndex[i] = i;
 		}
 		PolygonPleConstantColorBinder cb(color, count);

@@ -45,7 +45,7 @@ namespace XGF
 		static inline float minZdivision = 0.001f;
 	protected:
 		//子类调用
-		void DrawSkin(const XMMATRIX * matrix);
+		void DrawSkin();
 	};
 
 

@@ -10,7 +10,7 @@ namespace XGF
 		mFirstCharPos = 0;
 	}
 
-	TextInputProcessor::TextInputProcessor(wchar_t * text) :mInputString(text), mCaretPos(0), mGetInnerRectangle(nullptr), mTextRenderer(nullptr), mFirstCharPos(0)
+	TextInputProcessor::TextInputProcessor(const string & text) :mInputString(text), mCaretPos(0), mGetInnerRectangle(nullptr), mTextRenderer(nullptr), mFirstCharPos(0)
 	{
 	}
 
@@ -38,20 +38,21 @@ namespace XGF
 		mInputString.clear();
 	}
 
-	void TextInputProcessor::RenderText(const XMMATRIX * matrix, Color & color)
+	void TextInputProcessor::RenderText(Color & color)
 	{
 		XGF_ASSERT(mGetInnerRectangle);
 		Shape::Rectangle rc;
 		mGetInnerRectangle(rc);
+		auto matrix = rc.mTransform.GetMatrix();
 		if (mCaretPos == 0)
 		{
-			mTextRenderer->DrawStringRtPosition(mInputString.c_str() + mFirstCharPos, color, &rc, matrix, 0);
+			mTextRenderer->DrawStringRtPosition(mInputString.c_str() + mFirstCharPos, color, &rc, &matrix, 0);
 			mCaretPosition.x = rc.mPolygon.mPoint[0].x + 0.8f;
 			mCaretPosition.y = rc.mPolygon.mPoint[0].y + 0.f;
 		}
 		else if (mCaretPos > 0)
 		{
-			Position u = mTextRenderer->DrawStringRtPosition(mInputString.c_str() + mFirstCharPos, color, &rc, matrix, mCaretPos);
+			Position u = mTextRenderer->DrawStringRtPosition(mInputString.c_str() + mFirstCharPos, color, &rc, &matrix, mCaretPos);
 			mCaretPosition.x = u.x + rc.mPolygon.mPoint[0].x + 0.8f;
 			mCaretPosition.y = u.y + rc.mPolygon.mPoint[0].y + 0.f;
 		}
@@ -97,7 +98,7 @@ namespace XGF
 	{
 		return fabs(a - b) < k;
 	}
-	void TextInputProcessor::SetText(const wchar_t * text)
+	void TextInputProcessor::SetText(const string & text)
 	{
 		mInputString = text;
 	}

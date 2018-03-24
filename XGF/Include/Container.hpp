@@ -28,11 +28,11 @@ namespace XGF
 
 		void SetParent(Container * c);
 
-		Actor * AddChild(Actor * actor);
-		void AddChild(Container * container);
+		std::shared_ptr<Actor> AddChild(std::shared_ptr<Actor> actor);
+		void AddChild(std::shared_ptr<Container> container);
 
-		void RemoveChild(Actor & actor);
-		void RemoveChild(Container & container);
+		void RemoveChild(std::shared_ptr<Actor> actor);
+		void RemoveChild(std::shared_ptr<Container> container);
 
 		void RemoveAllChild();
 		void RemoveAllActor();
@@ -43,19 +43,18 @@ namespace XGF
 
 		Scene * GetScene() { return mScene; }
 
-		void SetPosition(Point & p) {};//TODO::
-		void SetSize(Point & size) {};
+		void SetPosition(const Point & p) {};//TODO::
+		void SetSize(const Point & size) {};
 
 		float GetZOrder() { return mZOrder; };
 
-		Actor * GetActorById(int Id, bool includeChildContainer = false);
-
+		std::shared_ptr<Actor> GetActorById(int Id, bool includeChildContainer = false);
 	protected:
 		float mZOrder;
 	private:
 		Container * mParent;
-		std::vector<Actor *> mChild;
-		std::vector<Container *> mContainerChild;
+		std::vector<std::shared_ptr<Actor>> mChild;
+		std::vector<std::shared_ptr<Container>> mContainerChild;
 
 		EventDispatcher mEventDispatcher;
 		Point mSize;

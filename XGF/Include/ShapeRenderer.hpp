@@ -19,15 +19,15 @@ namespace XGF
 		void Begin(WVPMatrix & wvp);
 		void End();
 		void Flush();
-		void DrawRectangle(float x, float y, float w, float h, float z, Color & color);
-		void DrawRectangleC(float x, float y, float w, float h, float z, Color & bkcolor, float borderWidth, Color & boderColor, Color & boderOuterColor);
-		void DrawCircle(float x, float y, float r, int precision, float z, Color & color);
-		void DrawCircle(float x, float y, float r, int precision, float z, Color & color, Color & centerColor);
-		void DrawLine(float x, float y, float endx, float endy, float z, Color & color);
-		void DrawLineList(Position *p, int count, float z, Color & color);
-		void DrawTriangle(Position & a, Position & b, Position & c, float z, Color & ca, Color & cb, Color & cc);
-		void DrawTriangle(Position & a, Position & b, Position & c, float z, Color & cc);
-		void DrawPolygonList(Position *p, int count, float z, Color & color);
+		void DrawRectangle(float x, float y, float w, float h, float z, const Color & color);
+		void DrawRectangleC(float x, float y, float w, float h, float z, const Color & bkcolor, float borderWidth, const Color & boderColor, const Color & boderOuterColor);
+		void DrawCircle(float x, float y, float r, int precision, float z, const Color & color);
+		void DrawCircle(float x, float y, float r, int precision, float z, const Color & color, const Color & centerColor);
+		void DrawLine(float x, float y, float endx, float endy, float z, const Color & color);
+		void DrawLineList(const Position &points, int count, float z, const Color & color);
+		void DrawTriangle(const Position & a, const Position & b, const Position & c, float z, const Color & ca, const Color & cb, const Color & cc);
+		void DrawTriangle(const Position & a, const Position & b, const Position & c, float z, const Color & cc);
+		void DrawPolygonList(const Position &points, int count, float z, const Color & color);
 	private:
 		Batch mBatch;
 	};

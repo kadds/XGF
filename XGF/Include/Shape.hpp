@@ -1,7 +1,8 @@
 #pragma once
-#include "Polygon.hpp"
 #include "Defines.hpp"
+#include "Polygon.hpp"
 #include <d3d11_1.h>
+#include "Transform.hpp"
 
 namespace XGF
 {
@@ -17,7 +18,7 @@ namespace XGF
 		public:
 			Shape(int n, int indexCount);
 			virtual ~Shape();
-			virtual bool IsInBoundBox(const Point & p, const FXMMATRIX matrix) const {return false;};
+			virtual bool IsInBoundBox(const Point & p) {return false;};
 			virtual void SetPosition(const Point & p) {};
 			virtual void GetPosition(Point & p) const;
 			PolygonPlePoint3 mPolygon;
@@ -26,14 +27,17 @@ namespace XGF
 			virtual void GetBoundBox(PolygonPlePoint3 & ppe) const {};
 			void SetZ(float z);
 			float GetZ() { return mPolygon.mPoint[0].z; }
-			void Render(Batch & batch, const XMMATRIX * matirix, const BindingBridge & bbrige, const Texture & tx);
-			virtual void Render(Batch & batch, const XMMATRIX * matirix, const BindingBridge & bbrige, ID3D11ShaderResourceView * tex);
-			virtual void Render(Batch & batch, const XMMATRIX * matirix, const BindingBridge & bbrige);
+			void Render(Batch & batch, const BindingBridge & bbrige, const Texture & tx);
+			virtual void Render(Batch & batch, const BindingBridge & bbrige, ID3D11ShaderResourceView * tex);
+			virtual void Render(Batch & batch, const BindingBridge & bbrige);
+
+			Transform mTransform;
 		private:
+			
 		};
 		float triangleArea(Point a, Point b, Point c);
 		//A Point is in Polygon inner?
-		bool pInPolygon(const PolygonPlePoint3& ql, int x, int y);
+		bool pInPolygon(const PolygonPlePoint3& ql, float x, float y);
 	}
 	
 }

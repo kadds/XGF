@@ -32,10 +32,10 @@ Compiler:  VC++14.1 or later(Only Support MSVC14.1+)
  
 ## Some Thumbnail Preview
  Demo1:  
-![DemoMore](https://raw.githubusercontent.com/kadds/XGF/master/TT.PNG)
+![DemoMore](https://raw.githubusercontent.com/kadds/XGF/master/Preview/TT.PNG)
   
   Demo2:  
-![EasyDemo](https://raw.githubusercontent.com/kadds/XGF/master/TT2.PNG)
+![EasyDemo](https://raw.githubusercontent.com/kadds/XGF/master/Preview/TT2.PNG)
  
 ## Problem Feedback
 Feedback is welcome. You can use the following contact way to communicate with me  

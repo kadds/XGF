@@ -106,7 +106,7 @@ namespace XGF
 		~PolygonPleColorBinder();
 		PolygonPleColorBinder(const PolygonPleColorBinder& pcb);
 		Color * mColor;
-		void Set(int start, int count, Color & c);
+		void Set(int start, int count, const Color & c);
 		virtual Color Get(int n);
 		virtual void CopyTo(void * Des, unsigned int chunk) const override;
 		bool operator ==(const PolygonPleColorBinder &rx) const {
@@ -127,7 +127,7 @@ namespace XGF
 	class PolygonPleConstantColorBinder : public PolygonPleColorBinder
 	{
 	public:
-		PolygonPleConstantColorBinder(Color & c, int Maxcount);
+		PolygonPleConstantColorBinder(const Color & c, int Maxcount);
 		~PolygonPleConstantColorBinder();
 		PolygonPleConstantColorBinder(const PolygonPleConstantColorBinder& pcb);
 		virtual void CopyTo(void * Des, unsigned int chunk) const override;
@@ -152,7 +152,7 @@ namespace XGF
 		PolygonPleConstantExColorBinder(const PolygonPleConstantExColorBinder& pcb);
 		virtual void CopyTo(void * Des, unsigned int chunk) const override;
 		virtual Color Get(int n);
-		void SetLayerColor(int layer, Color & color);
+		void SetLayerColor(int layer, const Color & color);
 		bool operator ==(const PolygonPleConstantExColorBinder &rx) const {
 			if (&rx == this)
 				return true;
@@ -218,8 +218,8 @@ namespace XGF
 		void Transform(float centerXD2, float centerYD2);
 		void TransformTo(PolygonPlePoint3 * pol, float centerXD2, float centerYD2) const;
 		void Translation(float x, float y, float z);
-		void Mul(DirectX::CXMMATRIX matrix);
-		void MulTo(PolygonPlePoint3 * pol, DirectX::CXMMATRIX matrix) const;
+		void Mul(const DirectX::CXMMATRIX matrix);
+		void MulTo(PolygonPlePoint3 * pol, const DirectX::CXMMATRIX matrix) const;
 	};
 
 	class PolygonPlePoint4 : public PolygonPleBinder
@@ -246,8 +246,8 @@ namespace XGF
 		void Transform(float centerXD2, float centerYD2);
 		void TransformTo(PolygonPlePoint4 * pol, float centerXD2, float centerYD2) const;
 		void Translation(float x, float y, float z);
-		void Mul(DirectX::CXMMATRIX matrix);
-		void MulTo(PolygonPlePoint4 * pol, DirectX::CXMMATRIX matrix) const;
+		void Mul(const DirectX::CXMMATRIX matrix);
+		void MulTo(PolygonPlePoint4 * pol, const DirectX::CXMMATRIX matrix) const;
 	};
 
 }

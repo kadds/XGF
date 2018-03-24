@@ -4,7 +4,6 @@ namespace XGF
 {
 	namespace Shape
 	{
-		bool pInPolygon(const PolygonPlePoint3& ql, int x, int y);
 		Rectangle::Rectangle() :Shape(4, 6)
 		{
 			mPolygonPleIndex.mIndex[0] = 0;
@@ -31,7 +30,7 @@ namespace XGF
 		}
 
 
-		bool Rectangle::IsInBoundBox(const Point & p, const FXMMATRIX matrix) const
+		bool Rectangle::IsInBoundBox(const Point & p)
 		{
 			/*if (matrix == nullptr)
 			{
@@ -40,7 +39,7 @@ namespace XGF
 			}*/
 			
 			PolygonPlePoint3 ple(4);
-			mPolygon.MulTo(&ple, matrix);
+			mPolygon.MulTo(&ple, mTransform.GetMatrix());
 			return pInPolygon(ple, static_cast<int>(p.x), static_cast<int>(p.y));
 		}
 

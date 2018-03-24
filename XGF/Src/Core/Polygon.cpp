@@ -58,14 +58,14 @@ namespace XGF
 		}
 	}
 
-	void PolygonPlePoint3::MulTo(PolygonPlePoint3 * pol, DirectX::CXMMATRIX matrix) const
+	void PolygonPlePoint3::MulTo(PolygonPlePoint3 * pol, const DirectX::CXMMATRIX matrix) const
 	{
 		for (int i = 0; i < mCount; i++)
 		{
 			DirectX::XMStoreFloat3(&pol->mPoint[i], DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat3(&mPoint[i]), matrix));
 		}
 	}
-	void PolygonPlePoint3::Mul(DirectX::CXMMATRIX matrix)
+	void PolygonPlePoint3::Mul(const DirectX::CXMMATRIX matrix)
 	{
 		for (int i = 0; i < mCount; i++)
 		{
@@ -138,14 +138,14 @@ namespace XGF
 		}
 	}
 
-	void PolygonPlePoint4::MulTo(PolygonPlePoint4 * pol, DirectX::CXMMATRIX matrix) const
+	void PolygonPlePoint4::MulTo(PolygonPlePoint4 * pol, const DirectX::CXMMATRIX matrix) const
 	{
 		for (int i = 0; i < mCount; i++)
 		{
 			DirectX::XMStoreFloat4(&pol->mPoint[i], DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat4(&mPoint[i]), matrix));
 		}
 	}
-	void PolygonPlePoint4::Mul(DirectX::CXMMATRIX matrix)
+	void PolygonPlePoint4::Mul(const DirectX::CXMMATRIX matrix)
 	{
 		for (int i = 0; i < mCount; i++)
 		{
@@ -258,7 +258,7 @@ namespace XGF
 		mColor = new Color[mCount];
 		memcpy(mColor, pcb.mColor, sizeof(Color)*mCount);
 	}
-	void PolygonPleColorBinder::Set(int start, int count, Color & c)
+	void PolygonPleColorBinder::Set(int start, int count, const Color & c)
 	{
 		if (count > 1)
 		{
@@ -301,7 +301,7 @@ namespace XGF
 	PolygonPleConstantColorBinder::~PolygonPleConstantColorBinder()
 	{
 	}
-	PolygonPleConstantColorBinder::PolygonPleConstantColorBinder(Color & c, int ct) :PolygonPleColorBinder(1)
+	PolygonPleConstantColorBinder::PolygonPleConstantColorBinder(const Color & c, int ct) :PolygonPleColorBinder(1)
 	{
 		mColor[0] = c;
 		mAllCount = ct;
@@ -398,7 +398,7 @@ namespace XGF
 		return Color();
 	}
 
-	void PolygonPleConstantExColorBinder::SetLayerColor(int layer, Color & color)
+	void PolygonPleConstantExColorBinder::SetLayerColor(int layer, const Color & color)
 	{
 		if (layer < mLayerCount)
 		{

@@ -1,8 +1,13 @@
+#pragma warning(disable:4005)
+#pragma warning(disable:4530)
 #pragma once
 #include <DirectXMath.h>
+#include <string>
 #ifdef _DEBUG
 #define _XGF_DEBUG_ALLOC
 #endif
+//freetype 使用静态库时定义此宏 动态库请自行编译
+#define XGF_USE_FREETYPE_STATIC
 
 #ifdef _XGF_DEBUG_ALLOC
 #define _CRTDBG_MAP_ALLOC  
@@ -11,16 +16,9 @@
 #define new new(_CLIENT_BLOCK, __FILE__, __LINE__)  
 #endif
 
-#pragma warning(disable:4005)
-#ifdef _DEBUG
-/*some else*/
-#else
-/*异常警告*/
-#pragma warning(disable:4530)
-#endif
-
 namespace XGF
 {
+	typedef std::wstring string;
 	typedef unsigned int index;
 	using DirectX::XMMATRIX;
 	using DirectX::FXMMATRIX;

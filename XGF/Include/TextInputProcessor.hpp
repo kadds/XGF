@@ -20,13 +20,13 @@ namespace XGF
 	{
 	public:
 		TextInputProcessor();
-		TextInputProcessor(wchar_t * text);
+		TextInputProcessor(const string & text);
 		~TextInputProcessor();
 		void SetCaretPosInText(int posx);
 		void AppendInputStr(wchar_t * str, int count);
 		void AppendInputStr(wchar_t str);
 		void DelInputStr();
-		void RenderText(const XMMATRIX * matrix, Color & color);
+		void RenderText(Color & color);
 		void BackUp();
 		void Delete();
 		void CaretToLeft();
@@ -44,9 +44,9 @@ namespace XGF
 		void SetTextRenderer(TextRenderer * textRenderer) { mTextRenderer = textRenderer; };
 		void SetOnFocusListener(std::function<void(bool)> fun) { mOnFocusListener = fun; };
 
-		void SetText(const wchar_t * text);
+		void SetText(const string & text);
 	private:
-		std::wstring mInputString;
+		string mInputString;
 		bool layoutCallBack(int i, wchar_t ch, Position * p, bool c, Position & temp);
 		int mCaretPos;
 		int mFirstCharPos;

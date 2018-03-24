@@ -29,7 +29,7 @@ namespace XGF
 		return ret;
 	}
 
-	void Action::SetFrom(Point & from)
+	void Action::SetFrom(const Point & from)
 	{
 		if (mIsRelative) mFromDelta = mTo;
 		else

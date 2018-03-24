@@ -32,7 +32,7 @@ namespace XGF
 		return static_cast<float>(delta * mSecondsPerCount);
 	}
 
-	long Timer::GetTimeCount()
+	LONGLONG Timer::GetTimeCount()
 	{
 		LARGE_INTEGER currTime;
 		QueryPerformanceCounter(&currTime);

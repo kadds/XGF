@@ -29,7 +29,7 @@ namespace XGF
 		virtual void OnSize(int ClientX, int ClientY) = 0;
 
 		void _OnCreate(XGFramework * framework);
-		virtual void OnCreate() = 0;
+		virtual void OnCreate(GDI * gdi) = 0;
 		void _OnDestroy();
 		virtual void OnDestroy() = 0;
 
@@ -39,9 +39,9 @@ namespace XGF
 		{
 			return mFramework;
 		}
-		void AddChild(Container * container);
+		void AddChild(std::shared_ptr<Container> container);
 		void SwitchScene(Scene * scene);
-		void Clear(Color & c);
+		void Clear(const Color & c);
 		void ClearDepthStencilBuffer();
 
 		Container & GetRootContainer() { return mRootContainer; };

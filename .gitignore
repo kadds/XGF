@@ -46,6 +46,8 @@
 *.ipdb
 Debug
 Release
+!/Bin/resource/
+!/Bin/fx/
 
 #vs files
 .vs

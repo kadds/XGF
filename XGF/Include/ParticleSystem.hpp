@@ -54,7 +54,7 @@ namespace XGF
 		ComputeGPU mCgpu;
 		bool firstRun;
 		bool mUseCPU;// π”√CPUº∆À„£ø£ø£ø
-		int mMaxParticle;
+		unsigned int mMaxParticle;
 		std::random_device rdDevice;
 		std::mt19937 mtRandom;
 	private:

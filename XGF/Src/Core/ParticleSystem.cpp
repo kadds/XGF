@@ -179,7 +179,7 @@ namespace XGF
 			float tatdt = mEmitter->frequency * time + mEmitter->delta;
 			if (tatdt > 1)
 			{
-				max = tatdt;
+				max = static_cast<int>(tatdt);
 				mEmitter->delta = tatdt - max;
 
 				for (int i = 0; i < max; i++)

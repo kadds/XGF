@@ -39,11 +39,11 @@ namespace XGF {
 	class Event {
 	public:
 		//事件发生的时间 ms 计
-		long mTimeStamp;
+		time_t mTimeStamp;
 		// 第几帧接收事件
 		int mRecipteFrame;
 		//最长生存事件点， 要求大于事件发生的时间 如果为无限 ，则设置为负数
-		long mMaxLiveTime;
+		time_t mMaxLiveTime;
 		//优先级， 越小越高，
 		int mPriority;
 		std::any mEventId;
@@ -62,17 +62,17 @@ namespace XGF {
 			return std::any_cast<CustomEventId>(mEventId);
 		}
 
-		int GetDataInt(int index) const;
+		int GetDataInt(unsigned int index) const;
 		template<typename Format>
-		Format GetData(int index) const
+		Format GetData(unsigned int index) const
 		{
 			XGF_ASSERT(index < mData.size());
 			XGF_ASSERT(index >= 0);
 			return std::any_cast<Format>(mData[index]);
 		};
-		float GetDataFloat(int index) const;
+		float GetDataFloat(unsigned int index) const;
 
-		unsigned int GetDataUint(int index) const;
+		unsigned int GetDataUint(unsigned int index) const;
 	private:
 	};
 	

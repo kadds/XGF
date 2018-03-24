@@ -89,7 +89,7 @@ namespace XGF
 		{
 			p = mPolygon.mPoint[0];
 		}
-		bool RectangleC::IsInBoundBox(const Point & p, const FXMMATRIX matrix) const
+		bool RectangleC::IsInBoundBox(const Point & p)
 		{
 			PolygonPlePoint3 ple(4);
 
@@ -97,7 +97,7 @@ namespace XGF
 			{
 				ple.mPoint[i] = mPolygon.mPoint[i];
 			}
-			ple.Mul(matrix);
+			ple.Mul(mTransform.GetMatrix());
 			return pInPolygon(ple, static_cast<int>(p.x), static_cast<int>(p.y));
 
 		}

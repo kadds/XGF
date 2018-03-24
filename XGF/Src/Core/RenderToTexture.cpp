@@ -68,7 +68,7 @@ namespace XGF
 		mGDI->GetDeviceContext()->OMSetRenderTargets(1, &mRenderTargetView, mGDI->GetDepthStencilView());
 	}
 
-	void RenderToTexture::Clear(float color[])
+	void RenderToTexture::Clear(const float color[])
 	{
 		mGDI->GetDeviceContext()->ClearRenderTargetView(mRenderTargetView, color);
 
@@ -76,7 +76,7 @@ namespace XGF
 		ID3D11ShaderResourceView *const pSRV[1] = { nullptr };
 		mGDI->GetDeviceContext()->PSSetShaderResources(0, 1, pSRV);
 	}
-	void RenderToTexture::Clear(Color & c)
+	void RenderToTexture::Clear(const Color & c)
 	{
 		float color[4];
 		color[0] = c.x;
