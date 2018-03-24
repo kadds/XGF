@@ -30,10 +30,10 @@
 ###### 注意：Demo 需要复制Bin目录的资源到执行目录
  预览图
  Demo1:  
-![DemoMore](https://raw.githubusercontent.com/kadds/XGF/master/Preview/Preview1.PNG)
+![Demo](https://raw.githubusercontent.com/kadds/XGF/master/Preview/preview1.PNG)
   
   Demo2:  
-![EasyDemo](https://raw.githubusercontent.com/kadds/XGF/master/Preview/Preview2.PNG)
+![Demo](https://raw.githubusercontent.com/kadds/XGF/master/Preview/preview2.PNG)
  
 ## 联系方式
   
