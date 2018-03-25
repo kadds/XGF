@@ -4,7 +4,7 @@ namespace XGF
 {
 	namespace Shape
 	{
-		Circle::Circle(int precision) :Shape(precision + 1, precision * 3)
+		Circle::Circle(int precision) :Shape2D(precision + 1, precision * 3)
 		{
 			for (int i = 0; i < precision; i++)
 			{

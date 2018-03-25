@@ -15,7 +15,7 @@ namespace XGF
 		|           |
 		1-----------2
 		*/
-		RectangleC::RectangleC() :Shape(12, 10 * 3)
+		RectangleC::RectangleC() :Shape2D(12, 10 * 3)
 		{
 			index ide[]{
 				0,3,7,
@@ -98,8 +98,7 @@ namespace XGF
 				ple.mPoint[i] = mPolygon.mPoint[i];
 			}
 			ple.Mul(mTransform.GetMatrix());
-			return pInPolygon(ple, static_cast<int>(p.x), static_cast<int>(p.y));
-
+			return pInPolygon(ple, p.x, p.y);
 		}
 	}
 

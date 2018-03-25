@@ -1,11 +1,11 @@
 #pragma once
-#include "Shape.hpp"
+#include "Shape2D.hpp"
 namespace XGF
 {
 	namespace Shape
 	{
 		class Circle :
-			public Shape
+			public Shape2D
 		{
 		public:
 			//precision：精度(三角形个数)
@@ -13,6 +13,7 @@ namespace XGF
 			~Circle();
 			void SetPosiotionAndRadius(float x, float y, float r);
 			virtual bool IsInBoundBox(const Point & p) override;
+
 			virtual void SetPosition(const Point & p);
 			//always return 2
 			int GetLayer(int layer[]);

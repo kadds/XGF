@@ -4,7 +4,7 @@ namespace XGF
 {
 	namespace Shape
 	{
-		Triangle::Triangle() :Shape(3, 3)
+		Triangle::Triangle() :Shape2D(3, 3)
 		{
 			mPolygonPleIndex.mIndex[0] = 0;
 			mPolygonPleIndex.mIndex[1] = 1;

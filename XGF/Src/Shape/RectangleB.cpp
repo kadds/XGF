@@ -15,7 +15,7 @@ namespace XGF
 		|           |
 		1-----------2
 		*/
-		RectangleB::RectangleB() :Shape(10, 10 * 3)
+		RectangleB::RectangleB() :Shape2D(10, 10 * 3)
 		{
 			index ide[]{
 				0,3,7,

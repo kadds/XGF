@@ -1,11 +1,11 @@
 #pragma once
-#include "Shape.hpp"
+#include "Shape2D.hpp"
 namespace XGF
 {
 	namespace Shape
 	{
 		class Triangle :
-			public Shape
+			public Shape2D
 		{
 		public:
 			Triangle();

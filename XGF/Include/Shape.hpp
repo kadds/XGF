@@ -18,13 +18,13 @@ namespace XGF
 		public:
 			Shape(int n, int indexCount);
 			virtual ~Shape();
-			virtual bool IsInBoundBox(const Point & p) {return false;};
+			
 			virtual void SetPosition(const Point & p) {};
 			virtual void GetPosition(Point & p) const;
+
 			PolygonPlePoint3 mPolygon;
 			PolygonPleIndex mPolygonPleIndex;
 			const PolygonPleIndex & GetIndex() const;
-			virtual void GetBoundBox(PolygonPlePoint3 & ppe) const {};
 			void SetZ(float z);
 			float GetZ() { return mPolygon.mPoint[0].z; }
 			void Render(Batch & batch, const BindingBridge & bbrige, const Texture & tx);

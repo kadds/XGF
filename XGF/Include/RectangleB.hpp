@@ -1,5 +1,5 @@
 #pragma once
-#include "Shape.hpp"
+#include "Shape2D.hpp"
 #include "Rectangle.hpp"
 namespace XGF
 {
@@ -7,7 +7,7 @@ namespace XGF
 	{
 		//Ë«¾ØÐÎ£¬ÓÃÓÚ9path
 		class RectangleB :
-			public Shape
+			public Shape2D
 		{
 		public:
 			RectangleB();

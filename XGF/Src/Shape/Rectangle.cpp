@@ -4,7 +4,7 @@ namespace XGF
 {
 	namespace Shape
 	{
-		Rectangle::Rectangle() :Shape(4, 6)
+		Rectangle::Rectangle() :Shape2D(4, 6)
 		{
 			mPolygonPleIndex.mIndex[0] = 0;
 			mPolygonPleIndex.mIndex[1] = 3;
@@ -32,15 +32,9 @@ namespace XGF
 
 		bool Rectangle::IsInBoundBox(const Point & p)
 		{
-			/*if (matrix == nullptr)
-			{
-				auto shapePos = mPolygon.mPoint;
-				return p.x >= shapePos[0].x && p.x <= shapePos[2].x && p.y >= shapePos[0].y && p.y <= shapePos[1].y;
-			}*/
-			
 			PolygonPlePoint3 ple(4);
 			mPolygon.MulTo(&ple, mTransform.GetMatrix());
-			return pInPolygon(ple, static_cast<int>(p.x), static_cast<int>(p.y));
+			return pInPolygon(ple, p.x, p.y);
 		}
 
 		bool Rectangle::SubRectangle(Rectangle * pol, float x, float y, float width, float height) const

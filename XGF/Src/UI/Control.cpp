@@ -25,7 +25,7 @@ namespace XGF
 
 	void Control::OnMouseDown(const Event & ev)
 	{
-		bool isInControl = GetShape()->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f));
+		bool isInControl = static_cast<Shape::Shape2D *>(GetShape())->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f));
 		if (isInControl)
 		{
 			mNowState = SkinState::active;
@@ -39,7 +39,7 @@ namespace XGF
 
 	void Control::OnMouseUp(const Event & ev)
 	{
-		bool isInControl = GetShape()->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f));
+		bool isInControl = static_cast<Shape::Shape2D *>(GetShape())->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f));
 		if (isInControl)
 		{
 			mNowState = SkinState::hover;
@@ -49,7 +49,7 @@ namespace XGF
 
 	void Control::OnMouseMove(const Event & ev)
 	{
-		bool isInControl = GetShape()->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f));
+		bool isInControl = static_cast<Shape::Shape2D *>(GetShape())->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f));
 		if (isInControl)
 		{
 			if(mNowState != SkinState::active)

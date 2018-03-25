@@ -53,19 +53,21 @@ public:
 		mTextRenderer_s.Initialize(gdi, &mFont_s, 1000);
 		mTextRenderer_b.Initialize(gdi, &mFont_b, 200);
 		mFramework->GetUIBatches().SetTextRenderer(FontSize::Default, &mUITextRenderer);
-
+		
 		std::shared_ptr<Label> label = std::make_shared<Label>(0, L"Direct3D11");
 		label->SetPositionAndSize(200, 200, 100, 20);
 		label->SetZ(0.4f);
 		GetRootContainer().AddChild(label);
-
-		label->GetClickHelper().AddOnClickListener([this, label](const MousePoint & ms, int mouseButton) {
+		
+		label->GetClickHelper().AddOnClickListener([this](const MousePoint & ms, int mouseButton) {
 			AsyncTask::NewTask(mFramework->GetTheard(), [this](AsyncTask * asyn) {
 				MessageBox(NULL, L"YOU CLICK Label!!", L"Exe", 0);
 				asyn->Finish(0, 0);
 			});
-			label->mTransform.AddTranslationAction(Action::Make(Point(200, 2, 0), 2.0, false, LinearInterpolator::GetInterpolator()));
+			// 捕获label 会导致内存泄漏
+			//label->mTransform.AddTranslationAction(Action::Make(Point(200, 2, 0), 2.0, false, LinearInterpolator::GetInterpolator()));
 		});
+		
 		std::shared_ptr<Button> nextButton = std::make_shared<Button>(2, L"switch to next scene.");
 		GetRootContainer().AddChild(nextButton);
 		nextButton->SetPositionAndSize(0, 240, 80, 40);
@@ -74,10 +76,10 @@ public:
 		nextButton->GetClickHelper().AddOnClickListener([this](const MousePoint & ms, int mouseButton) {
 			//this->GetFramework()->SwitchScene();
 		});
-
+		
 		std::shared_ptr<Button> buttonux = std::make_shared<Button>(1, string(L"Switch Mode"));
 		GetRootContainer().AddChild(buttonux);
-		
+
 		buttonux->SetPositionAndSize(10, 100, 60, 40);
 		buttonux->SetBorderSize(2);
 		buttonux->SetZ(0.07f);

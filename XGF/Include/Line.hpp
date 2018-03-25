@@ -14,7 +14,6 @@ namespace XGF
 			void SetEndPosition(Point p);
 			virtual void GetPosition(Point & p) const override;
 		private:
-			virtual bool IsInBoundBox(const Point & p, const FXMMATRIX matrix) { return false; };
 		};
 	}
 	

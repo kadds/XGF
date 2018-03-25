@@ -215,6 +215,7 @@
     <ClInclude Include="Include\Shader.hpp" />
     <ClInclude Include="Include\ShaderConst.hpp" />
     <ClInclude Include="Include\Shape.hpp" />
+    <ClInclude Include="Include\Shape2D.hpp" />
     <ClInclude Include="Include\ShapeRenderer.hpp" />
     <ClInclude Include="Include\Skin.hpp" />
     <ClInclude Include="Include\StateList.hpp" />
@@ -282,6 +283,7 @@
     <ClCompile Include="Src\Shape\RectangleB.cpp" />
     <ClCompile Include="Src\Shape\RectangleC.cpp" />
     <ClCompile Include="Src\Shape\Shape.cpp" />
+    <ClCompile Include="Src\Shape\Shape2D.cpp" />
     <ClCompile Include="Src\Shape\Triangle.cpp" />
     <ClCompile Include="Src\Tools\AsyncTask.cpp" />
     <ClCompile Include="Src\Tools\AxisRenderer.cpp" />

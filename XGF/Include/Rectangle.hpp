@@ -1,12 +1,12 @@
 #pragma once
-#include "Shape.hpp"
+#include "Shape2D.hpp"
 
 #define SHAPE_RECTANGLE 4
 namespace XGF 
 {
 	namespace Shape
 	{
-		class Rectangle : public Shape
+		class Rectangle : public Shape2D
 		{
 		public:
 			Rectangle();
@@ -14,6 +14,7 @@ namespace XGF
 			void SetPositionAndSize(float x, float y, float width, float height);
 
 			virtual bool IsInBoundBox(const Point & p) override;
+
 			bool SubRectangle(Rectangle * pol, float x, float y, float width, float height) const;
 			virtual void SetPosition(const Point & p);
 			virtual void GetPosition(Point & p) const override;
