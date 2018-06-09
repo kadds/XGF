@@ -45,10 +45,7 @@
 *.ipdb
 
 Bin
-
-!/Bin/resource/
-!/Bin/fx/
-
+Out
 
 #vs files
 .vs

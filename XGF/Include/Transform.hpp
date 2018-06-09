@@ -28,8 +28,8 @@ namespace XGF
 		void UpdateAction(float dt);
 		void SetScaleOrigin(Point &p) { mScaleOrigin = p; }
 		void SetRotationOrigin(Point &p) { mRotationOrigin = p; }
-		XMMATRIX GetMatrix();
-		void SetMatrix(CXMMATRIX matrix);
+		SM::Matrix GetMatrix();
+		void SetMatrix(SM::Matrix matrix);
 		void AddScaleAction(std::unique_ptr<Action> action);
 		void AddRotationAction(std::unique_ptr<Action> action);
 		void AddTranslationAction(std::unique_ptr<Action> action);

@@ -2,7 +2,7 @@
 #include "../../Include/GDI.hpp"
 #include "../../Include/Log.hpp"
 #include "../../Include/Buffer.hpp"
-
+#include <numeric>
 namespace XGF {
 	Shader::Shader()
 	{
@@ -178,7 +178,7 @@ namespace XGF {
 		mPixelShader->Release();
 	}
 
-	void VertexShader::Initialize(GDI * gdi, const wchar_t * VSname)
+	void VertexShader::Initialize(GDI * gdi, const wchar_t * VSname, unsigned int interval)
 	{
 		ID3DBlob* pErrorBlob = nullptr;
 		ID3DBlob* pVertexBlob = nullptr;
@@ -191,12 +191,12 @@ namespace XGF {
 				XGF_ReportError("Vertex Shader File Not Find!", VSname);
 			else
 				XGF_Error_Check(hr, (LPCSTR)pErrorBlob->GetBufferPointer());
-		Initialize(gdi, (unsigned char *)pVertexBlob->GetBufferPointer(), (int)pVertexBlob->GetBufferSize());
+		Initialize(gdi, (unsigned char *)pVertexBlob->GetBufferPointer(), (int)pVertexBlob->GetBufferSize(), interval);
 		
 		pVertexBlob->Release();
 	}
 
-	void VertexShader::Initialize(GDI * gdi, const unsigned char * VScode, unsigned int codeLen)
+	void VertexShader::Initialize(GDI * gdi, const unsigned char * VScode, unsigned int codeLen, unsigned int interval)
 	{
 		XGF_Error_Check(gdi->GetDevice()->CreateVertexShader(VScode,
 			codeLen, NULL, &mVertexShader), "CreateVertexShader Failed");
@@ -208,59 +208,72 @@ namespace XGF {
 		int i = 0;
 		D3D11_SHADER_DESC ShaderDesc;
 		reflector->GetDesc(&ShaderDesc);
-		int layoutCount = ShaderDesc.InputParameters;
+		unsigned int layoutCount = ShaderDesc.InputParameters;
 		D3D11_INPUT_ELEMENT_DESC *d3dlayout = new D3D11_INPUT_ELEMENT_DESC[layoutCount];
-		mSlotStride = new unsigned int[layoutCount];
-		for(int i = 0 ; i < layoutCount; i++)
+		
+		int inputSlot = 0;
+		mSlotElementStartPosition.push_back(0);
+		for(unsigned int i = 0 ; i < layoutCount; i++)
 		{
+			unsigned int stride = 0;
 			reflector->GetInputParameterDesc(i, &desc);
 			d3dlayout[i].SemanticName = desc.SemanticName;
 			d3dlayout[i].SemanticIndex = desc.SemanticIndex;
-			d3dlayout[i].InputSlot = 0;
+			d3dlayout[i].InputSlot = inputSlot;
 			d3dlayout[i].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
 			d3dlayout[i].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 			d3dlayout[i].InstanceDataStepRate = 0;
-
+			
 			if (desc.Mask == 1)
 			{
-				mSlotStride[i] = 4u;
+				stride = 4u;
 				if (desc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) d3dlayout[i].Format = DXGI_FORMAT_R32_UINT;
 				else if (desc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) d3dlayout[i].Format = DXGI_FORMAT_R32_SINT;
 				else if (desc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) d3dlayout[i].Format = DXGI_FORMAT_R32_FLOAT;
 			}
 			else if (desc.Mask <= 3)
 			{
-				mSlotStride[i] = 8u;
+				stride = 8u;
 				if (desc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) d3dlayout[i].Format = DXGI_FORMAT_R32G32_UINT;
 				else if (desc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) d3dlayout[i].Format = DXGI_FORMAT_R32G32_SINT;
 				else if (desc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) d3dlayout[i].Format = DXGI_FORMAT_R32G32_FLOAT;
 			}
 			else if (desc.Mask <= 7)
 			{
-				mSlotStride[i] = 12u;
+				stride = 12u;
 				if (desc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) d3dlayout[i].Format = DXGI_FORMAT_R32G32B32_UINT;
 				else if (desc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) d3dlayout[i].Format = DXGI_FORMAT_R32G32B32_SINT;
 				else if (desc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) d3dlayout[i].Format = DXGI_FORMAT_R32G32B32_FLOAT;
 			}
 			else if (desc.Mask <= 15)
 			{
-				mSlotStride[i] = 16u;
+				stride = 16u;
 				if (desc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) d3dlayout[i].Format = DXGI_FORMAT_R32G32B32A32_UINT;
 				else if (desc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) d3dlayout[i].Format = DXGI_FORMAT_R32G32B32A32_SINT;
 				else if (desc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) d3dlayout[i].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 			}
+			else 
+			{
+				XGF_ReportWarn0("inConrrect mask at inputLayout");
+			}
+			inputSlot = interval == 0 ? 0 : (i + 1) / interval;
+			if (d3dlayout[i].InputSlot == inputSlot - 1 && i != layoutCount - 1)
+			{
+				mSlotElementStartPosition.push_back(i + 1);
+			}
+			mSlotStride.push_back(stride);
 		}
 		XGF_Error_Check(gdi->GetDevice()->CreateInputLayout(d3dlayout, layoutCount,
 			VScode, codeLen, &mInputLayout), "CreateInputLayout Error");
 		delete[] d3dlayout;
 		ReflectStage(reflector);
 		reflector->Release();
-		mCount = layoutCount;
+		mLayoutCount = layoutCount;
+		
 	}
 
 	void VertexShader::Shutdown()
 	{
-		delete[] mSlotStride;
 		mVertexShader->Release();
 		mInputLayout->Release();
 	}
@@ -271,17 +284,40 @@ namespace XGF {
 	}
 
 
-	unsigned int * VertexShader::GetStride()
+	unsigned int * VertexShader::GetStrideAtSlot(unsigned int slot)
 	{
-		return mSlotStride;
+		XGF_ASSERT(slot < mSlotElementStartPosition.size());
+		return &mSlotStride[mSlotElementStartPosition[slot]];
 	}
 
-	unsigned int VertexShader::GetStrideAllSize()
+	unsigned int * VertexShader::GetSlotElementStartPositionArray()
 	{
-		unsigned j = 0;
-		for (int i = 0; i < mCount; i++)
-			j += mSlotStride[i];
-		return j;
+		return mSlotElementStartPosition.data();
+	}
+
+	unsigned int VertexShader::GetStrideAllSizeAtSlot(unsigned int slot)
+	{
+		XGF_ASSERT(slot < mSlotElementStartPosition.size());
+		std::vector<unsigned int>::iterator end;
+		if (slot == mSlotElementStartPosition.size() - 1)
+		{
+			end = mSlotStride.end();
+		}
+		else
+		{
+			end = mSlotStride.begin() + mSlotElementStartPosition[slot + 1];
+		}
+		return std::accumulate(mSlotStride.begin() + mSlotElementStartPosition[slot], end, 0);
+	}
+
+	unsigned int VertexShader::GetSlotCount()
+	{
+		return mSlotElementStartPosition.size();
+	}
+
+	unsigned int * VertexShader::GetStride()
+	{
+		return mSlotStride.data();
 	}
 
 
@@ -421,6 +457,10 @@ namespace XGF {
 				ss.push_back(SamplerState::LineWrap);
 		}
 	};
+	bool ShaderStage::EqualsWithShaders(const Shaders & shaders)
+	{
+		return shaders.vs == vs && shaders.ps == ps && shaders.gs == gs;
+	}
 	void ShaderStage::Initialize(VertexShader * vs, PixelShader * ps, GeometryShader * gs)
 	{
 		this->vs = vs;

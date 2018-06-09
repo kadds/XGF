@@ -28,7 +28,7 @@ namespace XGF
 		Shape::Line mLine;
 		BindingBridge mBbrg;
 		PolygonPleConstantColorBinder mPcColor;
-		Color mCaretColor;
+		SM::Color mCaretColor;
 		int mHeight;
 
 		DISALLOW_COPY_AND_ASSIGN(Caret);

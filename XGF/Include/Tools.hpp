@@ -10,9 +10,10 @@ namespace XGF
 	{
 		wchar_t * GetPathBy(const wchar_t *filename, wchar_t * buffer, int maxlen);
 		char * GetPathBy(const char *filename, char * buffer, int maxlen);
-		void GetFontPath(const char * name, char *buffer, int maxlen);
+		// name without extension
+		string GetFontPath(const string & name);
 		void GetAppPath(wchar_t * buffer, int len);
-
+		std::string WcharToChar(const wchar_t* wch, size_t encode);
 	};
 #define GetFilePath(filename, buffer, maxlen) Tools::GetPathBy(filename, buffer, maxlen)
 

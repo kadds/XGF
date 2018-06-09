@@ -1,6 +1,7 @@
 #include "../../Include/Font.hpp"
 #include "../../Include/Log.hpp"
 #include "../../Include/GDI.hpp"
+#include "../../Include/Tools.hpp"
 namespace XGF
 {
 	Font::Font() :mShaderResourceView(nullptr), mFileBuffer(nullptr)
@@ -12,7 +13,7 @@ namespace XGF
 	{
 	}
 
-	bool Font::Initialize(GDI * gdi, const char * name, int fontSize)
+	bool Font::Initialize(GDI * gdi, const std::wstring & name, int fontSize)
 	{
 		mGDI = gdi;
 		FT_Error    error = 0;
@@ -29,7 +30,7 @@ namespace XGF
 
 		mBuffer = new byte[mBufferWidth*mBufferHeight];
 		memset(mBuffer, 0, sizeof(byte)*mBufferWidth*mBufferHeight);
-		error = FT_New_Face(pFTLib, name, 0, &pFTFace);
+		error = FT_New_Face(pFTLib, Tools::WcharToChar(name.c_str(), name.length() + 1).c_str(), 0, &pFTFace);
 		CreateView();
 		if (!error)
 		{
@@ -39,18 +40,15 @@ namespace XGF
 		}
 		else
 		{
-			ReadFileToBuffer(name);
-			error = FT_New_Face(pFTLib, name, 0, &pFTFace);
+			long size = ReadFileToBuffer(name);
+			error = FT_New_Memory_Face(pFTLib, (unsigned char *) mFileBuffer, size, 0, &pFTFace);
 			if (!error)
 			{
 				FT_Select_Charmap(pFTFace, FT_ENCODING_UNICODE);
 				FT_Set_Pixel_Sizes(pFTFace, fontSize, fontSize);
 				return true;
 			}
-			char warning[360];
-			strcpy_s(warning, name);
-			strcat_s(warning, "\nThe Font File Can't Open In Freetype!");
-			XGF_ReportWarn0(warning);
+			XGF_ReportError("File can't open!", name.c_str());
 			return false;
 		}
 	}
@@ -166,7 +164,7 @@ namespace XGF
 		return vet.x >> 6;
 	}
 
-	void Font::ReadFileToBuffer(const char* name)
+	long Font::ReadFileToBuffer(const std::wstring & name)
 	{
 		std::filebuf *pbuf;
 		std::ifstream filestr;
@@ -176,13 +174,17 @@ namespace XGF
 
 		size = static_cast<long>(pbuf->pubseekoff(0, std::ios::end, std::ios::in));
 		pbuf->pubseekpos(0, std::ios::in);
-		mFileLen = size;
 		if (size > 0)
 		{
 			mFileBuffer = new char[size];
 			pbuf->sgetn(mFileBuffer, size);
 		}
+		else
+		{
+			XGF_ReportError("File not exist!", name.c_str());
+		}
 		filestr.close();
+		return size;
 	}
 
 	void Font::CloseFileBuffer()

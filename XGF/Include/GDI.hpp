@@ -69,7 +69,7 @@ namespace XGF
 		//框架调用
 		void Destroy();
 		void Clear(const float color[]);
-		void Clear(const Color & c);
+		void Clear(const SM::Color & c);
 		void ClearDepthStencilBuffer();
 		void Present(bool isVsync);
 		//初始化函数，必须是该类第一个调用的函数
@@ -114,10 +114,15 @@ namespace XGF
 		void SetRasterizerState(RasterizerState rs);
 		void CreateSwapChain();
 	protected:
-		IDXGIFactory2 * mFactory2;
-		ID3D11Device        *mD3dDevice;
-		ID3D11DeviceContext *mDeviceContext;
-		IDXGISwapChain1 * mSwapChain;
+		IDXGIFactory2 * mFactory2 = nullptr;
+		IDXGIFactory1 * mFactory1 = nullptr;
+
+		ID3D11Device        *mD3dDevice = nullptr;
+		ID3D11DeviceContext *mDeviceContext = nullptr;
+
+		IDXGISwapChain1 * mSwapChain1 = nullptr;
+		IDXGISwapChain * mSwapChain = nullptr;
+
 		ID3D11RenderTargetView * mRenderTargetView;
 
 		ID3D11DepthStencilView * mDepthStencilView;
@@ -146,9 +151,10 @@ namespace XGF
 		DisplayMode mDisplayMode;
 		std::vector<std::pair<int, DXGI_MODE_DESC *>> mScreenMode;
 
-		std::vector<IDXGIOutput1 *> mOutputs;
+		std::vector<IDXGIOutput *> mOutputs;
+
 		std::vector<IDXGIAdapter1 *> mAdapters;
-		void SaveDisplayMode(int c, IDXGIOutput1 * pDXGIOutput);
+		void SaveDisplayMode(int c, IDXGIOutput * pDXGIOutput);
 		DXGI_FORMAT mDisplayFormat;
 		RECT mLastWinRc;
 		DisplayMode mLastMode;

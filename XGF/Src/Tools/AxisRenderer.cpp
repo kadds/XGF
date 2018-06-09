@@ -20,7 +20,7 @@ namespace XGF
 		mBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthEnable);
 		mBatch.GetShaderStage()->SetBlendState(BlendState::NoneBlend);
 		
-		Color c = Color(0.f, 0.f, 0.f, 1.f);
+		SM::Color c = SM::Color(0.f, 0.f, 0.f, 1.f);
 		auto fun = [&](float x, float y, float z) {
 
 			auto line = std::make_unique<Shape::Line>();
@@ -37,19 +37,19 @@ namespace XGF
 		fun(0.f, 0.f, -len);
 	}
 
-	void AxisRenderer::SetAxisXColor(Color color, Color colorb)
+	void AxisRenderer::SetAxisXColor(SM::Color color, SM::Color colorb)
 	{
 		mColor[0] = color;
 		mColor[1] = colorb;
 	}
 
-	void AxisRenderer::SetAxisYColor(Color color, Color colorb)
+	void AxisRenderer::SetAxisYColor(SM::Color color, SM::Color colorb)
 	{
 		mColor[2] = color;
 		mColor[3] = colorb;
 	}
 
-	void AxisRenderer::SetAxisZColor(Color color, Color colorb)
+	void AxisRenderer::SetAxisZColor(SM::Color color, SM::Color colorb)
 	{
 		mColor[4] = color;
 		mColor[5] = colorb;
@@ -58,7 +58,7 @@ namespace XGF
 	void AxisRenderer::DrawAxis()
 	{
 		BindingBridge bbr;
-		PolygonPleConstantColorBinder cbb(Color(0, 0, 0, 0), 2);
+		PolygonPleConstantColorBinder cbb(SM::Color(0, 0, 0, 0), 2);
 		bbr.AddPlaceHolder();
 		bbr.AddBinder(cbb);
 		int i = 0;

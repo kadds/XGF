@@ -26,7 +26,7 @@ namespace XGF
 		void AppendInputStr(wchar_t * str, int count);
 		void AppendInputStr(wchar_t str);
 		void DelInputStr();
-		void RenderText(Color & color);
+		void RenderText(SM::Color & color);
 		void BackUp();
 		void Delete();
 		void CaretToLeft();

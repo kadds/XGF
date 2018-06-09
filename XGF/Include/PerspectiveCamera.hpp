@@ -13,7 +13,6 @@ namespace XGF
 
 		~PerspectiveCamera();
 		virtual void UpdateProject(int cx, int cy);
-		virtual void Update();
 		// вСср 
 		void Strafe(float units);
 		// иооб 
@@ -24,6 +23,8 @@ namespace XGF
 		void Yaw(float angle);
 
 		void Pitch(float angle);
+
+		void Roll(float angle);
 
 
 		void RotateY(float angle);
@@ -36,7 +37,7 @@ namespace XGF
 		
 	protected:
 		float mFovAngle;
-
+		
 	};
 
 };

@@ -40,7 +40,7 @@ namespace XGF
 		TextRenderer.DrawString(fps, static_cast<float>(x), static_cast<float>(y));
 	}
 
-	void FPS::RenderFPS(TextRenderer & TextRenderer, Color color, int x, int y)
+	void FPS::RenderFPS(TextRenderer & TextRenderer, SM::Color color, int x, int y)
 	{
 		wchar_t fps[30];
 		swprintf(fps, 29, L"FPS:%.2f", mFPS);

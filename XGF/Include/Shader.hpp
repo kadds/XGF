@@ -76,20 +76,25 @@ namespace XGF
 	class VertexShader : public Shader
 	{
 	public:
-		void Initialize(GDI* gdi, const wchar_t* VSname);
-		void Initialize(GDI* gdi, const unsigned char* VScode, unsigned int codeLen);
+		//interval = 0 默认全在一个 slot 中
+		void Initialize(GDI* gdi, const wchar_t* VSname, unsigned int interval = 0);
+		void Initialize(GDI* gdi, const unsigned char* VScode, unsigned int codeLen, unsigned int interval = 0);
 
 		void Shutdown();
 		void SetInputLayout();
+		unsigned int * GetStrideAtSlot(unsigned int slot);
+		unsigned int * GetSlotElementStartPositionArray();
+		unsigned int GetStrideAllSizeAtSlot(unsigned int slot);
+		unsigned int GetSlotCount();
 		unsigned int * GetStride();
-		unsigned int GetStrideAllSize();
 	private:
 		friend class ShaderStage;
 		ID3D11VertexShader * mVertexShader;
 		ID3D11InputLayout * mInputLayout;
 		
-		unsigned int * mSlotStride;
-		int mCount;
+		std::vector<unsigned int> mSlotStride;
+		std::vector<unsigned int> mSlotElementStartPosition;
+		unsigned int mLayoutCount;
 	};
 	class GeometryShader : public Shader
 	{
@@ -140,6 +145,15 @@ namespace XGF
 		VertexShader * vs;
 		PixelShader * ps;
 		GeometryShader * gs;
+	public:
+		bool operator == (const Shaders & shaders)
+		{
+			return shaders.vs == vs && shaders.ps == ps && shaders.gs == gs;
+		}
+		bool operator != (const Shaders & shaders)
+		{
+			return shaders.vs != vs || shaders.ps != ps || shaders.gs != gs;
+		}
 	};
 	//gpu通用计算
 	//不会负责建立UAV和SRV
@@ -180,6 +194,7 @@ namespace XGF
 
 		std::function<void()> mOnFlush;
 	public:
+		bool EqualsWithShaders(const Shaders & shaders);
 		void Initialize(VertexShader * vs, PixelShader * ps = nullptr, GeometryShader * gs = nullptr);
 		void Shutdown();
 		void SetOnFlushListener(std::function<void()> f) { mOnFlush = f; };

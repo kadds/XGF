@@ -62,11 +62,13 @@ namespace XGF
 		height = rc.bottom - rc.top;
 		memset(keys, 0, sizeof(keys));
 		mMoveable = true;
+		XGF_ReportDebug0("d8input subsystem initialized");
 		return true;
 	}
 
 	void DX8Input::Shutdown()
 	{
+		XGF_ReportDebug0("d8input subsystem shutdown");
 		PostThreadMessage(id, WM_QUIT, 0, 0);
 		if (mDxInput)
 		{

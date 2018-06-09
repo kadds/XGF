@@ -16,7 +16,7 @@ namespace XGF
 	private:
 		unsigned int maxLen;
 		virtual void SetPosition(const Point & p) {};
-		virtual bool IsInBBox(const Point & p, const XMFLOAT4X4 * matrix) const { return false; };
+		virtual bool IsInBBox(const Point & p, const SM::Vector4 * matrix) const { return false; };
 	};
 
 	/*
@@ -37,9 +37,9 @@ namespace XGF
 
 		//call it after call Begin ,before call End
 		void DrawGrid(Point & center);
-		void SetColor(Color & cx, Color & cz);
-		void SetXColor(Color & cx);
-		void SetZColor(Color & cz);
+		void SetColor(SM::Color & cx, SM::Color & cz);
+		void SetXColor(SM::Color & cx);
+		void SetZColor(SM::Color & cz);
 	private:
 		Batch mBatch;
 		//MeshData * mMeshData;

@@ -8,29 +8,51 @@ namespace XGF
 	public:
 		Camera();
 		~Camera();
-		void GetCameraMatrix(WVPMatrix & wvp, const XMFLOAT4X4 * pro = nullptr);
-		virtual void UpdateProject(int cx, int cy) = 0;
-		virtual void Update() = 0;
+		void GetCameraMatrix(WVPMatrix & wvp, const SM::Matrix * pro = nullptr);
+		virtual void UpdateProject(int cx, int cy)
+		{
+			mAspectRatio = cx / (float) cy;
+			mLastWidth = cx;
+			mLastHeight = cy;
+		};
+		void Update();
 
 		void SetMaxDistance(float f) { mMaxDistance = f; }
 		void SetMinDistance(float f) { mMinDistance = f; }
 
 		//…Ë÷√…„œÒª˙Œª÷√
-		void SetPos(const XMFLOAT3 & pos);
-
+		void SetPosition(const Point & pos);
 		Point GetPosition() { return mPos; };
+
+		Point GetForward();
+		Point GetUp();
+		Point GetRight();
+		float GetAspectRatio()
+		{
+			return mAspectRatio;
+		};
+		SM::Quaternion GetRotation() 
+		{
+			return mRotation;
+		}
+		void SetRotation(SM::Quaternion & r)
+		{
+			mRotation = r;
+		}
+		void LookAt(Point eye, Point target, Point up);
+		void LookTo(Point eye, Point eyeDirection, Point up);
 	protected:
-		XMFLOAT4X4 viewMatrix;
-		XMFLOAT4X4 proMatrix;
+		SM::Matrix viewMatrix;
+		SM::Matrix proMatrix;
 		float mMaxDistance;
 		float mMinDistance;
 		int mLastWidth;
 		int mLastHeight;
 
-		XMFLOAT3 mPos;
-		XMFLOAT3 mRight;
-		XMFLOAT3 mLook;
-		XMFLOAT3 mUp;
+		Point mPos;
+
+		float mAspectRatio;
+		SM::Quaternion mRotation;
 		
 	};
 

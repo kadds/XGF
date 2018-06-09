@@ -17,17 +17,17 @@ namespace XGF
 			mActions.Update(time);
 		}
 		Actions * GetActions() { return &mActions; };
-		XMMATRIX GetMatrix();
+		SM::Matrix GetMatrix();
 		virtual void OnPositionChange(const Point & p, int ID) { pos = p; };
 		virtual void OnAngleChange(const Point & p, int ID) { angle = p; };
 		virtual void OnScaleChange(const Point & p, int ID) { scale = p; };
-		virtual void OnColorChange(const Color & p, int ID) { color = p; };
+		virtual void OnColorChange(const SM::Color & p, int ID) { color = p; };
 		virtual void OnAlphaChange(float a, int ID) { alpha = a; };
 
 		virtual void GetPosition(Point & p, int ID) const { p = pos; };
 		virtual void GetAngle(Point & p, int ID) const { p = angle; };
 		virtual void GetScale(Point & p, int ID) const { p = scale; };
-		virtual void GetColor(Color & p, int ID) const { p = color; };
+		virtual void GetColor(SM::Color & p, int ID) const { p = color; };
 		virtual void GetAlpha(float & p, int ID) const { p = alpha; };
 
 
@@ -36,7 +36,7 @@ namespace XGF
 		Actions mActions;
 		DirectX::XMFLOAT4X4 mMatrix;
 		Point pos;
-		Color color;
+		SM::Color color;
 		Point scale;
 		Point angle;
 		float alpha;

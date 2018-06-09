@@ -22,7 +22,7 @@ namespace XGF
 		Emitter();
 		void SetWidthAndHeight(float w, float h) { width = w; height = h; }
 		void SetAliveTime(float time);
-		void SetGravity(XMFLOAT3 g, float w);
+		void SetGravity(SM::Vector3 g, float w);
 		void SetFrequency(int countPerframe);
 		float mAliveTime;
 		float mPastTime;//过去的时间
@@ -32,7 +32,7 @@ namespace XGF
 		Point pos;
 		//XMFLOAT3 density;//xyz方向上的密度
 		int frequency;//频率每秒释放粒子个数
-		XMFLOAT3 gravity;//重力 方向 xyz
+		SM::Vector3 gravity;//重力 方向 xyz
 		bool mIgnoreZ;
 
 		float delta;
@@ -82,28 +82,28 @@ namespace XGF
 			float accelerationMin;
 			float velocityMax;
 			float velocityMin;
-			Color startColorMin;
-			Color startColorMax;
-			Color endColorMin;
-			Color endColorMax;
-			void SetColor(Color & startmin, Color & startmax, Color & endmin, Color & endmax);
+			SM::Color startColorMin;
+			SM::Color startColorMax;
+			SM::Color endColorMin;
+			SM::Color endColorMax;
+			void SetColor(SM::Color & startmin, SM::Color & startmax, SM::Color & endmin, SM::Color & endmax);
 			void SetEmitterAngle(float startmin, float startmax, float endmin, float endmax);
 			
 		};
 		struct EmitterInputData
 		{
-			XMFLOAT3 pos;
-			XMFLOAT4 data;
+			SM::Vector3 pos;
+			SM::Vector3 data;
 		};
 		struct ParticleData
 		{
-			XMFLOAT3 pos;
-			XMFLOAT2 size;
-			XMFLOAT3 velocity;//速度 xyz方向
-			XMFLOAT3 acceleration;//加速度 xyz方向
-			Color color;
+			SM::Vector3 pos;
+			SM::Vector2 size;
+			SM::Vector3 velocity;//速度 xyz方向
+			SM::Vector3 acceleration;//加速度 xyz方向
+			SM::Color color;
 			bool used;
-			ParticleData(Point p, Position s, Point v, Point acc, Color & c) :pos(p), velocity(v), color(c), acceleration(acc),size(s),used(true){};
+			ParticleData(Point p, Position s, Point v, Point acc, SM::Color & c) :pos(p), velocity(v), color(c), acceleration(acc),size(s),used(true){};
 		};
 		void Draw();
 		void Begin(const WVPMatrix & matrix);

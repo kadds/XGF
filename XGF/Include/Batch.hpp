@@ -65,7 +65,7 @@ namespace XGF
 		static float GetClientHeightD2() {
 			return mClientHeight / 2.f;
 		}
-		void End(ID3D11Buffer * c, int count = 0);
+		//void End(ID3D11Buffer * c, int count = 0);
 		void StepVetices(int count);
 		static void SetClientSize(SIZE size) { mClientHeight = size.cy; mClientWidth = size.cx; }
 	protected:
@@ -75,7 +75,7 @@ namespace XGF
 	protected:
 
 		GDI * mGDI;
-		ID3D11Buffer *mVertexBuffer;
+		std::vector<ID3D11Buffer *> mVertexBuffers;
 		ID3D11Buffer * mIndexBuffer;
 		//ShaderStage 
 		ShaderStage mShaderStage;
@@ -83,7 +83,7 @@ namespace XGF
 		int mMaxVertices;
 		int mMaxIndexCount;
 
-		VertexDate mVertexData;
+		std::vector<VertexDate> mVertexData;
 		int mPosInVertices;
 		int mPosInIndices;
 		int mPosBeforeIndices;
@@ -102,7 +102,7 @@ namespace XGF
 		unsigned int mFramePosition;
 	protected:
 		void CreateIndexBuffer();
-		void CreateVertexBuffer(unsigned len, ID3D11Buffer ** buffer);
+		ID3D11Buffer *  CreateVertexBuffer(unsigned len);
 		void EndWithoutFrame(bool drawAuto = false);
 	private:
 		void Map(bool discard);

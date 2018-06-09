@@ -1,6 +1,9 @@
 #include "../../Include/Tools.hpp"
 #include <Windows.h>
 #include <shlobj.h>
+#include <filesystem>
+namespace fs = std::experimental::filesystem;
+
 namespace XGF
 {
 	namespace Tools
@@ -59,17 +62,29 @@ namespace XGF
 			buffer[p + i] = '\0';
 			return buffer;
 		}
-		struct FontEnumInformation
+
+
+		string GetFontPath(const string & name)
 		{
-			const char * name;
-			char * OutBuffer;
-			int len;
-		};
-		void GetFontPath(const char * name, char * buffer, int maxlen)
-		{
-			SHGetSpecialFolderPathA(NULL, buffer, CSIDL_FONTS, FALSE);
-			strcat_s(buffer, maxlen, "\\");
-			strcat_s(buffer, maxlen, name);
+			wchar_t buffer[MAX_PATH];
+			SHGetSpecialFolderPathW(NULL, buffer, CSIDL_FONTS, FALSE);
+			string path(buffer);
+			path += L"\\";
+			path += name;
+			if (fs::exists(path + L".ttf"))
+			{
+				path += L".ttf";
+				return path;
+			}
+			else if (fs::exists(path + L".ttc"))
+			{
+				path += L".ttc";
+				return path;
+			}
+			else
+			{
+				return string();
+			}
 		}
 
 		void GetAppPath(wchar_t * t, int len)
@@ -88,7 +103,17 @@ namespace XGF
 			if (p >= 0)
 				t[p] = '\0';
 		}
-
+		std::string WcharToChar(const wchar_t* wch, size_t encode)
+		{
+			std::string str;
+			int len = WideCharToMultiByte(encode, 0, wch, wcslen(wch), NULL, 0, NULL, NULL);
+			char    *ch = new char[len + 1];
+			WideCharToMultiByte(encode, 0, wch, wcslen(wch), ch, len, NULL, NULL);
+			ch[len] = '\0';
+			str = ch;
+			delete ch;
+			return str;
+		}
 	}
 
 }

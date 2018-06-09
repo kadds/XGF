@@ -39,16 +39,10 @@ public:
 	virtual ~GameScene() {};
 	virtual void OnCreate(GDI * gdi) override
 	{
-		char cbuffer[MAX_PATH];
-		Tools::GetFontPath("Dengb.ttf", cbuffer, MAX_PATH);
-		mAxisRenderer.Initialize(gdi);
-
-		mBatch3D.Initialize(gdi, ConstantData::GetInstance().GetPCShaders(), 100, 100);
-		mCube.SetPositionAndSize(-1, -1, -1, 2, 2, 2);
-
-		mFont.Initialize(gdi, cbuffer, 16);
-		mFont_s.Initialize(gdi, cbuffer, 12);
-		mFont_b.Initialize(gdi, cbuffer, 20);
+		auto fname = Tools::GetFontPath(L"msyh");
+		mFont.Initialize(gdi, fname, 16);
+		mFont_s.Initialize(gdi, fname, 12);
+		mFont_b.Initialize(gdi, fname, 20);
 		mUITextRenderer.Initialize(gdi, &mFont, 1000);
 		mTextRenderer_s.Initialize(gdi, &mFont_s, 1000);
 		mTextRenderer_b.Initialize(gdi, &mFont_b, 200);
@@ -107,8 +101,6 @@ public:
 		GetRootContainer().AddChild(edit1);
 		GetRootContainer().AddChild(edit2);
 
-		mCamera.SetPos(XMFLOAT3(1, 1, -10));
-
 		//resource loading
 		auto res = std::vector<ResourceInfo>();
 		res.push_back(ResourceInfo(L"_normal.png", L"normal"));
@@ -146,17 +138,13 @@ public:
 		mFont_s.Shutdown();
 		mFont_b.Shutdown();
 
-		mAxisRenderer.Shutdown();
-
-		mBatch3D.Shutdown();
 		mTextureResourceManager.ReleaseAllResource();
 	};
 	virtual void Render(float deltaTime) override
 	{
-		Clear(Color(0.5f, 0.5f, 0.5f, 1.0f));
-		WVPMatrix wvp2D, wvp3D;
+		Clear(SM::Color(0.5f, 0.5f, 0.5f, 1.0f));
+		WVPMatrix wvp2D;
 		mCamera2D.GetCameraMatrix(wvp2D);
-		mCamera.GetCameraMatrix(wvp3D);
 
 		auto debug = DebugInscriber::GetInstance();
 		mTextRenderer_s.Begin(wvp2D);
@@ -194,32 +182,6 @@ public:
 		str << L"PolygonRenderCountPerFrame:" << debug->GetPolygonRenderCountPerFrame();
 		mTextRenderer_s.DrawString(str.str().c_str(), 2.f, static_cast<float>(mFramework->GetWindowsHeight() - 20));
 
-
-
-		mAxisRenderer.Begin(wvp3D);
-		mAxisRenderer.SetAxisXColor(Color(1.f, 0.f, 0.f, 1.0), Color(0.5f, 0.f, 0.f, 1.f));
-		mAxisRenderer.SetAxisYColor(Color(0.f, 1.f, 0.f, 1.0), Color(0.f, 0.5f, 0.f, 1.f));
-		mAxisRenderer.SetAxisZColor(Color(0.f, 0.f, 1.f, 1.0), Color(0.f, 0.f, 0.5f, 1.f));
-		mAxisRenderer.DrawAxis();
-		mAxisRenderer.End();
-
-
-		PolygonPleColorBinder cb(mCube.mPolygon.mCount);
-		cb.mColor[0] = Color(1.0, 0.0, 0.0, 1.0);
-		cb.mColor[1] = Color(1.0, 1.0, 0.0, 1.0);
-		cb.mColor[2] = Color(1.0, 1.0, 1.0, 1.0);
-		cb.mColor[3] = Color(0.0, 1.0, 1.0, 1.0);
-		cb.mColor[4] = Color(0.0, 1.0, 0.0, 1.0);
-		cb.mColor[5] = Color(0.0, 0.0, 1.0, 1.0);
-		cb.mColor[6] = Color(0.0, 0.0, 0.0, 1.0);
-		cb.mColor[7] = Color(1.0, 0.0, 1.0, 1.0);
-		BindingBridge bbr;
-		bbr.AddBinder(mCube.mPolygon);
-		bbr.AddBinder(cb);
-		mBatch3D.GetShaderStage()->SetVSConstantBuffer(0, &wvp3D);
-		mBatch3D.Begin();
-		mBatch3D.DrawPolygon(mCube.mPolygonPleIndex, bbr);
-		mBatch3D.End();
 		mTextRenderer_s.End();
 
 		mTextRenderer_b.Begin(wvp2D);
@@ -227,12 +189,11 @@ public:
 		str.clear();
 		str.str(L"");
 		str << std::fixed << std::setprecision(1) << L"FPS:" << debug->GetAverageFPS() << "\n" << L"FC:" << std::setprecision(4) << debug->GetFrameCost() << "ms";
-		mTextRenderer_b.DrawString(str.str().c_str(), Color(0.2f, 0.2f, 0.8f, 1.0f), 4, 4);
+		mTextRenderer_b.DrawString(str.str().c_str(), SM::Color(0.2f, 0.2f, 0.8f, 1.0f), 4, 4);
 		mTextRenderer_b.End();
 	};
 	virtual void Update(float deltaTime) override
 	{
-		mCamera.Update();
 		mCamera2D.Update();
 		auto ip = GetFramework()->GetInputManager();
 		if (ip->IskeyDowm(DIK_ESCAPE))
@@ -241,17 +202,11 @@ public:
 	virtual void OnSize(int ClientX, int ClientY) override
 	{
 		mCamera2D.UpdateProject(ClientX, ClientY);
-		mCamera.UpdateProject(ClientX, ClientY);
 	};
 
 private:
-	PerspectiveCamera mCamera;
 	OrthoCamera mCamera2D;
-	AxisRenderer mAxisRenderer;
 
-	Batch mBatch3D;
-	Shaders mShader3D;
-	Shape::Cube mCube;
 	Font mFont;
 	TextRenderer mUITextRenderer;
 	Font mFont_s;
@@ -272,7 +227,7 @@ int RunGame(HINSTANCE hInstance)
 	framework.SetSceneDeleter([](Scene * sc) {delete sc; });
 	framework.SetOnClose([]() {return true; });
 	int rt = -1;
-	rt = app.CreateWindowsAndRunApplication(framework, gdi, hInstance, L"tet", L"dsgdfhv,",
+	rt = app.CreateWindowsAndRunApplication(framework, gdi, hInstance, L"UITest", L"UITest",
 		0, 0, { 300, 100 }, { 600, 400 }, false, gs);
 	return rt;
 }

@@ -1,13 +1,8 @@
 #include "../../Include/Log.hpp"
 #include "../../Include/dxerr.h"
 #include <sstream> 
-#include <locale>
-#include <iomanip>
-#include<ctime>
-#include <cstdio>
 #include <time.h>
-#include <shlobj.h>
-#include<utility>
+#include <iostream>
 namespace XGF {
 	namespace Log {
 		std::stringstream mDebugBuffer;
@@ -21,57 +16,31 @@ namespace XGF {
 		void ShowXGFDialog(char * str, char * name);
 		void Record(LogLevel level, LogData & logData)
 		{
-			std::time_t t = std::time(NULL);
-			std::tm tm;
-			localtime_s(&tm, &t);
-			std::stringstream * ss = nullptr;
-			char * str = nullptr;
-			switch (level)
-			{
-			case LogLevel::Debug:
-				ss = &mDebugBuffer;
-				str = "Debug";
-				break;
-			case LogLevel::Info:
-				ss = &mInfoBuffer;
-				str = "Info";
-				break;
-			case LogLevel::Warn:
-				ss = &mWarnBuffer;
-				str = "Warn";
-				gHasRecord = true;
-				break;
-			case LogLevel::Error:
-				ss = &mErrorBuffer;
-				str = "Error";
-				break;
-			default:
-				return;
-			}
+			std::stringstream ss;
+
 			if (logData.funname != nullptr)
 			{
-				*ss << "[" << std::put_time(&tm, "%Y-%m-%d %H:%M:%S") << "](" << str << ")-->" <<
-					logData.file << "  line:" << logData.line << "  function:" << logData.funname
-					<< " " << logData.str.str() << "    " << logData.str2.str() << std::endl;
+				if (level == LogLevel::Debug)
+					ss << logData.str.str() << " " << (!logData.str2.str()._Equal("") ? logData.str2.str() : "");
+				else
+				ss <<  logData.file << " line:" << 
+					logData.line << " function:" << 
+					logData.funname
+					<< " " << logData.str.str() << " " << ( !logData.str2.str()._Equal("") ? logData.str2.str() : "");
 			}
 			else
-				*ss << "[" << std::put_time(&tm, "%Y-%m-%d %H:%M:%S") << "](" << str << ")-->" <<
-				logData.file << "  line:" << logData.line
-				<< " " << logData.str.str() << "    " << logData.str2.str() << std::endl;
-			if (ss->str().size() > gMaxBufferSize)
+				if (level == LogLevel::Debug)
+					ss << logData.str.str() << " " << (!logData.str2.str()._Equal("") ? logData.str2.str() : "");
+				else
+					ss << logData.file << " line:" << logData.line
+					<< " " << logData.str.str() << " " << logData.str2.str();
+
+			gLogRecorder.Log(ss.str(), level);
+			if (level == LogLevel::Error) 
 			{
-				gLogRecorder.Open() << ss->str();
-				gLogRecorder.Close();
-				ss->str("");
-			}
-			
-			if (level == LogLevel::Error)
-			{
-				//flush all
-				gLogRecorder.Open() << mDebugBuffer.str() << std::endl << mInfoBuffer.str() << std::endl << mWarnBuffer.str() << std::endl << mErrorBuffer.str();
-				gLogRecorder.Close();
-				ShowXGFDialog("A error hanpend, Do you want to open log file?", gFilename);
-				gHasRecord = false;
+				std::string str = "An error occurred in the application \n";
+				str += ss.str();
+				MessageBoxA(NULL, str.c_str(), "Error", 0);
 				exit(-1);
 			}
 		}
@@ -86,35 +55,14 @@ namespace XGF {
 				delete[] msg;
 			}
 		}
-		void OutputDebugStringEx(const wchar_t *strOutputString, ...)
-		{
-			va_list vlArgs = NULL;
-			va_start(vlArgs, strOutputString);
-			size_t nLen = _vscwprintf(strOutputString, vlArgs) + 1;
-			wchar_t *strBuffer = new wchar_t[nLen];
-			_vsnwprintf_s(strBuffer, nLen, nLen, strOutputString, vlArgs);
-			va_end(vlArgs);
-			OutputDebugStringW(strBuffer);
-			delete[] strBuffer;
-		}
-		void OutputDebugStringEx(const char *strOutputString, ...)
-		{
-			va_list vlArgs = NULL;
-			va_start(vlArgs, strOutputString);
-			size_t nLen = _vscprintf(strOutputString, vlArgs) + 1;
-			char *strBuffer = new char[nLen];
-			_vsnprintf_s(strBuffer, nLen, nLen, strOutputString, vlArgs);
-			va_end(vlArgs);
-			OutputDebugStringA(strBuffer);
-			delete[] strBuffer;
-		}
 
 		void Log::GetHRString(char * out, int size, const char * msg, HRESULT hr)
 		{
-			char *wdxerr = new char[2048];
+			const int len = 4096;
+			char *wdxerr = new char[len];
 			size_t converted = 0;
 			const wchar_t * estring = DXGetErrorStringW(hr);
-			wcstombs_s(&converted, wdxerr, wcslen(estring) + 1, estring, _TRUNCATE);
+			wcstombs_s(&converted, wdxerr, len / sizeof(char), estring, _TRUNCATE);
 			if (msg != nullptr)
 			{
 				sprintf_s(out, size, "DXerror: %s\n%s", wdxerr, msg);
@@ -127,41 +75,125 @@ namespace XGF {
 		}
 		LogRecorder::~LogRecorder()
 		{
-			if (mLogfile.is_open())
-			{
-				mLogfile.flush();
-				mLogfile.close();
-			}
-#ifdef _DEBUG
-			if (gHasRecord)
-			{
-				ShowXGFDialog("Some Log had recorded, Do you want to open log file?", gFilename);
-			}
-#endif
+			stdLogger->info("close application");
+			spdlog::drop_all();
+			CloseConsole();	
+		}
+		std::string WcharToChar(const wchar_t* wch, size_t encode)
+		{
+			std::string str;
+			int len = WideCharToMultiByte(encode, 0, wch, wcslen(wch), NULL, 0, NULL, NULL);
+			char    *ch = new char[len + 1];
+			WideCharToMultiByte(encode, 0, wch, wcslen(wch), ch, len, NULL, NULL);
+			ch[len] = '\0';
+			str = ch;
+			delete ch;
+			return str;
 		}
 
-		std::ofstream & LogRecorder::Open()
+		void LogRecorder::Log(std::string str, LogLevel level)
 		{
-			mLogfile.open(gFilename, std::ios::out | std::ios::app);
-			std::time_t t = std::time(NULL);
-			std::tm timeinfo;
-			localtime_s(&timeinfo, &t);
-			mLogfile.imbue(std::locale());
-			return mLogfile;
+			switch (level)
+			{
+			case LogLevel::Debug:
+				stdLogger->debug(str);
+				break;
+			case LogLevel::Info:
+				stdLogger->info(str);
+				break;
+			case LogLevel::Warn:
+				stdLogger->warn(str);
+				break;
+			case LogLevel::Error:
+				stdLogger->error(str);
+				break;
+			}
 		}
 
-		void LogRecorder::Close()
+		void LogRecorder::OpenConsole()
 		{
-			mLogfile.flush();
-			mLogfile.close();
+			AllocConsole();
+			SetConsoleTitle(L"XGF Debug");
+			FILE * stdd;
+			freopen_s(&stdd, "CONOUT$", "w+t", stdout);
+			HWND hwnd = GetConsoleWindow();
+			HMENU hmenu = ::GetSystemMenu(hwnd, FALSE);
+			DeleteMenu(hmenu, SC_CLOSE, MF_BYCOMMAND);
+
+			SetConsoleCtrlHandler(NULL, TRUE);
+			openConsole = true;
 		}
+
+		void LogRecorder::CloseConsole()
+		{
+			FreeConsole();
+			openConsole = false;
+		}
+
+		void LogRecorder::ShowConsole()
+		{
+			HWND hwnd = GetConsoleWindow();
+			ShowWindow(hwnd, SW_SHOW);
+		}
+
+		void LogRecorder::HideConsole()
+		{
+			HWND hwnd = GetConsoleWindow();
+			ShowWindow(hwnd, SW_HIDE);
+		}
+
+		bool LogRecorder::IsShowConsole()
+		{
+			return openConsole;
+		}
+
+		void LogRecorder::SetLevel(LogLevel level)
+		{
+			switch (level)
+			{
+			case LogLevel::Debug:
+				spdlog::set_level(spdlog::level::debug);
+				break;
+			case LogLevel::Info:
+				spdlog::set_level(spdlog::level::info);
+				break;
+			case LogLevel::Warn:
+				spdlog::set_level(spdlog::level::warn);
+				break;
+			case LogLevel::Error:
+				spdlog::set_level(spdlog::level::err);
+				break;
+			}
+			
+		}
+
 
 		LogRecorder::LogRecorder()
 		{
+			setlocale(LC_CTYPE, "");
+			OpenConsole();
+			spdlog::set_async_mode(8192, spdlog::async_overflow_policy::discard_log_msg);
+			spdlog::set_level(spdlog::level::info);
 			char filepath[MAX_PATH];
-			GetTempPathA(MAX_PATH,
-				filepath);
+			GetTempPathA(MAX_PATH, filepath);
 			GetTempFileNameA(filepath, "Log", 0, gFilename);
+			stdLogger = spdlog::details::registry::instance().create("std", { std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>()
+				,std::make_shared<spdlog::sinks::simple_file_sink_mt>(gFilename) });
+			spdlog::set_error_handler([](const std::string& msg)
+			{
+			std::cerr << "an error occurred: " << msg << std::endl;
+			});
+
+			std::string path = "log file save as ";
+			path += gFilename;
+			stdLogger->info("start application");
+			stdLogger->info(path);
+#ifdef _DEBUG
+			spdlog::set_level(spdlog::level::debug);
+#else
+			spdlog::set_level(spdlog::level::debug); // info
+#endif
+			
 		}
 		void ShowXGFDialog(char* str, char * name)
 		{
@@ -169,6 +201,45 @@ namespace XGF {
 			{
 				ShellExecuteA(0,"open","notepad.exe",name, 0, SW_SHOW);
 			}
+		}
+		LogData::LogData(const char * errorstr, const char * errorstr2, int cline, const char * cfile, const char * cfunname) :file(cfile), funname(cfunname), line(cline), str(errorstr)
+			, str2(errorstr2) {}
+		LogData::LogData(const char * errorstr, int cline, char * cfile, char * cfunname) : file(cfile), funname(cfunname), line(cline), str(errorstr), str2("") {}
+		LogData::LogData(const wchar_t * errorstr, int cline, char * cfile, char * cfunname) : file(cfile), funname(cfunname), line(cline), str2("")
+		{
+			char * temp = new char[8192];
+			wcstombs_s(nullptr, temp, 8192, errorstr, 8192);
+			str.str(temp);
+			delete[] temp;
+		}
+		LogData::LogData(const char * errorstr, const wchar_t * errorstr2, int cline, const char * cfile, const char * cfunname) :file(cfile), funname(cfunname), line(cline), str(errorstr)
+		{
+			char * temp = new char[8192];
+			wcstombs_s(nullptr, temp, 8192, errorstr2, 8192);
+			str2.str(temp);
+			delete[] temp;
+		}
+		LogData::LogData(const wchar_t * errorstr, const char * errorstr2, int cline, const char * cfile, const char * cfunname) :file(cfile), funname(cfunname), line(cline), str2(errorstr2)
+		{
+
+			char * temp = new char[8192];
+			wcstombs_s(nullptr, temp, 8192, errorstr, _TRUNCATE);
+			str.str(temp);
+			delete[] temp;
+		}
+		LogData::LogData(const wchar_t * errorstr, const wchar_t * errorstr2, int cline, const char * cfile, const char * cfunname) :file(cfile), funname(cfunname), line(cline)
+		{
+			char * temp = new char[8192];
+			char * temp2 = new char[8192];
+			wcstombs_s(nullptr, temp, 8192, errorstr, 8192);
+			wcstombs_s(nullptr, temp, 8192, errorstr2, 8192);
+			str.str(temp);
+			str2.str(temp2);
+			delete[] temp;
+			delete[] temp2;
+		}
+		LogData::~LogData()
+		{
 		}
 }
 }

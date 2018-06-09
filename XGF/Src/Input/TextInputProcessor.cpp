@@ -38,7 +38,7 @@ namespace XGF
 		mInputString.clear();
 	}
 
-	void TextInputProcessor::RenderText(Color & color)
+	void TextInputProcessor::RenderText(SM::Color & color)
 	{
 		XGF_ASSERT(mGetInnerRectangle);
 		Shape::Rectangle rc;

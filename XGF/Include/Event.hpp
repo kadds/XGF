@@ -64,16 +64,19 @@ namespace XGF {
 
 		int GetDataInt(unsigned int index) const;
 		template<typename Format>
-		Format GetData(unsigned int index) const
-		{
-			XGF_ASSERT(index < mData.size());
-			XGF_ASSERT(index >= 0);
-			return std::any_cast<Format>(mData[index]);
-		};
+		Format GetData(unsigned int index) const;;
 		float GetDataFloat(unsigned int index) const;
 
 		unsigned int GetDataUint(unsigned int index) const;
 	private:
 	};
 	
+	template<typename Format>
+	Format Event::GetData(unsigned int index) const
+	{
+		XGF_ASSERT(index < mData.size());
+		XGF_ASSERT(index >= 0);
+		return std::any_cast<Format>(mData[index]);
+	}
+
 }

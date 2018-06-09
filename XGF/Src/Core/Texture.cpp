@@ -113,6 +113,9 @@ namespace XGF
 		if (mShaderResourceView != nullptr)
 			mShaderResourceView->Release();
 		mShaderResourceView = nullptr;
+		if (mTexture != nullptr)
+			mTexture->Release();
+		mTexture = nullptr;
 	}
 
 };

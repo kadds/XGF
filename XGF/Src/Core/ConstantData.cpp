@@ -21,7 +21,7 @@ namespace XGF
 		mPCPShader.Initialize(gdi, ShaderConst::shaderPCPS, ShaderConst::shaderPCPSSize);
 		mPCShaders = { &mPCVShader, &mPCPShader, nullptr };
 
-		mPCTVShader.Initialize(gdi, ShaderConst::shaderPCTVS, ShaderConst::shaderPCTVSSize);
+		mPCTVShader.Initialize(gdi, ShaderConst::shaderPCTVS, ShaderConst::shaderPCTVSSize, 1);
 		mPCTPShader.Initialize(gdi, ShaderConst::shaderPCTPS, ShaderConst::shaderPCTPSSize);
 		mPCTShaders = { &mPCTVShader, &mPCTPShader, nullptr };
 
@@ -39,7 +39,7 @@ namespace XGF
 		std::random_device rdDevice;
 		std::mt19937 mrandom(rdDevice());
 		std::uniform_real_distribution<> rtt(0);
-		XMFLOAT4 * buffer = new XMFLOAT4[mRanowmSize];
+		SM::Vector4 * buffer = new SM::Vector4[mRanowmSize];
 		D3D11_SUBRESOURCE_DATA __subData;
 		__subData.pSysMem = buffer;
 		__subData.SysMemPitch = 0;

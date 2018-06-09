@@ -11,7 +11,7 @@ namespace XGF
 	class Container;
 	/*
 	演员类
-	Tip: 继承时请重写 Render ，GetShape 函数。参照Button，Lable，EditText类
+	Tip: 继承时请重写 Render ，GetShape 函数。参照Button，Label，EditText类
 	*/
 	class Actor : public GObject
 	{

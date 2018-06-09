@@ -24,17 +24,17 @@ namespace XGF
 		void GetInnerRectangle(::XGF::Shape::Rectangle & rc);
 
 		EditText();
-		EditText(int id, const string & text = string(), const Color & textColor = Color(0.f,0.f,0.f,1.f));
+		EditText(int id, const string & text = string(), const SM::Color & textColor = SM::Color(0.f,0.f,0.f,1.f));
 		~EditText();
 		void SetText(const string & text);
-		void SetTextColor(const Color & color);
+		void SetTextColor(const SM::Color & color);
 	protected:
 		virtual Shape * GetShape() const override
 		{
 			return (::XGF::Shape::RectangleB *)this;
 		};
 	private:
-		Color mTextColor;
+		SM::Color mTextColor;
 		TextInputProcessor mTextInputProcessor;
 	};
 

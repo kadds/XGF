@@ -24,8 +24,8 @@ namespace XGF
 		mPolygonPleIndex = new PolygonPleIndex(xcount * 2 + zcount * 2 + 4);
 		int c[2] = { (int)xcount * 2 + 2, (int)zcount * 2 + 2 };
 		mColorBinder = new PolygonPleConstantExColorBinder(c, 2);
-		mColorBinder->SetLayerColor(0, Color(1.0f, 0.2f, 0.2f, 1.0f));
-		mColorBinder->SetLayerColor(1, Color(0.2f, 1.0f, 0.2f, 1.0f));
+		mColorBinder->SetLayerColor(0, SM::Color(1.0f, 0.2f, 0.2f, 1.0f));
+		mColorBinder->SetLayerColor(1, SM::Color(0.2f, 1.0f, 0.2f, 1.0f));
 		mBindingBridge.AddBinder(*mPolygon);
 		mBindingBridge.AddBinder(*mColorBinder);
 		Point pstart = origin;
@@ -89,18 +89,18 @@ namespace XGF
 		mBatch.DrawPolygon(*mPolygonPleIndex, mBindingBridge);
 	}
 
-	void GridRenderer::SetColor(Color & cx, Color & cz)
+	void GridRenderer::SetColor(SM::Color & cx, SM::Color & cz)
 	{
 		mColorBinder->SetLayerColor(0, cx);
 		mColorBinder->SetLayerColor(1, cz);
 	}
 
-	void GridRenderer::SetXColor(Color & cx)
+	void GridRenderer::SetXColor(SM::Color & cx)
 	{
 		mColorBinder->SetLayerColor(0, cx);
 	}
 
-	void GridRenderer::SetZColor(Color & cz)
+	void GridRenderer::SetZColor(SM::Color & cz)
 	{
 		mColorBinder->SetLayerColor(1, cz);
 	}

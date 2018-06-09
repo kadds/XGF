@@ -6,11 +6,13 @@
 #include <time.h>
 #include <sstream>
 #include <initializer_list>
+#include "spdlog.h"
 /*
 »’º«class
 */
 namespace XGF {
 	namespace Log {
+		std::string WcharToChar(const wchar_t* wch, size_t encode = CP_ACP);
 		enum class LogLevel
 		{
 			Debug,
@@ -18,59 +20,60 @@ namespace XGF {
 			Warn,
 			Error,
 		};
-		template<typename... args>
-		void CaseData(std::ostream & s, args...ag)
+
+		void constexpr CaseData(std::ostream & s) {};
+
+		template<typename Head, typename... Rest>
+		inline constexpr void CaseData(std::ostream & s, Head head, Rest...rest)
 		{
-			int k[] = { (s << ag, 0)... ,0 };
+			if constexpr(std::is_same<typename std::decay<Head>::type, wchar_t const *>::value || std::is_same<typename std::decay<Head>::type, wchar_t *>::value)
+			{
+				s << WcharToChar(head);
+			}
+			else if constexpr(std::is_same<typename std::decay<Head>::type, wchar_t>::value)
+			{
+				wchar_t wch[2] = { head, 0 };
+				s << WcharToChar(wch);
+			}
+			else
+				s << head;
+			//pushToss(s, head);
+			CaseData(s, rest...);
 		};
+		/*
+		template<typename T>
+		inline void pushToss(std::ostream & s, T t)
+		{
+			s << t;
+		}
+		inline void pushToss(std::ostream & s, const wchar_t * t)
+		{
+			s << WcharToChar(t);
+		}
+		inline void pushToss(std::ostream & s, const wchar_t t)
+		{
+			wchar_t wch[2] = { t, L'\0' };
+			s << WcharToChar(wch);
+		}
+		*/
 		class LogData 
 		{
 		public:
 			const char * file;
 			const char * funname;
-			LogData(const char * errorstr, const char * errorstr2, int cline, const char * cfile, const char * cfunname) :file(cfile), funname(cfunname), line(cline), str(errorstr)
-				,str2(errorstr2){};
 			::std::stringstream str;
 			::std::stringstream str2;
 			int line;
-			LogData(const char * errorstr,  int cline, char * cfile, char * cfunname) :file(cfile), funname(cfunname), line(cline), str(errorstr), str2(""){};
-			LogData(const wchar_t * errorstr, int cline, char * cfile, char * cfunname) :file(cfile), funname(cfunname), line(cline), str2("") 
-			{
-				char * temp = new char[8192];
-				wcstombs_s(nullptr,temp, 8192, errorstr, 8192);
-				str.str(temp);
-				delete[] temp;
-			};
 
-			LogData(const char * errorstr, const wchar_t * errorstr2, int cline, const char * cfile, const char * cfunname) :file(cfile), funname(cfunname), line(cline), str(errorstr)
-			{
-				char * temp = new char[8192];
-				wcstombs_s(nullptr, temp, 8192, errorstr2, 8192);
-				str2.str(temp);
-				delete[] temp;
-			};
-			LogData(const wchar_t * errorstr, const char * errorstr2, int cline, const char * cfile, const char * cfunname) :file(cfile), funname(cfunname), line(cline), str2(errorstr2)
-			{
-				
-				char * temp = new char[8192];
-				wcstombs_s(nullptr, temp, 8192, errorstr, 8192);
-				str.str(temp);
-				delete[] temp;
-			};
-			LogData(const wchar_t * errorstr, const wchar_t * errorstr2, int cline, const char * cfile, const char * cfunname) :file(cfile), funname(cfunname), line(cline)
-			{
-				char * temp = new char[8192];
-				char * temp2 = new char[8192];
-				wcstombs_s(nullptr, temp, 8192, errorstr, 8192);
-				wcstombs_s(nullptr, temp, 8192, errorstr2, 8192);
-				str.str(temp);
-				str2.str(temp2);
-				delete[] temp;
-				delete[] temp2;
-			};
-			~LogData()
-			{
-			}
+			LogData(const char * errorstr, const char * errorstr2, int cline, const char * cfile, const char * cfunname);
+			
+			LogData(const char * errorstr, int cline, char * cfile, char * cfunname);
+			LogData(const wchar_t * errorstr, int cline, char * cfile, char * cfunname);
+
+			LogData(const char * errorstr, const wchar_t * errorstr2, int cline, const char * cfile, const char * cfunname);
+			LogData(const wchar_t * errorstr, const char * errorstr2, int cline, const char * cfile, const char * cfunname);
+			LogData(const wchar_t * errorstr, const wchar_t * errorstr2, int cline, const char * cfile, const char * cfunname);
+			~LogData();
 			
 		};
 		
@@ -80,21 +83,23 @@ namespace XGF {
 		
 		void GetHRString(char * out, int size, const char * msg, HRESULT hr);
 		
-		extern std::stringstream mDebugBuffer;
-		extern std::stringstream mInfoBuffer;
-		extern std::stringstream mErrorBuffer;
-		extern std::stringstream mWarnBuffer;
-		extern const size_t gMaxBufferSize;
+
 		extern char gFilename[MAX_PATH];
 		class LogRecorder 
 		{
 		private:
-			std::ofstream mLogfile;
+			bool openConsole;
+			std::shared_ptr<spdlog::logger> stdLogger;
 		public:
 			LogRecorder();
 			~LogRecorder();
-			std::ofstream & Open();
-			void Close();
+			void Log(std::string str, LogLevel lv);
+			void OpenConsole();
+			void CloseConsole();
+			void ShowConsole();
+			void HideConsole();
+			bool IsShowConsole();
+			void SetLevel(LogLevel lv);
 		};
 		extern LogRecorder gLogRecorder;
 		extern bool gHasRecord;
@@ -145,5 +150,8 @@ namespace XGF {
             (_wassert(_CRT_WIDE(#expression), _CRT_WIDE(__FILE__), (unsigned)(__LINE__)), 0) \
         )
 #else
-#define XGF_ASSERT(expression) ((void)0)
+#define XGF_ASSERT(expression) (void)(                                                       \
+            (!!(expression)) ||                                                              \
+            (assert(_CRT_WIDE(#expression)), 0) \
+        )
 #endif

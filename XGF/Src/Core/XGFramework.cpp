@@ -212,6 +212,7 @@ namespace XGF
 	}
 	void XGFramework::ISwitchScene(Scene * scene)
 	{
+		XGF_ReportDebug0("A scene to switch");
 		scene->_OnCreate(this);
 		scene->OnSize(mGDI->GetWidth(), mGDI->GetHeight());
 		SceneAnimation * sa = scene->OnSwitchIn();
@@ -244,12 +245,12 @@ namespace XGF
 	}
 	void XGFramework::DrawSceneAnimation()
 	{
-		mGDI->Clear(Color(1.0f, 1.0f, 1.0f, 1.f));
+		mGDI->Clear(SM::Color(1.0f, 1.0f, 1.0f, 1.f));
 		WVPMatrix wvp;
-		Color c;
+		SM::Color c;
 		BindingBridge bbr;
 		PolygonPleTextureBinder ppb(4);
-		PolygonPleConstantColorBinder cc(Color(0.f, 0.f, 0.f, 1.f), 4);
+		PolygonPleConstantColorBinder cc(SM::Color(0.f, 0.f, 0.f, 1.f), 4);
 		bbr.AddBinder(cc);
 		bbr.AddBinder(ppb);
 		ppb.SetPosition(0.f, 1.f, 0.f, 1.f);
@@ -278,7 +279,7 @@ namespace XGF
 		else
 		{
 			mRenderRectangle.mTransform.SetMatrix(DirectX::XMMatrixIdentity());
-			cc.Set(0, 1, Color(1.f, 1.f, 1.f, 1.f));
+			cc.Set(0, 1, SM::Color(1.f, 1.f, 1.f, 1.f));
 			mRenderRectangle.Render(mSceneBatch, bbr, mRenderToTexture.GetShaderResourceView());
 		}
 
@@ -310,7 +311,7 @@ namespace XGF
 		mGDI->Clear(color);
 	}
 
-	void XGFramework::Clear(Color & color)
+	void XGFramework::Clear(SM::Color & color)
 	{
 		mGDI->Clear(color);
 	}

@@ -62,7 +62,7 @@ namespace XGF
 	public:
 		Font();
 		~Font();
-		bool Initialize(GDI * gdi, const char * name, int fontSize);
+		bool Initialize(GDI * gdi, const std::wstring & name, int fontSize);
 		void Shutdown();
 		PosSize* GetCharGlyph(wchar_t ch);
 		ID3D11ShaderResourceView * GetShaderResourceView() { return mShaderResourceView; }
@@ -77,10 +77,9 @@ namespace XGF
 		float       mAddance;
 		float           mToplineHeigh;
 		char * mFileBuffer;
-		long mFileLen;
 	private:
 		void CreateView();
-		void ReadFileToBuffer(const char * name);
+		long ReadFileToBuffer(const std::wstring & name);
 		void CloseFileBuffer();
 		std::unordered_map<wchar_t, PosSize*> map;
 		byte * mBuffer;

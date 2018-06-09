@@ -5,11 +5,11 @@
 #include "../../Include/UIBatches.hpp"
 namespace XGF 
 {
-	Button::Button():mText(nullptr), mTextColor(Color(0.f,0.f,0.f,1.f))
+	Button::Button():mText(nullptr), mTextColor(SM::Color(0.f,0.f,0.f,1.f))
 	{
 	}
 
-	Button::Button(int id, const string & text, Color textColor):Control(id), mText(text), mTextColor(textColor)
+	Button::Button(int id, const string & text, SM::Color textColor):Control(id), mText(text), mTextColor(textColor)
 	{
 	}
 
@@ -32,7 +32,7 @@ namespace XGF
 	{
 		mText = text;
 	}
-	void Button::SetTextColor(const Color & color)
+	void Button::SetTextColor(const SM::Color & color)
 	{
 		mTextColor = color;
 	}

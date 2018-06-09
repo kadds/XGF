@@ -57,30 +57,35 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Props\DebugWin32.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Props\ReleaseWin32.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Props\DebugX64.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Props\ReleaseX64.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <CodeAnalysisRuleSet>CppCoreCheckBoundsRules.ruleset</CodeAnalysisRuleSet>
+    <IntDir>$(SolutionDir)Out\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <CodeAnalysisRuleSet>CppCoreCheckBoundsRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
+    <CodeAnalysisRuleSet>CppCoreCheckBoundsRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
+    <CodeAnalysisRuleSet>CppCoreCheckBoundsRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -88,11 +93,12 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)External\freetype\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ExceptionHandling>false</ExceptionHandling>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <EnableModules>true</EnableModules>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>
@@ -105,7 +111,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)External\freetype\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BrowseInformation>true</BrowseInformation>
       <MinimalRebuild>false</MinimalRebuild>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -124,7 +130,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)External\freetype\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -142,7 +148,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)External\freetype\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -174,7 +180,6 @@
     <ClInclude Include="Include\CompositeAction.hpp" />
     <ClInclude Include="Include\ConstantData.hpp" />
     <ClInclude Include="Include\Control.hpp" />
-    <ClInclude Include="Include\Cube.hpp" />
     <ClInclude Include="Include\Cursor.hpp" />
     <ClInclude Include="Include\DDSTextureLoader.h" />
     <ClInclude Include="Include\DebugInscriber.hpp" />
@@ -190,6 +195,8 @@
     <ClInclude Include="Include\FPS.hpp" />
     <ClInclude Include="Include\FPSCamera.hpp" />
     <ClInclude Include="Include\GDI.hpp" />
+    <ClInclude Include="Include\Geometry\BoxGeometry.hpp" />
+    <ClInclude Include="Include\Geometry\Geometry.hpp" />
     <ClInclude Include="Include\GObject.hpp" />
     <ClInclude Include="Include\GridRenderer.hpp" />
     <ClInclude Include="Include\InputManager.hpp" />
@@ -198,6 +205,10 @@
     <ClInclude Include="Include\Line.hpp" />
     <ClInclude Include="Include\LinkedList.hpp" />
     <ClInclude Include="Include\Log.hpp" />
+    <ClInclude Include="Include\Material\BasicMaterial.hpp" />
+    <ClInclude Include="Include\Material\Material.hpp" />
+    <ClInclude Include="Include\Mesh.hpp" />
+    <ClInclude Include="Include\MeshRenderer.hpp" />
     <ClInclude Include="Include\MsgQueue.hpp" />
     <ClInclude Include="Include\OrthoCamera.hpp" />
     <ClInclude Include="Include\ParticleSystem.hpp" />
@@ -217,6 +228,7 @@
     <ClInclude Include="Include\Shape.hpp" />
     <ClInclude Include="Include\Shape2D.hpp" />
     <ClInclude Include="Include\ShapeRenderer.hpp" />
+    <ClInclude Include="Include\SimpleMath.h" />
     <ClInclude Include="Include\Skin.hpp" />
     <ClInclude Include="Include\StateList.hpp" />
     <ClInclude Include="Include\TextInputProcessor.hpp" />
@@ -225,6 +237,7 @@
     <ClInclude Include="Include\Texture.hpp" />
     <ClInclude Include="Include\Timer.hpp" />
     <ClInclude Include="Include\Tools.hpp" />
+    <ClInclude Include="Include\TrackballCameraController.hpp" />
     <ClInclude Include="Include\Triangle.hpp" />
     <ClInclude Include="Include\UIBatches.hpp" />
     <ClInclude Include="Include\Container.hpp" />
@@ -272,13 +285,19 @@
     <ClCompile Include="Src\Core\XGFramework.cpp" />
     <ClCompile Include="Src\Helper\Application.cpp" />
     <ClCompile Include="Src\Helper\ClickHelper.cpp" />
+    <ClCompile Include="Src\Helper\TrackballCameraController.cpp" />
     <ClCompile Include="Src\Input\DX8Input.cpp" />
     <ClCompile Include="Src\Input\InputManager.cpp" />
     <ClCompile Include="Src\Input\TextInputProcessor.cpp" />
     <ClCompile Include="Src\Interpolator\Interpolator.cpp" />
     <ClCompile Include="Src\Shape\Circle.cpp" />
-    <ClCompile Include="Src\Shape\Cube.cpp" />
+    <ClCompile Include="Src\Shape\Geometry\BoxGeometry.cpp" />
+    <ClCompile Include="Src\Shape\Geometry\Geometry.cpp" />
     <ClCompile Include="Src\Shape\Line.cpp" />
+    <ClCompile Include="Src\Shape\Material\BasicMaterial.cpp" />
+    <ClCompile Include="Src\Shape\Material\Material.cpp" />
+    <ClCompile Include="Src\Shape\Mesh.cpp" />
+    <ClCompile Include="Src\Shape\MeshRenderer.cpp" />
     <ClCompile Include="Src\Shape\Rectangle.cpp" />
     <ClCompile Include="Src\Shape\RectangleB.cpp" />
     <ClCompile Include="Src\Shape\RectangleC.cpp" />
@@ -295,6 +314,7 @@
     <ClCompile Include="Src\Tools\GridRenderer.cpp" />
     <ClCompile Include="Src\Tools\Log.cpp" />
     <ClCompile Include="Src\Tools\ScreenGrab.cpp" />
+    <ClCompile Include="Src\Tools\SimpleMath.cpp" />
     <ClCompile Include="Src\Tools\Timer.cpp" />
     <ClCompile Include="Src\Tools\Tools.cpp" />
     <ClCompile Include="Src\Tools\WICTextureLoader.cpp" />
@@ -304,6 +324,9 @@
     <ClCompile Include="Src\UI\Label.cpp" />
     <ClCompile Include="Src\UI\Skin.cpp" />
     <ClCompile Include="Src\UI\UIBatches.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Include\SimpleMath.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

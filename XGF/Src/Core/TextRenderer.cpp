@@ -11,7 +11,7 @@
 #include "..\..\Include\TextRenderer.hpp"
 namespace XGF
 {
-	TextRenderer::TextRenderer() :mTemporarybuffer(nullptr), textureBinder(4), colorBinder(Color(0.f, 0.f, 0.f, 1.f), 4)
+	TextRenderer::TextRenderer() :mTemporarybuffer(nullptr), textureBinder(4), colorBinder(SM::Color(0.f, 0.f, 0.f, 1.f), 4)
 	{
 	}
 
@@ -43,10 +43,10 @@ namespace XGF
 		Shape::Rectangle rc;
 		rc.SetPositionAndSize(x, y, 100000.f, 100000.f);
 		rc.SetZ(z);
-		DrawString(str, Color(1.0f, 1.0f, 1.0f, 1.0f), &rc, nullptr);
+		DrawString(str, SM::Color(1.0f, 1.0f, 1.0f, 1.0f), &rc, nullptr);
 	}
 
-	void TextRenderer::DrawString(const wchar_t * str, Color color, float x, float y, float z)
+	void TextRenderer::DrawString(const wchar_t * str, SM::Color color, float x, float y, float z)
 	{
 		Shape::Rectangle rc;
 		rc.SetPositionAndSize(static_cast<float>(x), static_cast<float>(y), 1000.0f, 1000.0f);
@@ -63,10 +63,10 @@ namespace XGF
 			mTemporarybuffer = new wchar_t[MAX_TEMPORARY_BUFFER_SIZE];
 		_vsnwprintf_s(mTemporarybuffer, nLen, nLen, str, vlArgs);
 		va_end(vlArgs);
-		DrawString(mTemporarybuffer, Color(1.0f, 1.0f, 1.0f, 1.0f), x, y);
+		DrawString(mTemporarybuffer, SM::Color(1.0f, 1.0f, 1.0f, 1.0f), x, y);
 	}
 
-	void TextRenderer::DrawStringEx(float x, float y, Color color, const wchar_t * str, ...)
+	void TextRenderer::DrawStringEx(float x, float y, SM::Color color, const wchar_t * str, ...)
 	{
 		va_list vlArgs = NULL;
 		va_start(vlArgs, str);
@@ -78,13 +78,13 @@ namespace XGF
 		DrawString(mTemporarybuffer, color, x, y);
 	}
 
-	void TextRenderer::DrawString(const wchar_t * str, Color color, const Shape::Rectangle * ppe, const XMMATRIX * matrix)
+	void TextRenderer::DrawString(const wchar_t * str, SM::Color color, const Shape::Rectangle * ppe, const SM::Matrix * matrix)
 	{
 		colorBinder.Set(0, 1, color);
 		auto fun = std::bind(&TextRenderer::AddCharToBatch, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, matrix);
 		mLayoutShaper.DoLayouShaper(str, *ppe, *mFont, fun);
 	}
-	Position TextRenderer::DrawStringRtPosition(const wchar_t * str, Color color, const Shape::Rectangle * ppe, const XMMATRIX * matrix, int pos)
+	Position TextRenderer::DrawStringRtPosition(const wchar_t * str, SM::Color color, const Shape::Rectangle * ppe, const SM::Matrix * matrix, int pos)
 	{
 		Position p;
 		colorBinder.Set(0, 1, color);
@@ -116,7 +116,7 @@ namespace XGF
 		mBatch.Flush();
 	}
 
-	bool TextRenderer::AddCharToBatch(int i, wchar_t ch, Shape::Rectangle * rc, const PosSize *ps, const XMMATRIX * matrix)
+	bool TextRenderer::AddCharToBatch(int i, wchar_t ch, Shape::Rectangle * rc, const PosSize *ps, const SM::Matrix * matrix)
 	{
 		if (matrix != nullptr)
 			rc->mPolygon.Mul(*matrix);

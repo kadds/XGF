@@ -59,7 +59,7 @@ namespace XGF
 			else
 			{
 				BindingBridge bbr;//cpu 模拟
-				PolygonPleConstantColorBinder ppc(Color(0, 0, 0, 0), 1);
+				PolygonPleConstantColorBinder ppc(SM::Color(0, 0, 0, 0), 1);
 				PolygonPlePoint3 pps(1);
 				PolygonPlePoint4 pp4(1);
 				pps.mPoint[0] = Point(5, 5, 5);
@@ -194,7 +194,7 @@ namespace XGF
 					veca = DirectX::XMVectorScale(vecv, rt(mtRandom) * (mEmitter->velocityMax - mEmitter->velocityMin) + mEmitter->velocityMin);
 					vecv = DirectX::XMVectorScale(vecv, rt(mtRandom) * (mEmitter->velocityMax - mEmitter->velocityMin) + mEmitter->velocityMin);
 
-					Color c(
+					SM::Color c(
 						rt(mtRandom) * (mEmitter->startColorMax.x - mEmitter->startColorMin.x) + mEmitter->startColorMin.x,
 						rt(mtRandom) * (mEmitter->startColorMax.y - mEmitter->startColorMin.y) + mEmitter->startColorMin.y,
 						rt(mtRandom) * (mEmitter->startColorMax.z - mEmitter->startColorMin.z) + mEmitter->startColorMin.z,
@@ -233,7 +233,7 @@ namespace XGF
 		isAlive = true;
 	}
 
-	void Emitter::SetGravity(XMFLOAT3 g, float w)
+	void Emitter::SetGravity(SM::Vector3 g, float w)
 	{
 		//归一化然后缩放到w大小
 		DirectX::XMStoreFloat3(&gravity, DirectX::XMVectorScale(DirectX::XMVector3Normalize(DirectX::XMVectorSet(g.x, g.y, g.z,0)), w));
@@ -247,12 +247,12 @@ namespace XGF
 	ParticleFire::FireEmitter::FireEmitter():startRadius(0), endRadius(100),
 		accelerationMax(0.04), accelerationMin(0.01), velocityMax(0.03), velocityMin(0.018),
 		
-		startColorMin(Color(0,0,0,0)), startColorMax(Color(0, 0, 0, 0)),
-		endColorMin(Color(0, 0, 0, 0)), endColorMax(Color(0, 0, 0, 0))
+		startColorMin(SM::Color(0,0,0,0)), startColorMax(SM::Color(0, 0, 0, 0)),
+		endColorMin(SM::Color(0, 0, 0, 0)), endColorMax(SM::Color(0, 0, 0, 0))
 	{
 	}
 
-	void ParticleFire::FireEmitter::SetColor(Color & startmin, Color & startmax, Color & endmin, Color & endmax)
+	void ParticleFire::FireEmitter::SetColor(SM::Color & startmin, SM::Color & startmax, SM::Color & endmin, SM::Color & endmax)
 	{
 		startColorMax = startmax;
 		startColorMin = startmin;

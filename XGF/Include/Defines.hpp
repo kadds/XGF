@@ -1,7 +1,11 @@
+
+#pragma once
+#pragma warning(push)
 #pragma warning(disable:4005)
 #pragma warning(disable:4530)
-#pragma once
-#include <DirectXMath.h>
+#pragma warning(pop)
+#include <d3d11.h>
+#include "SimpleMath.h"
 #include <string>
 #ifdef _DEBUG
 #define _XGF_DEBUG_ALLOC
@@ -20,33 +24,22 @@ namespace XGF
 {
 	typedef std::wstring string;
 	typedef unsigned int index;
-	using DirectX::XMMATRIX;
-	using DirectX::FXMMATRIX;
-	using DirectX::CXMMATRIX;
-	using DirectX::XMFLOAT3;
-	using DirectX::XMFLOAT2;
-	using DirectX::XMFLOAT4;
-	using DirectX::XMFLOAT4X4;
-	using DirectX::XMFLOAT4;
 
-	typedef XMFLOAT2 Position;
-	typedef XMFLOAT2 Size;
-	typedef XMFLOAT3 Point;
-	typedef XMFLOAT4 Point4;
-	typedef XMFLOAT4 Color;
+	namespace SM = DirectX::SimpleMath;
+	typedef SM::Vector3 Point;
+	typedef SM::Vector2 Position;
+	typedef SM::Vector4 Point4;
+	
 	struct WVPMatrix
 	{
-		DirectX::XMMATRIX worldMatrix;
-
-		DirectX::XMMATRIX viewMatrix;
-
-		DirectX::XMMATRIX projMatrix;
-
+		SM::Matrix worldMatrix;
+		SM::Matrix viewMatrix;
+		SM::Matrix projMatrix;
 		void Transpose()
 		{
-			worldMatrix = DirectX::XMMatrixTranspose(worldMatrix);
-			viewMatrix = DirectX::XMMatrixTranspose(viewMatrix);
-			projMatrix = DirectX::XMMatrixTranspose(projMatrix);
+			worldMatrix.Transpose();
+			viewMatrix.Transpose();
+			projMatrix.Transpose();
 		}
 	};
 }

@@ -25,7 +25,7 @@ namespace XGF
 		PolygonPleDataBinder();
 		~PolygonPleDataBinder();
 		PolygonPleDataBinder(const PolygonPleDataBinder& pcb);
-		XMFLOAT4 mData;
+		SM::Vector4 mData;
 		//chunk is byte
 		virtual void CopyTo(void * Des, unsigned int chunk) const override;
 		bool operator ==(const PolygonPleDataBinder &rx) const {
@@ -105,9 +105,9 @@ namespace XGF
 		PolygonPleColorBinder(int n);
 		~PolygonPleColorBinder();
 		PolygonPleColorBinder(const PolygonPleColorBinder& pcb);
-		Color * mColor;
-		void Set(int start, int count, const Color & c);
-		virtual Color Get(int n);
+		SM::Color * mColor;
+		void Set(int start, int count, const SM::Color & c);
+		virtual SM::Color Get(int n);
 		virtual void CopyTo(void * Des, unsigned int chunk) const override;
 		bool operator ==(const PolygonPleColorBinder &rx) const {
 			if (&rx == this)
@@ -127,11 +127,11 @@ namespace XGF
 	class PolygonPleConstantColorBinder : public PolygonPleColorBinder
 	{
 	public:
-		PolygonPleConstantColorBinder(const Color & c, int Maxcount);
+		PolygonPleConstantColorBinder(const SM::Color & c, int Maxcount);
 		~PolygonPleConstantColorBinder();
 		PolygonPleConstantColorBinder(const PolygonPleConstantColorBinder& pcb);
 		virtual void CopyTo(void * Des, unsigned int chunk) const override;
-		virtual Color Get(int n);
+		virtual SM::Color Get(int n);
 
 		bool operator ==(const PolygonPleConstantColorBinder &rx) const {
 			if (&rx == this)
@@ -151,8 +151,8 @@ namespace XGF
 		~PolygonPleConstantExColorBinder();
 		PolygonPleConstantExColorBinder(const PolygonPleConstantExColorBinder& pcb);
 		virtual void CopyTo(void * Des, unsigned int chunk) const override;
-		virtual Color Get(int n);
-		void SetLayerColor(int layer, const Color & color);
+		virtual SM::Color Get(int n);
+		void SetLayerColor(int layer, const SM::Color & color);
 		bool operator ==(const PolygonPleConstantExColorBinder &rx) const {
 			if (&rx == this)
 				return true;

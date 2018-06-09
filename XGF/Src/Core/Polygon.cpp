@@ -255,10 +255,10 @@ namespace XGF
 		if (this == &pcb)
 			return;
 		mCount = pcb.mCount;
-		mColor = new Color[mCount];
-		memcpy(mColor, pcb.mColor, sizeof(Color)*mCount);
+		mColor = new SM::Color[mCount];
+		memcpy(mColor, pcb.mColor, sizeof(SM::Color)*mCount);
 	}
-	void PolygonPleColorBinder::Set(int start, int count, const Color & c)
+	void PolygonPleColorBinder::Set(int start, int count, const SM::Color & c)
 	{
 		if (count > 1)
 		{
@@ -270,7 +270,7 @@ namespace XGF
 		else
 			mColor[start] = c;
 	}
-	Color PolygonPleColorBinder::Get(int n)
+	SM::Color PolygonPleColorBinder::Get(int n)
 	{
 		return (mColor[n]);
 	}
@@ -289,11 +289,11 @@ namespace XGF
 		char * c = static_cast<char *>(Des);
 		for (int i = 0; i < mAllCount; i++)
 		{
-			*(Color *)c = mColor[0];
+			*(SM::Color *)c = mColor[0];
 			c += chunk;
 		}
 	}
-	Color PolygonPleConstantColorBinder::Get(int n)
+	SM::Color PolygonPleConstantColorBinder::Get(int n)
 	{
 		return mColor[0];
 	}
@@ -301,7 +301,7 @@ namespace XGF
 	PolygonPleConstantColorBinder::~PolygonPleConstantColorBinder()
 	{
 	}
-	PolygonPleConstantColorBinder::PolygonPleConstantColorBinder(const Color & c, int ct) :PolygonPleColorBinder(1)
+	PolygonPleConstantColorBinder::PolygonPleConstantColorBinder(const SM::Color & c, int ct) :PolygonPleColorBinder(1)
 	{
 		mColor[0] = c;
 		mAllCount = ct;
@@ -314,14 +314,14 @@ namespace XGF
 		char * c = static_cast<char *>(Des);
 		for (int i = 0; i < mCount; i++)
 		{
-			*(Color *)c = mColor[i];
+			*(SM::Color *)c = mColor[i];
 			c += chunk;
 		}
 	}
 	PolygonPleColorBinder::PolygonPleColorBinder(int n)
 	{
 		mCount = n;
-		mColor = new Color[n];
+		mColor = new SM::Color[n];
 		//memcpy(mColor, pcb.mColor, sizeof(Color)*mCount);
 	}
 	PolygonPleColorBinder::~PolygonPleColorBinder()
@@ -386,19 +386,19 @@ namespace XGF
 		{
 			for (int j = 0; j < mLayer[i]; j++)
 			{
-				*((Color *)c) = mColor[i];
+				*((SM::Color *)c) = mColor[i];
 				c += chunk;
 			}
 			allPos += mLayer[i];
 		}
 	}
 
-	Color PolygonPleConstantExColorBinder::Get(int n)
+	SM::Color PolygonPleConstantExColorBinder::Get(int n)
 	{
-		return Color();
+		return SM::Color();
 	}
 
-	void PolygonPleConstantExColorBinder::SetLayerColor(int layer, const Color & color)
+	void PolygonPleConstantExColorBinder::SetLayerColor(int layer, const SM::Color & color)
 	{
 		if (layer < mLayerCount)
 		{
@@ -423,7 +423,7 @@ namespace XGF
 
 	void PolygonPleDataBinder::CopyTo(void * Des, unsigned int chunk) const
 	{
-		*(static_cast<XMFLOAT4 *>(Des)) = mData;
+		*(static_cast<SM::Vector4 *>(Des)) = mData;
 	}
 
 }

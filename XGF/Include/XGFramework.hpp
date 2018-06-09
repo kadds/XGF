@@ -47,7 +47,7 @@ namespace XGF
 		void _OnClose();
 
 		void Clear(float color[]);
-		void Clear(Color &color);
+		void Clear(SM::Color &color);
 		void ClearDepthStencilBuffer();
 		void Present(bool isVsync);
 

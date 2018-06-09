@@ -76,7 +76,7 @@ namespace XGF
 		ID3D11ShaderResourceView *const pSRV[1] = { nullptr };
 		mGDI->GetDeviceContext()->PSSetShaderResources(0, 1, pSRV);
 	}
-	void RenderToTexture::Clear(const Color & c)
+	void RenderToTexture::Clear(const SM::Color & c)
 	{
 		float color[4];
 		color[0] = c.x;

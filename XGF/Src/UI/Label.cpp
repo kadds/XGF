@@ -6,11 +6,11 @@
 #include "../../Include/Container.hpp"
 namespace XGF
 {
-	Label::Label(): mTextColor(Color(0.f, 0.f, 0.f, 1.f))
+	Label::Label(): mTextColor(SM::Color(0.f, 0.f, 0.f, 1.f))
 	{
 	}
 
-	Label::Label(int id, const string & text, Color textColor):Control(id), mTextColor(textColor), mText(text)
+	Label::Label(int id, const string & text, SM::Color textColor):Control(id), mTextColor(textColor), mText(text)
 	{
 	}
 
@@ -30,7 +30,7 @@ namespace XGF
 	{
 		mText = text;
 	}
-	void Label::SetTextColor(const Color & color)
+	void Label::SetTextColor(const SM::Color & color)
 	{
 		mTextColor = color;
 	}

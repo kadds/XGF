@@ -40,6 +40,18 @@
     <Filter Include="源文件\Interpolator">
       <UniqueIdentifier>{241c9ed3-dad9-4ebc-9c52-ffb695f4f855}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\Shape\Geometry">
+      <UniqueIdentifier>{87c39f37-c932-4d8c-a277-d60c6f30ccfd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Geometry">
+      <UniqueIdentifier>{cf3d04ab-27e1-43d8-82bf-3fbec931b117}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Shape\Material">
+      <UniqueIdentifier>{09319b49-b81c-4b70-84e4-83643deac185}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Material">
+      <UniqueIdentifier>{ec34a47b-0f60-455f-9419-6f3a3925e3bc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Action.hpp">
@@ -159,9 +171,6 @@
     <ClInclude Include="Include\EditText.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Cube.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Interpolator\Interpolator.hpp">
       <Filter>头文件\Interpolator</Filter>
     </ClInclude>
@@ -276,6 +285,30 @@
     <ClInclude Include="Include\Shape2D.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Geometry\BoxGeometry.hpp">
+      <Filter>头文件\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Geometry\Geometry.hpp">
+      <Filter>头文件\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Material\Material.hpp">
+      <Filter>头文件\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Mesh.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Material\BasicMaterial.hpp">
+      <Filter>头文件\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\MeshRenderer.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SimpleMath.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\TrackballCameraController.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\UI\Button.cpp">
@@ -386,9 +419,6 @@
     <ClCompile Include="Src\Shape\Shape.cpp">
       <Filter>源文件\Shape</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Shape\Cube.cpp">
-      <Filter>源文件\Shape</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Input\InputManager.cpp">
       <Filter>源文件\Input</Filter>
     </ClCompile>
@@ -491,5 +521,34 @@
     <ClCompile Include="Src\Shape\Shape2D.cpp">
       <Filter>源文件\Shape</Filter>
     </ClCompile>
+    <ClCompile Include="Src\Shape\Geometry\BoxGeometry.cpp">
+      <Filter>源文件\Shape\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Shape\Geometry\Geometry.cpp">
+      <Filter>源文件\Shape\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Shape\Material\Material.cpp">
+      <Filter>源文件\Shape\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Shape\Mesh.cpp">
+      <Filter>源文件\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Shape\Material\BasicMaterial.cpp">
+      <Filter>源文件\Shape\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Shape\MeshRenderer.cpp">
+      <Filter>源文件\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Tools\SimpleMath.cpp">
+      <Filter>源文件\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Helper\TrackballCameraController.cpp">
+      <Filter>源文件\Helper</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Include\SimpleMath.inl">
+      <Filter>头文件</Filter>
+    </None>
   </ItemGroup>
 </Project>

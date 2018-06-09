@@ -6,13 +6,13 @@
 #include "../../Include/RectangleB.hpp"
 namespace XGF
 {
-	EditText::EditText():Control(), mTextColor(Color(0.f, 0.f, 0.f, 1.f))
+	EditText::EditText():Control(), mTextColor(SM::Color(0.f, 0.f, 0.f, 1.f))
 	{
 		mTextInputProcessor.SetInnerRectangle(std::bind(&EditText::GetInnerRectangle, this, std::placeholders::_1));
 		mTextInputProcessor.SetOnFocusListener(std::bind(&EditText::OnFocus, this, std::placeholders::_1));
 	}
 
-	EditText::EditText(int id, const string & text, const Color & textColor):Control(id), mTextInputProcessor(text), mTextColor(textColor)
+	EditText::EditText(int id, const string & text, const SM::Color & textColor):Control(id), mTextInputProcessor(text), mTextColor(textColor)
 	{
 		mTextInputProcessor.SetInnerRectangle(std::bind(&EditText::GetInnerRectangle, this, std::placeholders::_1));
 		mTextInputProcessor.SetOnFocusListener(std::bind(&EditText::OnFocus, this, std::placeholders::_1));
@@ -27,7 +27,7 @@ namespace XGF
 		mTextInputProcessor.SetText(text);
 	}
 
-	void EditText::SetTextColor(const Color & color)
+	void EditText::SetTextColor(const SM::Color & color)
 	{
 		mTextColor = color;
 	}

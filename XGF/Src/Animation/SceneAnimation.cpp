@@ -20,7 +20,7 @@ namespace XGF
 		isend = false;
 	}
 
-	XMMATRIX SceneAnimation::GetMatrix()
+	SM::Matrix SceneAnimation::GetMatrix()
 	{
 		Point op(0, 0, 0);
 		Point sp(0, 0, 0);

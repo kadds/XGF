@@ -54,6 +54,10 @@
 #include "RectangleB.hpp"
 #include "RectangleC.hpp"
 #include "Line.hpp"
-#include "Cube.hpp"
 #include "Circle.hpp"
+#include "Mesh.hpp"
+#include "MeshRenderer.hpp"
+#include "Geometry\BoxGeometry.hpp"
+#include "Material\BasicMaterial.hpp"
 //***********************************
+#include "TrackballCameraController.hpp"

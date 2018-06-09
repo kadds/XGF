@@ -7,45 +7,40 @@ namespace XGF
 	{
 		mDisplayMode = DisplayMode::Windowed;
 		mDisplayFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-		D3D_FEATURE_LEVEL featureLevels[] = {
-			D3D_FEATURE_LEVEL_11_1,
-			D3D_FEATURE_LEVEL_11_0,
-			D3D_FEATURE_LEVEL_10_1,
-			D3D_FEATURE_LEVEL_10_0, };
-		D3D_FEATURE_LEVEL   curLevel;
-		IDXGIFactory1 * factory;
 
-		XGF_Error_Check(CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)(&factory)),"CreateDXGIFactory Failed!");
-		XGF_Error_Check(factory->QueryInterface(__uuidof(IDXGIFactory2), (void**)(&mFactory2)),"Find DXGIFactory2 Failed!");
-		factory->Release();
-		PutDebugString(mFactory2);
+		XGF_Error_Check(CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**) (&mFactory1)), "CreateDXGIFactory Failed!");
+		XGF_Info_Check(mFactory1->QueryInterface(__uuidof(IDXGIFactory2), (void**) (&mFactory2)), "Find DXGIFactory2 Failed! Use DXGIFactory1 Now!");
+
+		PutDebugString(mFactory1);
+		if (mFactory2)
+		{
+			PutDebugString(mFactory2);
+		}
 		//枚举系统中的适配器
 		UINT adapter_no = 0;
 		IDXGIAdapter1* dxgi_adapter = nullptr;
 		DXGI_ADAPTER_DESC1 dc;
 		int i = 0;
 		int j = 0;
-		while (mFactory2->EnumAdapters1(i, &dxgi_adapter) != DXGI_ERROR_NOT_FOUND)
+		while (mFactory1->EnumAdapters1(i, &dxgi_adapter) != DXGI_ERROR_NOT_FOUND)
 		{
 			if (dxgi_adapter != nullptr)
 			{
 				dxgi_adapter->GetDesc1(&dc);
 				XGF_ReportDebug_Ex(L"Adapter List", "Adpapter:", i, ",DeviceID:", dc.DeviceId, ",DedicatedSystemMemory:", (dc.DedicatedSystemMemory >> 20), "MB,DedicatedVideoMemory", (dc.DedicatedVideoMemory >> 20)
-				, "MB,SharedSystemMemory:", dc.SharedSystemMemory >> 20, "MB,AdapterLuid:", dc.AdapterLuid.LowPart, ",Revision:", dc.Revision, ",VendorId:", dc.VendorId, ",SubSysId:", dc.SubSysId, ",Description:", ((wchar_t *)dc.Description));
-				
+					, "MB,SharedSystemMemory:", dc.SharedSystemMemory >> 20, "MB,AdapterLuid:", dc.AdapterLuid.LowPart, ",Revision:", dc.Revision, ",VendorId:", dc.VendorId, ",SubSysId:", dc.SubSysId, ",Description:", ((wchar_t *) dc.Description));
+
 				mAdapters.push_back(dxgi_adapter);
 
 				IDXGIOutput * output;
-				IDXGIOutput1 * output1;
+				DXGI_OUTPUT_DESC desc;
 				j = 0;
-				while (dxgi_adapter->EnumOutputs(j, &output) != DXGI_ERROR_NOT_FOUND)
+				while (dxgi_adapter->EnumOutputs(j++, &output) != DXGI_ERROR_NOT_FOUND)
 				{
-					output->QueryInterface(__uuidof(IDXGIOutput1), (void **)&output1);
-					XGF_ReportDebug_Ex("OutPut:", j);
-					mOutputs.push_back(output1);
-					SaveDisplayMode(j, output1);
-					output->Release();
-					++j;
+					output->GetDesc(&desc);
+					XGF_ReportDebug_Ex("OutPut:", j, ",name:", desc.DeviceName);
+					mOutputs.push_back(output);
+					SaveDisplayMode(j, output);
 				}
 			}
 			++i;
@@ -54,20 +49,35 @@ namespace XGF
 		{
 			XGF_ReportError0("None Adapters");
 		}
-		XGF_Warn_Check(mFactory2->MakeWindowAssociation(mTopHwnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES), "MakeWindowAssociation Error");
+		XGF_Warn_Check(mFactory1->MakeWindowAssociation(mTopHwnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES), "MakeWindowAssociation Error");
 		int flag = 0;
 #ifdef _DEBUG
-		flag = D3D11_CREATE_DEVICE_DEBUG;
+		flag |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
-
-		XGF_Error_Check(D3D11CreateDevice(mAdapters[0], D3D_DRIVER_TYPE_UNKNOWN, 0, flag, featureLevels, sizeof(featureLevels) / sizeof(featureLevels[0]), D3D11_SDK_VERSION, &mD3dDevice, &curLevel, &mDeviceContext)
-			, "CreateDevice Error");
+		// view https://msdn.microsoft.com/zh-cn/library/windows/apps/ff476082.aspx#code-snippet-2
+		D3D_FEATURE_LEVEL featureLevels[] = {
+			D3D_FEATURE_LEVEL_11_0,
+			D3D_FEATURE_LEVEL_10_1,
+			D3D_FEATURE_LEVEL_10_0, };
+		D3D_FEATURE_LEVEL   curLevel;
+		D3D_FEATURE_LEVEL featureLevels111[] = {
+			D3D_FEATURE_LEVEL_11_1
+		};
+		if (FAILED(D3D11CreateDevice(mAdapters[0], D3D_DRIVER_TYPE_UNKNOWN, 0, flag, featureLevels111, 1, D3D11_SDK_VERSION, &mD3dDevice, &curLevel, &mDeviceContext)))
+		{
+			XGF_Error_Check(D3D11CreateDevice(mAdapters[0], D3D_DRIVER_TYPE_UNKNOWN, 0, flag, featureLevels, sizeof(featureLevels) / sizeof(featureLevels[0]), D3D11_SDK_VERSION, &mD3dDevice, &curLevel, &mDeviceContext)
+				, "CreateDevice Error");
+		}
+		else
+		{
+			XGF_ReportDebug0("We can use d3d11.1");
+		}
 		UINT  m4xMsaaQuality = 1;
 		XGF_Warn_Check(mD3dDevice->CheckMultisampleQualityLevels(
 			mDisplayFormat, 4, &m4xMsaaQuality), "CheckMultisampleQualityLevels Warn");
 		
 #ifdef _DEBUG
-		char const *levelstr[] = { "11.1","11","10.1","10" };
+		char const *levelstr[] = {"11","10.1","10" };
 		for (size_t i = 0; i < sizeof(featureLevels) / sizeof(featureLevels[0]); i++)
 		{
 			if (curLevel == featureLevels[i])
@@ -91,26 +101,21 @@ namespace XGF
 		
 		SizeChanged(mWidth, mHeight);
 	}
-	void GDI::SaveDisplayMode(int c, IDXGIOutput1 * pDXGIOutput)
+	
+	void GDI::SaveDisplayMode(int c, IDXGIOutput * pDXGIOutput)
 	{
 		UINT  num = 0;
-		pDXGIOutput->GetDisplayModeList1(mDisplayFormat, 0, &num, 0);
+		pDXGIOutput->GetDisplayModeList(mDisplayFormat, 0, &num, 0);
 		DXGI_MODE_DESC * pdsk = new DXGI_MODE_DESC[num];
 		mScreenMode.push_back(std::make_pair(num, pdsk));
 		pDXGIOutput->GetDisplayModeList(mDisplayFormat, 0, &num, pdsk);
 
-#ifdef _DEBUG
-		for (UINT i = 0; i < num; i++)
-		{
-			XGF_ReportDebug_Ex("DisplayMode:", "Width", pdsk[i].Width, "Height:", pdsk[i].Height);
-
-		}
-#endif
+		XGF_ReportDebug_Ex("DisplayMode has ", num);
 	}
 	void GDI::Destroy()
 	{
-		if (mSwapChain)
-			mSwapChain->SetFullscreenState(false, nullptr);
+		mSwapChain->SetFullscreenState(false, nullptr);
+		
 		for (int i = 0; i < (int)BlendState::InvalidValue; i++)
 		{
 			if(mBlendState[i] != nullptr)
@@ -156,17 +161,22 @@ namespace XGF
 			delete[] var.second;
 		}
 
+		if (mSwapChain1)
+			mSwapChain1->Release();
+		mSwapChain1 = nullptr;
 		if (mSwapChain)
 			mSwapChain->Release();
 		mSwapChain = nullptr;
 		if (mDeviceContext)
 			mDeviceContext->Release();
 		mDeviceContext = nullptr;
+		if (mFactory1)
+			mFactory1->Release();
 		if (mFactory2)
 			mFactory2->Release();
 #ifdef _DEBUG
 		QueryDebugInterface();
-#endif();
+#endif
 		if (mD3dDevice)
 			mD3dDevice->Release();
 		mD3dDevice = nullptr;
@@ -184,7 +194,7 @@ namespace XGF
 
 		mDeviceContext->PSSetShaderResources(0, 1, pSRV);
 	}
-	void GDI::Clear(const Color & c)
+	void GDI::Clear(const SM::Color & c)
 	{
 		if (!mRTTs.empty())
 		{
@@ -208,22 +218,30 @@ namespace XGF
 	{
 		if (!mIsStandby)
 		{
-			DXGI_PRESENT_PARAMETERS dpp;
-			dpp.DirtyRectsCount = 0;
-			dpp.pScrollOffset = 0;
-			dpp.pScrollRect = nullptr;
-			HRESULT  hr = mSwapChain->Present1(isVsync, 0, &dpp);
-			if (hr == DXGI_STATUS_OCCLUDED)
+			
+			HRESULT  hr;
+			if (mSwapChain1) {
+				DXGI_PRESENT_PARAMETERS dpp;
+				dpp.DirtyRectsCount = 0;
+				dpp.pScrollOffset = 0;
+				dpp.pScrollRect = nullptr;
+				hr = mSwapChain1->Present1(isVsync, 0, &dpp);
+			}
+			else {
+				hr = mSwapChain->Present(isVsync, 0);
+			}
+			if(hr == DXGI_STATUS_OCCLUDED)
 			{
 				mIsStandby = true;
-				XGF_ReportDebug("ERROR IN Prensent! ", "DXGI_STATUS_OCCLUDED");
+				XGF_ReportDebug("ERROR IN Present! ", "DXGI_STATUS_OCCLUDED");
 				ShowWindow(mHwnd, SW_MINIMIZE);
 				CheckFullScreenForce(false);
 			}
 		}
 		else
 		{
-			HRESULT  hr = mSwapChain->Present(isVsync, DXGI_PRESENT_TEST);
+			HRESULT  hr;
+			hr = mSwapChain->Present(isVsync, DXGI_PRESENT_TEST);
 			if (hr == S_OK)
 			{
 				mIsStandby = false;
@@ -243,8 +261,7 @@ namespace XGF
 
 	void GDI::SizeChanged(UINT ClientWidth, UINT ClientHeight)
 	{
-		//交换链为空直接返回 
-		if (!mSwapChain)
+		if (!mSwapChain1 && !mSwapChain)
 			return;
 		XGF_ReportDebug_Ex("SIZE Changed:", ClientWidth, ",", ClientHeight);
 		if (ClientWidth < 1)
@@ -296,7 +313,7 @@ namespace XGF
 		depthBufferDesc.MiscFlags = 0;
 		XGF_Error_Check(mD3dDevice->CreateTexture2D(&depthBufferDesc, NULL, &mDepthStencilBuffer), "CreatemDepthStencilBuffer Error");
 		PutDebugString(mDepthStencilBuffer);
-		// 初始化深度模版视图. 
+		// 初始化深度模版视图.
 		ZeroMemory(&depthStencilViewDesc, sizeof(depthStencilViewDesc));
 		depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 		depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
@@ -341,7 +358,7 @@ namespace XGF
 			GetClientRect(mHwnd, &mLastWinRc);
 			DXGI_MODE_DESC dxm = mScreenMode.at(0).second[pos];
 			dxm.Format = DXGI_FORMAT_UNKNOWN;
-			XGF_ReportInfo0("fullscreen");
+			XGF_ReportInfo0("full screen");
 			XGF_Warn_Check(mSwapChain->SetFullscreenState(isFullscreen, 0), "Can't switch fullscreenState");
 			XGF_Warn_Check(mSwapChain->ResizeTarget(&dxm), "ResizeTarget Error");
 		}
@@ -456,6 +473,7 @@ namespace XGF
 	void GDI::CheckFullScreenForce(bool isforce)
 	{
 		BOOL bl;
+
 		mSwapChain->GetFullscreenState(&bl, NULL);
 		if (isforce)
 		{
@@ -643,7 +661,7 @@ namespace XGF
 			if (rs != RasterizerState::InvalidValue)
 			{
 				D3D11_RASTERIZER_DESC rasterDesc;
-				// 设置光栅化描述，指定多边形如何被渲染. 
+
 				rasterDesc.AntialiasedLineEnable = false;
 				rasterDesc.CullMode = D3D11_CULL_BACK;
 				rasterDesc.DepthBias = 0;
@@ -758,23 +776,58 @@ namespace XGF
 
 	void GDI::CreateSwapChain()
 	{
-		DXGI_SWAP_CHAIN_DESC1 sd;
-		ZeroMemory(&sd, sizeof(sd));
-		sd.Width = mWidth;
-		sd.Height = mHeight;
-		sd.Format = mDisplayFormat;
-		sd.Stereo = FALSE;
-		sd.Scaling = DXGI_SCALING_STRETCH;
-		sd.SampleDesc.Count = 1;
-		sd.SampleDesc.Quality = 0;
-		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		sd.BufferCount = 1;
-		sd.AlphaMode = DXGI_ALPHA_MODE::DXGI_ALPHA_MODE_UNSPECIFIED;
-		sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-		sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-		sd.SampleDesc.Quality = 0;
-		XGF_Error_Check(mFactory2->CreateSwapChainForHwnd(mD3dDevice, mHwnd, &sd, NULL, NULL, &mSwapChain), "CreateSwapChain Error?? ");
-		PutDebugString(mSwapChain);
+		if (mFactory2) {
+			DXGI_SWAP_CHAIN_DESC1 sd;
+			ZeroMemory(&sd, sizeof(sd));
+			sd.Width = mWidth;
+			sd.Height = mHeight;
+			sd.Format = mDisplayFormat;
+			sd.Stereo = FALSE;
+			sd.Scaling = DXGI_SCALING_STRETCH;
+			sd.SampleDesc.Count = 1;
+			sd.SampleDesc.Quality = 0;
+			sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+			sd.BufferCount = 1;
+			sd.AlphaMode = DXGI_ALPHA_MODE::DXGI_ALPHA_MODE_UNSPECIFIED;
+			sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+			sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+
+			XGF_Error_Check(mFactory2->CreateSwapChainForHwnd(mD3dDevice, mHwnd, &sd, NULL, NULL, &mSwapChain1), "CreateSwapChain Error?? ");
+			PutDebugString(mSwapChain1);
+
+			XGF_Error_Check(mSwapChain1->QueryInterface(__uuidof(IDXGISwapChain), (void**)(&mSwapChain)), "Find SwapChain Failed!");
+			PutDebugString(mSwapChain);
+
+			XGF_ReportDebug0("The swapChain1 and swapChain are created from IDXGIFactory2");
+		}
+		else { // CreateSwapChainFromFactory1
+			DXGI_SWAP_CHAIN_DESC sd;
+			ZeroMemory(&sd, sizeof(sd));
+			sd.OutputWindow = mHwnd;
+			sd.Windowed = TRUE;
+			sd.BufferDesc.Format = mDisplayFormat;
+
+			sd.BufferDesc.Width = mWidth;
+			sd.BufferDesc.Height = mHeight;
+			sd.BufferDesc.Scaling = DXGI_MODE_SCALING::DXGI_MODE_SCALING_STRETCHED;
+			sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER::DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+			sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+			sd.BufferDesc.RefreshRate.Denominator = 1;
+			sd.BufferDesc.RefreshRate.Numerator = 60;
+			sd.SampleDesc.Count = 1;
+			sd.SampleDesc.Quality = 0;
+			sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+			sd.BufferCount = 1;
+			sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+			sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+
+			XGF_Error_Check(mFactory1->CreateSwapChain(mD3dDevice, &sd, &mSwapChain), "CreateSwapChain Error?? ");
+			PutDebugString(mSwapChain);
+
+			XGF_ReportDebug0("A swapChain is created from IDXGIFactory1");
+		}
+		
+		
 	}
 
 }

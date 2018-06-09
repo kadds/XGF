@@ -12,7 +12,6 @@ namespace XGF
 		OrthoCamera();
 		~OrthoCamera();
 		virtual void UpdateProject(int cx, int cy);
-		virtual void Update();
 		void SetScaleFactor(float scalefactor);
 		float GetScaleFactor();
 	private:

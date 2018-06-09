@@ -17,10 +17,10 @@ namespace XGF
 		mIsChange = true;
 	}
 	
-	XMMATRIX Transform::GetMatrix()
+	SM::Matrix Transform::GetMatrix()
 	{
 		if (!mIsChange) return DirectX::XMLoadFloat4x4(&mMatrix);
-		XMFLOAT4 f0(0, 0, 0, 0);
+		Point4 f0(0, 0, 0, 0);
 		//3D æÿ’Ûº∆À„
 		auto matrix = DirectX::XMMatrixTransformation(
 			DirectX::XMLoadFloat3(&mScaleOrigin),
@@ -34,7 +34,7 @@ namespace XGF
 		mIsChange = false;
 		return matrix;
 	}
-	void Transform::SetMatrix(CXMMATRIX matrix)
+	void Transform::SetMatrix(SM::Matrix matrix)
 	{
 		DirectX::XMStoreFloat4x4(&mMatrix ,matrix);
 	}

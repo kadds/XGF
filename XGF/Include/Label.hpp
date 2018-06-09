@@ -13,11 +13,11 @@ namespace XGF
 	{
 	public:
 		Label();
-		Label(int id, const string & text = string(), Color textColor = Color(0.f,0.f,0.f,1.f));
+		Label(int id, const string & text = string(), SM::Color textColor = SM::Color(0.f,0.f,0.f,1.f));
 		~Label();
 		virtual void Render() override;
 		void SetText(const string & text);
-		void SetTextColor(const Color & color);
+		void SetTextColor(const SM::Color & color);
 	protected:
 		virtual Shape * GetShape() const override
 		{
@@ -25,7 +25,7 @@ namespace XGF
 		};
 	private:
 		string mText;
-		Color mTextColor;
+		SM::Color mTextColor;
 	};
 
 

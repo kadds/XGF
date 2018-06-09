@@ -14,8 +14,6 @@ namespace XGF
 
 	void FPSCamera::Update()
 	{
-		mUp.x = 0;
-		mRight.y = 0;
 		PerspectiveCamera::Update();
 	}
 
