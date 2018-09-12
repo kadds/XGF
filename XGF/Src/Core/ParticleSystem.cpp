@@ -59,19 +59,19 @@ namespace XGF
 			else
 			{
 				BindingBridge bbr;//cpu Ä£Äâ
-				PolygonPleConstantColorBinder ppc(SM::Color(0, 0, 0, 0), 1);
-				PolygonPlePoint3 pps(1);
-				PolygonPlePoint4 pp4(1);
-				pps.mPoint[0] = Point(5, 5, 5);
-				pp4.mPoint[0] = Point4(10, 10, 4, 4);
+				auto ppc = std::make_shared<PolygonPleConstantColorBinder>(SM::Color(0, 0, 0, 0), 1);
+				auto pps = std::make_shared<PolygonPlePoint3>(1);
+				auto pp4 = std::make_shared<PolygonPlePoint4>(1);
+				pps->mPoint[0] = Point(5, 5, 5);
+				pp4->mPoint[0] = Point4(10, 10, 4, 4);
 				bbr.AddBinder(pps);
 				bbr.AddBinder(pp4);
 				bbr.AddBinder(ppc);
 				for (auto it = mParticles.begin(); it != mParticles.end(); ++it)
 				{
-					ppc.Set(0, 1, it->color);
-					pps.mPoint[0] = it->pos;
-					pp4.mPoint[0] = Point4(it->size.x, it->size.y, 0, 0);
+					ppc->Set(0, 1, it->color);
+					pps->mPoint[0] = it->pos;
+					pp4->mPoint[0] = Point4(it->size.x, it->size.y, 0, 0);
 					mBatch.DrawPolygon(bbr);
 				}
 			}
@@ -185,8 +185,8 @@ namespace XGF
 				for (int i = 0; i < max; i++)
 				{
 					if (mParticles.size() >= mMaxParticle) break;
-					std::uniform_real_distribution<double>rt(0, 1);
-					std::uniform_real_distribution<double>rttn(-1, 1);
+					std::uniform_real_distribution<float>rt(0, 1);
+					std::uniform_real_distribution<float>rttn(-1, 1);
 					
 
 					//if (startag > endag) break;//TODO::WARNING
@@ -244,8 +244,8 @@ namespace XGF
 		frequency = countPerframe;
 	} 
 
-	ParticleFire::FireEmitter::FireEmitter():startRadius(0), endRadius(100),
-		accelerationMax(0.04), accelerationMin(0.01), velocityMax(0.03), velocityMin(0.018),
+	ParticleFire::FireEmitter::FireEmitter():startRadius(0.f), endRadius(100.f),
+		accelerationMax(0.04f), accelerationMin(0.01f), velocityMax(0.03f), velocityMin(0.018f),
 		
 		startColorMin(SM::Color(0,0,0,0)), startColorMax(SM::Color(0, 0, 0, 0)),
 		endColorMin(SM::Color(0, 0, 0, 0)), endColorMax(SM::Color(0, 0, 0, 0))

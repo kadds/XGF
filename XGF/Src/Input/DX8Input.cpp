@@ -208,7 +208,8 @@ namespace XGF
 	{
 		return keys[key];
 	}
-
+#pragma warning(push)
+#pragma warning(disable:4644)
 	void DX8Input::HandleMouseEvent(DIDEVICEOBJECTDATA * didod, int len, Asyn * asyn)
 	{
 		bool isDowm;
@@ -295,6 +296,7 @@ namespace XGF
 			}
 		}
 	}
+#pragma warning(pop)
 	void DX8Input::HandleKeyBoardEvent(DIDEVICEOBJECTDATA * didod, int len, Asyn * asyn)
 	{
 		for (int i = 0; i< len; i++)

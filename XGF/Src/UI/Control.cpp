@@ -94,9 +94,9 @@ namespace XGF
 			skin = mSkin->GetTexture(mNowState);
 			if (skin)
 			{
-				PolygonPleTextureBinder textureBinder(GetShape()->mPolygon.mCount);
+				auto textureBinder = std::make_shared<PolygonPleTextureBinder>(GetShape()->mPolygon->mCount);
 				BindingBridge bbrige;
-				textureBinder.FromTexture(skin);
+				textureBinder->FromTexture(skin);
 				bbrige.AddBinder(textureBinder);
 				GetShape()->Render(*(this->mParent->GetScene()->GetFramework()->GetUIBatches().GetBatch(BATCHES_BATCH_DEFAULT_PT)), bbrige, *skin);
 			}

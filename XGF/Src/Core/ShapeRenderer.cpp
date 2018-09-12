@@ -50,7 +50,7 @@ namespace XGF
 		Shape::Rectangle rc;
 		rc.SetPositionAndSize(x, y, w, h);
 		rc.SetZ(z);
-		PolygonPleConstantColorBinder cb(color, rc.mPolygon.mCount);
+		auto cb = std::make_shared<PolygonPleConstantColorBinder>(color, rc.mPolygon->mCount);
 		BindingBridge bb;
 		bb.AddBinder(rc.mPolygon);
 		bb.AddBinder(cb);
@@ -65,10 +65,10 @@ namespace XGF
 		rc.SetBorderSize(borderWidth);
 		rc.SetZ(z);
 		int layer[3];
-		PolygonPleConstantExColorBinder cb(layer, rc.GetBorderLayer(layer));
-		cb.SetLayerColor(0, boderOuterColor);
-		cb.SetLayerColor(1, boderColor);
-		cb.SetLayerColor(2, bkcolor);
+		auto cb = std::make_shared<PolygonPleConstantExColorBinder>(layer, rc.GetBorderLayer(layer));
+		cb->SetLayerColor(0, boderOuterColor);
+		cb->SetLayerColor(1, boderColor);
+		cb->SetLayerColor(2, bkcolor);
 		BindingBridge bb;
 		bb.AddBinder(rc.mPolygon);
 		bb.AddBinder(cb);
@@ -81,7 +81,7 @@ namespace XGF
 		Shape::Circle ce(precision);
 		ce.SetPosiotionAndRadius(x, y, r);
 		ce.SetZ(z);
-		PolygonPleConstantColorBinder cb(color, ce.mPolygon.mCount);
+		auto cb = std::make_shared<PolygonPleConstantColorBinder>(color, ce.mPolygon->mCount);
 		BindingBridge bb;
 		bb.AddBinder(ce.mPolygon);
 		bb.AddBinder(cb);
@@ -95,9 +95,9 @@ namespace XGF
 		ce.SetPosiotionAndRadius(x, y, r);
 		ce.SetZ(z);
 		int layer[2];
-		PolygonPleConstantExColorBinder cb(layer, ce.GetLayer(layer));
-		cb.SetLayerColor(0, centerColor);
-		cb.SetLayerColor(1, color);
+		auto cb = std::make_shared<PolygonPleConstantExColorBinder>(layer, ce.GetLayer(layer));
+		cb->SetLayerColor(0, centerColor);
+		cb->SetLayerColor(1, color);
 		BindingBridge bb;
 		bb.AddBinder(ce.mPolygon);
 		bb.AddBinder(cb);
@@ -110,7 +110,7 @@ namespace XGF
 		Shape::Line line;
 		line.SetPosition(Point(x, y, z));
 		line.SetEndPosition(Point(ex, ey, z));
-		PolygonPleConstantColorBinder cb(color, 2);
+		auto cb = std::make_shared<PolygonPleConstantColorBinder>(color, 2);
 		BindingBridge bb;
 		bb.AddBinder(line.mPolygon);
 		bb.AddBinder(cb);
@@ -122,10 +122,10 @@ namespace XGF
 		Shape::Shape shape(count, count);
 		for (int i = 0; i < count; i++)
 		{
-			shape.mPolygon.mPoint[i] = Point((&points)[i].x, (&points)[i].y, z);
-			shape.mPolygonPleIndex.mIndex[i] = i;
+			shape.mPolygon->mPoint[i] = Point((&points)[i].x, (&points)[i].y, z);
+			shape.mPolygonPleIndex->mIndex[i] = i;
 		}
-		PolygonPleConstantColorBinder cb(color, count);
+		auto cb = std::make_shared<PolygonPleConstantColorBinder>(color, count);
 		BindingBridge bb;
 		bb.AddBinder(shape.mPolygon);
 		bb.AddBinder(cb);
@@ -136,13 +136,13 @@ namespace XGF
 	{
 		Shape::Triangle tr;
 		tr.SetThreePoint(Point(a.x, a.y, z), Point(b.x, b.y, z), Point(c.x, c.y, z));
-		PolygonPleColorBinder pp(3);
+		auto pp = std::make_shared<PolygonPleColorBinder>(3);
 		BindingBridge bbr;
 		bbr.AddBinder(tr.mPolygon);
 		bbr.AddBinder(pp);
-		pp.Set(0, 1, ca);
-		pp.Set(1, 1, cb);
-		pp.Set(2, 1, cc);
+		pp->Set(0, 1, ca);
+		pp->Set(1, 1, cb);
+		pp->Set(2, 1, cc);
 		mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 		mBatch.DrawPolygon(tr.mPolygonPleIndex, bbr);
 	}
@@ -155,10 +155,10 @@ namespace XGF
 		Shape::Shape shape(count, count);
 		for (int i = 0; i < count; i++)
 		{
-			shape.mPolygon.mPoint[i] = Point((&points)[i].x, (&points)[i].y, z);
-			shape.mPolygonPleIndex.mIndex[i] = i;
+			shape.mPolygon->mPoint[i] = Point((&points)[i].x, (&points)[i].y, z);
+			shape.mPolygonPleIndex->mIndex[i] = i;
 		}
-		PolygonPleConstantColorBinder cb(color, count);
+		auto cb = std::make_shared<PolygonPleConstantColorBinder>(color, count);
 		BindingBridge bb;
 		bb.AddBinder(shape.mPolygon);
 		bb.AddBinder(cb);

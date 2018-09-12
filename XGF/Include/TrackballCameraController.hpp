@@ -35,7 +35,7 @@ namespace XGF
 		PerspectiveCamera * mCamera;
 		bool mIsDown;
 		Position mLastPosition;
-		float mZoomSpeed = .01, mMoveSpeed = .01f, mRotateSpeed = .01f;
+		float mZoomSpeed = .01f, mMoveSpeed = .01f, mRotateSpeed = .01f;
 		Point mTarget{ 0.f,0.f,0.f };
 		bool mReverse;
 		enum  class OperatorType

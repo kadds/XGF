@@ -21,8 +21,9 @@ namespace XGF
 		void Shutdown();
 		void DrawString(const wchar_t * str, float x, float y, float z = 0.01f);
 		void DrawString(const wchar_t * str, SM::Color color, float x, float y, float z = 0.01f);
-		//低性能，不推荐
+		
 		template <typename T>
+		DEPRECATED("Please use DrawString")
 		void DrawStringWithNum(const wchar_t * str, T c, float x, float y)
 		{
 			std::wstringstream  strk;
@@ -30,9 +31,11 @@ namespace XGF
 			strk << c;
 			DrawString(strk.str().c_str(), SM::Color(1.0f, 1.0f, 1.0f, 1.0f), x, y);
 		}
-		//低性能，不推荐
+
+		DEPRECATED("Please use DrawString")
 		void DrawStringEx(float x, float y, const wchar_t * str, ...);
-		//低性能，不推荐
+
+		DEPRECATED("Please use DrawString")
 		void DrawStringEx(float x, float y, SM::Color color, const wchar_t * str, ...);
 		//渲染字符串 颜色，渲染限定矩形，变换矩阵
 		void DrawString(const wchar_t * str, SM::Color color, const Shape::Rectangle * ppe, const SM::Matrix * matrix);
@@ -52,8 +55,8 @@ namespace XGF
 		Font *mFont;
 		TextLayoutShaper mLayoutShaper;
 		BindingBridge bbridge;
-		PolygonPleTextureBinder textureBinder;
-		PolygonPleConstantColorBinder colorBinder;
+		std::shared_ptr<PolygonPleTextureBinder> textureBinder;
+		std::shared_ptr < PolygonPleConstantColorBinder> colorBinder;
 		wchar_t * mTemporarybuffer;
 
 	};

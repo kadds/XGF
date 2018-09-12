@@ -106,9 +106,9 @@ namespace XGF
 		std::string WcharToChar(const wchar_t* wch, size_t encode)
 		{
 			std::string str;
-			int len = WideCharToMultiByte(encode, 0, wch, wcslen(wch), NULL, 0, NULL, NULL);
+			unsigned int len = WideCharToMultiByte((UINT)encode, 0, wch, (int) wcslen(wch), NULL, 0, NULL, NULL);
 			char    *ch = new char[len + 1];
-			WideCharToMultiByte(encode, 0, wch, wcslen(wch), ch, len, NULL, NULL);
+			WideCharToMultiByte((UINT)encode, 0, wch, (int) wcslen(wch), ch, len, NULL, NULL);
 			ch[len] = '\0';
 			str = ch;
 			delete ch;

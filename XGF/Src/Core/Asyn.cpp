@@ -1,6 +1,5 @@
 #include "../../Include/Asyn.hpp"
 #include "../../Include/Log.hpp"
-#include <Windows.h>
 namespace XGF {
 	Asyn::Asyn()
 	{
@@ -10,37 +9,36 @@ namespace XGF {
 	{
 	}
 
-	void Asyn::PostEvent(std::any id, EventGroup evGroup, std::initializer_list<std::any> init)
+	void Asyn::PostEvent(EventIdType id, EventGroupType evGroup, std::initializer_list< EventDataType> init)
 	{
 		if (isExit) return;
 		Event& ev = EventPool::CreateAEvent(id, evGroup, init);
 		msgQueue.InsertMsg(ev);
 	}
-	 template<typename T>
-	inline constexpr EventGroup GetType(T t)
+	EventGroupType GetType(EventIdType t)
 	{
-		if (t.type() == typeid(SystemEventId))
-			return EventGroup::System;
-		if (t.type() == typeid(KeyBoardEventId))
-			return EventGroup::KeyBoard;
-		if (t.type() == typeid(MouseEventId))
-			return EventGroup::Mouse;
-		return EventGroup::Custom;
+		if (std::get_if<SystemEventId>(&t) != nullptr)
+			return EventGroupType::System;
+		if (std::get_if<KeyBoardEventId>(&t) != nullptr)
+			return EventGroupType::KeyBoard;
+		if (std::get_if<MouseEventId>(&t) != nullptr)
+			return EventGroupType::Mouse;
+		return EventGroupType::Custom;
 	}
 	
-	void Asyn::PostEvent(std::any id, std::initializer_list<std::any> init)
+	void Asyn::PostEvent(EventIdType id, std::initializer_list<EventDataType> init)
 	{
 		PostEvent(id, GetType(id), init);
 	}
 	void Asyn::PostExitEvent()
 	{
 		isExit = true;
-		Event& ev = EventPool::CreateAEvent(SystemEventId::Exit, EventGroup::System, {});
+		Event& ev = EventPool::CreateAEvent(SystemEventId::Exit, EventGroupType::System, {});
 		ev.mPriority = -1;
 		msgQueue.InsertMsg(ev);
 	}
 
-	void Asyn::PostWithoutRepeat(std::any id, std::initializer_list<std::any> init)
+	void Asyn::PostWithoutRepeat(EventIdType id, std::initializer_list<EventDataType> init)
 	{
 		Event& ev = EventPool::CreateAEvent(id, GetType(id), init);
 		msgQueue.InsertMsgWithoutRepeat(ev);
@@ -68,7 +66,7 @@ namespace XGF {
 		{
 			const Event &ev = msgQueue.GetMsg();
 			if (!EventPool::IsNullEvent(ev))
-				if (ev.GetEventGroup() == EventGroup::System && ev.GetSystemEventId() == SystemEventId::Exit)
+				if (ev.GetEventGroup() == EventGroupType::System && ev.GetSystemEventId() == SystemEventId::Exit)
 				{
 					EventPool::DistoryAEvent(ev);
 					return true;

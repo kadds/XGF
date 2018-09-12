@@ -33,11 +33,7 @@ namespace XGF
 				if (mLastSceneAnimation->IsEnd())//动画执行完毕，结束
 				{
 					mLastScene->OnDestroy();
-					if (mSceneDeleter != nullptr)
-					{
-						mSceneDeleter(mLastScene);
-						mLastScene = nullptr;
-					}
+					mLastScene = nullptr;
 				}
 			}
 		}
@@ -116,13 +112,11 @@ namespace XGF
 		if (mScene != nullptr)
 		{
 			mScene->_OnDestroy();
-			if (mSceneDeleter != nullptr)
-				mSceneDeleter(mScene);
+			mScene = nullptr;
 			if (mLastScene != nullptr)
 			{
 				mLastScene->_OnDestroy();
-				if (mSceneDeleter != nullptr)
-					mSceneDeleter(mLastScene);
+				mLastScene = nullptr;
 			}
 
 		}
@@ -161,7 +155,7 @@ namespace XGF
 
 	void XGFramework::_OnMessage(const Event& ev)
 	{
-		if (ev.mEventType == EventGroup::System)
+		if (ev.mEventType == EventGroupType::System)
 			switch (ev.GetSystemEventId())
 			{
 			case SystemEventId::Size:
@@ -180,14 +174,14 @@ namespace XGF
 				AsyncTask::DoReportTaskEvent(ev);
 				break;
 			case SystemEventId::SwitchScene:
-				ISwitchScene(ev.GetData<Scene *>(0));
+				ISwitchScene(ev.GetDataSmartPointer<Scene>(0));
 				break;
 			default:
 				break;
 			}
-		else if (ev.mEventType == EventGroup::KeyBoard)
+		else if (ev.mEventType == EventGroupType::KeyBoard)
 			_OnKeyBoardMessage(ev);
-		else if (ev.mEventType == EventGroup::Mouse)
+		else if (ev.mEventType == EventGroupType::Mouse)
 			_OnMouseMessage(ev);
 		mEventDispatcher.Dispatch(ev);
 	}
@@ -210,7 +204,7 @@ namespace XGF
 		if (mOnClose != nullptr && mOnClose())
 			Exit(0);
 	}
-	void XGFramework::ISwitchScene(Scene * scene)
+	void XGFramework::ISwitchScene(std::shared_ptr<Scene> scene)
 	{
 		XGF_ReportDebug0("A scene to switch");
 		scene->_OnCreate(this);
@@ -233,8 +227,6 @@ namespace XGF
 		if (!k)
 		{
 			mScene->_OnDestroy();
-			if (mSceneDeleter != nullptr)
-				mSceneDeleter(mScene);
 			mScene = scene;
 		}
 		else
@@ -249,11 +241,11 @@ namespace XGF
 		WVPMatrix wvp;
 		SM::Color c;
 		BindingBridge bbr;
-		PolygonPleTextureBinder ppb(4);
-		PolygonPleConstantColorBinder cc(SM::Color(0.f, 0.f, 0.f, 1.f), 4);
+		auto ppb = std::make_shared<PolygonPleTextureBinder>(4);
+		auto cc = std::make_shared<PolygonPleConstantColorBinder>(SM::Color(0.f, 0.f, 0.f, 1.f), 4);
 		bbr.AddBinder(cc);
 		bbr.AddBinder(ppb);
-		ppb.SetPosition(0.f, 1.f, 0.f, 1.f);
+		ppb->SetPosition(0.f, 1.f, 0.f, 1.f);
 		mRenderCamera.GetCameraMatrix(wvp);
 		mSceneBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
 		mSceneBatch.Begin();
@@ -261,7 +253,7 @@ namespace XGF
 		{
 			mLastRenderRectangle.mTransform.SetMatrix(mLastSceneAnimation->GetMatrix());
 			mLastSceneAnimation->GetColor(c, 0);
-			cc.Set(0, 1, c);
+			cc->Set(0, 1, c);
 			mLastRenderRectangle.Render(mSceneBatch, bbr, mLastRenderToTexture.GetShaderResourceView());
 		}
 		else {
@@ -273,13 +265,13 @@ namespace XGF
 		{
 			mRenderRectangle.mTransform.SetMatrix(mSceneAnimation->GetMatrix());
 			mSceneAnimation->GetColor(c, 0);
-			cc.Set(0, 1, c);
+			cc->Set(0, 1, c);
 			mRenderRectangle.Render(mSceneBatch, bbr, mRenderToTexture.GetShaderResourceView());
 		}
 		else
 		{
 			mRenderRectangle.mTransform.SetMatrix(DirectX::XMMatrixIdentity());
-			cc.Set(0, 1, SM::Color(1.f, 1.f, 1.f, 1.f));
+			cc->Set(0, 1, SM::Color(1.f, 1.f, 1.f, 1.f));
 			mRenderRectangle.Render(mSceneBatch, bbr, mRenderToTexture.GetShaderResourceView());
 		}
 
@@ -287,7 +279,7 @@ namespace XGF
 
 
 	}
-	void XGFramework::AddScene(Scene * scene)
+	void XGFramework::AddScene(std::shared_ptr<Scene> scene)
 	{
 		scene->_OnCreate(this);
 		SceneAnimation * sa = scene->OnSwitchIn();
@@ -302,7 +294,7 @@ namespace XGF
 	{
 		mScene->_Render(mDeltaTime);
 	}
-	void XGFramework::SwitchScene(Scene * scene)
+	void XGFramework::SwitchScene(std::shared_ptr<Scene> scene)
 	{
 		mTheard->PostEvent(SystemEventId::SwitchScene, { scene });
 	}
@@ -358,7 +350,7 @@ namespace XGF
 	}
 
 
-	XGFramework::XGFramework() :mSceneDeleter(nullptr), mOnClose(nullptr), mOnInput(nullptr)
+	XGFramework::XGFramework() : mOnClose(nullptr), mOnInput(nullptr)
 	{
 	}
 

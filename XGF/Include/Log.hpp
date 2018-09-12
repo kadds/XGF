@@ -1,18 +1,17 @@
 #pragma once
 #include "Defines.hpp"
+#include "Tools.hpp"
 #include <d3d11_1.h>
-#include <fstream>
 #include <deque>
-#include <time.h>
 #include <sstream>
-#include <initializer_list>
-#include "spdlog.h"
+namespace spdlog{
+	class logger;
+};
 /*
 »’º«class
 */
 namespace XGF {
 	namespace Log {
-		std::string WcharToChar(const wchar_t* wch, size_t encode = CP_ACP);
 		enum class LogLevel
 		{
 			Debug,
@@ -20,7 +19,7 @@ namespace XGF {
 			Warn,
 			Error,
 		};
-
+		
 		void constexpr CaseData(std::ostream & s) {};
 
 		template<typename Head, typename... Rest>
@@ -28,12 +27,12 @@ namespace XGF {
 		{
 			if constexpr(std::is_same<typename std::decay<Head>::type, wchar_t const *>::value || std::is_same<typename std::decay<Head>::type, wchar_t *>::value)
 			{
-				s << WcharToChar(head);
+				s << Tools::WcharToChar(head);
 			}
 			else if constexpr(std::is_same<typename std::decay<Head>::type, wchar_t>::value)
 			{
 				wchar_t wch[2] = { head, 0 };
-				s << WcharToChar(wch);
+				s << Tools::WcharToChar(wch);
 			}
 			else
 				s << head;
@@ -88,6 +87,7 @@ namespace XGF {
 		class LogRecorder 
 		{
 		private:
+			
 			bool openConsole;
 			std::shared_ptr<spdlog::logger> stdLogger;
 		public:
@@ -142,16 +142,4 @@ namespace XGF {
 #else
 #define XGF_ReportDebug0(DebugStr) ((void)0)
 #define XGF_ReportDebug(DebugStr, DebugStr2) ((void)0)
-#endif
-
-#ifdef _DEBUG
-#define XGF_ASSERT(expression) (void)(                                                       \
-            (!!(expression)) ||                                                              \
-            (_wassert(_CRT_WIDE(#expression), _CRT_WIDE(__FILE__), (unsigned)(__LINE__)), 0) \
-        )
-#else
-#define XGF_ASSERT(expression) (void)(                                                       \
-            (!!(expression)) ||                                                              \
-            (assert(_CRT_WIDE(#expression)), 0) \
-        )
 #endif

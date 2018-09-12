@@ -31,7 +31,7 @@ namespace XGF
 		float mPassTime;
 		bool mIsShow;
 		bool mUsedStaticTexture;
-		PolygonPleTextureBinder mPtBinder;
+		std::shared_ptr<PolygonPleTextureBinder> mPtBinder;
 
 		TextureResource * mTextureResource;
 		Texture mTexture;

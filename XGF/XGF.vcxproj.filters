@@ -261,9 +261,6 @@
     <ClInclude Include="Include\Event.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Include\GObject.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Include\EventDispatcher.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -307,6 +304,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\TrackballCameraController.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Geometry\PlaneGeometry.hpp">
+      <Filter>头文件\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Destroyable.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -494,9 +497,6 @@
     <ClCompile Include="Src\Core\Event.cpp">
       <Filter>源文件\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Core\GObject.cpp">
-      <Filter>源文件\Core</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Core\EventDispatcher.cpp">
       <Filter>源文件\Core</Filter>
     </ClCompile>
@@ -544,6 +544,9 @@
     </ClCompile>
     <ClCompile Include="Src\Helper\TrackballCameraController.cpp">
       <Filter>源文件\Helper</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Shape\Geometry\PlaneGeometry.cpp">
+      <Filter>源文件\Shape\Geometry</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

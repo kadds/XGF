@@ -43,17 +43,21 @@ public:
 		mFont.Initialize(gdi, Tools::GetFontPath(L"msyh"), 16);
 		mTextRenderer.Initialize(gdi, &mFont, 64);
 		mMeshRenderer.Initialize(gdi);
-		box = new Shape::BoxGeometry(0.3, 0.3, 0.3);
+		box = new Shape::BoxGeometry(1.f, 1.f, 1.f);
 		material = new Shape::BasicMaterial(SM::Color(0, 1, 1, 1));
+		planeMaterial = new Shape::BasicMaterial(SM::Color(.6f, .6f, .6f, 1.f));
 		mesh = new Shape::Mesh(box, material);
-
+		plane = new Shape::PlaneGeometry(10, 10);
+		planeMesh = new Shape::Mesh(plane, planeMaterial);
+		box->mTransform.mTranslation.y = 0.5;
 		mMeshRenderer.Add(mesh);
+		mMeshRenderer.Add(planeMesh);
 		mAxisRenderer.Initialize(gdi, 1e5f);
 		mAxisRenderer.SetAxisXColor(SM::Color(1.f, 0.f, 0.f, 1.f), SM::Color(0.8f, 0.f, 0.f, 1.f));
 		mAxisRenderer.SetAxisYColor(SM::Color(0.f, 1.f, 0.f, 1.f), SM::Color(0.f, 0.8f, 0.f, 1.f));
 		mAxisRenderer.SetAxisZColor(SM::Color(0.f, 0.f, 1.f, 1.f), SM::Color(0.f, 0.f, 0.8f, 1.f));
-		mCamera3D.LookAt(Point(-1.f, -1.f, 1.f), Point(0, 0, 0), Point::Up);
-		mTrackballCameraController.SetAllSpeed(0.004);
+		mCamera3D.LookAt(Point(-1.5f, -1.5f, 1.5f), Point(0, 0, 0), Point::Up);
+		mTrackballCameraController.SetAllSpeed(0.004f);
 		this->GetRootContainer().GetEventDispatcher().InsertAllEventListener( std::bind(&GameScene::OnMouse, this, std::placeholders::_1));
 	};
 	virtual void OnDestroy() override
@@ -65,6 +69,9 @@ public:
 		delete box;
 		delete material;
 		delete mesh;
+		delete plane;
+		delete planeMesh;
+		delete planeMaterial;
 	};
 	virtual void Render(float deltaTime) override
 	{
@@ -84,11 +91,10 @@ public:
 
 		mTextRenderer.Begin(wvp2d);
 		auto debug = DebugInscriber::GetInstance();
-		std::wstringstream str;
-		str.str(L"");
-		str << std::fixed << std::setprecision(1) << L"FPS:" << debug->GetAverageFPS() << "\n" << L"FC:" << std::setprecision(4) << debug->GetFrameCost() << "ms";
-		mTextRenderer.DrawString(str.str().c_str(), 4, 4);
+		//std::wstring s = fmt::format(L"FPS:{0}\nFC:{1}ms", debug->GetAverageFPS(), debug->GetFrameCost());
+		//mTextRenderer.DrawString(s.c_str(), 4, 4);
 		mTextRenderer.End();
+		
 	};
 	virtual void Update(float deltaTime) override
 	{
@@ -121,8 +127,9 @@ private:
 	TextRenderer mTextRenderer;
 	
 	Shape::BoxGeometry * box;
-	Shape::Material * material;
-	Shape::Mesh * mesh;
+	Shape::PlaneGeometry * plane;
+	Shape::Material * material, * planeMaterial;
+	Shape::Mesh * mesh, * planeMesh;
 
 	Shape::MeshRenderer mMeshRenderer;
 	AxisRenderer mAxisRenderer;
@@ -135,9 +142,8 @@ int RunGame(HINSTANCE hInstance)
 {
 	Application app;
 	GDI gdi;
-	GameScene * gs = new GameScene();
+	auto  gs = std::make_shared<GameScene>();
 	XGFramework framework;
-	framework.SetSceneDeleter([](Scene * sc) {delete sc; });
 	framework.SetOnClose([]() {return true; });
 	int rt = -1;
 	rt = app.CreateWindowsAndRunApplication(framework, gdi, hInstance, L"main", L"Base3D",

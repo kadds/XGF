@@ -1,12 +1,11 @@
 #pragma once
-#include "Batches.hpp"
 #include "Defines.hpp"
-#include "Actions.hpp"
 #include "SceneAnimation.hpp"
 #include "Container.hpp"
 #include <vector>
 namespace XGF
 {
+	class GDI;
 	using std::vector;
 	/*
 	* ≥°æ∞¿‡
@@ -40,7 +39,7 @@ namespace XGF
 			return mFramework;
 		}
 		void AddChild(std::shared_ptr<Container> container);
-		void SwitchScene(Scene * scene);
+		void SwitchScene(std::shared_ptr<Scene> scene);
 		void Clear(const SM::Color & c);
 		void ClearDepthStencilBuffer();
 

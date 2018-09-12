@@ -79,14 +79,9 @@ namespace XGF
 			{
 				for (auto & element : it.first)
 				{
-					BindingBridge bbr;
-					auto geo = element->GetGeometry();
-					bbr.AddBinder(geo->mPolygon);
-					PolygonPleConstantColorBinder cbv(SM::Color(1.f, 0.f, 1.f, 1.f), geo->mPolygon.mCount);
-					bbr.AddBinder(cbv);
 					//TODO: insert more
 					it.second->GetShaderStage()->SetRasterizerState(element->GetMaterial()->GetRasterizerState());
-					it.second->DrawPolygon(geo->mPolygonPleIndex, bbr);
+					it.second->DrawPolygon(element->GetGeometry()->mPolygonPleIndex, element->GetBindingBridge());
 				}
 			}
 		}

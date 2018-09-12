@@ -47,14 +47,14 @@ namespace XGF
 		if (mCaretPos == 0)
 		{
 			mTextRenderer->DrawStringRtPosition(mInputString.c_str() + mFirstCharPos, color, &rc, &matrix, 0);
-			mCaretPosition.x = rc.mPolygon.mPoint[0].x + 0.8f;
-			mCaretPosition.y = rc.mPolygon.mPoint[0].y + 0.f;
+			mCaretPosition.x = rc.mPolygon->mPoint[0].x + 0.8f;
+			mCaretPosition.y = rc.mPolygon->mPoint[0].y + 0.f;
 		}
 		else if (mCaretPos > 0)
 		{
 			Position u = mTextRenderer->DrawStringRtPosition(mInputString.c_str() + mFirstCharPos, color, &rc, &matrix, mCaretPos);
-			mCaretPosition.x = u.x + rc.mPolygon.mPoint[0].x + 0.8f;
-			mCaretPosition.y = u.y + rc.mPolygon.mPoint[0].y + 0.f;
+			mCaretPosition.x = u.x + rc.mPolygon->mPoint[0].x + 0.8f;
+			mCaretPosition.y = u.y + rc.mPolygon->mPoint[0].y + 0.f;
 		}
 		else
 		{
@@ -131,8 +131,8 @@ namespace XGF
 		Position temp;
 		Shape::Rectangle rc;
 		mGetInnerRectangle(rc);
-		temp.x = mCaretPosition.x - rc.mPolygon.mPoint[0].x - 0.8f;
-		temp.y = mCaretPosition.y - rc.mPolygon.mPoint[0].y;
+		temp.x = mCaretPosition.x - rc.mPolygon->mPoint[0].x - 0.8f;
+		temp.y = mCaretPosition.y - rc.mPolygon->mPoint[0].y;
 		mTextRenderer->GetLayoutShaper().DoLayouShaper(mInputString.c_str() + mFirstCharPos, rc, mTextRenderer->GetFont(), nullptr,
 			std::bind(&TextInputProcessor::layoutCallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, false, temp));
 		if (mCallBackBuffer.first > 0 && mCallBackBuffer.first < mInputString.size())
@@ -147,8 +147,8 @@ namespace XGF
 		Position temp;
 		Shape::Rectangle rc;
 		mGetInnerRectangle(rc);
-		temp.x = mCaretPosition.x - rc.mPolygon.mPoint[0].x - 0.8f;
-		temp.y = mCaretPosition.y - rc.mPolygon.mPoint[0].y;
+		temp.x = mCaretPosition.x - rc.mPolygon->mPoint[0].x - 0.8f;
+		temp.y = mCaretPosition.y - rc.mPolygon->mPoint[0].y;
 		mTextRenderer->GetLayoutShaper().DoLayouShaper(mInputString.c_str() + mFirstCharPos, rc, mTextRenderer->GetFont(), nullptr,
 			std::bind(&TextInputProcessor::layoutCallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, true, temp));
 		if (mCallBackBuffer.first > 0 && mCallBackBuffer.first < mInputString.size())

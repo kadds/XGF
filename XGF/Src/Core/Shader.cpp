@@ -37,7 +37,7 @@ namespace XGF {
 		}
 		//parse all bind info
 		D3D11_SHADER_INPUT_BIND_DESC bdec;
-		for (int i = 0; i < shaderDesc.BoundResources; i++)
+		for (unsigned int i = 0; i < shaderDesc.BoundResources; i++)
 		{
 			reflector->GetResourceBindingDesc(i, &bdec);
 			if (bdec.Type == _D3D_CBUFFER_TYPE::D3D11_CT_CBUFFER || bdec.Type == _D3D_CBUFFER_TYPE::D3D11_CT_TBUFFER)
@@ -78,7 +78,7 @@ namespace XGF {
 	}
 	unsigned int Shader::GetCBufferCount()
 	{
-		return mCBufferInfo.size();
+		return static_cast<unsigned int>(mCBufferInfo.size());
 	}
 	GDI * Shader::GetGDI()
 	{
@@ -90,9 +90,9 @@ namespace XGF {
 		return mCBufferInfo[index].slot;
 	}
 
-	int Shader::GetSamplerStateCount()
+	unsigned int Shader::GetSamplerStateCount()
 	{
-		return mSamplerState.size();
+		return static_cast<unsigned int>(mSamplerState.size());
 	}
 
 	unsigned int Shader::GetSamplerStateSlot(unsigned int index)
@@ -100,9 +100,9 @@ namespace XGF {
 		return mSamplerState[index].slot;
 	}
 
-	int Shader::GetTextureCount()
+	unsigned int Shader::GetTextureCount()
 	{
-		return mTexture2D.size();
+		return static_cast<unsigned int>(mTexture2D.size());
 	}
 
 	unsigned int Shader::GetTextureSlot(unsigned int index)
@@ -124,7 +124,7 @@ namespace XGF {
 				XGF_ReportError("ShaderFile no find", "");
 			else
 				XGF_Error_Check(hr, (LPCSTR)pErrorBlob->GetBufferPointer());
-		Initialize(gdi, (unsigned char *)pComputerBlob->GetBufferPointer(), pComputerBlob->GetBufferSize());
+		Initialize(gdi, static_cast<unsigned char *>(pComputerBlob->GetBufferPointer()), static_cast<unsigned int>(pComputerBlob->GetBufferSize()));
 		pComputerBlob->Release();
 	}
 
@@ -157,7 +157,7 @@ namespace XGF {
 				XGF_ReportError("Pixel Shader File Not Find!", PSname);
 			else
 				XGF_Error_Check(hr, (LPCSTR)pErrorBlob->GetBufferPointer());
-		Initialize(gdi, (unsigned char *)pPixelBlob->GetBufferPointer(), pPixelBlob->GetBufferSize());
+		Initialize(gdi, static_cast<unsigned char *>(pPixelBlob->GetBufferPointer()), static_cast<unsigned int>(pPixelBlob->GetBufferSize()));
 		pPixelBlob->Release();
 	}
 
@@ -312,7 +312,7 @@ namespace XGF {
 
 	unsigned int VertexShader::GetSlotCount()
 	{
-		return mSlotElementStartPosition.size();
+		return static_cast<unsigned int>(mSlotElementStartPosition.size());
 	}
 
 	unsigned int * VertexShader::GetStride()
@@ -334,7 +334,7 @@ namespace XGF {
 				XGF_ReportError("Geometry Shader File Not Find!", GSname);
 			else
 				XGF_Error_Check(hr, (LPCSTR)pErrorBlob->GetBufferPointer());
-		Initialize(gdi,(unsigned char *)pGeometryBlob->GetBufferPointer(), pGeometryBlob->GetBufferSize(), streamOut);
+		Initialize(gdi,static_cast<unsigned char *>(pGeometryBlob->GetBufferPointer()), static_cast<unsigned int>(pGeometryBlob->GetBufferSize()), streamOut);
 		pGeometryBlob->Release();
 	}
 
@@ -429,7 +429,7 @@ namespace XGF {
 	{
 		if (shader != nullptr && shader->GetCBufferCount() > 0)
 		{
-			for (int i = 0; i < shader->GetCBufferCount(); i++)
+			for (unsigned int i = 0; i < shader->GetCBufferCount(); i++)
 			{
 				ConstantBuffer cbb;
 				cbb.Initialize(shader->GetGDI(), shader->GetCBufferSize(i));
@@ -453,7 +453,7 @@ namespace XGF {
 	{
 		if (shader != nullptr && shader->GetSamplerStateCount() > 0)
 		{
-			for (int i = 0; i < shader->GetSamplerStateCount(); i++)
+			for (unsigned int i = 0; i < shader->GetSamplerStateCount(); i++)
 				ss.push_back(SamplerState::LineWrap);
 		}
 	};
@@ -475,13 +475,13 @@ namespace XGF {
 		ShaderResourceView srv;
 		srv.srv = nullptr;
 		if (vs->GetTextureCount() > 0)
-			for(int i = 0; i < vs->GetTextureCount();  i ++)
+			for(unsigned int i = 0; i < vs->GetTextureCount();  i ++)
 				mVSSRV.push_back(srv);
 		if (ps != nullptr && ps->GetTextureCount() > 0)
-			for (int i = 0; i < ps->GetTextureCount(); i++)
+			for (unsigned int i = 0; i < ps->GetTextureCount(); i++)
 				mPSSRV.push_back(srv);
 		if (gs != nullptr && gs->GetTextureCount() > 0)
-			for (int i = 0; i < gs->GetTextureCount(); i++)
+			for (unsigned int i = 0; i < gs->GetTextureCount(); i++)
 				mGSSRV.push_back(srv);
 		InitializeSampler(vs, mVSSamplerState);
 		InitializeSampler(ps, mPSSamplerState);
@@ -600,7 +600,7 @@ namespace XGF {
 		if(gs != nullptr)
 			dev->GSSetShader(gs->mGeometryShader, 0, 0);
 		dev->IASetInputLayout(vs->mInputLayout);
-		if (mVSCBuffer.size() > 0)
+		if (!mVSCBuffer.empty())
 		{
 			ID3D11Buffer * buf;
 			for (int i = 0; i < vs->mCBufferInfo.size(); i++)
@@ -610,7 +610,7 @@ namespace XGF {
 				dev->VSSetConstantBuffers(vs->GetCBufferSlot(i), 1, &buf);
 			}
 		}
-		if (mPSCBuffer.size() > 0)
+		if (!mPSCBuffer.empty())
 		{
 			ID3D11Buffer * buf;
 			for (int i = 0; i < ps->mCBufferInfo.size(); i++)
@@ -620,7 +620,7 @@ namespace XGF {
 				dev->PSSetConstantBuffers(ps->GetCBufferSlot(i), 1, &buf);
 			}
 		}
-		if (mGSCBuffer.size() > 0)
+		if (!mGSCBuffer.empty())
 		{
 			ID3D11Buffer * buf;
 			for (int i = 0; i < gs->mCBufferInfo.size(); i++)
@@ -630,38 +630,38 @@ namespace XGF {
 				dev->GSSetConstantBuffers(gs->GetCBufferSlot(i), 1, &buf);
 			}
 		}
-		if (mVSSRV.size() > 0)
-			for (int i = 0; i < vs->GetTextureCount(); i++)
+		if (!mVSSRV.empty())
+			for (unsigned i = 0; i < vs->GetTextureCount(); i++)
 				if (mVSSRV[i].srv != nullptr)
 					dev->VSSetShaderResources(vs->GetTextureSlot(i), 1, &mVSSRV[i].srv);
 				else { XGF_ReportWarn0("invalid srv in vs"); }
-		if (mPSSRV.size() > 0)
-			for (int i = 0; i < ps->GetTextureCount(); i++)
+		if (!mPSSRV.empty())
+			for (unsigned i = 0; i < ps->GetTextureCount(); i++)
 				if (mPSSRV[i].srv != nullptr)
 					dev->PSSetShaderResources(ps->GetTextureSlot(i), 1, &mPSSRV[i].srv);
 				else { XGF_ReportWarn0("invalid srv in ps"); }
-		if (mGSSRV.size() > 0)
-			for (int i = 0; i < gs->GetTextureCount(); i++)
+		if (!mGSSRV.empty())
+			for (unsigned i = 0; i < gs->GetTextureCount(); i++)
 				if(mGSSRV[i].srv != nullptr)
 					dev->GSSetShaderResources(gs->GetTextureSlot(i), 1, &mGSSRV[i].srv);
 				else { XGF_ReportWarn0("invalid srv in gs"); }
 		vs->GetGDI()->SetBlendState(mBlendState);
 
 		ID3D11SamplerState *sps;
-		if (mVSSamplerState.size() > 0)
-			for (int i = 0; i < vs->GetSamplerStateCount(); i++)	
+		if (!mVSSamplerState.empty())
+			for (unsigned i = 0; i < vs->GetSamplerStateCount(); i++)
 			{
 				sps = vs->mGDI->GetRawSamplerState(mVSSamplerState[i]);
 				dev->VSSetSamplers(vs->GetSamplerStateSlot(i), 1, &sps);
 			}
-		if (mPSSamplerState.size() > 0)
-			for (int i = 0; i < ps->GetSamplerStateCount(); i++)
+		if (!mPSSamplerState.empty())
+			for (unsigned i = 0; i < ps->GetSamplerStateCount(); i++)
 			{
 				sps = vs->mGDI->GetRawSamplerState(mPSSamplerState[i]);
 				dev->PSSetSamplers(ps->GetSamplerStateSlot(i), 1, &sps);
 			}
-		if (mGSSamplerState.size() > 0)
-			for (int i = 0; i < gs->GetSamplerStateCount(); i++)
+		if (!mGSSamplerState.empty())
+			for (unsigned i = 0; i < gs->GetSamplerStateCount(); i++)
 			{
 				sps = gs->mGDI->GetRawSamplerState(mGSSamplerState[i]);
 				dev->GSSetSamplers(gs->GetSamplerStateSlot(i), 1, &sps);
@@ -675,16 +675,16 @@ namespace XGF {
 		void* null = 0 ;
 		auto dev = vs->mGDI->GetDeviceContext();
 		dev->VSSetShader((ID3D11VertexShader *)null, 0, 0);
-		if (mVSSRV.size() > 0)
-			for (int i = 0; i < vs->GetTextureCount(); i++)
+		if (!mVSSRV.empty())
+			for (unsigned i = 0; i < vs->GetTextureCount(); i++)
 				if (mVSSRV[i].srv != nullptr)
 					dev->VSSetShaderResources(vs->GetTextureSlot(i), 1, (ID3D11ShaderResourceView **)(&null));
 
-		if (mPSSRV.size() > 0)
-			for (int i = 0; i < ps->GetTextureCount(); i++)
+		if (!mPSSRV.empty())
+			for (unsigned i = 0; i < ps->GetTextureCount(); i++)
 				dev->PSSetShaderResources(ps->GetTextureSlot(i), 1, (ID3D11ShaderResourceView **)(&null));
-		if (mGSSRV.size() > 0)
-			for (int i = 0; i < gs->GetTextureCount(); i++)
+		if (!mGSSRV.empty())
+			for (unsigned i = 0; i < gs->GetTextureCount(); i++)
 				dev->GSSetShaderResources(gs->GetTextureSlot(i), 1, (ID3D11ShaderResourceView **)(&null));
 
 		if (ps != nullptr)
@@ -697,9 +697,9 @@ namespace XGF {
 	void ComputeGPU::Initialize(ComputeShader * cs, unsigned int buffersize)
 	{
 		this->cs = cs;
-		if (cs->mUAVInfo.size() > 0)
+		if (!cs->mUAVInfo.empty())
 		{
-			for (int i = 0; i < cs->mUAVInfo.size(); i++)
+			for (int i = 0; i < (int)cs->mUAVInfo.size(); i++)
 			{
 				UnorderedAccessView uav;
 				if (cs->mUAVInfo[i].flags == D3D_SIT_UAV_APPEND_STRUCTURED)
@@ -729,7 +729,7 @@ namespace XGF {
 		InitializeSampler(cs, mCSSamplerState);
 		ShaderResourceView srv = { nullptr };
 		if (cs->GetTextureCount() > 0)
-			for (int i = 0; i < cs->GetTextureCount(); i++)
+			for (unsigned i = 0; i < cs->GetTextureCount(); i++)
 				mCSSRV.push_back(srv);
 		
 	}
@@ -779,26 +779,26 @@ namespace XGF {
 	{
 		auto gdi = cs->GetGDI();
 		ID3D11Buffer * cbuffer;
-		for (int i = 0; i < cs->mCBufferInfo.size(); i++)
+		for (int i = 0; i < (int)cs->mCBufferInfo.size(); i++)
 		{
 			mCSCBuffer[i].MapToGPU(gdi);
 			cbuffer = mCSCBuffer[i].GetRawBuffer();
 			gdi->GetDeviceContext()->CSSetConstantBuffers(cs->mCBufferInfo[i].slot, 1, &cbuffer);
 		}
 
-		if (mCSSamplerState.size() > 0)
-			for (int i = 0; i < cs->GetSamplerStateCount(); i++)
+		if (!mCSSamplerState.empty())
+			for (int i = 0; i < (int) cs->GetSamplerStateCount(); i++)
 			{
 				auto sps = gdi->GetRawSamplerState(mCSSamplerState[i]);
 				gdi->GetDeviceContext()->CSSetSamplers(cs->GetSamplerStateSlot(i), 1, &sps);
 			}
-		if (mCSSRV.size() > 0)
-			for (int i = 0; i < cs->GetTextureCount(); i++)
+		if (!mCSSRV.empty())
+			for (int i = 0; i < (int) cs->GetTextureCount(); i++)
 				if (mCSSRV[i].srv != nullptr)
 					gdi->GetDeviceContext()->CSSetShaderResources(cs->GetTextureSlot(i), 1, &mCSSRV[i].srv);
 				else { XGF_ReportWarn0("invalid srv in cs"); }
-		if (mCSUAV.size() > 0)
-			for (int i = 0; i < cs->mUAVInfo.size(); i++)
+		if (!mCSUAV.empty())
+			for (int i = 0; i < (int) cs->mUAVInfo.size(); i++)
 				if (mCSUAV[i].uav != nullptr)
 					gdi->GetDeviceContext()->CSSetUnorderedAccessViews(cs->mUAVInfo[i].slot, 1, &(mCSUAV[i].uav), 0);
 				else { XGF_ReportWarn0("invalid uav in cs"); }
@@ -812,20 +812,20 @@ namespace XGF {
 		void* null = 0;
 		auto gdi = cs->GetGDI();
 		gdi->GetDeviceContext()->CSSetShader((ID3D11ComputeShader *)null, nullptr, 0);
-		if (mCSSRV.size() > 0)
-			for (int i = 0; i < cs->GetTextureCount(); i++)
+		if (!mCSSRV.empty())
+			for (int i = 0; i < (int) cs->GetTextureCount(); i++)
 				gdi->GetDeviceContext()->CSSetShaderResources(cs->GetTextureSlot(i), 1, (ID3D11ShaderResourceView **)(&null));
-		if (mCSUAV.size() > 0)
-			for (int i = 0; i < cs->mUAVInfo.size(); i++)
+		if (!mCSUAV.empty())
+			for (int i = 0; i < (int) cs->mUAVInfo.size(); i++)
 				gdi->GetDeviceContext()->CSSetUnorderedAccessViews(cs->mUAVInfo[i].slot, 1, (ID3D11UnorderedAccessView **)(&null), 0);
 	}
 	UnorderedAccessView * ComputeGPU::GetUnorderedAccessViews(int index)
 	{
-		XGF_ASSERT(index < cs->mUAVInfo.size());
+		XGF_ASSERT(index < (int) cs->mUAVInfo.size());
 		return &mCSUAV[index];
 	}
-	int ComputeGPU::GetUnorderedAccessViewCount()
+	unsigned int ComputeGPU::GetUnorderedAccessViewCount()
 	{
-		return cs->mUAVInfo.size();
+		return static_cast<unsigned int>(cs->mUAVInfo.size());
 	}
 }

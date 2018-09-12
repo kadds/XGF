@@ -2,7 +2,7 @@
 #include "..\..\Include\ConstantData.hpp"
 namespace XGF
 {
-	Cursor::Cursor() :mPtBinder(4), mIsShow(false), mUsedStaticTexture(true), mAnimation(0), mPointDeviation(0.f, 0.f), mPassTime(0.f), mTextureResource(nullptr)
+	Cursor::Cursor() :mPtBinder(std::make_shared<PolygonPleTextureBinder>(4)), mIsShow(false), mUsedStaticTexture(true), mAnimation(0), mPointDeviation(0.f, 0.f), mPassTime(0.f), mTextureResource(nullptr)
 	{
 	}
 
@@ -34,7 +34,7 @@ namespace XGF
 			mTextureBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
 			mTextureBatch.Begin();
 			mRc.SetPositionAndSize(mPosition.x - mPointDeviation.x, mPosition.y - mPointDeviation.y, mSize.x, mSize.y);
-			mPtBinder.FromTexture(&mTexture);
+			mPtBinder->FromTexture(&mTexture);
 			mRc.SetZ(0.1f);
 			mRc.Render(mTextureBatch, mBbrg, mTexture.GetRawTexture());
 			mTextureBatch.End();
@@ -46,7 +46,7 @@ namespace XGF
 			bbr.AddBinder(mPtBinder);
 			float x, y, w, h;
 			mAnimation->GetPositionInTexture(x, y, w, h);
-			mPtBinder.SetPosition(x, w, y, h);
+			mPtBinder->SetPosition(x, w, y, h);
 			mTextureBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
 			mTextureBatch.Begin();
 			mRc.SetPositionAndSize(mPosition.x - mPointDeviation.x, mPosition.y - mPointDeviation.y, mSize.x, mSize.y);

@@ -17,7 +17,7 @@ namespace XGF
 		void BoxGeometry::SetSize(float x, float y, float z)
 		{
 			float hx = x / 2.f, hy = y / 2.f, hz = z / 2.f;
-			Point * point = mPolygon.mPoint;
+			Point * point = mPolygon->mPoint;
 
 			// 1 ∏∫z÷·
 			*(point++) = { hx, hy, -hz };
@@ -58,6 +58,13 @@ namespace XGF
 
 		}
 
+		std::shared_ptr<PolygonPleTextureBinder> BoxGeometry::CreateUVBinder()
+		{
+			std::shared_ptr<PolygonPleTextureBinder> ptb = std::make_shared<PolygonPleTextureBinder>(mPolygon->mCount);
+			
+			return ptb;
+		}
+
 		void BoxGeometry::InitializeIndex()
 		{
 			index ix[] = {
@@ -69,7 +76,7 @@ namespace XGF
 				22, 21, 20, 20, 23, 22
 			};
 
-			memcpy_s(mPolygonPleIndex.mIndex, sizeof(ix), ix, sizeof(ix));
+			memcpy_s(mPolygonPleIndex->mIndex, sizeof(ix), ix, sizeof(ix));
 		}
 
 		BoxGeometry::~BoxGeometry()

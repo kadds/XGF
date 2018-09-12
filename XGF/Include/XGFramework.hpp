@@ -9,11 +9,8 @@
 #include "OrthoCamera.hpp"
 #include "Rectangle.hpp"
 #include "RenderToTexture.hpp"
-#include "ConstantData.hpp"
 #include "EventDispatcher.hpp"
 #include "UIBatches.hpp"
-#include <list>
-#include <memory>
 namespace XGF
 {
 	class Scene;
@@ -64,8 +61,8 @@ namespace XGF
 		void Exit(int code);
 		//切换Scene。注意，该函数只是在消息队列中添加了消息，下一帧才会切换，实际切换代码在ISwithScene中
 		//可确保在Click事件中调用不会破坏迭代器
-		void SwitchScene(Scene * scene);
-		void AddScene(Scene * scene);
+		void SwitchScene(std::shared_ptr<Scene> scene);
+		void AddScene(std::shared_ptr<Scene> scene);
 		//渲染Scene
 		void RenderScene();
 		//Application框架调用
@@ -73,7 +70,6 @@ namespace XGF
 
 		InputManager * GetInputManager() { return &mInputManager; }
 
-		void SetSceneDeleter(std::function<void(Scene *)> f) { mSceneDeleter = f; };
 		void SetOnClose(std::function<bool()> f) { mOnClose = f; };
 		void SetOnInput(std::function<bool(const Event &ev)> f) { mOnInput = f; };
 
@@ -83,18 +79,19 @@ namespace XGF
 	protected://来自外部初始化的变量
 		GDI *mGDI;
 	protected:
-		Scene * mScene;
-		Scene * mLastScene;
-		void ISwitchScene(Scene * scene);
+		std::shared_ptr<Scene> mScene;
+		std::shared_ptr<Scene> mLastScene;
+		void ISwitchScene(std::shared_ptr<Scene> scene);
 		Timer mainTimer;
 		float mDeltaTime;
 		InputManager mInputManager;
 
 		Asyn * mTheard;
 		bool mIsVsync;
-		std::function<void(Scene *)> mSceneDeleter;
+
 		std::function<bool()> mOnClose;
 		std::function<bool(const Event &ev)> mOnInput;
+
 		RenderToTexture mRenderToTexture, mLastRenderToTexture;
 		SceneAnimation * mSceneAnimation, *mLastSceneAnimation;
 		Batch mSceneBatch;

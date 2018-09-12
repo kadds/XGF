@@ -1,11 +1,6 @@
 #pragma once
 #include "Defines.hpp"
-#include "Polygon.hpp"
-#include "ClickHelper.hpp"
 #include "Shape.hpp"
-#include <memory>
-#include "GObject.hpp"
-#include "Transform.hpp"
 namespace XGF
 {
 	class Container;
@@ -13,7 +8,7 @@ namespace XGF
 	演员类
 	Tip: 继承时请重写 Render ，GetShape 函数。参照Button，Label，EditText类
 	*/
-	class Actor : public GObject
+	class Actor
 	{
 	public:
 		Actor();

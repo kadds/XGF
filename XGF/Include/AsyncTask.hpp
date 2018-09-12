@@ -3,7 +3,6 @@
 #include <thread>
 #include <future>
 #include <functional>
-#include <any>
 #include "Asyn.hpp"
 namespace XGF
 {
@@ -14,13 +13,13 @@ namespace XGF
 	异步任务类
 	在TaskThread 结束前 务必调用一次Finish函数释放Task资源
 	*/
-	class AsyncTask
+	class AsyncTask : public std::enable_shared_from_this<AsyncTask>
 	{
 	public:
-		static AsyncTask * NewTask(Asyn * mainThread, std::function<void(AsyncTask * asyncTask)> fun);
+		static std::shared_ptr<AsyncTask> NewTask(Asyn * mainThread, std::function<void(std::shared_ptr< AsyncTask> )> fun);
 
-		void Report(int process, std::any data);
-		void Finish(int code, std::any data);
+		void Report(int process, EventDataType data);
+		void Finish(int code, EventDataType data);
 
 		AsyncTask & SetFinshListener(OnFinishTaskListener ls) { onFinishTaskListener = ls; return *this; }
 		AsyncTask & SetReportListener(OnReportTaskProcessListener ls) { onReportTaskProcessListener = ls; return *this; }
@@ -28,10 +27,12 @@ namespace XGF
 		static void DoReportTaskEvent(const Event & ev);
 		OnFinishTaskListener GetFinishTaskListener() { return onFinishTaskListener; }
 		OnReportTaskProcessListener GetReportTaskProcessListener() { return onReportTaskProcessListener; }
-	private:
+	public:
 		AsyncTask();
 		~AsyncTask();
-		void Start(Asyn * mainThread, std::function<void(AsyncTask * asyncTask)> fun);
+	private:
+		
+		void Start(Asyn * main, std::function<void(std::shared_ptr<AsyncTask>)> fun);
 		OnFinishTaskListener onFinishTaskListener;
 		OnReportTaskProcessListener onReportTaskProcessListener;
 		Asyn mThread;

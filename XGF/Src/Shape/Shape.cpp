@@ -6,26 +6,28 @@ namespace XGF
 {
 	namespace Shape
 	{
-		Shape::Shape(int n, int indexCount) :mPolygonPleIndex(indexCount), mPolygon(n)
+		Shape::Shape(int n, int indexCount) 
 		{
+			mPolygon = std::make_shared<PolygonPlePoint3>(n);
+			mPolygonPleIndex = std::make_shared<PolygonPleIndex>(indexCount);
 		}
 		Shape::~Shape()
 		{
 		}
 		void Shape::GetPosition(Point & p) const
 		{
-			p = mPolygon.mPoint[0];
+			p = mPolygon->mPoint[0];
 		}
-		const PolygonPleIndex & Shape::GetIndex() const
+		std::shared_ptr<PolygonPleIndex> Shape::GetIndex() const
 		{
 			return mPolygonPleIndex;
 		}
 
 		void Shape::SetZ(float z)
 		{
-			for (int i = 0; i < mPolygon.mCount; i++)
+			for (int i = 0; i < mPolygon->mCount; i++)
 			{
-				mPolygon.mPoint[i].z = z;
+				mPolygon->mPoint[i].z = z;
 			}
 		}
 
@@ -40,13 +42,11 @@ namespace XGF
 		}
 		void Shape::Render(Batch & batch, const BindingBridge & bbrige)
 		{
-			PolygonPlePoint3 ppe(mPolygon.mCount);
-			PolygonPlePoint3 * pPPe;
+			auto ppe = std::make_shared<PolygonPlePoint3>(mPolygon->mCount);
 			auto matirix = mTransform.GetMatrix();
-			mPolygon.MulTo(&ppe, matirix);
-			pPPe = &ppe;
+			mPolygon->MulTo(ppe, matirix);
 			BindingBridge bbr(bbrige);
-			bbr.InsertBinder(*pPPe, 0);
+			bbr.InsertBinder(ppe, 0);
 			batch.DrawPolygon(GetIndex(), bbr);
 		}
 		float triangleArea(Point a, Point b, Point c)
@@ -57,31 +57,32 @@ namespace XGF
 		}
 		// 判断2维点是否在图元内部
 		// 使用 PNPoly 算法
-		bool pInPolygon(const PolygonPlePoint3& ql, float x, float y)
+		bool pInPolygon(const std::shared_ptr<PolygonPlePoint3> & ql, float x, float y)
 		{
+			auto point = ql->mPoint;
 			// 生成最小包围盒
-			Position minPosition = { ql.mPoint[0].x, ql.mPoint[0].y }, maxPosition = { ql.mPoint[0].x, ql.mPoint[0].y };
-			for (int i = 1; i < ql.mCount; i++) 
+			Position minPosition = { point[0].x, point[0].y }, maxPosition = { point[0].x, point[0].y };
+			for (int i = 1; i < ql->mCount; i++) 
 			{
-				if (ql.mPoint[i].x < minPosition.x)
-					minPosition.x = ql.mPoint[i].x;
-				if (ql.mPoint[i].y < minPosition.y)
-					minPosition.y = ql.mPoint[i].y;
-				if (ql.mPoint[i].x > maxPosition.x)
-					maxPosition.x = ql.mPoint[i].x;
-				if (ql.mPoint[i].y > maxPosition.y)
-					maxPosition.y = ql.mPoint[i].y;
+				if (point[i].x < minPosition.x)
+					minPosition.x = point[i].x;
+				if (point[i].y < minPosition.y)
+					minPosition.y = point[i].y;
+				if (point[i].x > maxPosition.x)
+					maxPosition.x = point[i].x;
+				if (point[i].y > maxPosition.y)
+					maxPosition.y = point[i].y;
 			}
 
 			if (x < minPosition.x || x > maxPosition.x || y < minPosition.y || y > maxPosition.y)
 				return false;
 			bool k = false;
 			int i = 0;
-			int j = ql.mCount - 1;
-			for (; i < ql.mCount; j = i++) {
-				if (((ql.mPoint[i].y > y) != (ql.mPoint[j].y > y)) &&
-					(x < (ql.mPoint[j].x - ql.mPoint[i].x) * (y - ql.mPoint[i].y) /
-					(ql.mPoint[j].y - ql.mPoint[i].y) + ql.mPoint[i].x))
+			int j = ql->mCount - 1;
+			for (; i < ql->mCount; j = i++) {
+				if (((point[i].y > y) != (point[j].y > y)) &&
+					(x < (point[j].x - point[i].x) * (y - point[i].y) /
+					(point[j].y - point[i].y) + point[i].x))
 					k = !k;
 			}
 			return k;

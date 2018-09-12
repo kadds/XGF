@@ -109,7 +109,7 @@ public:
 		PolygonPleTextureBinder textureBinder(4);
 		textureBinder.SetPosition(0.f, 1.f, 0.f, 1.f);
 		BindingBridge bb;
-		bb.AddBinder(textureBinder);
+		bb.AddBinder(std::shared_ptr<PolygonPleTextureBinder>(&textureBinder, [](const PolygonPleTextureBinder *) {}));
 
 		std::wstringstream str;
 		auto debug = DebugInscriber::GetInstance();
@@ -180,9 +180,8 @@ int RunGame(HINSTANCE hInstance)
 {
 	Application app;
 	GDI gdi;
-	GameScene * gs = new GameScene();
+	auto gs = std::make_shared<GameScene>();
 	XGFramework framework;
-	framework.SetSceneDeleter([](Scene * sc) {delete sc; });
 	framework.SetOnClose([]() {return true; });
 	int rt = -1;
 	rt = app.CreateWindowsAndRunApplication(framework, gdi, hInstance, L"tet", L"dsgdfhv,",

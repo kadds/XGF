@@ -9,7 +9,7 @@ namespace XGF
 	}
 	void TrackballCameraController::HandleEvents(const Event & ev, int cx, int cy)
 	{
-		if (ev.mEventType != EventGroup::Mouse) return;
+		if (ev.mEventType != EventGroupType::Mouse) return;
 		switch (ev.GetMouseEventId())
 		{
 			case MouseEventId::MouseMove:

@@ -2,7 +2,7 @@
 #include "../../Include/XGFramework.hpp"
 #include "../../Include/Log.hpp"
 #include "../../Include/GDI.hpp"
-#include <crtdbg.h>
+
 namespace XGF
 {
 	std::unordered_map<HWND, Application*> WndAppMap;
@@ -16,7 +16,7 @@ namespace XGF
 	{
 	}
 
-	int Application::CreateWindowsAndRunApplication(XGFramework &framework, GDI &gdi, HINSTANCE hInstance, const wchar_t * title, const wchar_t * className, int ICON, int sICON, POINT pos, SIZE size, bool CanChangeSize, Scene * firstScene)
+	int Application::CreateWindowsAndRunApplication(XGFramework &framework, GDI &gdi, HINSTANCE hInstance, const wchar_t * title, const wchar_t * className, int ICON, int sICON, POINT pos, SIZE size, bool CanChangeSize, std::shared_ptr<Scene> firstScene)
 	{
 		mInstance = hInstance;
 		mFramework = &framework;

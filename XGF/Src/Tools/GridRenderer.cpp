@@ -20,14 +20,14 @@ namespace XGF
 		mBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthDisable);
 		mHeight = height;
 		mWidth = width;
-		mPolygon = new PolygonPlePoint3(xcount * 2 + zcount * 2 + 4);
-		mPolygonPleIndex = new PolygonPleIndex(xcount * 2 + zcount * 2 + 4);
+		mPolygon = std::make_shared<PolygonPlePoint3>(xcount * 2 + zcount * 2 + 4);
+		mPolygonPleIndex = std::make_shared<PolygonPleIndex> (xcount * 2 + zcount * 2 + 4);
 		int c[2] = { (int)xcount * 2 + 2, (int)zcount * 2 + 2 };
-		mColorBinder = new PolygonPleConstantExColorBinder(c, 2);
+		mColorBinder = std::make_shared<PolygonPleConstantExColorBinder>(c, 2);
 		mColorBinder->SetLayerColor(0, SM::Color(1.0f, 0.2f, 0.2f, 1.0f));
 		mColorBinder->SetLayerColor(1, SM::Color(0.2f, 1.0f, 0.2f, 1.0f));
-		mBindingBridge.AddBinder(*mPolygon);
-		mBindingBridge.AddBinder(*mColorBinder);
+		mBindingBridge.AddBinder(mPolygon);
+		mBindingBridge.AddBinder(mColorBinder);
 		Point pstart = origin;
 		pstart.x = 0 - mWidth * xcount / 2.0f;//x
 		pstart.z = 0 - mHeight * (zcount - 1.f);//z
@@ -67,9 +67,6 @@ namespace XGF
 	void GridRenderer::Shutdown()
 	{
 		mBatch.Shutdown();
-		delete mPolygon;
-		delete mPolygonPleIndex;
-		delete mColorBinder;
 		//delete mMeshData;
 	}
 
@@ -86,7 +83,7 @@ namespace XGF
 
 	void GridRenderer::DrawGrid(Point & center)
 	{
-		mBatch.DrawPolygon(*mPolygonPleIndex, mBindingBridge);
+		mBatch.DrawPolygon(mPolygonPleIndex, mBindingBridge);
 	}
 
 	void GridRenderer::SetColor(SM::Color & cx, SM::Color & cz)
@@ -125,7 +122,7 @@ namespace XGF
 		{
 			for (unsigned int j = 0; j < maxLen; j++)
 			{
-				mPolygon.mPoint[i* (maxLen + 1) + j] = Point(i* (maxLen + 1)* width + pstart.x
+				mPolygon->mPoint[i* (maxLen + 1) + j] = Point(i* (maxLen + 1)* width + pstart.x
 					, baseY, j * height + pstart.y);
 
 			}

@@ -1,7 +1,7 @@
 #include "../../Include/Polygon.hpp"
 #include <math.h>
 #include "../../Include/Texture.hpp"
-#include "../../Include/Texture.hpp"
+
 namespace XGF
 {
 	PolygonPlePoint3::PolygonPlePoint3(int n)
@@ -48,7 +48,7 @@ namespace XGF
 		mPoint = new Point[p.mCount];
 		memcpy(mPoint, p.mPoint, sizeof(Point)*mCount);
 	}
-	void PolygonPlePoint3::TransformTo(PolygonPlePoint3 * qua, float centerXD2, float centerYD2) const
+	void PolygonPlePoint3::TransformTo(std::shared_ptr< PolygonPlePoint3> qua, float centerXD2, float centerYD2) const
 	{
 		for (int i = 0; i < mCount; i++)
 		{
@@ -58,7 +58,7 @@ namespace XGF
 		}
 	}
 
-	void PolygonPlePoint3::MulTo(PolygonPlePoint3 * pol, const DirectX::CXMMATRIX matrix) const
+	void PolygonPlePoint3::MulTo( std::shared_ptr<PolygonPlePoint3> pol, const DirectX::CXMMATRIX matrix) const
 	{
 		for (int i = 0; i < mCount; i++)
 		{
@@ -209,7 +209,7 @@ namespace XGF
 	{
 		delete[] mPoint;
 	}
-	BindingBridge::BindingBridge() :mCount(0)
+	BindingBridge::BindingBridge()
 	{
 	}
 	BindingBridge::~BindingBridge()
@@ -217,35 +217,45 @@ namespace XGF
 
 	}
 
-	void BindingBridge::SetBinder(const PolygonPleBinder & c, int pos)
+	BindingBridge::BindingBridge(const BindingBridge & c)
 	{
-		binders[pos] = &c;
+		binders = c.binders;
 	}
 
-	void BindingBridge::InsertBinder(const PolygonPleBinder & c, int pos)
+	void BindingBridge::SetBinder(const std::shared_ptr<PolygonPleBinder> c, int pos)
 	{
-		for (int i = mCount; i > pos; i--)
-		{
-			binders[i] = binders[i - 1];//TODO:: some problem!!
-		}
-		binders[pos] = &c;
-		mCount++;
+		XGF_ASSERT(pos < binders.size());
+		XGF_ASSERT(pos >= 0);
+		binders[pos] = c;
 	}
 
-	void BindingBridge::AddBinder(const PolygonPleBinder & c)
+	void BindingBridge::InsertBinder(const std::shared_ptr<PolygonPleBinder> c, int pos)
 	{
-		binders[mCount] = &c;
-		mCount++;
+		XGF_ASSERT(pos < binders.size());
+		XGF_ASSERT(pos >= 0);
+		binders.insert( binders.begin() + pos ,c);
+	}
+
+	void BindingBridge::InsertBinder(const BindingBridge & c, int pos)
+	{
+		XGF_ASSERT(pos < binders.size());
+		XGF_ASSERT(pos >= 0);
+		binders.insert(binders.begin() + pos, c.binders.begin(), c.binders.end());
+	}
+
+	void BindingBridge::AddBinder(const std::shared_ptr<PolygonPleBinder> c)
+	{
+		binders.push_back(c);
+	}
+
+	void BindingBridge::AddBinder(const BindingBridge & c)
+	{
+		binders.insert(binders.end(), c.binders.begin(), c.binders.end());
 	}
 
 	void BindingBridge::AddPlaceHolder()
 	{
-		mCount++;
-	}
-
-	const PolygonPleBinder * BindingBridge::GetBinder(int tp) const
-	{
-		return binders[tp];
+		binders.push_back(nullptr);
 	}
 
 

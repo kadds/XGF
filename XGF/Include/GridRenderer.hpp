@@ -45,10 +45,10 @@ namespace XGF
 		//MeshData * mMeshData;
 		float mWidth;
 		float mHeight;
-		PolygonPlePoint3 *mPolygon;
-		PolygonPleIndex *mPolygonPleIndex;
+		std::shared_ptr<PolygonPlePoint3> mPolygon;
+		std::shared_ptr<PolygonPleIndex> mPolygonPleIndex;
 		BindingBridge mBindingBridge;
-		PolygonPleConstantExColorBinder *mColorBinder;
+		std::shared_ptr<PolygonPleConstantExColorBinder> mColorBinder;
 		unsigned mXcount;
 		unsigned mZcount;
 	};

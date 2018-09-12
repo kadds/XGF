@@ -5,8 +5,11 @@
 #include <math.h>
 #include "UIBatches.hpp"
 #include <functional>
+#include "ClickHelper.hpp"
+
 namespace XGF
 {
+	class Event;
 	class TextRenderer;
 	/*
 		¿Ø¼þ»ùÀà

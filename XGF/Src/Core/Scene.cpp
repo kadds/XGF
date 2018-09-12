@@ -1,7 +1,5 @@
 #include "../../Include/Scene.hpp"
 #include "../../Include/Batch.hpp"
-#include "../../Include/Shader.hpp"
-#include "../../Include/ShaderConst.hpp"
 #include "../../Include/Container.hpp"
 #include "../../Include/XGFramework.hpp"
 #include "../../Include/GDI.hpp"
@@ -24,7 +22,7 @@ namespace XGF
 		Render(deltaTime);
 		mRootContainer._Render();
 	}
-	void Scene::SwitchScene(Scene * scene)
+	void Scene::SwitchScene(std::shared_ptr<Scene> scene)
 	{
 		static_cast<XGFramework *>(GetFramework())->SwitchScene(scene);
 	}

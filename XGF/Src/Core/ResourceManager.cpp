@@ -1,6 +1,8 @@
 #include "../../Include/ResourceManager.hpp"
 #include "../../Include/Texture.hpp"
 #include "../../Include/Tools.hpp"
+#include "../../Include/Log.hpp"
+
 namespace XGF
 {
 	TextureResource * TextureResourceManager::GetResource(const wchar_t * name)
@@ -27,7 +29,7 @@ namespace XGF
 	void TextureResourceManager::LoadResourceAsync(GDI * gdi, std::vector<ResourceInfo> & infoArray, Asyn * gameThread,std::function<void(std::vector<ResourceInfo>, int success)> finishFunction)
 	{
 		
-		AsyncTask::NewTask(gameThread, [this, gdi, infoArray](AsyncTask * that) 
+		AsyncTask::NewTask(gameThread, [this, gdi, infoArray](std::shared_ptr<AsyncTask> that) 
 		{
 			if (mIsLoadingResource)
 				while (mIsLoadingResource);

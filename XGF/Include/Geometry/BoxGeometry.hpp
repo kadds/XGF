@@ -12,6 +12,7 @@ namespace XGF
 			~BoxGeometry();
 			BoxGeometry(float x, float y, float z);
 			void SetSize(float x, float y, float z);
+			virtual std::shared_ptr<PolygonPleTextureBinder> CreateUVBinder();
 		private:
 			void InitializeIndex();
 		};

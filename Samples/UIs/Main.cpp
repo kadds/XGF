@@ -54,7 +54,7 @@ public:
 		GetRootContainer().AddChild(label);
 		
 		label->GetClickHelper().AddOnClickListener([this](const MousePoint & ms, int mouseButton) {
-			AsyncTask::NewTask(mFramework->GetTheard(), [this](AsyncTask * asyn) {
+			AsyncTask::NewTask(mFramework->GetTheard(), [this](std::shared_ptr<AsyncTask> asyn) {
 				MessageBox(NULL, L"YOU CLICK Label!!", L"Exe", 0);
 				asyn->Finish(0, 0);
 			});
@@ -109,6 +109,7 @@ public:
 		res.push_back(ResourceInfo(L"cursor.png", L"cursor"));
 
 		mTextureResourceManager.LoadResourceAsync(gdi, res, mFramework->GetTheard(), [this](std::vector<ResourceInfo> ress, int success) {
+			if (success < 4) return;
 			auto t1 = Texture(*mTextureResourceManager.GetResourceByAlias(L"normal"));
 			auto t2 = Texture(*mTextureResourceManager.GetResourceByAlias(L"hover"));
 			auto t3 = Texture(*mTextureResourceManager.GetResourceByAlias(L"activate"));
@@ -222,9 +223,8 @@ int RunGame(HINSTANCE hInstance)
 {
 	Application app;
 	GDI gdi;
-	GameScene * gs = new GameScene();
+	auto gs = std::make_shared<GameScene>();
 	XGFramework framework;
-	framework.SetSceneDeleter([](Scene * sc) {delete sc; });
 	framework.SetOnClose([]() {return true; });
 	int rt = -1;
 	rt = app.CreateWindowsAndRunApplication(framework, gdi, hInstance, L"UITest", L"UITest",

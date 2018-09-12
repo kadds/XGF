@@ -7,6 +7,7 @@
 #include <vector>
 #include <functional>
 #include <string>
+#include <typeinfo>
 namespace XGF
 {
 	class IConstantBuffer;
@@ -45,9 +46,9 @@ namespace XGF
 		unsigned int GetCBufferCount();
 		GDI* GetGDI();
 		unsigned int GetCBufferSlot(unsigned int index);
-		int GetSamplerStateCount();
+		unsigned int GetSamplerStateCount();
 		unsigned int GetSamplerStateSlot(unsigned int index);
-		int GetTextureCount();
+		unsigned int GetTextureCount();
 		unsigned int GetTextureSlot(unsigned int index);
 	protected:
 		friend class ComputeGPU;
@@ -175,7 +176,7 @@ namespace XGF
 		void Bind();
 		void UnBind();
 		UnorderedAccessView * GetUnorderedAccessViews(int index);
-		int GetUnorderedAccessViewCount();
+		unsigned int GetUnorderedAccessViewCount();
 	};
 	//自动建立buffer
 	//可编程阶段
@@ -212,14 +213,25 @@ namespace XGF
 		template<typename Tshader>
 		Shader * GetTemplateShader()
 		{
-			if (typeid(Tshader) == typeid(VertexShader))
-				return vs;
-			else if (typeid(Tshader) == typeid(PixelShader))
-				return ps;
-			else if (typeid(Tshader) == typeid(GeometryShader))
-				return gs;
 			return nullptr;
 		}
+		template<>
+		Shader * GetTemplateShader<VertexShader>()
+		{
+			return vs;
+		}
+		template<>
+		Shader * GetTemplateShader<PixelShader>()
+		{
+			return ps;
+		}
+		template<>
+		Shader * GetTemplateShader<GeometryShader>()
+		{
+			return gs;
+		}
+
+
 		template<typename Tshader>
 		int GetConstantBufferIndexByName(const char * name)
 		{

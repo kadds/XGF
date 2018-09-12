@@ -34,7 +34,7 @@ namespace XGF
 		unsigned int * stride = vs->GetStride();
 
 		unsigned int slotStride = vs->GetStrideAllSizeAtSlot(slotPosition);
-		for (int i = 0; i < bbridge.GetBinderCount(); i++)
+		for (unsigned int i = 0; i < bbridge.Count(); i++)
 		{
 			if (slotPosition < count && (slotPosition == count - 1 ? false : elementSlotInfo[slotPosition + 1] <= i)) {
 				slotPosition ++; // new slot
@@ -49,16 +49,16 @@ namespace XGF
 		DebugInscriber_CallAPolygon();
 	}
 
-	void Batch::DrawPolygon(const PolygonPleIndex & pindex, const BindingBridge & bbridge)
+	void Batch::DrawPolygon(std::shared_ptr<PolygonPleIndex> pindex, const BindingBridge & bbridge)
 	{
-		if (mMaxIndexCount - mPosInIndices < pindex.mCount)
+		if (mMaxIndexCount - mPosInIndices < pindex->mCount)
 		{
 			XGF_ReportWarn("Out of Range In Index. You must set a larger buffer size.", "");
 			return;//TODO::ERROR
 		}
 		DrawPolygon(bbridge);
-		pindex.CopyTo(mIndexData + mPosInIndices + mLastFrameIBStart, mPosInVertices - bbridge.GetBinder(0)->mCount + mLastFrameVBStart);
-		mPosInIndices += pindex.mCount;
+		pindex->CopyTo(mIndexData + mPosInIndices + mLastFrameIBStart, mPosInVertices - bbridge.GetBinder(0)->mCount + mLastFrameVBStart);
+		mPosInIndices += pindex->mCount;
 	}
 
 	void Batch::Flush()
@@ -104,7 +104,7 @@ namespace XGF
 		
 		auto vs = mShaderStage.GetVSShader();
 		unsigned int slotCount = vs->GetSlotCount();
-		for (size_t i = 0; i < slotCount; i++)
+		for (unsigned int i = 0; i < slotCount; i++)
 		{
 			mVertexBuffers.push_back(CreateVertexBuffer(vs->GetStrideAllSizeAtSlot(i)));
 			mVertexData.push_back(nullptr);
@@ -232,7 +232,7 @@ namespace XGF
 			}
 		}
 		
-		for (int i = 0; i < vs->GetSlotCount(); i++) {
+		for (unsigned int i = 0; i < vs->GetSlotCount(); i++) {
 			unsigned int stride = vs->GetStrideAllSizeAtSlot(i);
 			gdi->GetDeviceContext()->IASetVertexBuffers(i, 1, &mVertexBuffers[i], &stride, offset);
 		}

@@ -27,7 +27,7 @@ namespace XGF
 		bool mIsCaretShow;
 		Shape::Line mLine;
 		BindingBridge mBbrg;
-		PolygonPleConstantColorBinder mPcColor;
+		std::shared_ptr<PolygonPleConstantColorBinder> mPcColor;
 		SM::Color mCaretColor;
 		int mHeight;
 

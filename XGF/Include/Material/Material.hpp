@@ -1,10 +1,14 @@
 #pragma once
 #include "./../Texture.hpp"
 #include "./../Shader.hpp"
+#include "./../Polygon.hpp"
+
 namespace XGF 
 {
 	namespace Shape
 	{
+		class Geometry;
+
 		class Material
 		{
 		public:
@@ -23,6 +27,7 @@ namespace XGF
 				if (rs != RasterizerState::InvalidValue)
 					mRasterizerState = rs;
 			};
+			virtual BindingBridge CreateBinders(const Geometry & geometry) = 0;
 		protected:
 			RasterizerState mRasterizerState = RasterizerState::SolidAndCutBack;
 

@@ -19,7 +19,7 @@ namespace XGF
 		~Application();
 		//返回call framework Exit 的参数或call SetExitCode 的参数
 		int CreateWindowsAndRunApplication(XGFramework &framework, GDI &gdi, HINSTANCE hInstance, const wchar_t * title, const wchar_t * className,
-			int ICON, int sICON, POINT pos, SIZE size, bool CanChangeSize, Scene * firstScene);
+			int ICON, int sICON, POINT pos, SIZE size, bool CanChangeSize, std::shared_ptr<Scene> firstScene);
 
 		Asyn * GetRenderThread() { return &mRenderThread; }
 		void SetExitCode(int ec);

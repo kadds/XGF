@@ -11,27 +11,27 @@ namespace XGF
 
 		switch (ev.mEventType)
 		{
-		case EventGroup::System: 
+		case EventGroupType::System:
 		{
 			auto ret = mSystemEventCallBacks.equal_range(ev.GetSystemEventId());
 			for (auto it = ret.first; it != ret.second; ++it)
 				it->second(ev);
 			break;
 		}
-		case EventGroup::KeyBoard:
+		case EventGroupType::KeyBoard:
 		{
 			auto ret = mKeyBoardEventCallBacks.equal_range(ev.GetKeyBoardEventId());
 			for (auto it = ret.first; it != ret.second; ++it)
 				it->second(ev);
 			break;
 		}
-		case EventGroup::Mouse:
+		case EventGroupType::Mouse:
 		{
 			auto ret = mMouseEventCallBacks.equal_range(ev.GetMouseEventId());
 			for (auto it = ret.first; it != ret.second; ++it)
 				it->second(ev);
 			break;
-		}case EventGroup::Custom:
+		}case EventGroupType::Custom:
 		{
 			auto ret = mCustomEventCallBacks.equal_range(ev.GetCustomEventId());
 			for (auto it = ret.first; it != ret.second; ++it)

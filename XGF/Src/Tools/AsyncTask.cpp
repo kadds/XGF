@@ -7,45 +7,43 @@ namespace XGF
 
 	}
 
-
 	AsyncTask::~AsyncTask()
 	{
 	}
 
-	void AsyncTask::Start(Asyn * main, std::function<void(AsyncTask * asyncTask)> fun)
+	void AsyncTask::Start(Asyn * main, std::function<void(std::shared_ptr<AsyncTask>)> fun)
 	{
 		mainThread = main;
-		mThread.DoAsyn(std::bind(fun, this));
+		mThread.DoAsyn(std::bind(fun, shared_from_this()));
 
 	}
-	AsyncTask * AsyncTask::NewTask(Asyn * mainThread, std::function<void(AsyncTask * asyn)> fun)
+	std::shared_ptr<AsyncTask> AsyncTask::NewTask(Asyn * mainThread, std::function<void(std::shared_ptr<AsyncTask>)> fun)
 	{
-		AsyncTask * as = new AsyncTask();
+		auto as = std::make_shared<AsyncTask>();
 		as->Start(mainThread, fun);
 		return as;
 	}
-	void AsyncTask::Report(int process, std::any data)
+	void AsyncTask::Report(int process, EventDataType data)
 	{
-		mainThread->PostEvent(SystemEventId::AsynReport, { process, data, this });
+		mainThread->PostEvent(SystemEventId::AsynReport, { process, data, shared_from_this() });
 	}
 
-	void AsyncTask::Finish(int code, std::any data)
+	void AsyncTask::Finish(int code, EventDataType data)
 	{
-		mainThread->PostEvent(SystemEventId::AsynFinish, { code, data, this });
+		mainThread->PostEvent(SystemEventId::AsynFinish, { code, data, shared_from_this() });
 	}
 
 	void AsyncTask::DoFinishTaskEvent(const Event & ev)
 	{
-		AsyncTask * tk = ev.GetData<AsyncTask *>(2);
+		auto tk = ev.GetDataSmartPointer<AsyncTask>(2);
 		auto fun = tk->GetFinishTaskListener();
 		if (fun != nullptr)
 			fun(ev.GetDataInt(0), ev.mData[1]);
-		delete tk;
 	}
 
 	void AsyncTask::DoReportTaskEvent(const Event & ev)
 	{
-		AsyncTask * tk = ev.GetData<AsyncTask *>(2);
+		auto tk = ev.GetDataSmartPointer<AsyncTask>(2);
 		auto fun = tk->GetReportTaskProcessListener();
 		if (fun != nullptr)
 			fun(ev.GetDataInt(0), ev.mData[1]);

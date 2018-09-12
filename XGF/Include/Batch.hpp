@@ -39,7 +39,7 @@ namespace XGF
 		Batch();
 
 		void DrawPolygon(const BindingBridge & bbridge);
-		void DrawPolygon(const PolygonPleIndex & pindex, const BindingBridge & bbridge);
+		void DrawPolygon(std::shared_ptr<PolygonPleIndex> pindex, const BindingBridge & bbridge);
 		//提前提交图形
 		void Flush();
 		ShaderStage * GetShaderStage() { return &mShaderStage; }

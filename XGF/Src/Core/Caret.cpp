@@ -3,8 +3,9 @@
 
 namespace XGF
 {
-	Caret::Caret() :mPcColor(mCaretColor, 4)
+	Caret::Caret() 
 	{
+		mPcColor = std::make_shared<PolygonPleConstantColorBinder>(mCaretColor, 4);
 	}
 
 
@@ -23,7 +24,7 @@ namespace XGF
 		mHeight = 16;
 		mBbrg.AddBinder(mLine.mPolygon);
 		mBbrg.AddBinder(mPcColor);
-		mPcColor.Set(0, 1, SM::Color(0.f, 0.f, 0.f, 1.f));
+		mPcColor->Set(0, 1, SM::Color(0.f, 0.f, 0.f, 1.f));
 	}
 
 	void Caret::Shutdown()

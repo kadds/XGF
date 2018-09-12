@@ -13,9 +13,11 @@ namespace XGF
 			~Mesh();
 			Material * GetMaterial();
 			Geometry * GetGeometry();
+			BindingBridge & GetBindingBridge();
 		private:
 			Geometry * mGeometry;
 			Material * mMaterial;
+			BindingBridge mBindingBridge;
 		};
 	}
 }

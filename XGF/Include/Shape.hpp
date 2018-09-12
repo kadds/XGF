@@ -22,11 +22,11 @@ namespace XGF
 			virtual void SetPosition(const Point & p) {};
 			virtual void GetPosition(Point & p) const;
 
-			PolygonPlePoint3 mPolygon;
-			PolygonPleIndex mPolygonPleIndex;
-			const PolygonPleIndex & GetIndex() const;
+			std::shared_ptr<PolygonPlePoint3> mPolygon;
+			std::shared_ptr<PolygonPleIndex> mPolygonPleIndex;
+			std::shared_ptr<PolygonPleIndex> GetIndex() const;
 			void SetZ(float z);
-			float GetZ() { return mPolygon.mPoint[0].z; }
+			float GetZ() { return mPolygon->mPoint[0].z; }
 			void Render(Batch & batch, const BindingBridge & bbrige, const Texture & tx);
 			virtual void Render(Batch & batch, const BindingBridge & bbrige, ID3D11ShaderResourceView * tex);
 			virtual void Render(Batch & batch, const BindingBridge & bbrige);
@@ -37,7 +37,7 @@ namespace XGF
 		};
 		float triangleArea(Point a, Point b, Point c);
 		//A Point is in Polygon inner?
-		bool pInPolygon(const PolygonPlePoint3& ql, float x, float y);
+		bool pInPolygon(const std::shared_ptr<PolygonPlePoint3> & ql, float x, float y);
 	}
 	
 }

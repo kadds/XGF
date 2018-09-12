@@ -1,12 +1,9 @@
-
 #pragma once
-#pragma warning(push)
-#pragma warning(disable:4005)
-#pragma warning(disable:4530)
-#pragma warning(pop)
 #include <d3d11.h>
 #include "SimpleMath.h"
 #include <string>
+#include <vector>
+#include <memory>
 #ifdef _DEBUG
 #define _XGF_DEBUG_ALLOC
 #endif
@@ -19,6 +16,7 @@
 #include <crtdbg.h>  
 #define new new(_CLIENT_BLOCK, __FILE__, __LINE__)  
 #endif
+#define  DEPRECATED(str) __declspec(deprecated(str))
 
 namespace XGF
 {
@@ -47,3 +45,15 @@ namespace XGF
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) \
 TypeName(const TypeName&); \
 void operator=(const TypeName&)
+
+#ifdef _DEBUG
+#define XGF_ASSERT(expression) (void)(                                                       \
+            (!!(expression)) ||                                                              \
+            (_wassert(_CRT_WIDE(#expression), _CRT_WIDE(__FILE__), (unsigned)(__LINE__)), 0) \
+        )
+#else
+#define XGF_ASSERT(expression) (void)(                                                       \
+            (!!(expression)) ||                                                              \
+            (assert(_CRT_WIDE(#expression)), 0) \
+        )
+#endif

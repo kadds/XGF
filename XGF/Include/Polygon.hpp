@@ -172,17 +172,20 @@ namespace XGF
 	public:
 		BindingBridge();
 		~BindingBridge();
-		int mCount;
-		int GetBinderCount() const {
-			return mCount;
-		};
-		void SetBinder(const  PolygonPleBinder & c, int pos);
-		void InsertBinder(const  PolygonPleBinder & c, int pos);
-		void AddBinder(const  PolygonPleBinder & c);
+		BindingBridge(const BindingBridge & c);
+
+		void SetBinder(const std::shared_ptr<PolygonPleBinder> c, int pos);
+		void InsertBinder(const std::shared_ptr<PolygonPleBinder> c, int pos);
+		void InsertBinder(const BindingBridge & c, int pos);
+
+		void AddBinder(const std::shared_ptr<PolygonPleBinder> c);
+		void AddBinder(const BindingBridge & c);
 		void AddPlaceHolder();
-		const PolygonPleBinder * GetBinder(int tp) const;
+		std::shared_ptr<PolygonPleBinder> GetBinder(int i) const { return binders[i]; };
+		const std::vector<std::shared_ptr<PolygonPleBinder>> & GetBinders() { return binders; };
+		size_t Count() const { return binders.size(); }
 	private:
-		const PolygonPleBinder* binders[16];//max is 16
+		std::vector<std::shared_ptr<PolygonPleBinder>> binders;
 	};
 
 
@@ -216,10 +219,10 @@ namespace XGF
 		void CopyTo(PolygonPlePoint3 & ppe);
 	public:
 		void Transform(float centerXD2, float centerYD2);
-		void TransformTo(PolygonPlePoint3 * pol, float centerXD2, float centerYD2) const;
 		void Translation(float x, float y, float z);
+		void TransformTo(std::shared_ptr<PolygonPlePoint3> qua, float centerXD2, float centerYD2) const;
 		void Mul(const DirectX::CXMMATRIX matrix);
-		void MulTo(PolygonPlePoint3 * pol, const DirectX::CXMMATRIX matrix) const;
+		void MulTo(std::shared_ptr < PolygonPlePoint3> pol, const DirectX::CXMMATRIX matrix) const;
 	};
 
 	class PolygonPlePoint4 : public PolygonPleBinder

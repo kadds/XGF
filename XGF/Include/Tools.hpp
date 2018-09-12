@@ -13,7 +13,7 @@ namespace XGF
 		// name without extension
 		string GetFontPath(const string & name);
 		void GetAppPath(wchar_t * buffer, int len);
-		std::string WcharToChar(const wchar_t* wch, size_t encode);
+		std::string WcharToChar(const wchar_t* wch, size_t encode = CP_ACP);
 	};
 #define GetFilePath(filename, buffer, maxlen) Tools::GetPathBy(filename, buffer, maxlen)
 

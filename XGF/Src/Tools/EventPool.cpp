@@ -9,7 +9,7 @@ namespace XGF
 	StateList<Event *> * EventPool::events;
 	EventPool::EventPool()
 	{
-		nullEvent.mEventType = EventGroup::Null;
+		nullEvent.mEventType = EventGroupType::Null;
 	}
 
 	EventPool::~EventPool()
@@ -35,7 +35,7 @@ namespace XGF
 		events->DelAll();
 		delete events;
 	}
-	Event & EventPool::CreateAEvent(std::any id, EventGroup evGroup, std::initializer_list<std::any> init)
+	Event & EventPool::CreateAEvent(EventIdType id, EventGroupType evGroup, std::initializer_list<EventDataType> init)
 	{
 		Event *e = NewAEvent();
 		e->mEventId = id;
@@ -43,12 +43,11 @@ namespace XGF
 		e->mMaxLiveTime = -1;
 		e->mRecipteFrame = 1;
 		e->mTimeStamp = time(0);
-		e->mData.clear();
 		e->mData = init;
 		e->mPriority = 10;
 		return *e;
 	}
-	Event & EventPool::CreateAEvent(std::any id, EventGroup evGroup, int frameLimit, long maxLiveTime, std::initializer_list<std::any> init)
+	Event & EventPool::CreateAEvent(EventIdType id, EventGroupType evGroup, int frameLimit, long maxLiveTime, std::initializer_list<EventDataType> init)
 	{
 		XGF_ASSERT(frameLimit >= 0);
 		XGF_ASSERT(maxLiveTime >= 0);
@@ -60,7 +59,6 @@ namespace XGF
 		e->mMaxLiveTime = maxLiveTime + nowTime;
 		e->mRecipteFrame = frameLimit;
 		e->mTimeStamp = nowTime;
-		e->mData.clear();
 		e->mData = init;
 		return *e;
 	}
@@ -83,7 +81,7 @@ namespace XGF
 		if (events->EmptyInA())
 		{
 			e = new Event();
-			e->mEventType = EventGroup::Null;
+			e->mEventType = EventGroupType::Null;
 			events->PushBackToB(e);
 		}
 		else

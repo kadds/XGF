@@ -97,8 +97,8 @@
       <MinimalRebuild>false</MinimalRebuild>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ExceptionHandling>false</ExceptionHandling>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <EnableModules>true</EnableModules>
+      <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>
@@ -116,7 +116,8 @@
       <MinimalRebuild>false</MinimalRebuild>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ExceptionHandling>false</ExceptionHandling>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Bscmake>
       <PreserveSbr>true</PreserveSbr>
@@ -133,7 +134,8 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ExceptionHandling>false</ExceptionHandling>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -151,7 +153,8 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ExceptionHandling>false</ExceptionHandling>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -185,6 +188,7 @@
     <ClInclude Include="Include\DebugInscriber.hpp" />
     <ClInclude Include="Include\Defines.hpp" />
     <ClInclude Include="Include\DelayAction.hpp" />
+    <ClInclude Include="Include\Destroyable.h" />
     <ClInclude Include="Include\DX8Input.hpp" />
     <ClInclude Include="Include\dxerr.h" />
     <ClInclude Include="Include\EditText.hpp" />
@@ -197,7 +201,7 @@
     <ClInclude Include="Include\GDI.hpp" />
     <ClInclude Include="Include\Geometry\BoxGeometry.hpp" />
     <ClInclude Include="Include\Geometry\Geometry.hpp" />
-    <ClInclude Include="Include\GObject.hpp" />
+    <ClInclude Include="Include\Geometry\PlaneGeometry.hpp" />
     <ClInclude Include="Include\GridRenderer.hpp" />
     <ClInclude Include="Include\InputManager.hpp" />
     <ClInclude Include="Include\Interpolator\Interpolator.hpp" />
@@ -266,7 +270,6 @@
     <ClCompile Include="Src\Core\FPS.cpp" />
     <ClCompile Include="Src\Core\FPSCamera.cpp" />
     <ClCompile Include="Src\Core\GDI.cpp" />
-    <ClCompile Include="Src\Core\GObject.cpp" />
     <ClCompile Include="Src\Core\MsgQueue.cpp" />
     <ClCompile Include="Src\Core\OrthoCamera.cpp" />
     <ClCompile Include="Src\Core\ParticleSystem.cpp" />
@@ -293,6 +296,7 @@
     <ClCompile Include="Src\Shape\Circle.cpp" />
     <ClCompile Include="Src\Shape\Geometry\BoxGeometry.cpp" />
     <ClCompile Include="Src\Shape\Geometry\Geometry.cpp" />
+    <ClCompile Include="Src\Shape\Geometry\PlaneGeometry.cpp" />
     <ClCompile Include="Src\Shape\Line.cpp" />
     <ClCompile Include="Src\Shape\Material\BasicMaterial.cpp" />
     <ClCompile Include="Src\Shape\Material\Material.cpp" />

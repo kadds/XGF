@@ -3,6 +3,17 @@
 #include <sstream> 
 #include <time.h>
 #include <iostream>
+#pragma warning(push)
+#pragma warning(disable:4530)
+#include <spdlog/async_logger.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/common.h>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/details/thread_pool.h>
+#include <spdlog/spdlog.h>
+#pragma warning(pop)
+
+
 namespace XGF {
 	namespace Log {
 		std::stringstream mDebugBuffer;
@@ -78,17 +89,6 @@ namespace XGF {
 			stdLogger->info("close application");
 			spdlog::drop_all();
 			CloseConsole();	
-		}
-		std::string WcharToChar(const wchar_t* wch, size_t encode)
-		{
-			std::string str;
-			int len = WideCharToMultiByte(encode, 0, wch, wcslen(wch), NULL, 0, NULL, NULL);
-			char    *ch = new char[len + 1];
-			WideCharToMultiByte(encode, 0, wch, wcslen(wch), ch, len, NULL, NULL);
-			ch[len] = '\0';
-			str = ch;
-			delete ch;
-			return str;
 		}
 
 		void LogRecorder::Log(std::string str, LogLevel level)
@@ -172,13 +172,17 @@ namespace XGF {
 		{
 			setlocale(LC_CTYPE, "");
 			OpenConsole();
-			spdlog::set_async_mode(8192, spdlog::async_overflow_policy::discard_log_msg);
+			spdlog::flush_every(std::chrono::seconds(3));
 			spdlog::set_level(spdlog::level::info);
 			char filepath[MAX_PATH];
 			GetTempPathA(MAX_PATH, filepath);
 			GetTempFileNameA(filepath, "Log", 0, gFilename);
-			stdLogger = spdlog::details::registry::instance().create("std", { std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>()
-				,std::make_shared<spdlog::sinks::simple_file_sink_mt>(gFilename) });
+			std::vector<spdlog::sink_ptr> sinks{ 
+				std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>(),
+				std::make_shared<spdlog::sinks::basic_file_sink_mt>(gFilename, false)
+			};
+			stdLogger = std::make_shared<spdlog::logger>("std", sinks.begin(), sinks.end());
+
 			spdlog::set_error_handler([](const std::string& msg)
 			{
 			std::cerr << "an error occurred: " << msg << std::endl;
@@ -191,7 +195,7 @@ namespace XGF {
 #ifdef _DEBUG
 			spdlog::set_level(spdlog::level::debug);
 #else
-			spdlog::set_level(spdlog::level::debug); // info
+			spdlog::set_level(spdlog::level::info); // info
 #endif
 			
 		}
