@@ -16,15 +16,15 @@ namespace XGF
 	{
 	}
 
-	int Application::CreateWindowsAndRunApplication(XGFramework &framework, GDI &gdi, HINSTANCE hInstance, const wchar_t * title, const wchar_t * className, int ICON, int sICON, POINT pos, SIZE size, bool CanChangeSize, std::shared_ptr<Scene> firstScene)
+	int XGF::Application::CreateWindowsAndRunApplication(XGFramework & framework, GDI & gdi, HINSTANCE hInstance, WindowProperty windowProperty, std::shared_ptr<Scene> firstScene)
 	{
 		mInstance = hInstance;
 		mFramework = &framework;
 		SetProcessDPIAware();
 		EventPool::Initialize(100);
-		RegisterWindowsClass(hInstance, className, ICON, sICON);
-		HWND hWnd = CreateWindowW(className, title, !CanChangeSize ? WS_OVERLAPPEDWINDOW &~WS_THICKFRAME & ~WS_MAXIMIZEBOX : WS_OVERLAPPEDWINDOW,
-			pos.x, pos.y, size.cx, size.cy, nullptr, nullptr, hInstance, this);
+		RegisterWindowsClass(hInstance, windowProperty.className, windowProperty.ICON, windowProperty.SICON);
+		HWND hWnd = CreateWindowW(windowProperty.className, windowProperty.title, !windowProperty.canResize ? WS_OVERLAPPEDWINDOW &~WS_THICKFRAME & ~WS_MAXIMIZEBOX : WS_OVERLAPPEDWINDOW,
+			windowProperty.point.x, windowProperty.point.y, windowProperty.size.cx, windowProperty.size.cy, nullptr, nullptr, hInstance, this);
 		mHwnd = hWnd;
 		if (!hWnd)
 		{
@@ -39,7 +39,7 @@ namespace XGF
 		px = wndRc.right - wndRc.left - (clientRc.right - clientRc.left);
 
 		py = wndRc.bottom - wndRc.top - (clientRc.bottom - clientRc.top);
-		SetWindowPos(mHwnd, HWND_TOP, pos.x, pos.y, size.cx + px, size.cy + py, SWP_NOCOPYBITS | SWP_NOMOVE);
+		SetWindowPos(mHwnd, HWND_TOP, windowProperty.point.x, windowProperty.point.y, windowProperty.size.cx + px, windowProperty.size.cy + py, SWP_NOCOPYBITS | SWP_NOMOVE);
 		XGF_ReportDebug0("ApplicationStart");
 		gdi.Initialize(mInstance, mHwnd, mHwnd, clientRc.right - clientRc.left, clientRc.bottom - clientRc.top);
 

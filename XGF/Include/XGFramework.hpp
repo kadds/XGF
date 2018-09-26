@@ -11,6 +11,7 @@
 #include "RenderToTexture.hpp"
 #include "EventDispatcher.hpp"
 #include "UIBatches.hpp"
+
 namespace XGF
 {
 	class Scene;
@@ -43,20 +44,20 @@ namespace XGF
 		//Application框架调用
 		void _OnClose();
 
-		void Clear(float color[]);
-		void Clear(SM::Color &color);
-		void ClearDepthStencilBuffer();
-		void Present(bool isVsync);
+		void Clear(float color[]) const;
+		void Clear(SM::Color &color) const;
+		void ClearDepthStencilBuffer() const;
+		void Present(bool isVsync) const;
 
 		void OpenVsync() { mIsVsync = true; }
 		void CloseVsync() { mIsVsync = false; }
-		HWND GetTopHwnd();
-		HINSTANCE GetInstance();
-		Asyn * GetTheard() { return mTheard; }
-		GDI * GetGDI();
+		HWND GetTopHwnd() const;
+		HINSTANCE GetInstance() const;
+		Asyn * GetTheard() const { return mTheard; }
+		GDI * GetGDI() const;
 
-		int GetWindowsWidth();
-		int GetWindowsHeight();
+		int GetWindowsWidth() const;
+		int GetWindowsHeight() const;
 		//退出循环
 		void Exit(int code);
 		//切换Scene。注意，该函数只是在消息队列中添加了消息，下一帧才会切换，实际切换代码在ISwithScene中
@@ -70,8 +71,8 @@ namespace XGF
 
 		InputManager * GetInputManager() { return &mInputManager; }
 
-		void SetOnClose(std::function<bool()> f) { mOnClose = f; };
-		void SetOnInput(std::function<bool(const Event &ev)> f) { mOnInput = f; };
+		void SetOnCloseListener(std::function<bool(XGFramework &)> f) { mOnCloseListener = f; }
+		void SetOnInputListener(std::function<bool(XGFramework &, const Event &ev)> f) { mOnInputListener = f; };
 
 		EventDispatcher & GetEventDispatcher() { return mEventDispatcher; }
 
@@ -89,8 +90,8 @@ namespace XGF
 		Asyn * mTheard;
 		bool mIsVsync;
 
-		std::function<bool()> mOnClose;
-		std::function<bool(const Event &ev)> mOnInput;
+		std::function<bool(XGFramework &)> mOnCloseListener;
+		std::function<bool(XGFramework &, const Event &ev)> mOnInputListener;
 
 		RenderToTexture mRenderToTexture, mLastRenderToTexture;
 		SceneAnimation * mSceneAnimation, *mLastSceneAnimation;

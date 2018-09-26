@@ -1,5 +1,6 @@
 #define _XGF_DEBUG_ALLOC
 #include "./../../XGF/Include/XGF.h"
+#include "fmt/format.h"
 using namespace XGF;
 #include <iomanip>
 #define _CRTDBG_MAP_ALLOC  
@@ -28,8 +29,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 #ifdef _DEBUG
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
-	int rt = RunGame(hInstance);
-	return rt;
+	return RunGame(hInstance);
 }
 class GameScene :
 	public Scene
@@ -91,8 +91,8 @@ public:
 
 		mTextRenderer.Begin(wvp2d);
 		auto debug = DebugInscriber::GetInstance();
-		//std::wstring s = fmt::format(L"FPS:{0}\nFC:{1}ms", debug->GetAverageFPS(), debug->GetFrameCost());
-		//mTextRenderer.DrawString(s.c_str(), 4, 4);
+		std::wstring s = fmt::format(L"FPS:{0}\nFC:{1}ms", debug->GetAverageFPS(), debug->GetFrameCost());
+		mTextRenderer.DrawString(s.c_str(), 4, 4);
 		mTextRenderer.End();
 		
 	};
@@ -141,12 +141,20 @@ private:
 int RunGame(HINSTANCE hInstance)
 {
 	Application app;
-	GDI gdi;
-	auto  gs = std::make_shared<GameScene>();
 	XGFramework framework;
-	framework.SetOnClose([]() {return true; });
-	int rt = -1;
-	rt = app.CreateWindowsAndRunApplication(framework, gdi, hInstance, L"main", L"Base3D",
-		0, 0, { 300, 100 }, { 600, 400 }, true, gs);
-	return rt;
+	GDI gdi;
+
+	auto gameScene = std::make_shared<GameScene>();
+	framework.SetOnCloseListener([](XGFramework &) {return true; });
+
+	WindowProperty windowProperty;
+	windowProperty.title = L"Base3D";
+	windowProperty.className = L"Base3D";
+	windowProperty.ICON = 0;
+	windowProperty.SICON = 0;
+	windowProperty.canResize = true;
+	windowProperty.point = { 300, 100 };
+	windowProperty.size = { 600, 400 };
+
+	return app.CreateWindowsAndRunApplication(framework, gdi, hInstance, windowProperty, gameScene);
 }

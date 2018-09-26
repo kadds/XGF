@@ -1,9 +1,12 @@
 #pragma once
 #include "Defines.hpp"
+#include <mutex>
 #include <functional>
 template<typename T>
 class StateList
 {
+private:
+	std::mutex mutex;
 public:
 	template<typename  T>
 	class Node
@@ -25,30 +28,37 @@ public:
 	}
 	void PushBackToA(T val) 
 	{
+		std::lock_guard<std::mutex> lock(mutex);
 		startA->next = new Node<T>(startA->next, val);
 	}
 	void PushBackToB(T val)
 	{
+		std::lock_guard<std::mutex> lock(mutex);
 		startB->next = new Node<T>(startB->next, val);
 	}
 	Node<T> *GetBackNodeInA()
 	{
+		std::lock_guard<std::mutex> lock(mutex);
 		return startA->next;
 	}
 	T GetBackInA()
 	{
+		std::lock_guard<std::mutex> lock(mutex);
 		return startA->next->val;
 	}
 	Node<T> *GetBackNodeInB()
 	{
+		std::lock_guard<std::mutex> lock(mutex);
 		return startB->next;
 	}
 	T GetBackInB()
 	{
+		std::lock_guard<std::mutex> lock(mutex);
 		return startB->next->val;
 	}
 	void PutAToB()
 	{
+		std::lock_guard<std::mutex> lock(mutex);
 		Node<T> * node = startA->next;
 		startA->next = node->next;
 		node->next = startB->next;
@@ -56,6 +66,7 @@ public:
 	}
 	void PutBToA()
 	{
+		std::lock_guard<std::mutex> lock(mutex);
 		Node<T> * node = startB->next;
 		startB->next = node->next;
 		node->next = startA->next;
@@ -64,6 +75,7 @@ public:
 
 	void PutAToB(T t)
 	{
+		std::lock_guard<std::mutex> lock(mutex);
 		Node<T> * node = startA->next;
 		Node<T> * nodePrev = startA;
 		while (node != nullptr)
@@ -81,6 +93,7 @@ public:
 	}
 	void PutBToA( T t)
 	{
+		std::lock_guard<std::mutex> lock(mutex);
 		Node<T> * node = startB->next;
 		Node<T> * nodePrev = startB;
 		while (node != nullptr)
@@ -98,14 +111,17 @@ public:
 	}
 	bool EmptyInA()
 	{
+		std::lock_guard<std::mutex> lock(mutex);
 		return startA->next == nullptr;
 	}
 	bool EmptyInB()
 	{
+		std::lock_guard<std::mutex> lock(mutex);
 		return startB->next == nullptr;
 	}
 	size_t GetSizeA()
 	{
+		std::lock_guard<std::mutex> lock(mutex);
 		Node<T> * node = startA->next;
 		size_t i = 0;
 		while (node != nullptr)
@@ -117,6 +133,7 @@ public:
 	}
 	size_t GetSizeB()
 	{
+		std::lock_guard<std::mutex> lock(mutex);
 		Node<T> * node = startB->next;
 		size_t i = 0;
 		while (node != nullptr)
@@ -128,6 +145,7 @@ public:
 	}
 	void DelAll()
 	{
+		std::lock_guard<std::mutex> lock(mutex);
 		Node<T> * cnode;
 		Node<T> * node = startA->next;
 		while (node != nullptr)
@@ -147,6 +165,7 @@ public:
 	}
 	void For_eachInA(std::function<void(T)> fun)
 	{
+		std::lock_guard<std::mutex> lock(mutex);
 		Node<T> * node = startA->next;
 		while (node != nullptr)
 		{
@@ -156,6 +175,7 @@ public:
 	}
 	void For_eachInB(std::function<void(T)> fun)
 	{
+		std::lock_guard<std::mutex> lock(mutex);
 		Node<T> * node = startB->next;
 		while (node != nullptr)
 		{

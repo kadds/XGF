@@ -192,16 +192,19 @@ namespace XGF
 		{
 			mInputManager.SetFocus(nullptr);
 		}
+		if (mOnInputListener != nullptr)
+			mOnInputListener(*this, ev);
 	}
 
 	void XGFramework::_OnKeyBoardMessage(const Event & ev)
 	{
-		//Nothing to do
+		if (mOnInputListener != nullptr)
+			mOnInputListener(*this, ev);
 	}
 
 	void XGFramework::_OnClose()
 	{
-		if (mOnClose != nullptr && mOnClose())
+		if (mOnCloseListener != nullptr && mOnCloseListener(*this))
 			Exit(0);
 	}
 	void XGFramework::ISwitchScene(std::shared_ptr<Scene> scene)
@@ -298,47 +301,47 @@ namespace XGF
 	{
 		mTheard->PostEvent(SystemEventId::SwitchScene, { scene });
 	}
-	void XGFramework::Clear(float color[])
+	void XGFramework::Clear(float color[]) const
 	{
 		mGDI->Clear(color);
 	}
 
-	void XGFramework::Clear(SM::Color & color)
+	void XGFramework::Clear(SM::Color & color) const
 	{
 		mGDI->Clear(color);
 	}
 
-	void XGFramework::ClearDepthStencilBuffer()
+	void XGFramework::ClearDepthStencilBuffer() const
 	{
 		mGDI->ClearDepthStencilBuffer();
 	}
 
-	void XGFramework::Present(bool isVsync)
+	void XGFramework::Present(bool isVsync) const
 	{
 		mGDI->Present(isVsync);
 	}
 
-	HWND XGFramework::GetTopHwnd()
+	HWND XGFramework::GetTopHwnd() const
 	{
 		return mGDI->GetTopHwnd();
 	}
 
-	HINSTANCE XGFramework::GetInstance()
+	HINSTANCE XGFramework::GetInstance() const
 	{
 		return mGDI->GetInstance();
 	}
 
-	GDI * XGFramework::GetGDI()
+	GDI * XGFramework::GetGDI() const
 	{
 		return mGDI;
 	}
 
-	int XGFramework::GetWindowsWidth()
+	int XGFramework::GetWindowsWidth() const
 	{
 		return mGDI->GetWidth();
 	}
 
-	int XGFramework::GetWindowsHeight()
+	int XGFramework::GetWindowsHeight() const
 	{
 		return mGDI->GetHeight();
 	}
@@ -350,7 +353,9 @@ namespace XGF
 	}
 
 
-	XGFramework::XGFramework() : mOnClose(nullptr), mOnInput(nullptr)
+	XGFramework::XGFramework() : mGDI(nullptr), mDeltaTime(0), mTheard(nullptr), mIsVsync(false),
+	                             mOnCloseListener(nullptr),
+	                             mOnInputListener(nullptr), mSceneAnimation(nullptr), mLastSceneAnimation(nullptr)
 	{
 	}
 

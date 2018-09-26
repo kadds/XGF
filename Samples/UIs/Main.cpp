@@ -28,8 +28,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 #ifdef _DEBUG
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
-	int rt = RunGame(hInstance);
-	return rt;
+	return RunGame(hInstance);
 }
 class GameScene :
 	public Scene
@@ -222,12 +221,20 @@ private:
 int RunGame(HINSTANCE hInstance)
 {
 	Application app;
-	GDI gdi;
-	auto gs = std::make_shared<GameScene>();
 	XGFramework framework;
-	framework.SetOnClose([]() {return true; });
-	int rt = -1;
-	rt = app.CreateWindowsAndRunApplication(framework, gdi, hInstance, L"UITest", L"UITest",
-		0, 0, { 300, 100 }, { 600, 400 }, false, gs);
-	return rt;
+	GDI gdi;
+
+	auto gameScene = std::make_shared<GameScene>();
+	framework.SetOnCloseListener([](XGFramework &) {return true; });
+
+	WindowProperty windowProperty;
+	windowProperty.title = L"UI";
+	windowProperty.className = L"UI";
+	windowProperty.ICON = 0;
+	windowProperty.SICON = 0;
+	windowProperty.canResize = true;
+	windowProperty.point = { 300, 100 };
+	windowProperty.size = { 600, 400 };
+
+	return app.CreateWindowsAndRunApplication(framework, gdi, hInstance, windowProperty, gameScene);
 }

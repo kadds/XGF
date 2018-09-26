@@ -5,6 +5,16 @@
 #include "Asyn.hpp"
 namespace XGF
 {
+	struct WindowProperty
+	{
+		const wchar_t * title;
+		const wchar_t * className;
+		POINT point;
+		SIZE size;
+		int ICON;
+		int SICON;
+		bool canResize;
+	};
 	class XGFramework;
 	class GDI;
 	class Scene;
@@ -18,8 +28,7 @@ namespace XGF
 		Application();
 		~Application();
 		//返回call framework Exit 的参数或call SetExitCode 的参数
-		int CreateWindowsAndRunApplication(XGFramework &framework, GDI &gdi, HINSTANCE hInstance, const wchar_t * title, const wchar_t * className,
-			int ICON, int sICON, POINT pos, SIZE size, bool CanChangeSize, std::shared_ptr<Scene> firstScene);
+		int CreateWindowsAndRunApplication(XGFramework &framework, GDI &gdi, HINSTANCE hInstance, WindowProperty windowProperty, std::shared_ptr<Scene> firstScene);
 
 		Asyn * GetRenderThread() { return &mRenderThread; }
 		void SetExitCode(int ec);
