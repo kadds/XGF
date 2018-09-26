@@ -9,7 +9,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/common.h>
 #include <spdlog/sinks/basic_file_sink.h>
-#include <spdlog/details/thread_pool.h>
+#include <spdlog/sinks/msvc_sink.h>
 #include <spdlog/spdlog.h>
 #pragma warning(pop)
 
@@ -86,7 +86,7 @@ namespace XGF {
 		}
 		LogRecorder::~LogRecorder()
 		{
-			stdLogger->info("close application");
+			stdLogger->info("end application");
 			spdlog::drop_all();
 			CloseConsole();	
 		}
@@ -173,31 +173,30 @@ namespace XGF {
 			setlocale(LC_CTYPE, "");
 			OpenConsole();
 			spdlog::flush_every(std::chrono::seconds(3));
-			spdlog::set_level(spdlog::level::info);
 			char filepath[MAX_PATH];
 			GetTempPathA(MAX_PATH, filepath);
 			GetTempFileNameA(filepath, "Log", 0, gFilename);
 			std::vector<spdlog::sink_ptr> sinks{ 
 				std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>(),
-				std::make_shared<spdlog::sinks::basic_file_sink_mt>(gFilename, false)
+				std::make_shared<spdlog::sinks::basic_file_sink_mt>(gFilename, false),
+				std::make_shared<spdlog::sinks::msvc_sink_mt>(),
 			};
 			stdLogger = std::make_shared<spdlog::logger>("std", sinks.begin(), sinks.end());
-
+			spdlog::register_logger(stdLogger);
 			spdlog::set_error_handler([](const std::string& msg)
 			{
-			std::cerr << "an error occurred: " << msg << std::endl;
+				std::cerr << "an error occurred: " << msg << std::endl;
 			});
 
 			std::string path = "log file save as ";
 			path += gFilename;
-			stdLogger->info("start application");
-			stdLogger->info(path);
 #ifdef _DEBUG
-			spdlog::set_level(spdlog::level::debug);
+			SetLevel(LogLevel::Debug);
 #else
-			spdlog::set_level(spdlog::level::info); // info
+			SetLevel(LogLevel::Info);
 #endif
-			
+			stdLogger->info("start application");
+			stdLogger->debug(path);
 		}
 		void ShowXGFDialog(char* str, char * name)
 		{

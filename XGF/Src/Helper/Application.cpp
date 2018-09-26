@@ -46,14 +46,14 @@ namespace XGF
 		mHideCursor = false;
 		//开启渲染线程==============================================
 		mRenderThread.DoAsyn(std::bind([this, &gdi, &firstScene](Asyn * RenderThread) {
-			XGF_ReportDebug0("FrameworkStart");
+			XGF_ReportDebug0("Framework Start");
 			mFramework->_OnCreate(&gdi, RenderThread);
 			mFramework->AddScene(firstScene);
 			RenderThread->Notify();
 			//消息循环
-			XGF_ReportDebug0("FrameworkLoop");
+			XGF_ReportDebug0("Framework Loop Start");
 			mFramework->_Loop2();
-			XGF_ReportDebug0("FrameworkDestroy");
+			XGF_ReportDebug0("Framework Destroy");
 			mFramework->_OnDestroy();
 			//通知主线程退出
 			RenderThread->Notify();
