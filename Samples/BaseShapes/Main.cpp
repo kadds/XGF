@@ -1,5 +1,6 @@
 #define _XGF_DEBUG_ALLOC
 #include "./../../XGF/Include/XGF.h"
+#include <fmt/format.h>
 using namespace XGF;
 #include <iomanip>
 #define _CRTDBG_MAP_ALLOC  
@@ -110,13 +111,9 @@ public:
 		BindingBridge bb;
 		bb.AddBinder(std::shared_ptr<PolygonPleTextureBinder>(&textureBinder, [](const PolygonPleTextureBinder *) {}));
 
-		std::wstringstream str;
 		auto debug = DebugInscriber::GetInstance();
-		str.clear();
-		str.str(L"");
-
-		str << std::fixed << std::setprecision(1) << L"FPS:" << debug->GetAverageFPS() << "\n" << L"FC:" << std::setprecision(4) << debug->GetFrameCost() << "ms";
-		mTextRenderer.DrawString(str.str().c_str(), 4, 4);
+		std::wstring str = fmt::format(L"FPS:{0}\nFC:{1}ms", debug->GetAverageFPS(), debug->GetFrameCost());
+		mTextRenderer.DrawString(str.c_str(), 4, 4);
 		mTextRenderer.End();
 		mTextureBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
 		mTextureBatch.Begin();

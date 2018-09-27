@@ -1,5 +1,4 @@
 #include "..\..\Include\InputManager.hpp"
-#include "../../Include/Log.hpp"
 #include "../../Include/Application.hpp"
 namespace XGF
 {

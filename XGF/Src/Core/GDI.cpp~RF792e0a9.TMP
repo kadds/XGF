@@ -39,7 +39,7 @@ namespace XGF
 				while (dxgi_adapter->EnumOutputs(j++, &output) != DXGI_ERROR_NOT_FOUND)
 				{
 					output->GetDesc(&desc);
-					XGF_Debug(Framework, "OutPut:", j, ",name:", Logger::WCharToChar(desc.DeviceName));
+					XGF_Debug(Framework, "OutPut:", j, ",name:", desc.DeviceName);
 					mOutputs.push_back(output);
 					SaveDisplayMode(j, output);
 				}

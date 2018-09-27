@@ -1,5 +1,5 @@
 #include "../../Include/DX8Input.hpp"
-#include "../../Include/Log.hpp"
+#include "../../Include/Logger.hpp"
 #include "../../Include/Batch.hpp"
 namespace XGF
 {
@@ -17,14 +17,14 @@ namespace XGF
 		XGF_ASSERT(hs != NULL);
 		hInstance = hs;
 		mHwnd = hwnd;
-		XGF_Error_Check(DirectInput8Create(hs, DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&mDxInput, nullptr),"DxInputCreate Failed");
+		XGF_Error_Check(Input, DirectInput8Create(hs, DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&mDxInput, nullptr),"DxInputCreate Failed");
 		//²éÑ¯
 		//Check(dxInput->QueryInterface(IID_IDirectInputDevice2, (void **)&mDxInput));
-		XGF_Error_Check(mDxInput->CreateDevice(GUID_SysMouse, &mMouse, nullptr),"DxInputCreateDevice Failed");
-		XGF_Error_Check(mDxInput->CreateDevice(GUID_SysKeyboard, &mKeyBoard, nullptr), "DxInputCreateDevice Failed");
+		XGF_Error_Check(Input, mDxInput->CreateDevice(GUID_SysMouse, &mMouse, nullptr),"DxInputCreateDevice Failed");
+		XGF_Error_Check(Input, mDxInput->CreateDevice(GUID_SysKeyboard, &mKeyBoard, nullptr), "DxInputCreateDevice Failed");
 
-		XGF_Error_Check(mKeyBoard->SetDataFormat(&c_dfDIKeyboard), "DxInput SetDataFormat Failed");
-		XGF_Error_Check(mKeyBoard->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND), "SetCooperativeLevel Failed");
+		XGF_Error_Check(Input, mKeyBoard->SetDataFormat(&c_dfDIKeyboard), "DxInput SetDataFormat Failed");
+		XGF_Error_Check(Input, mKeyBoard->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND), "SetCooperativeLevel Failed");
 
 		DIPROPDWORD     property;
 		property.diph.dwSize = sizeof(DIPROPDWORD);
@@ -32,11 +32,11 @@ namespace XGF
 		property.diph.dwObj = 0;
 		property.diph.dwHow = DIPH_DEVICE;
 		property.dwData = 128;
-		XGF_Error_Check(mKeyBoard->SetProperty(DIPROP_BUFFERSIZE, &property.diph), "SetKeyBoardProperty Failed");
+		XGF_Error_Check(Input, mKeyBoard->SetProperty(DIPROP_BUFFERSIZE, &property.diph), "SetKeyBoardProperty Failed");
 
-		XGF_Error_Check(mMouse->SetDataFormat(&c_dfDIMouse2), "SetDataFormat Failed");
+		XGF_Error_Check(Input, mMouse->SetDataFormat(&c_dfDIMouse2), "SetDataFormat Failed");
 
-		XGF_Error_Check(mMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND), "SetMouseCooperativeLevel Failed");
+		XGF_Error_Check(Input, mMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND), "SetMouseCooperativeLevel Failed");
 		DIPROPDWORD     propertys;
 
 		propertys.diph.dwSize = sizeof(DIPROPDWORD);
@@ -44,7 +44,7 @@ namespace XGF
 		propertys.diph.dwObj = 0;
 		propertys.diph.dwHow = DIPH_DEVICE;
 		propertys.dwData = 64;
-		XGF_Error_Check(mMouse->SetProperty(DIPROP_BUFFERSIZE, &propertys.diph), "SetMouseProperty Failed");
+		XGF_Error_Check(Input, mMouse->SetProperty(DIPROP_BUFFERSIZE, &propertys.diph), "SetMouseProperty Failed");
 		//propertys.dwData = DIPROPAXISMODE_ABS;
 		//Check(mMouse->SetProperty(DIPROP_AXISMODE, &propertys.diph));
 		POINT p;
@@ -62,13 +62,13 @@ namespace XGF
 		height = rc.bottom - rc.top;
 		memset(keys, 0, sizeof(keys));
 		mMoveable = true;
-		XGF_ReportDebug0("d8input subsystem initialized");
+		XGF_Debug(Input, "d8input subsystem initialized");
 		return true;
 	}
 
 	void DX8Input::Shutdown()
 	{
-		XGF_ReportDebug0("d8input subsystem shutdown");
+		XGF_Debug(Input, "d8input subsystem shutdown");
 		PostThreadMessage(id, WM_QUIT, 0, 0);
 		if (mDxInput)
 		{
@@ -186,7 +186,7 @@ namespace XGF
 			hr = mMouse->SetCooperativeLevel(mHwnd,
 				DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
 		if (hr != S_OK)
-			XGF_ReportWarn0("DXinput SetExclusiveMode Failed");
+			XGF_Warn(Input, "DXinput SetExclusiveMode Failed");
 	}
 	void DX8Input::SetRelativeMode(bool Relative)
 	{

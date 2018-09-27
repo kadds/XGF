@@ -1,5 +1,5 @@
 #include "../../Include/Texture.hpp"
-#include "../../Include/Log.hpp"
+#include "../../Include/Logger.hpp"
 #include "../../Include/GDI.hpp"
 #include <algorithm>
 #include <fstream>
@@ -12,13 +12,13 @@ namespace XGF
 
 	Texture::Texture(TextureResource & tres, Rect & rc) :mIs9Path(false)
 	{
-		if (&tres == nullptr) XGF_ReportWarn0("resource is not defined");
+		if (&tres == nullptr) XGF_Warn(Application, "resource is not defined");
 		SetRectangle(rc);
 		mTextureResource = &tres;
 	}
 	Texture::Texture(TextureResource & tres) : mIs9Path(false)
 	{
-		if (&tres == nullptr) XGF_ReportWarn0("resource is not defined");
+		if (&tres == nullptr) XGF_Warn(Application, "resource is not defined");
 		mTextureRectangleNormalization = Point4(0.f, 0.f, 1.f, 1.f);
 		mTextureResource = &tres;
 	}

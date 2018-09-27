@@ -169,7 +169,7 @@ namespace XGF
 		DISALLOW_COPY_AND_ASSIGN(GDI);
 	};
 #ifdef _DEBUG
-#define PutDebugString(de) de->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof(_FUNNAME_XGF_), _FUNNAME_XGF_);
+#define PutDebugString(de) de->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof(XGF_FUNCTIONNAME), XGF_FUNCTIONNAME);
 #else
 #define PutDebugString(de) ;
 #endif

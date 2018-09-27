@@ -1,5 +1,4 @@
 #include "../../Include/Asyn.hpp"
-#include "../../Include/Log.hpp"
 namespace XGF {
 	Asyn::Asyn()
 	{

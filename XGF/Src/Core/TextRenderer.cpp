@@ -1,14 +1,10 @@
 #include "../../Include/TextRenderer.hpp"
 #include "../../Include/GDI.hpp"
-#include "../../Include/Log.hpp"
 #include "../../Include/Polygon.hpp"
 #include "../../Include/Rectangle.hpp"
 #include "../../Include/Font.hpp"
 #include "../../Include/Texture.hpp"
-#include "../../Include/Tools.hpp"
-#include "../../Include/ShaderConst.hpp"
 #include "../../Include/ConstantData.hpp"
-#include "..\..\Include\TextRenderer.hpp"
 namespace XGF
 {
 	TextRenderer::TextRenderer() :mTemporarybuffer(nullptr), textureBinder(std::make_shared<PolygonPleTextureBinder>(4)), colorBinder(std::make_shared<PolygonPleConstantColorBinder>(SM::Color(0.f, 0.f, 0.f, 1.f), 4))

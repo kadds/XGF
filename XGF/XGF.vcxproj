@@ -208,7 +208,7 @@
     <ClInclude Include="Include\Label.hpp" />
     <ClInclude Include="Include\Line.hpp" />
     <ClInclude Include="Include\LinkedList.hpp" />
-    <ClInclude Include="Include\Log.hpp" />
+    <ClInclude Include="Include\Logger.hpp" />
     <ClInclude Include="Include\Material\BasicMaterial.hpp" />
     <ClInclude Include="Include\Material\Material.hpp" />
     <ClInclude Include="Include\Mesh.hpp" />
@@ -316,7 +316,7 @@
     <ClCompile Include="Src\Tools\dxerr.cpp" />
     <ClCompile Include="Src\Tools\EventPool.cpp" />
     <ClCompile Include="Src\Tools\GridRenderer.cpp" />
-    <ClCompile Include="Src\Tools\Log.cpp" />
+    <ClCompile Include="Src\Tools\Logger.cpp" />
     <ClCompile Include="Src\Tools\ScreenGrab.cpp" />
     <ClCompile Include="Src\Tools\SimpleMath.cpp" />
     <ClCompile Include="Src\Tools\Timer.cpp" />

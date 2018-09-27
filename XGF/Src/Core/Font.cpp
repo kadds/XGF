@@ -1,5 +1,5 @@
 #include "../../Include/Font.hpp"
-#include "../../Include/Log.hpp"
+#include "../../Include/Logger.hpp"
 #include "../../Include/GDI.hpp"
 #include "../../Include/Tools.hpp"
 namespace XGF
@@ -48,7 +48,7 @@ namespace XGF
 				FT_Set_Pixel_Sizes(pFTFace, fontSize, fontSize);
 				return true;
 			}
-			XGF_ReportError("File can't open!", name.c_str());
+			XGF_Error(Application, "File can't open!", name);
 			return false;
 		}
 	}
@@ -74,7 +74,7 @@ namespace XGF
 		Tex2Dtdesc.CPUAccessFlags = 0;
 		Tex2Dtdesc.MiscFlags = 0;
 
-		XGF_Error_Check(mGDI->GetDevice()->CreateTexture2D(&Tex2Dtdesc, &__subData, &mTexture), "CreateTexture2D at font class failed");
+		XGF_Error_Check(Application, mGDI->GetDevice()->CreateTexture2D(&Tex2Dtdesc, &__subData, &mTexture), "CreateTexture2D at font class failed");
 
 		PutDebugString(mTexture);
 		D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
@@ -83,7 +83,7 @@ namespace XGF
 		viewDesc.Texture2D.MipLevels = Tex2Dtdesc.MipLevels;
 		viewDesc.Texture2D.MostDetailedMip = 0;
 
-		XGF_Error_Check(mGDI->GetDevice()->CreateShaderResourceView(mTexture, &viewDesc, &mShaderResourceView), "CreateSRV at font class failed");
+		XGF_Error_Check(Application, mGDI->GetDevice()->CreateShaderResourceView(mTexture, &viewDesc, &mShaderResourceView), "Create font SRV failed");
 		PutDebugString(mShaderResourceView);
 
 	}
@@ -181,7 +181,7 @@ namespace XGF
 		}
 		else
 		{
-			XGF_ReportError("File not exist!", name.c_str());
+			XGF_Error(Application, "File not exist!", name);
 		}
 		filestr.close();
 		return size;

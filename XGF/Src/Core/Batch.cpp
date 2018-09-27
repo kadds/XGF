@@ -1,5 +1,5 @@
 #include "../../Include/Batch.hpp"
-#include "../../Include/Log.hpp"
+#include "../../Include/Logger.hpp"
 #include <DirectXMath.h>
 #include "../../Include/DebugInscriber.hpp"
 #include "../../Include/GDI.hpp"
@@ -22,7 +22,7 @@ namespace XGF
 		}
 		else if (mMaxVertices - mPosInVertices <  bbridge.GetBinder(0)->mCount)
 		{
-			XGF_ReportWarn("Out of Range In Vertex. You must set a larger buffer size.", "");
+			XGF_Warn(Render, "Out of Range In Vertex. You must set a larger buffer size.");
 			return;//TODO::ERROR
 		}
 		auto vs = mShaderStage.GetVSShader();
@@ -53,7 +53,7 @@ namespace XGF
 	{
 		if (mMaxIndexCount - mPosInIndices < pindex->mCount)
 		{
-			XGF_ReportWarn("Out of Range In Index. You must set a larger buffer size.", "");
+			XGF_Warn(Render, "Out of Range In Index. You must set a larger buffer size.");
 			return;//TODO::ERROR
 		}
 		DrawPolygon(bbridge);
@@ -258,7 +258,7 @@ namespace XGF
 		D3D11_SUBRESOURCE_DATA resourceData;
 		ZeroMemory(&resourceData, sizeof(resourceData));
 		resourceData.pSysMem = vertices;
-		XGF_Error_Check(mGDI->GetDevice()->CreateBuffer(&vertexDesc, &resourceData, &buffer), "CreateVertexBuffer Error");
+		XGF_Error_Check(Render, mGDI->GetDevice()->CreateBuffer(&vertexDesc, &resourceData, &buffer), "CreateVertexBuffer Error");
 		PutDebugString((buffer));
 		delete[] vertices;
 		return buffer;
@@ -316,7 +316,7 @@ namespace XGF
 		D3D11_SUBRESOURCE_DATA iinitData;
 		ZeroMemory(&iinitData, sizeof(iinitData));
 		iinitData.pSysMem = indexList;
-		XGF_Error_Check(mGDI->GetDevice()->CreateBuffer(&ibd, &iinitData, &mIndexBuffer), "CreateIndexBuffer Error");
+		XGF_Error_Check(Render, mGDI->GetDevice()->CreateBuffer(&ibd, &iinitData, &mIndexBuffer), "CreateIndexBuffer Error");
 		//mIndexBuffer = CreateBuffer(mGDI, D3D11_BIND_INDEX_BUFFER, 0, sizeof(index) *(mMaxIndexCount * mMaxPreRenderFrameCount), 0, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 		PutDebugString(mIndexBuffer);
 		delete[] indexList;

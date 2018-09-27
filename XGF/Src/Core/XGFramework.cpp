@@ -1,6 +1,6 @@
 #include "../../Include/XGFramework.hpp"
 #include "../../Include/GDI.hpp"
-#include "../../Include/Log.hpp"
+#include "../../Include/Logger.hpp"
 #include <DirectXMath.h>
 #include "../../Include/Batch.hpp"
 #include "../../Include/DebugInscriber.hpp"
@@ -209,7 +209,7 @@ namespace XGF
 	}
 	void XGFramework::ISwitchScene(std::shared_ptr<Scene> scene)
 	{
-		XGF_ReportDebug0("A scene to switch");
+		XGF_Debug(Framework, "A scene to switch");
 		scene->_OnCreate(this);
 		scene->OnSize(mGDI->GetWidth(), mGDI->GetHeight());
 		SceneAnimation * sa = scene->OnSwitchIn();

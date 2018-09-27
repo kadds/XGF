@@ -1,6 +1,6 @@
 #include "../../Include/Application.hpp"
 #include "../../Include/XGFramework.hpp"
-#include "../../Include/Log.hpp"
+#include "../../Include/Logger.hpp"
 #include "../../Include/GDI.hpp"
 
 namespace XGF
@@ -40,20 +40,20 @@ namespace XGF
 
 		py = wndRc.bottom - wndRc.top - (clientRc.bottom - clientRc.top);
 		SetWindowPos(mHwnd, HWND_TOP, windowProperty.point.x, windowProperty.point.y, windowProperty.size.cx + px, windowProperty.size.cy + py, SWP_NOCOPYBITS | SWP_NOMOVE);
-		XGF_ReportDebug0("ApplicationStart");
+		XGF_Debug(Application, "ApplicationStart");
 		gdi.Initialize(mInstance, mHwnd, mHwnd, clientRc.right - clientRc.left, clientRc.bottom - clientRc.top);
 
 		mHideCursor = false;
 		//开启渲染线程==============================================
 		mRenderThread.DoAsyn(std::bind([this, &gdi, &firstScene](Asyn * RenderThread) {
-			XGF_ReportDebug0("Framework Start");
+			XGF_Debug(Application, "Framework Start");
 			mFramework->_OnCreate(&gdi, RenderThread);
 			mFramework->AddScene(firstScene);
 			RenderThread->Notify();
 			//消息循环
-			XGF_ReportDebug0("Framework Loop Start");
+			XGF_Debug(Application, "Framework Loop Start");
 			mFramework->_Loop2();
-			XGF_ReportDebug0("Framework Destroy");
+			XGF_Debug(Application, "Framework Destroy");
 			mFramework->_OnDestroy();
 			//通知主线程退出
 			RenderThread->Notify();
@@ -72,7 +72,7 @@ namespace XGF
 				DispatchMessage(&msg);
 			}
 		}
-		XGF_ReportDebug0("ApplicationEnd");
+		XGF_Debug(Application, "ApplicationEnd");
 		EventPool::Shutdown();
 		return exitCode;
 
@@ -129,7 +129,7 @@ namespace XGF
 			app = WndAppMap.find(hWnd)->second;
 			if (app != nullptr)
 			{
-				XGF_ReportDebug0("WM_DESTROY IN");
+				XGF_Debug(Application, "WM_DESTROY IN");
 				WndAppMap.erase(hWnd);
 			}
 			PostQuitMessage(0);
@@ -148,7 +148,7 @@ namespace XGF
 			GetClientRect(hWnd, &rc);
 			if (app != nullptr && SIZE_MINIMIZED != wParam && SIZE_MAXHIDE != wParam)
 			{
-				XGF_ReportDebug0("WM_SIZE IN");
+				XGF_Debug(Application, "WM_SIZE IN");
 				app->GetRenderThread()->PostWithoutRepeat(SystemEventId::Size, { static_cast<int>(rc.right - rc.left), static_cast<int>(rc.bottom - rc.top) });
 			}
 		}
@@ -187,12 +187,12 @@ namespace XGF
 				{
 					app->SetExitCode((int)lParam);
 					app->GetRenderThread()->Wait();
-					XGF_ReportDebug0("Wait End Close Window");
+					XGF_Debug(Application, "Wait End Close Window");
 					DestroyWindow(hWnd);
 				}
 				else
 				{
-					XGF_ReportDebug0("Send CloseMessage to System");
+					XGF_Debug(Application, "Send CloseMessage to System");
 					app->GetRenderThread()->PostEvent(SystemEventId::Close, { wParam != 0 });
 				}
 			}

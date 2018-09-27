@@ -1,5 +1,6 @@
 #define _XGF_DEBUG_ALLOC
 #include "../../XGF/Include/XGF.h"
+#include <fmt/format.h>
 using namespace XGF;
 #include <iomanip>
 #define _CRTDBG_MAP_ALLOC  
@@ -149,47 +150,30 @@ public:
 		auto debug = DebugInscriber::GetInstance();
 		mTextRenderer_s.Begin(wvp2D);
 
-		std::wstringstream str;
-		str << std::fixed << std::setprecision(1);
-		str << L"IndicesRenderCountPerFrame:" << debug->GetIndicesRenderCountPerFrame();
-		mTextRenderer_s.DrawString(str.str().c_str(), 2.f, static_cast<float>(mFramework->GetWindowsHeight() - 80));
-		str.clear();
-		str.str(L"");
-		str << L"IndicesRenderCountPerSecond:" << debug->GetIndicesRenderCountPerSecond();
-		mTextRenderer_s.DrawString(str.str().c_str(), 300.f, static_cast<float>(mFramework->GetWindowsHeight() - 80));
-		str.clear();
-		str.str(L"");
-		str << L"VerticesRenderCountPerFrame:" << debug->GetVerticesRenderCountPerFrame();
-		mTextRenderer_s.DrawString(str.str().c_str(), 2.f, static_cast<float>(mFramework->GetWindowsHeight() - 60));
-		str.clear();
-		str.str(L"");
-		str << L"VerticesRenderCountPerSecond:" << debug->GetVerticesRenderCountPerSecond();
-		mTextRenderer_s.DrawString(str.str().c_str(), 300.f, static_cast<float>(mFramework->GetWindowsHeight() - 60));
-		str.clear();
-		str.str(L"");
-		str << L"CallBatchPerFrame:" << debug->GetCallBatchPerFrame();
-		mTextRenderer_s.DrawString(str.str().c_str(), 2.f, static_cast<float>(mFramework->GetWindowsHeight() - 40));
-		str.clear();
-		str.str(L"");
-		str << L"CallBatchPerSecond:" << debug->GetCallBatchPerSecond();
-		mTextRenderer_s.DrawString(str.str().c_str(), 300.f, static_cast<float>(mFramework->GetWindowsHeight() - 40));
-		str.clear();
-		str.str(L"");
-		str << L"PolygonRenderCountPerSecond:" << debug->GetPolygonRenderCountPerSecond();
-		mTextRenderer_s.DrawString(str.str().c_str(), 300.f, static_cast<float>(mFramework->GetWindowsHeight() - 20));
-		str.clear();
-		str.str(L"");
-		str << L"PolygonRenderCountPerFrame:" << debug->GetPolygonRenderCountPerFrame();
-		mTextRenderer_s.DrawString(str.str().c_str(), 2.f, static_cast<float>(mFramework->GetWindowsHeight() - 20));
+		std::wstring costStr = fmt::format(L"IndicesRenderCountPerFrame:{0}", debug->GetIndicesRenderCountPerFrame());
+
+		mTextRenderer_s.DrawString(costStr.c_str(), 2.f, static_cast<float>(mFramework->GetWindowsHeight() - 80));
+		costStr = fmt::format(L"IndicesRenderCountPerSecond:{0}", debug->GetIndicesRenderCountPerSecond());
+		mTextRenderer_s.DrawString(costStr.c_str(), 300.f, static_cast<float>(mFramework->GetWindowsHeight() - 80));
+		costStr = fmt::format(L"VerticesRenderCountPerFrame:{0}", debug->GetVerticesRenderCountPerFrame());
+		mTextRenderer_s.DrawString(costStr.c_str(), 2.f, static_cast<float>(mFramework->GetWindowsHeight() - 60));
+		costStr = fmt::format(L"VerticesRenderCountPerSecond:{0}", debug->GetVerticesRenderCountPerSecond());
+		mTextRenderer_s.DrawString(costStr.c_str(), 300.f, static_cast<float>(mFramework->GetWindowsHeight() - 60));
+		costStr = fmt::format(L"CallBatchPerFrame:{0}", debug->GetCallBatchPerFrame());
+		mTextRenderer_s.DrawString(costStr.c_str(), 2.f, static_cast<float>(mFramework->GetWindowsHeight() - 40));
+		costStr = fmt::format(L"CallBatchPerSecond:{0}", debug->GetCallBatchPerSecond());
+		mTextRenderer_s.DrawString(costStr.c_str(), 300.f, static_cast<float>(mFramework->GetWindowsHeight() - 40));
+		costStr = fmt::format(L"PolygonRenderCountPerSecond:{0}", debug->GetPolygonRenderCountPerSecond());
+		mTextRenderer_s.DrawString(costStr.c_str(), 300.f, static_cast<float>(mFramework->GetWindowsHeight() - 20));
+		costStr = fmt::format(L"PolygonRenderCountPerFrame:{0}", debug->GetPolygonRenderCountPerFrame());
+		mTextRenderer_s.DrawString(costStr.c_str(), 2.f, static_cast<float>(mFramework->GetWindowsHeight() - 20));
 
 		mTextRenderer_s.End();
 
 		mTextRenderer_b.Begin(wvp2D);
 
-		str.clear();
-		str.str(L"");
-		str << std::fixed << std::setprecision(1) << L"FPS:" << debug->GetAverageFPS() << "\n" << L"FC:" << std::setprecision(4) << debug->GetFrameCost() << "ms";
-		mTextRenderer_b.DrawString(str.str().c_str(), SM::Color(0.2f, 0.2f, 0.8f, 1.0f), 4, 4);
+		std::wstring fps_str = fmt::format(L"FPS:{0}\nFC:{1}ms", debug->GetAverageFPS(), debug->GetFrameCost());
+		mTextRenderer_b.DrawString(fps_str.c_str(), SM::Color(0.2f, 0.2f, 0.8f, 1.0f), 4, 4);
 		mTextRenderer_b.End();
 	};
 	virtual void Update(float deltaTime) override

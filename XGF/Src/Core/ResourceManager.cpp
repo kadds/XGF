@@ -1,7 +1,7 @@
 #include "../../Include/ResourceManager.hpp"
 #include "../../Include/Texture.hpp"
 #include "../../Include/Tools.hpp"
-#include "../../Include/Log.hpp"
+#include "../../Include/Logger.hpp"
 
 namespace XGF
 {
@@ -10,7 +10,7 @@ namespace XGF
 		auto it = mResourceMap.find(name);
 		if (it == mResourceMap.end())
 		{
-			XGF_ReportWarn("TextureResource can't find", name);
+			XGF_Warn(Application, "TextureResource can't find", Logger::WCharToChar(name));
 			return nullptr;
 		}
 		return &it->second;

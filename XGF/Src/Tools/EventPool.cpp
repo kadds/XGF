@@ -1,5 +1,4 @@
 #include "../../Include/EventPool.hpp"
-#include "../../Include/Log.hpp"
 #include <algorithm>
 #include <time.h>
 #include "../../Include/Defines.hpp"

@@ -1,8 +1,5 @@
 #include "../../Include/Animation.hpp"
 #include "../../Include/Control.hpp"
-#include "../../Include/Action.hpp"
-#include "../../Include/Interpolator\Interpolator.hpp"
-#include "..\..\Include\Animation.hpp"
 namespace XGF
 {
 

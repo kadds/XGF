@@ -1,6 +1,6 @@
 #include "..\..\Include\ConstantData.hpp"
 #include "..\..\Include\ShaderConst.hpp"
-#include "..\..\Include\Log.hpp"
+#include "..\..\Include\Logger.hpp"
 #include <random>
 #include <algorithm>
 namespace XGF
@@ -52,7 +52,7 @@ namespace XGF
 		viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE1D;
 		viewDesc.Texture1D.MipLevels = desc.MipLevels;
 		viewDesc.Texture1D.MostDetailedMip = 0;
-		XGF_Error_Check(gdi->GetDevice()->CreateShaderResourceView(texture, &viewDesc, &mRandomSRV), "Create Ranom SRV Failed!");//Create Random SRV
+		XGF_Error_Check(Application, gdi->GetDevice()->CreateShaderResourceView(texture, &viewDesc, &mRandomSRV), "Create Ranom SRV Failed!");//Create Random SRV
 		PutDebugString(mRandomSRV);
 		texture->Release();
 		delete[] buffer;

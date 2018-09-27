@@ -1,6 +1,6 @@
 #include "../../Include/Shader.hpp"
 #include "../../Include/GDI.hpp"
-#include "../../Include/Log.hpp"
+#include "../../Include/Logger.hpp"
 #include "../../Include/Buffer.hpp"
 #include <numeric>
 namespace XGF {
@@ -17,7 +17,7 @@ namespace XGF {
 		D3D11_SHADER_DESC shaderDesc;
 		reflector->GetDesc(&shaderDesc);
 		//constant Buffer
-		int constantBufferCount = shaderDesc.ConstantBuffers;
+		const int constantBufferCount = shaderDesc.ConstantBuffers;
 
 		if (constantBufferCount > 0)
 		{
@@ -121,9 +121,9 @@ namespace XGF {
 			NULL, "CS", gdi->CheckFeatureLevel() >= D3D_FEATURE_LEVEL_11_0 ? "cs_5_0" : "cs_4_0", 0, 0, &pComputerBlob, &pErrorBlob);
 		if (FAILED(hr))
 			if (pErrorBlob == nullptr)
-				XGF_ReportError("ShaderFile no find", "");
+				XGF_Error(IO, "ComputeShader file not find", Logger::WCharToChar(CSname));
 			else
-				XGF_Error_Check(hr, (LPCSTR)pErrorBlob->GetBufferPointer());
+				XGF_Error_Check(Shader, hr, std::string((const char *) pErrorBlob->GetBufferPointer()));
 		Initialize(gdi, static_cast<unsigned char *>(pComputerBlob->GetBufferPointer()), static_cast<unsigned int>(pComputerBlob->GetBufferSize()));
 		pComputerBlob->Release();
 	}
@@ -131,8 +131,8 @@ namespace XGF {
 	void ComputeShader::Initialize(GDI * gdi, const unsigned char * CScode, unsigned int codeLen)
 	{
 		mGDI = gdi;
-		XGF_Error_Check(gdi->GetDevice()->CreateComputeShader(CScode,
-			codeLen, nullptr, &mComputeShader), "");
+		XGF_Error_Check(IO, gdi->GetDevice()->CreateComputeShader(CScode,
+			codeLen, nullptr, &mComputeShader), "Create ComputeShader failed");
 		ID3D11ShaderReflection *reflector;
 		D3DReflect(CScode, codeLen, IID_ID3D11ShaderReflection, (void **)&reflector);
 		ReflectStage(reflector);
@@ -154,17 +154,17 @@ namespace XGF {
 			NULL, "PS", "ps_4_0", 0, 0, &pPixelBlob, &pErrorBlob);
 		if (FAILED(hr))
 			if (pErrorBlob == nullptr)
-				XGF_ReportError("Pixel Shader File Not Find!", PSname);
+				XGF_Error(IO, "Pixel Shader file not find", Logger::WCharToChar(PSname));
 			else
-				XGF_Error_Check(hr, (LPCSTR)pErrorBlob->GetBufferPointer());
+				XGF_Error_Check(Shader, hr, std::string((const char *) pErrorBlob->GetBufferPointer()));
 		Initialize(gdi, static_cast<unsigned char *>(pPixelBlob->GetBufferPointer()), static_cast<unsigned int>(pPixelBlob->GetBufferSize()));
 		pPixelBlob->Release();
 	}
 
 	void PixelShader::Initialize(GDI * gdi, const unsigned char * PScode, unsigned int codeLen)
 	{
-		XGF_Error_Check(gdi->GetDevice()->CreatePixelShader(PScode,
-			codeLen, NULL, &mPixelShader), "CreatePixelShader Failed");
+		XGF_Error_Check(IO, gdi->GetDevice()->CreatePixelShader(PScode,
+			codeLen, NULL, &mPixelShader), "Create pixel shader failed");
 		PutDebugString(mPixelShader);
 		ID3D11ShaderReflection *reflector;
 		D3DReflect(PScode, codeLen, IID_ID3D11ShaderReflection, (void **)&reflector);
@@ -188,9 +188,9 @@ namespace XGF {
 			NULL, "VS", "vs_4_0", 0, 0, &pVertexBlob, &pErrorBlob);
 		if (FAILED(hr))
 			if (pErrorBlob == nullptr)
-				XGF_ReportError("Vertex Shader File Not Find!", VSname);
+				XGF_Error(IO, "Vertex Shader file not find", Logger::WCharToChar(VSname));
 			else
-				XGF_Error_Check(hr, (LPCSTR)pErrorBlob->GetBufferPointer());
+				XGF_Error_Check(Shader, hr, std::string((const char *) pErrorBlob->GetBufferPointer()));
 		Initialize(gdi, (unsigned char *)pVertexBlob->GetBufferPointer(), (int)pVertexBlob->GetBufferSize(), interval);
 		
 		pVertexBlob->Release();
@@ -198,8 +198,8 @@ namespace XGF {
 
 	void VertexShader::Initialize(GDI * gdi, const unsigned char * VScode, unsigned int codeLen, unsigned int interval)
 	{
-		XGF_Error_Check(gdi->GetDevice()->CreateVertexShader(VScode,
-			codeLen, NULL, &mVertexShader), "CreateVertexShader Failed");
+		XGF_Error_Check(IO, gdi->GetDevice()->CreateVertexShader(VScode,
+			codeLen, NULL, &mVertexShader), "Create vertex shader failed");
 		PutDebugString(mVertexShader);
 		mGDI = gdi;
 		ID3D11ShaderReflection *reflector;
@@ -254,7 +254,7 @@ namespace XGF {
 			}
 			else 
 			{
-				XGF_ReportWarn0("inConrrect mask at inputLayout");
+				XGF_Warn(Shader, "The mask on inputLayout is incorrect");
 			}
 			inputSlot = interval == 0 ? 0 : (i + 1) / interval;
 			if (d3dlayout[i].InputSlot == inputSlot - 1 && i != layoutCount - 1)
@@ -263,8 +263,8 @@ namespace XGF {
 			}
 			mSlotStride.push_back(stride);
 		}
-		XGF_Error_Check(gdi->GetDevice()->CreateInputLayout(d3dlayout, layoutCount,
-			VScode, codeLen, &mInputLayout), "CreateInputLayout Error");
+		XGF_Error_Check(IO, gdi->GetDevice()->CreateInputLayout(d3dlayout, layoutCount,
+			VScode, codeLen, &mInputLayout), "Create InputLayout failed");
 		delete[] d3dlayout;
 		ReflectStage(reflector);
 		reflector->Release();
@@ -331,9 +331,9 @@ namespace XGF {
 			NULL, "GS", "gs_4_0", 0, 0, &pGeometryBlob, &pErrorBlob);
 		if (FAILED(hr))
 			if (pErrorBlob == nullptr)
-				XGF_ReportError("Geometry Shader File Not Find!", GSname);
+				XGF_Error(IO, "GeometryShader file not find!", Logger::WCharToChar(GSname));
 			else
-				XGF_Error_Check(hr, (LPCSTR)pErrorBlob->GetBufferPointer());
+				XGF_Error_Check(Shader, hr, std::string((const char *)pErrorBlob->GetBufferPointer()));
 		Initialize(gdi,static_cast<unsigned char *>(pGeometryBlob->GetBufferPointer()), static_cast<unsigned int>(pGeometryBlob->GetBufferSize()), streamOut);
 		pGeometryBlob->Release();
 	}
@@ -346,8 +346,8 @@ namespace XGF {
 		D3DReflect(GScode, codeLen, IID_ID3D11ShaderReflection, (void **)&reflector);
 		if(!streamOut)
 		{
-			XGF_Error_Check(gdi->GetDevice()->CreateGeometryShader(GScode,
-				codeLen, NULL, &mGeometryShader), "CreateGeometryShader Failed");
+			XGF_Error_Check(IO, gdi->GetDevice()->CreateGeometryShader(GScode,
+				codeLen, NULL, &mGeometryShader), "Create GeometryShader failed");
 			mOutBuffer[0] = nullptr;
 			mOutBuffer[1] = nullptr;
 		}
@@ -392,8 +392,8 @@ namespace XGF {
 				}
 				so[i].OutputSlot = 0;
 			}
-			XGF_Error_Check(gdi->GetDevice()->CreateGeometryShaderWithStreamOutput(GScode,
-					codeLen, so, i, isr, 1, D3D11_SO_NO_RASTERIZED_STREAM, NULL, &mGeometryShader), "CreateGeometryShader Failed");
+			XGF_Error_Check(IO, gdi->GetDevice()->CreateGeometryShaderWithStreamOutput(GScode,
+					codeLen, so, i, isr, 1, D3D11_SO_NO_RASTERIZED_STREAM, NULL, &mGeometryShader), "Create GeometryShader failed");
 			
 			D3D11_BUFFER_DESC bufferDesc =
 			{
@@ -524,7 +524,7 @@ namespace XGF {
 		if (index < vs->GetCBufferCount())
 			memcpy(mVSCBuffer[index].GetBufferPoint(), data, mVSCBuffer[index].GetSize());
 		else
-			XGF_ReportWarn0("index out of range in GS ContantBuffer");
+			XGF_Warn(Shader, "The index in the VS constant buffer is out of range");
 	}
 
 	void ShaderStage::SetGSConstantBuffer(unsigned int index, const void * data)
@@ -532,7 +532,7 @@ namespace XGF {
 		if (index < gs->GetCBufferCount())
 			memcpy(mGSCBuffer[index].GetBufferPoint(), data, mGSCBuffer[index].GetSize());
 		else
-			XGF_ReportWarn0("index out of range in GS ContantBuffer");
+			XGF_Warn(Shader, "The index in the GS constant buffer is out of range");
 	}
 
 	void ShaderStage::SetPSConstantBuffer(unsigned int index, const void * data)
@@ -540,7 +540,7 @@ namespace XGF {
 		if (index < ps->GetCBufferCount())
 			memcpy(mPSCBuffer[index].GetBufferPoint(), data, mPSCBuffer[index].GetSize());
 		else
-			XGF_ReportWarn0("index out of range in PS ContantBuffer");
+			XGF_Warn(Shader, "The index in the PS constant buffer is out of range");
 	}
 
 
@@ -634,17 +634,17 @@ namespace XGF {
 			for (unsigned i = 0; i < vs->GetTextureCount(); i++)
 				if (mVSSRV[i].srv != nullptr)
 					dev->VSSetShaderResources(vs->GetTextureSlot(i), 1, &mVSSRV[i].srv);
-				else { XGF_ReportWarn0("invalid srv in vs"); }
+				else { XGF_Warn(Shader, "Invalid texture in vs"); }
 		if (!mPSSRV.empty())
 			for (unsigned i = 0; i < ps->GetTextureCount(); i++)
 				if (mPSSRV[i].srv != nullptr)
 					dev->PSSetShaderResources(ps->GetTextureSlot(i), 1, &mPSSRV[i].srv);
-				else { XGF_ReportWarn0("invalid srv in ps"); }
+				else { XGF_Warn(Shader, "Invalid texture in ps"); }
 		if (!mGSSRV.empty())
 			for (unsigned i = 0; i < gs->GetTextureCount(); i++)
 				if(mGSSRV[i].srv != nullptr)
 					dev->GSSetShaderResources(gs->GetTextureSlot(i), 1, &mGSSRV[i].srv);
-				else { XGF_ReportWarn0("invalid srv in gs"); }
+				else { XGF_Warn(Shader, "Invalid texture in gs"); }
 		vs->GetGDI()->SetBlendState(mBlendState);
 
 		ID3D11SamplerState *sps;
@@ -796,12 +796,12 @@ namespace XGF {
 			for (int i = 0; i < (int) cs->GetTextureCount(); i++)
 				if (mCSSRV[i].srv != nullptr)
 					gdi->GetDeviceContext()->CSSetShaderResources(cs->GetTextureSlot(i), 1, &mCSSRV[i].srv);
-				else { XGF_ReportWarn0("invalid srv in cs"); }
+				else { XGF_Warn(Shader, "invalid srv in cs"); }
 		if (!mCSUAV.empty())
 			for (int i = 0; i < (int) cs->mUAVInfo.size(); i++)
 				if (mCSUAV[i].uav != nullptr)
 					gdi->GetDeviceContext()->CSSetUnorderedAccessViews(cs->mUAVInfo[i].slot, 1, &(mCSUAV[i].uav), 0);
-				else { XGF_ReportWarn0("invalid uav in cs"); }
+				else { XGF_Warn(Shader, "invalid uav in cs"); }
 
 		gdi->GetDeviceContext()->CSSetShader(cs->GetShader(), nullptr, 0);
 				

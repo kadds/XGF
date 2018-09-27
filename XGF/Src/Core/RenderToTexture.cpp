@@ -1,6 +1,6 @@
 #include "..\..\Include\RenderToTexture.hpp"
 #include "..\..\Include\GDI.hpp"
-#include "..\..\Include\Log.hpp"
+#include "..\..\Include\Logger.hpp"
 namespace XGF
 {
 	RenderToTexture::RenderToTexture() :mRenderTargetTexture(nullptr), mShaderResourceView(nullptr), mRenderTargetView(nullptr)
@@ -29,19 +29,19 @@ namespace XGF
 		textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 		textureDesc.CPUAccessFlags = 0;
 		textureDesc.MiscFlags = 0;
-		XGF_Error_Check(gdi->GetDevice()->CreateTexture2D(&textureDesc, NULL, &mRenderTargetTexture), "CT2D Failed");
+		XGF_Error_Check(Render, gdi->GetDevice()->CreateTexture2D(&textureDesc, NULL, &mRenderTargetTexture), "CT2D Failed");
 		renderTargetViewDesc.Format = textureDesc.Format;
 		renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 		renderTargetViewDesc.Texture2D.MipSlice = 0;
 
-		XGF_Error_Check(gdi->GetDevice()->CreateRenderTargetView(mRenderTargetTexture, &renderTargetViewDesc, &mRenderTargetView), "CreateRT Failed");
+		XGF_Error_Check(Render, gdi->GetDevice()->CreateRenderTargetView(mRenderTargetTexture, &renderTargetViewDesc, &mRenderTargetView), "CreateRT Failed");
 
 		shaderResourceViewDesc.Format = textureDesc.Format;
 		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
 		shaderResourceViewDesc.Texture2D.MipLevels = 1;
 
-		XGF_Error_Check(gdi->GetDevice()->CreateShaderResourceView(mRenderTargetTexture, &shaderResourceViewDesc, &mShaderResourceView), "CreateSRV Failed");
+		XGF_Error_Check(Render, gdi->GetDevice()->CreateShaderResourceView(mRenderTargetTexture, &shaderResourceViewDesc, &mShaderResourceView), "CreateSRV Failed");
 	}
 
 	void RenderToTexture::Shutdown()

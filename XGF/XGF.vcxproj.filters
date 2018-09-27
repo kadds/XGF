@@ -114,9 +114,6 @@
     <ClInclude Include="Include\LinkedList.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Log.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Include\MsgQueue.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -312,6 +309,9 @@
     <ClInclude Include="Include\Destroyable.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Logger.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\UI\Button.cpp">
@@ -387,9 +387,6 @@
       <Filter>源文件\Tools</Filter>
     </ClCompile>
     <ClCompile Include="Src\Tools\EventPool.cpp">
-      <Filter>源文件\Tools</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Tools\Log.cpp">
       <Filter>源文件\Tools</Filter>
     </ClCompile>
     <ClCompile Include="Src\Tools\ScreenGrab.cpp">
@@ -547,6 +544,9 @@
     </ClCompile>
     <ClCompile Include="Src\Shape\Geometry\PlaneGeometry.cpp">
       <Filter>源文件\Shape\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Tools\Logger.cpp">
+      <Filter>源文件\Tools</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

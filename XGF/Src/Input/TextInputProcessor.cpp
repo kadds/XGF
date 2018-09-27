@@ -1,7 +1,6 @@
 #include "..\..\Include\TextInputProcessor.hpp"
 #include "..\..\Include\TextRenderer.hpp"
 #include "../../Include/TextLayoutShaper.hpp"
-#include "../../Include/Log.hpp"
 namespace XGF
 {
 	TextInputProcessor::TextInputProcessor() :mCaretPos(0), mGetInnerRectangle(nullptr), mTextRenderer(nullptr)

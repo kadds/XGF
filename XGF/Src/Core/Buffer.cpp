@@ -1,5 +1,5 @@
 #include "..\..\Include\Buffer.hpp"
-#include "..\..\Include\Log.hpp"
+#include "..\..\Include\Logger.hpp"
 namespace XGF
 {
 	ID3D11Buffer * CreateBuffer(GDI * gdi, int BindFlags, int miscFlags, int byteWidth, int StructureByteStride, D3D11_USAGE bufferUsage, D3D11_CPU_ACCESS_FLAG cpuaccess)
@@ -15,7 +15,7 @@ namespace XGF
 		desc.StructureByteStride = StructureByteStride;
 		desc.Usage = bufferUsage;
 		desc.CPUAccessFlags = cpuaccess;
-		XGF_Error_Check(gdi->GetDevice()->CreateBuffer(&desc, 0, &buffer), "Failed!");
+		XGF_Error_Check(Application, gdi->GetDevice()->CreateBuffer(&desc, 0, &buffer), "Create buffer failed");
 		PutDebugString(buffer);
 		return buffer;
 	}
@@ -29,7 +29,7 @@ namespace XGF
 		desc.Buffer.Flags = flag;
 		desc.Buffer.NumElements = NumElements;
 		desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-		XGF_Error_Check(gdi->GetDevice()->CreateUnorderedAccessView(buffer, &desc, &uav), "Failed!");
+		XGF_Error_Check(Application, gdi->GetDevice()->CreateUnorderedAccessView(buffer, &desc, &uav), "Create UnorderedAccessView failed");
 		PutDebugString(uav);
 		return uav;
 	}
@@ -43,7 +43,7 @@ namespace XGF
 		desc.BufferEx.FirstElement = 0;
 		desc.BufferEx.Flags = flag;
 		desc.BufferEx.NumElements = NumElements;
-		gdi->GetDevice()->CreateShaderResourceView(buffer, &desc, &srv);
+		XGF_Error_Check(Application, gdi->GetDevice()->CreateShaderResourceView(buffer, &desc, &srv), "Create ShaderResourceView failed");
 		PutDebugString(srv);
 		return srv;
 	}

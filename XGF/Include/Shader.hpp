@@ -3,7 +3,7 @@
 #include <d3d11_1.h>
 #include <d3dcompiler.h>
 #include "gdi.hpp"
-#include "Log.hpp"
+#include "Logger.hpp"
 #include <vector>
 #include <functional>
 #include <string>
@@ -241,7 +241,7 @@ namespace XGF
 			for (; i < shader->mCBufferInfo.size(); i++)
 				if (shader->mCBufferInfo[i].name == name)
 					return i;
-			if (i == shader->mCBufferInfo.size()) XGF_ReportWarn0("can't find Cbuffer index");
+			if (i == shader->mCBufferInfo.size()) XGF_Warn(Render, "can't find Cbuffer index");
 			return 0;
 		};
 		
@@ -257,7 +257,7 @@ namespace XGF
 			for (; i < shader->mSamplerState.size(); i++)
 				if (shader->mSamplerState[i].name == name)
 					return i;
-			if (i == shader->mSamplerState.size()) XGF_ReportWarn0("can't find SamplerState index");
+			if (i == shader->mSamplerState.size()) XGF_Warn(Render, "can't find SamplerState index");
 			return 0;
 		};
 
@@ -273,7 +273,7 @@ namespace XGF
 			for (; i < shader->mTexture2D.size(); i++)
 				if (shader->mTexture2D[i].name == name)
 					return i;
-			if (i == shader->mTexture2D.size()) XGF_ReportWarn0("can't find srv index");
+			if (i == shader->mTexture2D.size()) XGF_Warn(Render, "can't find srv index");
 			return 0;
 		}
 		
