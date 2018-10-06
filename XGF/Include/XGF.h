@@ -40,7 +40,6 @@
 #include "Application.hpp"
 #include "Tools.hpp"
 #include "DebugInscriber.hpp"
-#include "FPS.hpp"
 #include "AsyncTask.hpp"
 #include "AxisRenderer.hpp"
 #include "Defines.hpp"

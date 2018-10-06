@@ -1,6 +1,4 @@
 #include "../../Include/Logger.hpp"
-
-#include <time.h>
 #include <iostream>
 
 

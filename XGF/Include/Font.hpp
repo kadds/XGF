@@ -2,12 +2,9 @@
 #include "Defines.hpp"
 #include "ft2build.h"
 #include FT_FREETYPE_H
-#include <freetype/freetype.h>
 #include <freetype/ftglyph.h>
 #include <d3d11_1.h>
 
-#include <iostream>  
-#include <fstream>  
 #include <unordered_map>
 namespace XGF
 {

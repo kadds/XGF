@@ -2,6 +2,7 @@
 #include "../../Include/Logger.hpp"
 #include "../../Include/GDI.hpp"
 #include "../../Include/Tools.hpp"
+#include <fstream>  
 namespace XGF
 {
 	Font::Font() :mShaderResourceView(nullptr), mFileBuffer(nullptr)

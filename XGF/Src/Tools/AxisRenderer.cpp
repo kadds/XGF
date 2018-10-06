@@ -1,5 +1,4 @@
 #include "..\..\Include\AxisRenderer.hpp"
-#include "../../Include/ShaderConst.hpp"
 #include "..\..\Include\ConstantData.hpp"
 #include <algorithm>
 namespace XGF

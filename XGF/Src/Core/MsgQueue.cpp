@@ -1,5 +1,7 @@
 #include "../../Include/MsgQueue.hpp"
 #include <ratio>
+#include <thread>
+#include <algorithm>
 namespace XGF
 {
 	MsgQueue::MsgQueue()

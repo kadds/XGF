@@ -4,6 +4,7 @@
 #include <d3d11_1.h>
 #include <fmt/core.h>
 #include <fmt/format.h>
+#include <fmt/ostream.h>
 #include "dxerr.h"
 #pragma warning(push)
 #pragma warning(disable:4530)
@@ -58,7 +59,19 @@ namespace XGF {
 		{
 			return fmt::internal::utf16_to_utf8(wt).str();
 			//return std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(wt);
-		}	
+		}
+		template<typename...Args>
+		constexpr std::string GenerateFormatStr(const Args&... args)
+		{
+			static_assert(sizeof...(Args) <= 32, "The number of parameters must be less than 32");
+			static const char * str = "{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}";
+			return str + 64 - sizeof...(Args) * 2;
+		}
+		template<typename...Args>
+		std::string JoinParameter(const Args&... args)
+		{
+			return fmt::format(GenerateFormatStr(args...), args...);
+		}
 
 		class LogRecorder
 		{
@@ -71,22 +84,22 @@ namespace XGF {
 			template<typename ...Args>
 			void Debug(LogSystem::LogSystem system, const char *  file, const char *  functionName, int line, const Args &... args)
 			{
-				loggers[(int) system]->debug("File:{0};Function:{1};Line:{2};Message:{3}", file, functionName, line, args...);
+				loggers[(int) system]->debug("File:{0};Function:{1};Line:{2};Message:{3}", file, functionName, line, JoinParameter(args...));
 			};
 			template<typename ...Args>
 			void Info(LogSystem::LogSystem system, const char * file, const char * functionName, int line, Args &... args)
 			{
-				loggers[(int) system]->info("File:{0};Function:{1};Line:{2};Message:{3}", file, functionName, line, args...);
+				loggers[(int) system]->info("File:{0};Function:{1};Line:{2};Message:{3}", file, functionName, line, JoinParameter(args...));
 			};
 			template<typename ...Args>
 			void Warn(LogSystem::LogSystem system, const char * file, const char *  functionName, int line, Args &... args)
 			{
-				loggers[(int) system]->warn("File:{0};Function:{1};Line:{2};Message:{3}", file, functionName, line, args...);
+				loggers[(int) system]->warn("File:{0};Function:{1};Line:{2};Message:{3}", file, functionName, line, JoinParameter(args...));
 			};
 			template<typename ...Args>
 			void Error(LogSystem::LogSystem system, const char * file, const char *  functionName, int line, Args &... args)
 			{
-				loggers[(int) system]->error("File:{0};Function:{1};Line:{2};Message:{3}", file, functionName, line, args...);
+				loggers[(int) system]->error("File:{0};Function:{1};Line:{2};Message:{3}", file, functionName, line, JoinParameter(args...));
 				ShowXGFDialog("An error happed, show it?", gFilename);
 			};
 
@@ -217,21 +230,21 @@ namespace fmt
 #endif
 
 #ifdef XGF_USE_FUNCTION_NAME
-#define XGF_FUNCTIONNAME __FUNCDNAME__
+#define XGF_FUNCTIONNAME __FUNCTION__
 #else
-#define XGF_FUNCTIONNAME  "None"
+#define XGF_FUNCTIONNAME  "-"
 #endif
 
 #ifdef XGF_USE_FILE_NAME
 #define XGF_FILENAME __FILE__
 #else
-#define XGF_FILENAME "None"
+#define XGF_FILENAME "-"
 #endif
 
 #ifdef XGF_USE_FILE_LINE
 #define XGF_FILELINE __LINE__
 #else
-#define XGF_FILELINE 0
+#define XGF_FILELINE -1
 #endif
 
 #define XGF_Log(system, type, ...) ::XGF::Logger::gLogRecorder.##type(::XGF::Logger::LogSystem::##system, XGF_FILENAME, XGF_FUNCTIONNAME, XGF_FILELINE, ##__VA_ARGS__)

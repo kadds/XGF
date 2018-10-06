@@ -1,6 +1,4 @@
 #include "../../Include/DebugInscriber.hpp"
-#include <iostream>  
-#include <fstream>  
 namespace XGF
 {
 	DebugInscriber DebugInscriber::mInstance;

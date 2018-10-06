@@ -2,7 +2,6 @@
 #include "..\..\Include\ShaderConst.hpp"
 #include "..\..\Include\Logger.hpp"
 #include <random>
-#include <algorithm>
 namespace XGF
 {
 	ConstantData ConstantData::mConstantData;

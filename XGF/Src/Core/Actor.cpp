@@ -1,6 +1,4 @@
 #include "../../Include/Actor.hpp"
-
-#include "../../Include/Batch.hpp"
 namespace XGF{
 	Actor::Actor():mParent(nullptr)
 	{

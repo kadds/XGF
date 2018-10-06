@@ -1,9 +1,6 @@
 #pragma once
 #include "Defines.hpp"
 #include "Batches.hpp"
-#include "Batch.hpp"
-#include "OrthoCamera.hpp"
-#include "Shader.hpp"
 #include "TextRenderer.hpp"
 #include <unordered_map>
 namespace XGF

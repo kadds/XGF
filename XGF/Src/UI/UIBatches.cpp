@@ -1,6 +1,4 @@
 #include "..\..\Include\UIBatches.hpp"
-#include "..\..\Include\ConstantData.hpp"
-#include "..\..\Include\ShaderConst.hpp"
 namespace XGF
 {
 

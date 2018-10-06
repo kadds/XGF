@@ -1,9 +1,7 @@
 #pragma once
-#include <tchar.h>
 #include "Defines.hpp"
 #include "Rectangle.hpp"
 #include <string>
-#include <vector>
 #include <functional>
 namespace XGF
 {

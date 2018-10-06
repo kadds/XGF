@@ -2,7 +2,6 @@
 #include "Defines.hpp"
 #include <d3d11_1.h>
 
-#include "LinkedList.hpp"
 #include <vector>
 #include "Buffer.hpp"
 #include "Polygon.hpp"

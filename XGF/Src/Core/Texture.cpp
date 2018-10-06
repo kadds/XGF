@@ -1,6 +1,8 @@
 #include "../../Include/Texture.hpp"
 #include "../../Include/Logger.hpp"
 #include "../../Include/GDI.hpp"
+#include "../../Include/DDSTextureLoader.h"
+#include "../../Include/WICTextureLoader.h"
 #include <algorithm>
 #include <fstream>
 namespace XGF

@@ -1,7 +1,6 @@
 #include "..\..\Include\GridRenderer.hpp"
-
 #include "../../Include/ConstantData.hpp"
-#include "../../Include/ShaderConst.hpp"
+
 namespace XGF
 {
 	GridRenderer::GridRenderer()

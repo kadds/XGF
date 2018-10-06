@@ -196,7 +196,6 @@
     <ClInclude Include="Include\EventDispatcher.hpp" />
     <ClInclude Include="Include\EventPool.hpp" />
     <ClInclude Include="Include\Font.hpp" />
-    <ClInclude Include="Include\FPS.hpp" />
     <ClInclude Include="Include\FPSCamera.hpp" />
     <ClInclude Include="Include\GDI.hpp" />
     <ClInclude Include="Include\Geometry\BoxGeometry.hpp" />
@@ -207,7 +206,6 @@
     <ClInclude Include="Include\Interpolator\Interpolator.hpp" />
     <ClInclude Include="Include\Label.hpp" />
     <ClInclude Include="Include\Line.hpp" />
-    <ClInclude Include="Include\LinkedList.hpp" />
     <ClInclude Include="Include\Logger.hpp" />
     <ClInclude Include="Include\Material\BasicMaterial.hpp" />
     <ClInclude Include="Include\Material\Material.hpp" />
@@ -264,10 +262,8 @@
     <ClCompile Include="Src\Core\ConstantData.cpp" />
     <ClCompile Include="Src\Core\Container.cpp" />
     <ClCompile Include="Src\Core\Cursor.cpp" />
-    <ClCompile Include="Src\Core\Event.cpp" />
     <ClCompile Include="Src\Core\EventDispatcher.cpp" />
     <ClCompile Include="Src\Core\Font.cpp" />
-    <ClCompile Include="Src\Core\FPS.cpp" />
     <ClCompile Include="Src\Core\FPSCamera.cpp" />
     <ClCompile Include="Src\Core\GDI.cpp" />
     <ClCompile Include="Src\Core\MsgQueue.cpp" />

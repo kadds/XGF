@@ -1,10 +1,8 @@
 #pragma once
 #include "Defines.hpp"
 #include "Shape.hpp"
-#include "Shader.hpp"
 #include "Batch.hpp"
 #include "Polygon.hpp"
-#include <vector>
 namespace XGF
 {
 	class MeshData :public Shape::Shape

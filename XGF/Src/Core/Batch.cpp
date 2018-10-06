@@ -6,7 +6,7 @@
 #include "../../Include/Texture.hpp"
 #include "../../Include/Shader.hpp"
 #include "../../Include/Polygon.hpp"
-#include <algorithm>
+
 namespace XGF
 {
 	int Batch::mClientWidth;

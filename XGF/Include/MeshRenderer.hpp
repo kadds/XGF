@@ -1,7 +1,5 @@
 #pragma once
-
 #include "Defines.hpp"
-#include <vector>
 namespace XGF
 {
 	class Batch;

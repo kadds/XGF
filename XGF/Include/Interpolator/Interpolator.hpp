@@ -2,7 +2,6 @@
 #include "../Defines.hpp"
 #define _USE_MATH_DEFINES
 #include <math.h>
-#include <unordered_map>
 #include <mutex>
 #include <memory>
 namespace XGF

@@ -1,5 +1,4 @@
 #include "../../Include/Shape.hpp"
-#include "../../Include/Rectangle.hpp"
 #include "../../Include/Batch.hpp"
 #include "../../Include/Texture.hpp"
 namespace XGF

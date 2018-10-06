@@ -1,10 +1,8 @@
 #pragma once
 #include "Defines.hpp"
-#include <thread>
 #include <list>
 #include <mutex>
 #include "EventPool.hpp"
-#include <algorithm>
 namespace XGF
 {
 	/*

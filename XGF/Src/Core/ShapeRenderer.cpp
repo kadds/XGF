@@ -1,5 +1,4 @@
 #include "..\..\Include\ShapeRenderer.hpp"
-#include "..\..\Include\ShaderConst.hpp"
 #include "..\..\Include\Rectangle.hpp"
 #include "..\..\Include\RectangleC.hpp"
 #include "..\..\Include\Circle.hpp"

@@ -2,8 +2,6 @@
 #define NOMINMAX
 #include <d3d11_1.h>
 #include "Defines.hpp"
-#include "../Include/DDSTextureLoader.h"
-#include "../Include/WICTextureLoader.h"
 #include <vector>
 namespace XGF
 {

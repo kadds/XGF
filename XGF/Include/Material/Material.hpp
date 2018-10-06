@@ -1,5 +1,4 @@
 #pragma once
-#include "./../Texture.hpp"
 #include "./../Shader.hpp"
 #include "./../Polygon.hpp"
 

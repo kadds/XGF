@@ -1,5 +1,4 @@
 #pragma once
-#include"Shader.hpp"
 #include "Batch.hpp"
 namespace XGF
 {

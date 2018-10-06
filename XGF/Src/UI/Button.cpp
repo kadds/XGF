@@ -1,5 +1,4 @@
 #include "../../Include/Button.hpp"
-#include "../../Include/Batch.hpp"
 #include "../../Include/Scene.hpp"
 #include "../../Include/XGFramework.hpp"
 #include "../../Include/UIBatches.hpp"

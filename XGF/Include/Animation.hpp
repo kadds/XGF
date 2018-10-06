@@ -1,6 +1,5 @@
 #pragma once
 #include "Defines.hpp"
-#include <vector>
 #include "Texture.hpp"
 #include "Rectangle.hpp"
 using std::vector;

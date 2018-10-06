@@ -105,13 +105,7 @@
     <ClInclude Include="Include\Font.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Include\FPS.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Include\GDI.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LinkedList.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\MsgQueue.hpp">
@@ -335,9 +329,6 @@
     <ClCompile Include="Src\Core\Font.cpp">
       <Filter>源文件\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Core\FPS.cpp">
-      <Filter>源文件\Core</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Core\GDI.cpp">
       <Filter>源文件\Core</Filter>
     </ClCompile>
@@ -490,9 +481,6 @@
     </ClCompile>
     <ClCompile Include="Src\Shape\Triangle.cpp">
       <Filter>源文件\Shape</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Core\Event.cpp">
-      <Filter>源文件\Core</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\EventDispatcher.cpp">
       <Filter>源文件\Core</Filter>

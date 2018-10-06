@@ -1,6 +1,5 @@
 #pragma once
 #include "Defines.hpp"
-#include <DirectXMath.h>
 #include "Interpolator\Interpolator.hpp"
 #include <memory>
 namespace XGF

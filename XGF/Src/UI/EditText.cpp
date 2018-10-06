@@ -1,8 +1,6 @@
 #include "..\..\Include\EditText.hpp"
 #include "..\..\Include\Scene.hpp"
 #include "..\..\Include\XGFramework.hpp"
-#include "..\..\Include\Batch.hpp"
-#include "../../Include/UIBatches.hpp"
 #include "../../Include/RectangleB.hpp"
 namespace XGF
 {
