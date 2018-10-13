@@ -49,11 +49,13 @@ namespace XGF
 
 		void SetMoveable(bool m) { mMoveable = m; };
 		void SetPosition(int x, int y) { mouseState.px = x; mouseState.py = y; };
-
+		void MakeInvalid() { mInvalid = true; };
+		void MakeValid() { mInvalid = false; };
+		bool IsInValid() { return mInvalid; };
 	private:
 		void HandleMouseEvent(DIDEVICEOBJECTDATA * didod, int len, Asyn * asyn);
 		void HandleKeyBoardEvent(DIDEVICEOBJECTDATA * didod, int len, Asyn * asyn);
-		void UpdatePos();
+		bool GetAbsolutePos();
 		HINSTANCE hInstance;
 		HWND mHwnd;
 		IDirectInput* mDxInput;
@@ -66,6 +68,7 @@ namespace XGF
 		int width, height;
 		bool mRelativeMode;
 		bool mMoveable;
+		bool mInvalid;
 		DWORD id;
 	private:
 		DISALLOW_COPY_AND_ASSIGN(DX8Input);

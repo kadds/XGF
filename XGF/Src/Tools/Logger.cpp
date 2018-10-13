@@ -11,6 +11,7 @@ namespace XGF {
 		LogRecorder gLogRecorder;
 		bool gHasRecord = false;
 		void ShowXGFDialog(char * str, char * name);
+		const char * formatStr = "File:{0}:{2}; Function:{1}; Message:{3}";
 
 		void Logger::GetHRString(char * out, int size, const char * msg, HRESULT hr)
 		{

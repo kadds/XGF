@@ -72,7 +72,7 @@ namespace XGF {
 		{
 			return fmt::format(GenerateFormatStr(args...), args...);
 		}
-
+		extern  const char * formatStr;
 		class LogRecorder
 		{
 		private:
@@ -84,23 +84,23 @@ namespace XGF {
 			template<typename ...Args>
 			void Debug(LogSystem::LogSystem system, const char *  file, const char *  functionName, int line, const Args &... args)
 			{
-				loggers[(int) system]->debug("File:{0};Function:{1};Line:{2};Message:{3}", file, functionName, line, JoinParameter(args...));
+				loggers[(int) system]->debug(formatStr, file, functionName, line, JoinParameter(args...));
 			};
 			template<typename ...Args>
 			void Info(LogSystem::LogSystem system, const char * file, const char * functionName, int line, Args &... args)
 			{
-				loggers[(int) system]->info("File:{0};Function:{1};Line:{2};Message:{3}", file, functionName, line, JoinParameter(args...));
+				loggers[(int) system]->info(formatStr, file, functionName, line, JoinParameter(args...));
 			};
 			template<typename ...Args>
 			void Warn(LogSystem::LogSystem system, const char * file, const char *  functionName, int line, Args &... args)
 			{
-				loggers[(int) system]->warn("File:{0};Function:{1};Line:{2};Message:{3}", file, functionName, line, JoinParameter(args...));
+				loggers[(int) system]->warn(formatStr, file, functionName, line, JoinParameter(args...));
 			};
 			template<typename ...Args>
 			void Error(LogSystem::LogSystem system, const char * file, const char *  functionName, int line, Args &... args)
 			{
-				loggers[(int) system]->error("File:{0};Function:{1};Line:{2};Message:{3}", file, functionName, line, JoinParameter(args...));
-				ShowXGFDialog("An error happed, show it?", gFilename);
+				loggers[(int) system]->error(formatStr, file, functionName, line, JoinParameter(args...));
+				ShowXGFDialog("A serious error has occurred, do you need to check it?", gFilename);
 			};
 
 			void OpenConsole();

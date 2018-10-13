@@ -36,6 +36,19 @@ namespace XGF
 	{
 		switch (msg)
 		{
+		case WM_MOUSEMOVE:
+			{
+				LRESULT type = SendMessage(mHwnd, WM_NCHITTEST, 0, lParam);
+				if (type == HTCLIENT)
+				{
+					dinput.MakeValid();
+				}
+				else
+				{
+					dinput.MakeInvalid();
+				}
+			}
+			break;
 		case WM_KEYDOWN:
 			if (mFocus == nullptr) break;
 			if (wParam == VK_DELETE)

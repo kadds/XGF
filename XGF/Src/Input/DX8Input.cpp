@@ -62,6 +62,7 @@ namespace XGF
 		height = rc.bottom - rc.top;
 		memset(keys, 0, sizeof(keys));
 		mMoveable = true;
+		mInvalid = false;
 		XGF_Debug(Input, "d8input subsystem initialized");
 		return true;
 	}
@@ -103,17 +104,6 @@ namespace XGF
 		}
 	}
 
-	void DX8Input::UpdatePos()
-	{
-		if (!mRelativeMode)
-		{
-			POINT p;
-			GetCursorPos(&p);
-			ScreenToClient(mHwnd, &p);
-			mouseState.px = p.x;
-			mouseState.py = p.y;
-		}
-	}
 	void DX8Input::DoEvent(Asyn * asyn)
 	{
 		mInputThread.DoAsyn([=](Asyn * as) {
@@ -208,12 +198,26 @@ namespace XGF
 	{
 		return keys[key];
 	}
+	bool DX8Input::GetAbsolutePos()
+	{
+		POINT p;
+		GetCursorPos(&p);
+		ScreenToClient(mHwnd, &p);
+		mouseState.px = p.x;
+		mouseState.py = p.y;
+		if (mouseState.px < 0 || mouseState.py < 0 )
+		{
+			return false;
+		}
+		return true;
+	}
+
 #pragma warning(push)
 #pragma warning(disable:4644)
 	void DX8Input::HandleMouseEvent(DIDEVICEOBJECTDATA * didod, int len, Asyn * asyn)
 	{
 		bool isDowm;
-		if (!mMoveable) {
+		if (!mMoveable || mInvalid) {
 			return;
 		}
 		if (mRelativeMode)
@@ -232,16 +236,20 @@ namespace XGF
 				if (mRelativeMode)
 					mouseState.px = didod[i].dwData;
 				else
-					mouseState.px += didod[i].dwData;
-				UpdatePos();
+				{
+					if (!GetAbsolutePos())
+						break;
+				}
 				asyn->PostEvent(MouseEventId::MouseMove, { mouseState.px, mouseState.py, mouseState.dowm });
 				break;
 			case DIMOFS_Y:
 				if (mRelativeMode)
 					mouseState.py = didod[i].dwData;
 				else
-					mouseState.py += didod[i].dwData;
-				UpdatePos();
+				{
+					if(!GetAbsolutePos())
+						break;
+				}
 				asyn->PostEvent(MouseEventId::MouseMove, { mouseState.px, mouseState.py, mouseState.dowm });
 				break;
 			case DIMOFS_Z:
