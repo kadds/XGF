@@ -11,6 +11,7 @@ namespace XGF
 		class Material
 		{
 		public:
+			virtual ~Material() {};
 			struct BindDataReturns
 			{
 				int count;

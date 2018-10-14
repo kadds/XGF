@@ -11,6 +11,7 @@ namespace XGF
 		{
 		public:
 			BasicMaterial(const SM::Color & color);
+			virtual ~BasicMaterial();
 			virtual BindingBridge CreateBinders(const Geometry & geometry);
 		private:
 			SM::Color baseColor;

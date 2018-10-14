@@ -9,6 +9,9 @@ namespace XGF
 		{
 			mShaders = ConstantData::GetInstance().GetPCShaders();
 		}
+		BasicMaterial::~BasicMaterial()
+		{
+		}
 		BindingBridge BasicMaterial::CreateBinders(const Geometry & geometry)
 		{
 			BindingBridge bbr;
