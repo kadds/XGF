@@ -17,7 +17,7 @@ namespace XGF
 		*/
 		RectangleC::RectangleC() :Shape2D(12, 10 * 3)
 		{
-			index ide[]{
+			Index ide[]{
 				0,3,7,
 				0,7,4,
 				3,2,6,

@@ -95,7 +95,7 @@ namespace XGF
 		bool mUsingIndex;
 		TopologyMode mTopologyMode;
 
-		index *mIndexData;
+		Index *mIndexData;
 		int mLastFrameVBStart;
 		int mLastFrameIBStart;
 		unsigned int mFramePosition;
@@ -104,9 +104,14 @@ namespace XGF
 		ID3D11Buffer *  CreateVertexBuffer(unsigned len);
 		void EndWithoutFrame(bool drawAuto = false);
 	private:
+		int mNewIndexCount;
+		int mNewVertexCount;
 		void Map(bool discard);
 		void UnMap();
 		void PrepareForRender();
+		void ResizeIndexBuffer(int newSize);
+		void ResizeVertexBuffer(int newSize);
+		void CheckAndResizeBuffers();
 		DISALLOW_COPY_AND_ASSIGN(Batch);
 	};
 

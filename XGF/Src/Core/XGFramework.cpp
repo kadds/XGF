@@ -254,26 +254,26 @@ namespace XGF
 		mSceneBatch.Begin();
 		if (mLastSceneAnimation != nullptr)
 		{
-			mLastRenderRectangle.mTransform.SetMatrix(mLastSceneAnimation->GetMatrix());
+			mLastRenderRectangle.GetTransform().SetMatrix(mLastSceneAnimation->GetMatrix());
 			mLastSceneAnimation->GetColor(c, 0);
 			cc->Set(0, 1, c);
 			mLastRenderRectangle.Render(mSceneBatch, bbr, mLastRenderToTexture.GetShaderResourceView());
 		}
 		else {
-			mRenderRectangle.mTransform.SetMatrix(DirectX::XMMatrixIdentity());
+			mRenderRectangle.GetTransform().SetMatrix(DirectX::XMMatrixIdentity());
 			mLastRenderRectangle.Render(mSceneBatch, bbr, mLastRenderToTexture.GetShaderResourceView());
 		}
 		mSceneBatch.Flush();
 		if (mSceneAnimation != nullptr)
 		{
-			mRenderRectangle.mTransform.SetMatrix(mSceneAnimation->GetMatrix());
+			mRenderRectangle.GetTransform().SetMatrix(mSceneAnimation->GetMatrix());
 			mSceneAnimation->GetColor(c, 0);
 			cc->Set(0, 1, c);
 			mRenderRectangle.Render(mSceneBatch, bbr, mRenderToTexture.GetShaderResourceView());
 		}
 		else
 		{
-			mRenderRectangle.mTransform.SetMatrix(DirectX::XMMatrixIdentity());
+			mRenderRectangle.GetTransform().SetMatrix(DirectX::XMMatrixIdentity());
 			cc->Set(0, 1, SM::Color(1.f, 1.f, 1.f, 1.f));
 			mRenderRectangle.Render(mSceneBatch, bbr, mRenderToTexture.GetShaderResourceView());
 		}
@@ -357,9 +357,11 @@ namespace XGF
 	                             mOnCloseListener(nullptr),
 	                             mOnInputListener(nullptr), mSceneAnimation(nullptr), mLastSceneAnimation(nullptr)
 	{
+		EventPool::Initialize(100);
 	}
 
 	XGFramework::~XGFramework()
 	{
+		EventPool::Shutdown();
 	}
 }

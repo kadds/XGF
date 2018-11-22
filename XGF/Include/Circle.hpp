@@ -11,7 +11,7 @@ namespace XGF
 			//precision：精度(三角形个数)
 			Circle(int precision);
 			~Circle();
-			void SetPosiotionAndRadius(float x, float y, float r);
+			void SetPositionAndRadius(float x, float y, float r);
 			virtual bool IsInBoundBox(const Point & p) override;
 
 			virtual void SetPosition(const Point & p);

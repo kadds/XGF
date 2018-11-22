@@ -53,7 +53,7 @@ public:
 		label->SetZ(0.4f);
 		GetRootContainer().AddChild(label);
 		
-		label->GetClickHelper().AddOnClickListener([this](const MousePoint & ms, int mouseButton) {
+		label->GetClickHelper().AddOnClickListener([this](auto, const MousePoint & ms, int mouseButton) {
 			AsyncTask::NewTask(mFramework->GetTheard(), [this](std::shared_ptr<AsyncTask> asyn) {
 				MessageBox(NULL, L"YOU CLICK Label!!", L"Exe", 0);
 				asyn->Finish(0, 0);
@@ -67,7 +67,7 @@ public:
 		nextButton->SetPositionAndSize(0, 240, 80, 40);
 		nextButton->SetZ(0.06f);
 		nextButton->SetBorderSize(1.f);
-		nextButton->GetClickHelper().AddOnClickListener([this](const MousePoint & ms, int mouseButton) {
+		nextButton->GetClickHelper().AddOnClickListener([this](auto, const MousePoint & ms, int mouseButton) {
 			//this->GetFramework()->SwitchScene();
 		});
 		
@@ -77,7 +77,7 @@ public:
 		buttonux->SetPositionAndSize(10, 100, 60, 40);
 		buttonux->SetBorderSize(2);
 		buttonux->SetZ(0.07f);
-		buttonux->GetClickHelper().AddOnClickListener([this](const MousePoint & ms, int mouseButton) {
+		buttonux->GetClickHelper().AddOnClickListener([this](auto, const MousePoint & ms, int mouseButton) {
 			auto gdi = this->GetFramework()->GetGDI();
 			if (gdi->GetDisplayMode() == DisplayMode::Borderless)
 				gdi->SetDisplayMode(DisplayMode::Windowed, 0, 0, 600, 400, false);

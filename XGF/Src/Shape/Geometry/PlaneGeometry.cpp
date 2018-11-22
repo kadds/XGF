@@ -1,33 +1,52 @@
 #include "..\..\..\Include\Geometry\PlaneGeometry.hpp"
 
-namespace XGF
+namespace XGF::Shape
 {
-	namespace Shape
+	void PlaneGeometry::Init()
 	{
-		PlaneGeometry::PlaneGeometry(float width, float height) : Geometry(4, 6)
+		mPolygonPleNormal = std::make_shared<PolygonPlePoint3>(mPolygon->mCount);
+		float width = mWidth, height = mHeight;
+		int widthSegments = mWidthSegments, heightSegments = mHeightSegments;
+		XGF_ASSERT(widthSegments > 0 && heightSegments > 0);
+
+		
+
+		const auto halfWidth = width / 2;
+		const auto halfHeight = height / 2;
+		const auto segmentWidth = width / widthSegments;
+		const auto segmentHeight = height / heightSegments;
+
+		auto normal = Point(0, 1, 0);
+		auto* vec = mPolygon->mPoint;
+		auto* inc = mPolygonPleIndex->mIndex;
+		auto* fc = mPolygonPleNormal->mPoint;
+		auto gs = heightSegments + 1;
+		auto ms = widthSegments + 1;
+		for (int i = 0; i < gs; i++)
 		{
-			auto halfWidth = width / 2;
-			auto halfHeight = height / 2;
-			mPolygon->mPoint[0] = {halfWidth, 0, halfHeight};
-			mPolygon->mPoint[1] = { -halfWidth, 0, halfHeight };
-			mPolygon->mPoint[2] = { -halfWidth, 0, -halfHeight };
-			mPolygon->mPoint[3] = { halfWidth, 0, -halfHeight };
-
-			mPolygonPleIndex->mIndex[0] = 2;
-			mPolygonPleIndex->mIndex[1] = 1;
-			mPolygonPleIndex->mIndex[2] = 0;
-			mPolygonPleIndex->mIndex[3] = 0;
-			mPolygonPleIndex->mIndex[4] = 3;
-			mPolygonPleIndex->mIndex[5] = 2;
-
+			float y = segmentHeight * i - halfHeight;
+			for (int j = 0; j < ms; j++)
+			{
+				float x = segmentWidth * j - halfWidth;
+				(vec++)->Set(x, 0, y);
+			}
 		}
-
-		PlaneGeometry::~PlaneGeometry()
+		for (int i = 0; i < heightSegments; i++)
 		{
-		}
-		std::shared_ptr<PolygonPleTextureBinder> PlaneGeometry::CreateUVBinder()
-		{
-			return std::make_shared<PolygonPleTextureBinder>(4);
+			for (int j = 0; j < widthSegments; j++)
+			{
+				int a = j + ms * i;
+				int b = j + ms * (i + 1);
+				int c = (j + 1) + ms * (i + 1);
+				int d = (j + 1) + ms * i;
+				*(inc++) = a;
+				*(inc++) = b;
+				*(inc++) = d;
+				*(inc++) = b;
+				*(inc++) = c;
+				*(inc++) = d;
+				*(fc++) = normal;
+			}
 		}
 	}
 }

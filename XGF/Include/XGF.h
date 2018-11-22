@@ -58,6 +58,7 @@
 #include "MeshRenderer.hpp"
 #include "Geometry\BoxGeometry.hpp"
 #include "Geometry\PlaneGeometry.hpp"
+#include "Geometry/SphereGeometry.hpp"
 #include "Material\BasicMaterial.hpp"
 //***********************************
 #include "TrackballCameraController.hpp"

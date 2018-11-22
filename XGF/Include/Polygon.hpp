@@ -48,13 +48,13 @@ namespace XGF
 	{
 	public:
 		// 起始地址
-		index *mIndex;
+		Index *mIndex;
 		// 索引个数
 		int mCount;
 		PolygonPleIndex(int n);
 		~PolygonPleIndex();
 		PolygonPleIndex(const PolygonPleIndex& tb);
-
+		void ShrinkTo(int count);
 		void CopyTo(void * Des, int offset) const;
 		bool operator ==(const PolygonPleIndex &rx) const {
 			if (&rx == this)
@@ -67,7 +67,7 @@ namespace XGF
 			}
 			return  true;
 		}
-		index Get(int n) const;
+		Index Get(int n) const;
 	};
 
 	/**
@@ -180,7 +180,11 @@ namespace XGF
 
 		void AddBinder(const std::shared_ptr<PolygonPleBinder> c);
 		void AddBinder(const BindingBridge & c);
+		void AddBinder(const std::vector<std::shared_ptr<PolygonPleBinder>> & c);
 		void AddPlaceHolder();
+		void RemoveBinder(int index);
+		void RemoveFrom(int indexStart);
+		void Clear();
 		std::shared_ptr<PolygonPleBinder> GetBinder(int i) const { return binders[i]; };
 		const std::vector<std::shared_ptr<PolygonPleBinder>> & GetBinders() { return binders; };
 		size_t Count() const { return binders.size(); }

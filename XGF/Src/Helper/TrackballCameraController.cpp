@@ -20,7 +20,7 @@ namespace XGF
 					float dy = mLastPosition.y - cp.y;
 					mLastPosition = cp;
 					if (mOperatorType == OperatorType::Rotate)
-						Rotate(dx * mRotateSpeed, dy * mRotateSpeed);
+						Rotate(-dx * mRotateSpeed, dy * mRotateSpeed);
 					else if (mOperatorType == OperatorType::Move)
 						Move(dx * mMoveSpeed, dy * mMoveSpeed);
 					break;

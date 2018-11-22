@@ -253,9 +253,32 @@ namespace XGF
 		binders.insert(binders.end(), c.binders.begin(), c.binders.end());
 	}
 
+	void BindingBridge::AddBinder(const std::vector<std::shared_ptr<PolygonPleBinder>>& c)
+	{
+		binders.insert(binders.end(), c.begin(), c.end());
+	}
+
 	void BindingBridge::AddPlaceHolder()
 	{
 		binders.push_back(nullptr);
+	}
+
+	void BindingBridge::RemoveBinder(int index)
+	{
+		XGF_ASSERT(index < binders.size());
+		binders.erase(binders.begin() + index);
+	}
+
+	void BindingBridge::RemoveFrom(int indexStart)
+	{
+		XGF_ASSERT(indexStart < binders.size());
+		XGF_ASSERT(indexStart >= 0);
+		binders.erase(binders.begin() + indexStart, binders.end());
+	}
+
+	void BindingBridge::Clear()
+	{
+		binders.clear();
 	}
 
 
@@ -343,10 +366,10 @@ namespace XGF
 	////////////////////////////////////////////////////////////////////////////
 	PolygonPleIndex::PolygonPleIndex(int n)
 	{
-		mIndex = new index[n];
+		mIndex = new Index[n];
 		mCount = n;
 	}
-	index PolygonPleIndex::Get(int n) const
+	Index PolygonPleIndex::Get(int n) const
 	{
 		return mIndex[n];
 	}
@@ -358,15 +381,24 @@ namespace XGF
 	{
 		for (int i = 0; i < mCount; i++)
 		{
-			*(static_cast<index *>(Des) + i) = mIndex[i] + offset;
+			*(static_cast<Index *>(Des) + i) = mIndex[i] + offset;
 		}
 	}
 	PolygonPleIndex::PolygonPleIndex(const PolygonPleIndex & tb)
 	{
 		if (&tb == this) return;
 		this->mCount = tb.mCount;
-		mIndex = new index[mCount];
-		memcpy(this->mIndex, tb.mIndex, sizeof(index) * mCount);
+		mIndex = new Index[mCount];
+		memcpy(this->mIndex, tb.mIndex, sizeof(Index) * mCount);
+	}
+
+	void PolygonPleIndex::ShrinkTo(int count)
+	{
+		XGF_ASSERT(mCount >= count);
+		if(mCount >= count)
+		{
+			mCount = count;
+		}
 	}
 
 	PolygonPleConstantExColorBinder::PolygonPleConstantExColorBinder(int CountInEachLayer[], int LayerCount) :PolygonPleColorBinder(LayerCount)

@@ -10,7 +10,7 @@ namespace XGF
 	*/
 	class Transform
 	{
-	public:
+	private:
 		Point mRotationOrigin;
 		Point mScaleOrigin;
 		Point4 mScaleOriginRotation;
@@ -22,9 +22,9 @@ namespace XGF
 		Actions mActions;
 	public:
 		Transform();
-		void SetRotationAngle(Point angle);
-		void SetScale(Point p);
-		void SetTranslation(Point translation);
+		void SetRotationAngle(const Point & angle);
+		void SetScale(const Point & p);
+		void SetTranslation(const Point & translation);
 		void UpdateAction(float dt);
 		void SetScaleOrigin(Point &p) { mScaleOrigin = p; }
 		void SetRotationOrigin(Point &p) { mRotationOrigin = p; }
@@ -34,6 +34,12 @@ namespace XGF
 		void AddRotationAction(std::unique_ptr<Action> action);
 		void AddTranslationAction(std::unique_ptr<Action> action);
 
+		void TranslateToX(float d);
+		void TranslateX(float d);
+		void TranslateToY(float d);
+		void TranslateY(float d);
+		void TranslateToZ(float d);
+		void TranslateZ(float d);
 		void SetChangeFlag();
 	private:
 		DirectX::XMFLOAT4X4 mMatrix;

@@ -19,7 +19,7 @@ namespace XGF
 		Circle::~Circle()
 		{
 		}
-		void Circle::SetPosiotionAndRadius(float x, float y, float r)
+		void Circle::SetPositionAndRadius(float x, float y, float r)
 		{
 			mRadius = r;
 			mPolygon->mPoint[0] = { x, y , 0.1f };
@@ -48,7 +48,7 @@ namespace XGF
 		}
 		void Circle::SetPosition(const Point & p)
 		{
-			SetPosiotionAndRadius(p.x, p.y, mRadius);
+			SetPositionAndRadius(p.x, p.y, mRadius);
 		}
 		int Circle::GetLayer(int layer[])
 		{

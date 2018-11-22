@@ -6,12 +6,12 @@ namespace XGF
 	{
 		DirectX::XMStoreFloat4x4(&mMatrix, DirectX::XMMatrixIdentity());
 	}
-	void Transform::SetRotationAngle(Point angle)
+	void Transform::SetRotationAngle(const Point &  angle)
 	{
 		mRotation = angle;
 		mIsChange = true;
 	}
-	void Transform::SetScale(Point p)
+	void Transform::SetScale(const Point &  p)
 	{
 		mScale = p;
 		mIsChange = true;
@@ -54,7 +54,7 @@ namespace XGF
 	{
 		mIsChange = true;
 	}
-	void Transform::SetTranslation(Point translation) {
+	void Transform::SetTranslation(const Point & translation) {
 		mTranslation = translation;
 		mIsChange = true;
 	}
@@ -66,4 +66,36 @@ namespace XGF
 			mIsChange = true;
 		}
 	}
+	void Transform::TranslateToX(float d)
+	{
+		mTranslation.x = d;
+		SetChangeFlag();
+	}
+	void Transform::TranslateToY(float d)
+	{
+		mTranslation.y = d;
+		SetChangeFlag();	
+	}
+	void Transform::TranslateToZ(float d)
+	{
+		mTranslation.z = d;
+		SetChangeFlag();
+	}
+	void Transform::TranslateX(float d)
+	{
+		mTranslation.x += d;
+		SetChangeFlag();
+	}
+	void Transform::TranslateY(float d)
+	{
+		mTranslation.y += d;
+		SetChangeFlag();
+	}
+	void Transform::TranslateZ(float d)
+	{
+		mTranslation.z += d;
+		SetChangeFlag();
+	}
+
+
 }

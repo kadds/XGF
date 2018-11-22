@@ -67,6 +67,8 @@ namespace XGF
 	public:
 		void Initialize(GDI* gdi, const wchar_t* PSname);
 		void Initialize(GDI* gdi, const unsigned char* PScode, unsigned int codeLen);
+		void Initialize(GDI* gdi, const unsigned char* PSTextCode, unsigned int textCodeLen, const char * fMark);
+
 		void Shutdown();
 		PixelShader() {};
 	private:
@@ -80,6 +82,7 @@ namespace XGF
 		//interval = 0 默认全在一个 slot 中
 		void Initialize(GDI* gdi, const wchar_t* VSname, unsigned int interval = 0);
 		void Initialize(GDI* gdi, const unsigned char* VScode, unsigned int codeLen, unsigned int interval = 0);
+		void Initialize(GDI* gdi, const unsigned char* VSTextCode, unsigned int textCodeLen, const char * fMark, unsigned int interval = 0);
 
 		void Shutdown();
 		void SetInputLayout();

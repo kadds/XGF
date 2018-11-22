@@ -20,6 +20,8 @@ using namespace XGF;
 #pragma comment(lib,"./../../Bin/Release/XGF.lib")
 #endif
 #endif
+using namespace std;
+
 int RunGame(HINSTANCE hInstance);
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
@@ -40,25 +42,47 @@ public:
 	
 	virtual void OnCreate(GDI * gdi) override
 	{
+		auto res = std::vector<ResourceInfo>();
+		res.push_back(ResourceInfo(L"logo.png", L"logo"));
+		
+		mTextureResourceManager.LoadResource(gdi, res);
+			
+		texture = new Texture(*mTextureResourceManager.GetResourceByAlias(L"logo"));
+
 		mFont.Initialize(gdi, Tools::GetFontPath(L"msyh"), 16);
 		mTextRenderer.Initialize(gdi, &mFont, 64);
 		mMeshRenderer.Initialize(gdi);
-		box = new Shape::BoxGeometry(1.f, 1.f, 1.f);
-		material = new Shape::BasicMaterial(SM::Color(0, 1, 1, 1));
-		planeMaterial = new Shape::BasicMaterial(SM::Color(.6f, .6f, .6f, 1.f));
-		mesh = new Shape::Mesh(box, material);
-		plane = new Shape::PlaneGeometry(10, 10);
-		planeMesh = new Shape::Mesh(plane, planeMaterial);
-		box->mTransform.mTranslation.y = 0.5;
-		mMeshRenderer.Add(mesh);
-		mMeshRenderer.Add(planeMesh);
+		boxMesh = make_unique<Shape::Mesh>(
+			make_unique<Shape::BoxGeometry>(1.f, 1.f, 1.f), 
+			make_unique<Shape::BasicMaterial>(SM::Color(1.0f, 0.2f, 0.f, 1.f), texture)
+		);
+		boxMesh->GetGeometry()->GetTransform().TranslateToY(0.51);
+		
+		planeMesh = make_unique<Shape::Mesh>(
+			make_unique<Shape::PlaneGeometry>(10, 10, 2, 2),
+			make_unique<Shape::BasicMaterial>(SM::Color(1.f, 1.f, 1.f, 1.f), texture)
+		);
+		planeMesh->GetGeometry()->GetTransform().TranslateToY(-0.01);
+
+		sphereMesh = make_unique<Shape::Mesh>(
+			make_unique<Shape::SphereGeometry>(1, 16, 16),
+			make_unique<Shape::BasicMaterial>(SM::Color(1.f, 1.f, 1.f, 1.f), texture)
+		);
+		sphereMesh->GetGeometry()->GetTransform().SetTranslation(Point(1, 1.1f, 1));
+		//sphereMesh->GetMaterial()->SetRasterizerState(RasterizerState::SolidAndCutNone);
+		mMeshRenderer.Add(boxMesh.get());
+		mMeshRenderer.Add(planeMesh.get());
+		mMeshRenderer.Add(sphereMesh.get());
+
 		mAxisRenderer.Initialize(gdi, 1e5f);
 		mAxisRenderer.SetAxisXColor(SM::Color(1.f, 0.f, 0.f, 1.f), SM::Color(0.8f, 0.f, 0.f, 1.f));
 		mAxisRenderer.SetAxisYColor(SM::Color(0.f, 1.f, 0.f, 1.f), SM::Color(0.f, 0.8f, 0.f, 1.f));
 		mAxisRenderer.SetAxisZColor(SM::Color(0.f, 0.f, 1.f, 1.f), SM::Color(0.f, 0.f, 0.8f, 1.f));
+		mCamera3D.SetMinDistance(0.1f);
+		mCamera3D.SetMaxDistance(100.f);
 		mCamera3D.LookAt(Point(-1.5f, -1.5f, 1.5f), Point(0, 0, 0), Point::Up);
 		mTrackballCameraController.SetAllSpeed(0.004f);
-		this->GetRootContainer().GetEventDispatcher().InsertAllEventListener( std::bind(&GameScene::OnMouse, this, std::placeholders::_1));
+		this->GetRootContainer().GetEventDispatcher().InsertAllEventListener(bind(&GameScene::OnMouse, this, placeholders::_1));
 	};
 	virtual void OnDestroy() override
 	{
@@ -66,12 +90,11 @@ public:
 		mMeshRenderer.Shutdown();
 		mTextRenderer.Shutdown();
 		mFont.Shutdown();
-		delete box;
-		delete material;
-		delete mesh;
-		delete plane;
-		delete planeMesh;
-		delete planeMaterial;
+		delete texture;
+		boxMesh.reset(nullptr);
+		planeMesh.reset(nullptr);
+		sphereMesh.reset(nullptr);
+		mTextureResourceManager.ReleaseAllResource();
 	};
 	virtual void Render(float deltaTime) override
 	{
@@ -126,15 +149,14 @@ private:
 	Font mFont;
 	TextRenderer mTextRenderer;
 	
-	Shape::BoxGeometry * box;
-	Shape::PlaneGeometry * plane;
-	Shape::Material * material, * planeMaterial;
-	Shape::Mesh * mesh, * planeMesh;
+	std::unique_ptr<Shape::Mesh> boxMesh, planeMesh, sphereMesh;
 
 	Shape::MeshRenderer mMeshRenderer;
 	AxisRenderer mAxisRenderer;
 
 	TrackballCameraController mTrackballCameraController = &mCamera3D;
+	Texture * texture;
+	TextureResourceManager mTextureResourceManager;
 };
 
 
@@ -144,7 +166,7 @@ int RunGame(HINSTANCE hInstance)
 	XGFramework framework;
 	GDI gdi;
 
-	auto gameScene = std::make_shared<GameScene>();
+	auto gameScene = make_shared<GameScene>();
 	framework.SetOnCloseListener([](XGFramework &) {return true; });
 
 	WindowProperty windowProperty;

@@ -11,22 +11,22 @@ namespace XGF
 	{
 	}
 
-	void ClickHelper::OnMouseDowm(const MousePoint & mp, bool isInTarget)
+	void ClickHelper::OnMouseDown(const MousePoint & mp, bool isInTarget)
 	{
 		if ((mState == CLICK_STATE_NORMAL || mState == CLICK_STATE_FORCE) && isInTarget)
 		{
-			mState = CLICK_STATE_DOWM;
+			mState = CLICK_STATE_DOWN;
 		}
 	}
 
-	void ClickHelper::OnMouseUp(const MousePoint & mp, bool isInTarget)
+	void ClickHelper::OnMouseUp(Control * source, const MousePoint & mp, bool isInTarget)
 	{
-		if (mState == CLICK_STATE_DOWM)
+		if (mState == CLICK_STATE_DOWN)
 		{
 			if (isInTarget)
 			{
 				mState = CLICK_STATE_UP;
-				OnClick(mp);
+				OnClick(source, mp);
 				mState = CLICK_STATE_FORCE;
 			}
 			else
@@ -38,7 +38,7 @@ namespace XGF
 
 	void ClickHelper::OnMouseMove(bool isInTarget)
 	{
-		if (mState != CLICK_STATE_DOWM)
+		if (mState != CLICK_STATE_DOWN)
 		{
 			if (isInTarget)
 			{
@@ -52,11 +52,11 @@ namespace XGF
 
 	}
 
-	void ClickHelper::OnClick(const MousePoint & mp)
+	void ClickHelper::OnClick(Control * source, const MousePoint & mp)
 	{
 		for each (auto var in mOnClickListener)
 		{
-			var(mp,0);
+			var(source, mp,0);
 		}
 	}
 

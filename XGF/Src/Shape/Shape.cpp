@@ -30,24 +30,13 @@ namespace XGF
 			}
 		}
 
-		void Shape::Render(Batch & batch, const BindingBridge & bbrige, const Texture & tx)
+		void Shape::Reset(int n, int indexCount)
 		{
-			Render(batch, bbrige, tx.GetRawTexture());
+			mPolygon = std::make_shared<PolygonPlePoint3>(n);
+			mPolygonPleIndex = std::make_shared<PolygonPleIndex>(indexCount);
+			// TODO: reset buffer
 		}
-		void Shape::Render(Batch & batch, const BindingBridge & bbrige, ID3D11ShaderResourceView * tex)
-		{
-			batch.GetShaderStage()->SetPSSRV(0, tex);//if srv index is 0
-			Render(batch, bbrige);
-		}
-		void Shape::Render(Batch & batch, const BindingBridge & bbrige)
-		{
-			auto ppe = std::make_shared<PolygonPlePoint3>(mPolygon->mCount);
-			auto matirix = mTransform.GetMatrix();
-			mPolygon->MulTo(ppe, matirix);
-			BindingBridge bbr(bbrige);
-			bbr.InsertBinder(ppe, 0);
-			batch.DrawPolygon(GetIndex(), bbr);
-		}
+
 		float triangleArea(Point a, Point b, Point c)
 		{
 			float result = std::abs((a.x * b.y + b.x * c.y + c.x * a.y - b.x * a.y

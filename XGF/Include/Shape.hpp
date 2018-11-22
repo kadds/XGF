@@ -27,13 +27,13 @@ namespace XGF
 			std::shared_ptr<PolygonPleIndex> GetIndex() const;
 			void SetZ(float z);
 			float GetZ() { return mPolygon->mPoint[0].z; }
-			void Render(Batch & batch, const BindingBridge & bbrige, const Texture & tx);
-			virtual void Render(Batch & batch, const BindingBridge & bbrige, ID3D11ShaderResourceView * tex);
-			virtual void Render(Batch & batch, const BindingBridge & bbrige);
 
+			Transform & GetTransform() { return mTransform; };
+		protected:
+			void Reset(int n, int indexCount);
 			Transform mTransform;
 		private:
-			
+			//TopologyMode
 		};
 		float triangleArea(Point a, Point b, Point c);
 		//A Point is in Polygon inner?

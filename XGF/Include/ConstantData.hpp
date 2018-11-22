@@ -18,6 +18,7 @@ namespace XGF
 		Shaders GetFontShaders() { return mFontShaders; }
 		Shaders GetPTShaders() { return mPTShaders; }
 		Shaders GetPCShaders() { return mPCShaders; }
+		Shaders GetBasicShaders() { return mBasicShaders; }
 		Shaders GetPCTShaders() { return mPCTShaders; }
 		static ConstantData & GetInstance() {
 			return mConstantData;
@@ -33,10 +34,14 @@ namespace XGF
 		VertexShader mPCTVShader;
 		PixelShader mPCTPShader;
 
+		VertexShader mBasicVShader;
+		PixelShader mBasicPShader;
+
 		Shaders mFontShaders;
 		Shaders mPTShaders;
 		Shaders mPCShaders;
 		Shaders mPCTShaders;
+		Shaders mBasicShaders;
 
 		ID3D11ShaderResourceView * mRandomSRV;
 		static ConstantData mConstantData;

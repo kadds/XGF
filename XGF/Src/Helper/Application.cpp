@@ -21,13 +21,14 @@ namespace XGF
 		mInstance = hInstance;
 		mFramework = &framework;
 		SetProcessDPIAware();
-		EventPool::Initialize(100);
+		
 		RegisterWindowsClass(hInstance, windowProperty.className, windowProperty.ICON, windowProperty.SICON);
 		HWND hWnd = CreateWindowW(windowProperty.className, windowProperty.title, !windowProperty.canResize ? WS_OVERLAPPEDWINDOW &~WS_THICKFRAME & ~WS_MAXIMIZEBOX : WS_OVERLAPPEDWINDOW,
 			windowProperty.point.x, windowProperty.point.y, windowProperty.size.cx, windowProperty.size.cy, nullptr, nullptr, hInstance, this);
 		mHwnd = hWnd;
 		if (!hWnd)
 		{
+			XGF_Error(Application, "An error occurred while creating a window");
 			return false;
 		}
 		mSysCursor = LoadCursor(NULL, IDC_ARROW);
@@ -73,7 +74,6 @@ namespace XGF
 			}
 		}
 		XGF_Debug(Application, "ApplicationEnd");
-		EventPool::Shutdown();
 		return exitCode;
 
 	}

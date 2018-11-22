@@ -1,87 +1,90 @@
 #include "..\..\..\Include\Geometry\BoxGeometry.hpp"
 
-namespace XGF
+namespace XGF::Shape
 {
-	namespace Shape
+	void BoxGeometry::Init(float x, float y, float z)
 	{
-		BoxGeometry::BoxGeometry() :Geometry(4 * 6, 3 * 2 * 6)
-		{
-			InitializeIndex();
-			this->SetSize(1, 1, 1);
-		}
-		BoxGeometry::BoxGeometry(float x, float y, float z) : Geometry(4 * 6, 3 * 2 * 6)
-		{
-			InitializeIndex();
-			this->SetSize(x, y, z);
-		}
-		void BoxGeometry::SetSize(float x, float y, float z)
-		{
-			float hx = x / 2.f, hy = y / 2.f, hz = z / 2.f;
-			Point * point = mPolygon->mPoint;
+		mPolygonPleNormal = std::make_shared<PolygonPlePoint3>(mPolygon->mCount);
 
-			// 1 ¸ºzÖá
-			*(point++) = { hx, hy, -hz };
-			*(point++) = { hx, -hy, -hz };
-			*(point++) = { -hx, -hy, -hz };
-			*(point++) = { -hx, hy, -hz };
+		float hx = x / 2.f, hy = y / 2.f, hz = z / 2.f;
+		Point* point = mPolygon->mPoint;
+		auto * normal = mPolygonPleNormal->mPoint;
 
-			// 2 ¸ºyÖá
-			*(point++) = { hx, -hy, -hz };
-			*(point++) = { hx, -hy, hz };
-			*(point++) = { -hx, -hy, hz };
-			*(point++) = { -hx, -hy, -hz };
-			// 3 ¸ºxÖá
-			*(point++) = { -hx, -hy, -hz };
-			*(point++) = { -hx, -hy, hz };
-			*(point++) = { -hx, hy, hz };
-			*(point++) = { -hx, hy, -hz };
+		// 1 ¸ºzÖá
+		*(point++) = { hx, hy, -hz };
+		*(point++) = { hx, -hy, -hz };
+		*(point++) = { -hx, -hy, -hz };
+		*(point++) = { -hx, hy, -hz };
+		(normal++)->Set(0, 0, -1);
+		(normal++)->Set(0, 0, -1);
+		(normal++)->Set(0, 0, -1);
+		(normal++)->Set(0, 0, -1);
+		// 2 ¸ºyÖá
+		*(point++) = { hx, -hy, -hz };
+		*(point++) = { hx, -hy, hz };
+		*(point++) = { -hx, -hy, hz };
+		*(point++) = { -hx, -hy, -hz };
+		(normal++)->Set(0, -1, 0);
+		(normal++)->Set(0, -1, 0);
+		(normal++)->Set(0, -1, 0);
+		(normal++)->Set(0, -1, 0);
 
-
-			// 4 zÖá
-			*(point++) = { hx, hy, hz };
-			*(point++) = { hx, -hy, hz };
-			*(point++) = { -hx, -hy, hz };
-			*(point++) = { -hx, hy, hz };
-
-			// 5 yÖá
-			*(point++) = { hx, hy, -hz };
-			*(point++) = { hx, hy, hz };
-			*(point++) = { -hx, hy, hz };
-			*(point++) = { -hx, hy, -hz };
-			// 6 xÖá
-			*(point++) = { hx, -hy, -hz };
-			*(point++) = { hx, -hy, hz };
-			*(point++) = { hx, hy, hz };
-			*(point++) = { hx, hy, -hz };
+		// 3 ¸ºxÖá
+		*(point++) = { -hx, -hy, -hz };
+		*(point++) = { -hx, -hy, hz };
+		*(point++) = { -hx, hy, hz };
+		*(point++) = { -hx, hy, -hz };
+		(normal++)->Set(-1, 0, 0);
+		(normal++)->Set(-1, 0, 0);
+		(normal++)->Set(-1, 0, 0);
+		(normal++)->Set(-1, 0, 0);
 
 
+		// 4 zÖá
+		*(point++) = { hx, hy, hz };
+		*(point++) = { hx, -hy, hz };
+		*(point++) = { -hx, -hy, hz };
+		*(point++) = { -hx, hy, hz };
+		(normal++)->Set(0, 0, 1);
+		(normal++)->Set(0, 0, 1);
+		(normal++)->Set(0, 0, 1);
+		(normal++)->Set(0, 0, 1);
 
-		}
+		// 5 yÖá
+		*(point++) = { hx, hy, -hz };
+		*(point++) = { hx, hy, hz };
+		*(point++) = { -hx, hy, hz };
+		*(point++) = { -hx, hy, -hz };
+		(normal++)->Set(0, 1, 0);
+		(normal++)->Set(0, 1, 0);
+		(normal++)->Set(0, 1, 0);
+		(normal++)->Set(0, 1, 0);
 
-		std::shared_ptr<PolygonPleTextureBinder> BoxGeometry::CreateUVBinder()
-		{
-			std::shared_ptr<PolygonPleTextureBinder> ptb = std::make_shared<PolygonPleTextureBinder>(mPolygon->mCount);
-			
-			return ptb;
-		}
+		// 6 xÖá
+		*(point++) = { hx, -hy, -hz };
+		*(point++) = { hx, -hy, hz };
+		*(point++) = { hx, hy, hz };
+		*(point++) = { hx, hy, -hz };
+		(normal++)->Set(1, 0, 0);
+		(normal++)->Set(1, 0, 0);
+		(normal++)->Set(1, 0, 0);
+		(normal++)->Set(1, 0, 0);
 
-		void BoxGeometry::InitializeIndex()
-		{
-			index ix[] = {
-				0, 1, 2, 2, 3, 0, //face 0
-				4, 5, 6, 6, 7, 4, //face 1
-				8, 9, 10, 10, 11, 8, //face 2
-				14, 13, 12, 12, 15, 14,
-				18, 17, 16, 16, 19, 18,
-				22, 21, 20, 20, 23, 22
-			};
+		InitializeIndex();
+	}
 
-			memcpy_s(mPolygonPleIndex->mIndex, sizeof(ix), ix, sizeof(ix));
-		}
+	void BoxGeometry::InitializeIndex()
+	{
+		Index ix[] = {
+			0, 1, 2, 2, 3, 0, //face 0
+			4, 5, 6, 6, 7, 4, //face 1
+			8, 9, 10, 10, 11, 8, //face 2
+			14, 13, 12, 12, 15, 14,
+			18, 17, 16, 16, 19, 18,
+			22, 21, 20, 20, 23, 22
+		};
 
-		BoxGeometry::~BoxGeometry()
-		{
-		}
+		memcpy_s(mPolygonPleIndex->mIndex, sizeof(ix), ix, sizeof(ix));
 	}
 }
 

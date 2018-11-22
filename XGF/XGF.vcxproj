@@ -201,6 +201,7 @@
     <ClInclude Include="Include\Geometry\BoxGeometry.hpp" />
     <ClInclude Include="Include\Geometry\Geometry.hpp" />
     <ClInclude Include="Include\Geometry\PlaneGeometry.hpp" />
+    <ClInclude Include="Include\Geometry\SphereGeometry.hpp" />
     <ClInclude Include="Include\GridRenderer.hpp" />
     <ClInclude Include="Include\InputManager.hpp" />
     <ClInclude Include="Include\Interpolator\Interpolator.hpp" />
@@ -293,6 +294,7 @@
     <ClCompile Include="Src\Shape\Geometry\BoxGeometry.cpp" />
     <ClCompile Include="Src\Shape\Geometry\Geometry.cpp" />
     <ClCompile Include="Src\Shape\Geometry\PlaneGeometry.cpp" />
+    <ClCompile Include="Src\Shape\Geometry\SphereGeometry.cpp" />
     <ClCompile Include="Src\Shape\Line.cpp" />
     <ClCompile Include="Src\Shape\Material\BasicMaterial.cpp" />
     <ClCompile Include="Src\Shape\Material\Material.cpp" />

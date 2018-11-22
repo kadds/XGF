@@ -42,7 +42,7 @@ namespace XGF
 		XGF_ASSERT(mGetInnerRectangle);
 		Shape::Rectangle rc;
 		mGetInnerRectangle(rc);
-		auto matrix = rc.mTransform.GetMatrix();
+		auto matrix = rc.GetTransform().GetMatrix();
 		if (mCaretPos == 0)
 		{
 			mTextRenderer->DrawStringRtPosition(mInputString.c_str() + mFirstCharPos, color, &rc, &matrix, 0);

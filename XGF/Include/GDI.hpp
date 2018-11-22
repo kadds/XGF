@@ -64,6 +64,9 @@ namespace XGF
 	public:
 		explicit GDI() {};
 		~GDI() {};
+		GDI(GDI &) = delete;
+		GDI & operator=(GDI &) = delete;
+
 		//框架调用
 		void Create();
 		//框架调用
@@ -113,6 +116,13 @@ namespace XGF
 		void SetDepthStencilState(DepthStencilState ds);
 		void SetRasterizerState(RasterizerState rs);
 		void CreateSwapChain();
+		void ReCreateSwapChain();
+		void ReCreateRenderToTextures();
+		void Able4xMsaa();
+		void Disable4xMsaa();
+		bool IsEnable4xMsaa();
+		int Query4xMsaaQuality();
+		bool CanEnable4xMsaa();
 	protected:
 		IDXGIFactory2 * mFactory2 = nullptr;
 		IDXGIFactory1 * mFactory1 = nullptr;
@@ -137,7 +147,8 @@ namespace XGF
 		ID3D11DepthStencilState * mDepthStencilState[(int)DepthStencilState::InvalidValue];
 
 		ID3D11RasterizerState * mRasterizerState[(int)RasterizerState::InvalidValue];
-
+		UINT m4xMsaaQuality = 0;
+		bool mEnable4xMsaa = true;
 		bool mIsStandby = false;
 		//显示的窗口句柄
 		HWND mHwnd;
@@ -147,7 +158,7 @@ namespace XGF
 		UINT mWidth;
 		UINT mHeight;
 		HINSTANCE mInstance;
-		std::stack<RenderToTexture *> mRTTs;
+		std::stack<RenderToTexture *> mRenderToTextures;
 		DisplayMode mDisplayMode;
 		std::vector<std::pair<int, DXGI_MODE_DESC *>> mScreenMode;
 
@@ -165,8 +176,7 @@ namespace XGF
 #ifdef _DEBUG
 		void QueryDebugInterface();
 #endif
-	private:
-		DISALLOW_COPY_AND_ASSIGN(GDI);
+		
 	};
 #ifdef _DEBUG
 #define PutDebugString(de) de->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof(XGF_FUNCTIONNAME), XGF_FUNCTIONNAME);

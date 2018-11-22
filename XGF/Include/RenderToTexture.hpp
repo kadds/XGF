@@ -22,11 +22,13 @@ namespace XGF
 		//»Ö¸´Ô­RenderTagetView
 		void SetDefaultRenderTarget();
 		ID3D11ShaderResourceView* GetShaderResourceView();
+		void ReCreateTexture();
 	private:
 		ID3D11Texture2D* mRenderTargetTexture;
 		ID3D11RenderTargetView* mRenderTargetView;
 		ID3D11ShaderResourceView* mShaderResourceView;
 		GDI* mGDI;
+		int mWidth, mHeight;
 	};
 
 };

@@ -23,7 +23,8 @@ namespace XGF
 		else if (mMaxVertices - mPosInVertices <  bbridge.GetBinder(0)->mCount)
 		{
 			XGF_Warn(Render, "Out of Range In Vertex. You must set a larger buffer size.");
-			return;//TODO::ERROR
+			ResizeVertexBuffer(bbridge.GetBinder(0)->mCount + mPosInVertices);
+			return;
 		}
 		auto vs = mShaderStage.GetVSShader();
 		UINT nsizepos = 0;
@@ -54,7 +55,8 @@ namespace XGF
 		if (mMaxIndexCount - mPosInIndices < pindex->mCount)
 		{
 			XGF_Warn(Render, "Out of Range In Index. You must set a larger buffer size.");
-			return;//TODO::ERROR
+			ResizeIndexBuffer(pindex->mCount + mPosInIndices);
+			return;
 		}
 		DrawPolygon(bbridge);
 		pindex->CopyTo(mIndexData + mPosInIndices + mLastFrameIBStart, mPosInVertices - bbridge.GetBinder(0)->mCount + mLastFrameVBStart);
@@ -86,6 +88,9 @@ namespace XGF
 		mFramePosition = 0;
 		mIsBegin = false;
 		mIsMap = false;
+		mNewIndexCount = MaxIndexCount;
+		mNewVertexCount = MaxVertices;
+		mIndexBuffer = nullptr;
 		if (MaxIndexCount <= 0)
 		{
 			mUsingIndex = false;
@@ -121,6 +126,7 @@ namespace XGF
 		mPosInVertices = 0;
 		mPosBeforeIndices = 0;
 		mBeforeVertices = 0;
+		CheckAndResizeBuffers();
 	}
 	void Batch::End()
 	{
@@ -194,7 +200,7 @@ namespace XGF
 		if (mUsingIndex)
 		{
 			mGDI->GetDeviceContext()->Map(mIndexBuffer, 0, discard ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE_NO_OVERWRITE, 0, &mappedResource);
-			mIndexData = static_cast<index *>(mappedResource.pData);
+			mIndexData = static_cast<Index *>(mappedResource.pData);
 		}
 	}
 
@@ -243,6 +249,42 @@ namespace XGF
 			gdi->GetDeviceContext()->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		gdi->GetDeviceContext()->IASetPrimitiveTopology(mTopologyMode);
 		
+	}
+
+	void Batch::ResizeIndexBuffer(int newSize)
+	{
+		mNewIndexCount = mNewIndexCount > newSize ? mNewIndexCount : newSize;
+	}
+
+	void Batch::ResizeVertexBuffer(int newSize)
+	{
+		mNewVertexCount = mNewVertexCount > newSize ? mNewVertexCount : newSize;
+	}
+
+	void Batch::CheckAndResizeBuffers()
+	{
+		if(mNewVertexCount != mMaxVertices)
+		{
+			for(auto it : mVertexBuffers)
+			{
+				it->Release();
+			}
+			mVertexBuffers.clear();
+			mVertexData.clear();
+			mMaxVertices = mNewVertexCount;
+			auto vs = mShaderStage.GetVSShader();
+			unsigned int slotCount = vs->GetSlotCount();
+			for (unsigned int i = 0; i < slotCount; i++)
+			{
+				mVertexBuffers.push_back(CreateVertexBuffer(vs->GetStrideAllSizeAtSlot(i)));
+				mVertexData.push_back(nullptr);
+			}
+		}
+		if(mNewIndexCount != mMaxIndexCount)
+		{
+			mMaxIndexCount = mNewIndexCount;
+			CreateIndexBuffer();
+		}
 	}
 
 	ID3D11Buffer * Batch::CreateVertexBuffer(unsigned len)
@@ -305,10 +347,11 @@ namespace XGF
 		0, 3, 1
 		};*/
 		if (!mUsingIndex) return;
-		index *indexList = new index[mMaxIndexCount * mMaxPreRenderFrameCount];
+		if (mIndexBuffer) mIndexBuffer->Release();
+		auto *indexList = new Index[mMaxIndexCount * mMaxPreRenderFrameCount];
 		D3D11_BUFFER_DESC ibd;
 		ibd.Usage = D3D11_USAGE_DYNAMIC;
-		ibd.ByteWidth = sizeof(index) *(mMaxIndexCount * mMaxPreRenderFrameCount);
+		ibd.ByteWidth = sizeof(Index) *(mMaxIndexCount * mMaxPreRenderFrameCount);
 		ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		ibd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 		ibd.MiscFlags = 0;

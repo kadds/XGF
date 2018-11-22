@@ -34,7 +34,7 @@ namespace XGF
 		{
 			mNowState = SkinState::normal;
 		}
-		mClickHelper.OnMouseDowm({ ev.GetDataInt(0), ev.GetDataInt(1) }, isInControl);
+		mClickHelper.OnMouseDown({ ev.GetDataInt(0), ev.GetDataInt(1) }, isInControl);
 	}
 
 	void Control::OnMouseUp(const Event & ev)
@@ -44,7 +44,7 @@ namespace XGF
 		{
 			mNowState = SkinState::hover;
 		}
-		mClickHelper.OnMouseUp({ ev.GetDataInt(0), ev.GetDataInt(1) }, isInControl);
+		mClickHelper.OnMouseUp(this, { ev.GetDataInt(0), ev.GetDataInt(1) }, isInControl);
 	}
 
 	void Control::OnMouseMove(const Event & ev)

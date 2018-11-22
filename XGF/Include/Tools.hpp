@@ -14,6 +14,7 @@ namespace XGF
 		string GetFontPath(const string & name);
 		void GetAppPath(wchar_t * buffer, int len);
 		std::string WcharToChar(const wchar_t* wch, size_t encode = CP_ACP);
+		std::pair<std::unique_ptr<char>, int> LoadTextFromFile(string file);
 	};
 #define GetFilePath(filename, buffer, maxlen) Tools::GetPathBy(filename, buffer, maxlen)
 

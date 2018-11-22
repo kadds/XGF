@@ -1,20 +1,60 @@
 #pragma once
 #include "Geometry.hpp"
 
-namespace XGF 
+namespace XGF
 {
-	namespace Shape 
+	namespace Shape
 	{
+		class BoxMapping
+		{
+		public:
+			BoxMapping(Geometry *) {  }
+			Point2 operator() (int face, float x, float y)
+			{
+				return Point2(x, y);
+			}
+		};
+
+
 		class BoxGeometry : public Geometry
 		{
 		public:
-			BoxGeometry();
-			~BoxGeometry();
-			BoxGeometry(float x, float y, float z);
-			void SetSize(float x, float y, float z);
-			virtual std::shared_ptr<PolygonPleTextureBinder> CreateUVBinder();
+			virtual ~BoxGeometry() {};
+
+			void Init(float x, float y, float z);
+
+			template<typename GeometryMapping = BoxMapping>
+			BoxGeometry(float x, float y, float z, int xSegments = 1, int ySegments = 1, int zSegments = 1)
+				: Geometry(24, 36), x(x), y(y), z(z), mXSegments(xSegments), mYSegments(ySegments), mZSegments(zSegments)
+			{
+				Init(x, y, z);
+				GenerateMapping<BoxMapping>();
+			}
+
+			template<typename GeometryMapping = BoxMapping>
+			void GenerateMapping()
+			{
+				mPolygonPleUvs = std::make_shared<PolygonPleTextureBinder>(mPolygon->mCount);
+
+				GeometryMapping mapping(this);
+				auto tb = std::make_shared<PolygonPleTextureBinder>(6);
+				int face = 6;
+				for (int j = 0; j < face; j++)
+				{
+					mPolygonPleUvs->mPoint[j * 4] = mapping(j, 0, 0);
+					mPolygonPleUvs->mPoint[j * 4 + 1] = mapping(j, 1, 0);
+					mPolygonPleUvs->mPoint[j * 4 + 2] = mapping(j, 1, 1);
+					mPolygonPleUvs->mPoint[j * 4 + 3] = mapping(j, 0, 1);
+				}
+
+			};
+
 		private:
 			void InitializeIndex();
+			float x, y, z;
+			int mXSegments, mYSegments, mZSegments;
 		};
+
+
 	}
 }

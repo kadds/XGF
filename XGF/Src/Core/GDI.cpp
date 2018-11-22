@@ -29,7 +29,19 @@ namespace XGF
 				dxgi_adapter->GetDesc1(&dc);
 				XGF_Debug(Framework, "Adapter List", "Adpapter:", i, ",DeviceID:", dc.DeviceId, ",DedicatedSystemMemory:", (dc.DedicatedSystemMemory >> 20), "MB,DedicatedVideoMemory", (dc.DedicatedVideoMemory >> 20)
 					, "MB,SharedSystemMemory:", dc.SharedSystemMemory >> 20, "MB,AdapterLuid:", dc.AdapterLuid.LowPart, ",Revision:", dc.Revision, ",VendorId:", dc.VendorId
-					, ",SubSysId:", dc.SubSysId, ",Description:", Logger::WCharToChar((wchar_t *) dc.Description));
+					, ",SubSysId:", dc.SubSysId, ",Description:", Logger::WCharToChar((wchar_t *) dc.Description))
+
+
+
+
+
+
+
+
+
+
+
+;
 
 				mAdapters.push_back(dxgi_adapter);
 
@@ -73,7 +85,6 @@ namespace XGF
 		{
 			XGF_Debug(Framework, "We can use d3d11.1");
 		}
-		UINT  m4xMsaaQuality = 1;
 		XGF_Warn_Check(Framework, mD3dDevice->CheckMultisampleQualityLevels(
 			mDisplayFormat, 4, &m4xMsaaQuality), "CheckMultisampleQualityLevels Warn");
 		
@@ -197,9 +208,9 @@ namespace XGF
 	}
 	void GDI::Clear(const SM::Color & c)
 	{
-		if (!mRTTs.empty())
+		if (!mRenderToTextures.empty())
 		{
-			mRTTs.top()->Clear(c);
+			mRenderToTextures.top()->Clear(c);
 			return;
 		}
 		float color[4];
@@ -306,8 +317,16 @@ namespace XGF
 		depthBufferDesc.MipLevels = 1;  
 		depthBufferDesc.ArraySize = 1;  
 		depthBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-		depthBufferDesc.SampleDesc.Count = 1;
-		depthBufferDesc.SampleDesc.Quality = 0;
+		if (mEnable4xMsaa && m4xMsaaQuality > 0)
+		{
+			depthBufferDesc.SampleDesc.Count = 4;
+			depthBufferDesc.SampleDesc.Quality = m4xMsaaQuality - 1;
+		}
+		else
+		{
+			depthBufferDesc.SampleDesc.Count = 1;
+			depthBufferDesc.SampleDesc.Quality = 0;
+		}
 		depthBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		depthBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 		depthBufferDesc.CPUAccessFlags = 0;
@@ -316,8 +335,12 @@ namespace XGF
 		PutDebugString(mDepthStencilBuffer);
 		// 初始化深度模版视图.
 		ZeroMemory(&depthStencilViewDesc, sizeof(depthStencilViewDesc));
-		depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-		depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+		depthStencilViewDesc.Format = depthBufferDesc.Format;
+		if(mEnable4xMsaa && m4xMsaaQuality > 0)
+			depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+		else
+			depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+		
 		depthStencilViewDesc.Texture2D.MipSlice = 0;
 		XGF_Error_Check(Framework, mD3dDevice->CreateDepthStencilView(mDepthStencilBuffer,
 			&depthStencilViewDesc, &mDepthStencilView), "CreateDepthStencilView Error");
@@ -615,13 +638,13 @@ namespace XGF
 				depthStencilDesc.StencilWriteMask = 0xFF;
 				// 对于front face 像素使用的模版操作操作. 
 				depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-				depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
-				depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+				depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+				depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_REPLACE;
 				depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 				// 对于back face像素使用的模版操作模式. 
 				depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-				depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
-				depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+				depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+				depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_REPLACE;
 				depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 				if (ds == DepthStencilState::DepthEnable)
 				{
@@ -724,22 +747,22 @@ namespace XGF
 
 	void GDI::PushRTTLayer(RenderToTexture * rtt)
 	{
-		mRTTs.push(rtt);
+		mRenderToTextures.push(rtt);
 	}
 
 	void GDI::PopRTTLayer()
 	{
-		mRTTs.pop();
+		mRenderToTextures.pop();
 	}
 
 	void GDI::DrawRTT()
 	{
-		if (!mRTTs.empty())
+		if (!mRenderToTextures.empty())
 		{
 			ID3D11ShaderResourceView *const pSRV[1] = { nullptr };
 			//TODO:Bug:1000
 			mDeviceContext->PSSetShaderResources(0, 1, pSRV);
-			mRTTs.top()->SetRenderTarget();
+			mRenderToTextures.top()->SetRenderTarget();
 		}
 		else
 		{
@@ -785,8 +808,16 @@ namespace XGF
 			sd.Format = mDisplayFormat;
 			sd.Stereo = FALSE;
 			sd.Scaling = DXGI_SCALING_STRETCH;
-			sd.SampleDesc.Count = 1;
-			sd.SampleDesc.Quality = 0;
+			if(mEnable4xMsaa && m4xMsaaQuality > 0)
+			{
+				sd.SampleDesc.Count = 4;
+				sd.SampleDesc.Quality = m4xMsaaQuality - 1;
+			}
+			else
+			{
+				sd.SampleDesc.Count = 1;
+				sd.SampleDesc.Quality = 0;
+			}
 			sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 			sd.BufferCount = 1;
 			sd.AlphaMode = DXGI_ALPHA_MODE::DXGI_ALPHA_MODE_UNSPECIFIED;
@@ -815,8 +846,16 @@ namespace XGF
 			sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 			sd.BufferDesc.RefreshRate.Denominator = 1;
 			sd.BufferDesc.RefreshRate.Numerator = 60;
-			sd.SampleDesc.Count = 1;
-			sd.SampleDesc.Quality = 0;
+			if (mEnable4xMsaa && m4xMsaaQuality > 0)
+			{
+				sd.SampleDesc.Count = 4;
+				sd.SampleDesc.Quality = m4xMsaaQuality - 1;
+			}
+			else
+			{
+				sd.SampleDesc.Count = 1;
+				sd.SampleDesc.Quality = 0;
+			}
 			sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 			sd.BufferCount = 1;
 			sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
@@ -831,5 +870,77 @@ namespace XGF
 		
 	}
 
+	void GDI::ReCreateSwapChain()
+	{
+		BOOL bl;
+		IDXGIOutput * output;
+		mSwapChain->GetFullscreenState(&bl, &output);
+		mSwapChain->SetFullscreenState(false, nullptr);
+		if(mSwapChain1)
+		{
+			mSwapChain1->Release();
+		}
+		if(mSwapChain)
+		{
+			mSwapChain->Release();
+		}
+		CreateSwapChain();
+		// TODO: 全屏相关逻辑
+		SetFullScreen(bl, 0);
+	}
+
+	void GDI::ReCreateRenderToTextures()
+	{
+		std::stack<RenderToTexture * > rts;
+		while(!mRenderToTextures.empty())
+		{
+			auto ts = mRenderToTextures.top();
+			mRenderToTextures.pop();
+			rts.push(ts);
+			ts->ReCreateTexture();
+		}
+
+		while (!rts.empty())
+		{
+			auto ts = rts.top();
+			rts.pop();
+			mRenderToTextures.push(ts);
+		}
+	}
+
+	void GDI::Able4xMsaa()
+	{
+		if(!mEnable4xMsaa)
+		{
+			mEnable4xMsaa = true;
+			ReCreateSwapChain();
+			ReCreateRenderToTextures();
+		}
+	}
+
+	void GDI::Disable4xMsaa()
+	{
+		if (mEnable4xMsaa)
+		{
+			mEnable4xMsaa = false;
+			ReCreateSwapChain();
+			ReCreateRenderToTextures();
+		}
+	}
+
+	bool GDI::IsEnable4xMsaa()
+	{
+		return mEnable4xMsaa;
+	}
+
+	int GDI::Query4xMsaaQuality()
+	{
+		return m4xMsaaQuality;
+	}
+
+	bool GDI::CanEnable4xMsaa()
+	{
+		return m4xMsaaQuality > 0;
+	}
 }
 

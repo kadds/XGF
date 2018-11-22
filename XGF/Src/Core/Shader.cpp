@@ -173,6 +173,21 @@ namespace XGF {
 		mGDI = gdi;
 	}
 
+	void PixelShader::Initialize(GDI* gdi, const unsigned char* PSTextCode, unsigned textCodeLen, const char* fMark)
+	{
+		ID3DBlob* pErrorBlob = nullptr;
+		ID3DBlob* pPixelBlob = nullptr;
+		HRESULT hr = D3DCompile(PSTextCode, textCodeLen, fMark,
+			NULL, NULL, "PS", "ps_4_0", 0, 0, &pPixelBlob, &pErrorBlob);
+		if (FAILED(hr))
+			if (pErrorBlob == nullptr)
+				XGF_Error(IO, "Pixel Shader file not find", fMark);
+			else
+				XGF_Error_Check(Shader, hr, std::string((const char *)pErrorBlob->GetBufferPointer()));
+		Initialize(gdi, static_cast<unsigned char *>(pPixelBlob->GetBufferPointer()), static_cast<unsigned int>(pPixelBlob->GetBufferSize()));
+		pPixelBlob->Release();
+	}
+
 	void PixelShader::Shutdown()
 	{
 		mPixelShader->Release();
@@ -193,6 +208,24 @@ namespace XGF {
 				XGF_Error_Check(Shader, hr, std::string((const char *) pErrorBlob->GetBufferPointer()));
 		Initialize(gdi, (unsigned char *)pVertexBlob->GetBufferPointer(), (int)pVertexBlob->GetBufferSize(), interval);
 		
+		pVertexBlob->Release();
+	}
+
+	void VertexShader::Initialize(GDI* gdi, const unsigned char* VSTextCode, unsigned int textCodeLen, const char * fMark, unsigned int interval)
+	{
+		ID3DBlob* pErrorBlob = nullptr;
+		ID3DBlob* pVertexBlob = nullptr;
+		mGDI = gdi;
+
+		HRESULT hr = D3DCompile(VSTextCode, textCodeLen, fMark,
+			NULL, NULL,  "VS", "vs_4_0", 0, 0, &pVertexBlob, &pErrorBlob);
+		if (FAILED(hr))
+			if (pErrorBlob == nullptr)
+				XGF_Error(IO, "Vertex Shader file not find ", fMark);
+			else
+				XGF_Error_Check(Shader, hr, std::string((const char *)pErrorBlob->GetBufferPointer()));
+		Initialize(gdi, (unsigned char *)pVertexBlob->GetBufferPointer(), (int)pVertexBlob->GetBufferSize(), interval);
+
 		pVertexBlob->Release();
 	}
 
@@ -271,6 +304,7 @@ namespace XGF {
 		mLayoutCount = layoutCount;
 		
 	}
+
 
 	void VertexShader::Shutdown()
 	{
@@ -501,16 +535,22 @@ namespace XGF {
 
 	void ShaderStage::SetBlendState(BlendState bs)
 	{
+		if (mBlendState != bs)
+			mOnFlush();
 		mBlendState = bs;
 	}
 
 	void ShaderStage::SetDepthStencilState(DepthStencilState ds)
 	{
+		if (mDepthStencilState != ds)
+			mOnFlush();
 		mDepthStencilState = ds;
 	}
 
 	void ShaderStage::SetRasterizerState(RasterizerState rs)
 	{
+		if (mRasterizerState != rs)
+			mOnFlush();
 		mRasterizerState = rs;
 	}
 

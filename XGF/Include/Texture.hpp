@@ -74,6 +74,7 @@ namespace XGF
 
 		bool mIs9Path;
 		Point4 m9Path;
+
 	};
 
 

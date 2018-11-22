@@ -1,7 +1,7 @@
 #include "../../Include/Camera.hpp"
 namespace XGF 
 {
-	Camera::Camera() :mMaxDistance(1000.f), mMinDistance(0.00001f), mPos(0.0f, 0.0f, .0f), mRotation(SM::Quaternion::Identity)
+	Camera::Camera() :mMaxDistance(1000.f), mMinDistance(0.001f), mPos(0.0f, 0.0f, .0f), mRotation(SM::Quaternion::Identity)
 	{
 	}
 

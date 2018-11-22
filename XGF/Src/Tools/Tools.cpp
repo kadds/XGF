@@ -1,7 +1,9 @@
 #include "../../Include/Tools.hpp"
 #include <Windows.h>
 #include <shlobj.h>
+#include <fstream>  
 #include <filesystem>
+#include "../../Include/Logger.hpp"
 namespace fs = std::experimental::filesystem;
 
 namespace XGF
@@ -106,13 +108,31 @@ namespace XGF
 		std::string WcharToChar(const wchar_t* wch, size_t encode)
 		{
 			std::string str;
-			unsigned int len = WideCharToMultiByte((UINT)encode, 0, wch, (int) wcslen(wch), NULL, 0, NULL, NULL);
+			unsigned int len = WideCharToMultiByte((UINT)encode, 0, wch, (int)wcslen(wch), NULL, 0, NULL, NULL);
 			char    *ch = new char[len + 1];
-			WideCharToMultiByte((UINT)encode, 0, wch, (int) wcslen(wch), ch, len, NULL, NULL);
+			WideCharToMultiByte((UINT)encode, 0, wch, (int)wcslen(wch), ch, len, NULL, NULL);
 			ch[len] = '\0';
 			str = ch;
-			delete ch;
+			delete[]ch;
 			return str;
+		}
+		std::pair<std::unique_ptr<char>, int> LoadTextFromFile(string file)
+		{
+			std::ifstream fs(file, std::ios::binary);
+			if(!fs)
+			{
+				XGF_Warn(IO, "can't find file ", ::XGF::Logger::WCharToChar(file.c_str()));
+				return std::pair<std::unique_ptr<char>, int>();
+			}
+			auto pbuf = fs.rdbuf();
+			long size = pbuf->pubseekoff(0, std::ios::end, std::ios::in);
+			fs.seekg(0, std::ios::beg);
+			auto cdata = new char[size];
+			auto data = std::make_pair(std::unique_ptr<char>(cdata), size);
+			pbuf->pubseekpos(0, std::ios::in);
+			pbuf->sgetn(cdata, size);
+			fs.close();
+			return data;
 		}
 	}
 

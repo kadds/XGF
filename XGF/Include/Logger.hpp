@@ -101,6 +101,7 @@ namespace XGF {
 			{
 				loggers[(int) system]->error(formatStr, file, functionName, line, JoinParameter(args...));
 				ShowXGFDialog("A serious error has occurred, do you need to check it?", gFilename);
+				exit(-1);
 			};
 
 			void OpenConsole();

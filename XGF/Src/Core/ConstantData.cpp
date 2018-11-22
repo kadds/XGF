@@ -23,7 +23,10 @@ namespace XGF
 		mPCTVShader.Initialize(gdi, ShaderConst::shaderPCTVS, ShaderConst::shaderPCTVSSize, 1);
 		mPCTPShader.Initialize(gdi, ShaderConst::shaderPCTPS, ShaderConst::shaderPCTPSSize);
 		mPCTShaders = { &mPCTVShader, &mPCTPShader, nullptr };
-
+		auto fileData = Tools::LoadTextFromFile(L"./BasicMaterial.fx");
+		mBasicVShader.Initialize(gdi, (unsigned char*)fileData.first.get(), fileData.second, "./BasicMaterial.fx");
+		mBasicPShader.Initialize(gdi, (unsigned char*)fileData.first.get(), fileData.second, "./BasicMaterial.fx");
+		mBasicShaders = { &mBasicVShader, &mBasicPShader, nullptr };
 		//random
 		ID3D11Texture1D *texture;
 		D3D11_TEXTURE1D_DESC desc;
@@ -67,6 +70,9 @@ namespace XGF
 		mPCVShader.Shutdown();
 		mPCTPShader.Shutdown();
 		mPCTVShader.Shutdown();
+		mBasicPShader.Shutdown();
+		mBasicVShader.Shutdown();
+
 		mRandomSRV->Release();
 	}
 

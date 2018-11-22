@@ -17,7 +17,7 @@ namespace XGF
 		*/
 		RectangleB::RectangleB() :Shape2D(10, 10 * 3)
 		{
-			index ide[]{
+			Index ide[]{
 				0,3,7,
 				0,7,4,
 				3,2,6,

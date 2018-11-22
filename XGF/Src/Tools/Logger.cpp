@@ -132,6 +132,10 @@ namespace XGF {
 #endif
 			XGF_Info(Application, "start application");
 			XGF_Debug(Application, fmt::format("log file path:{0}", gFilename));
+			char path[256];
+			GetModuleFileNameA(NULL, path, 256);
+			XGF_Info(Application, "application path:", path);
+
 		}
 		void ShowXGFDialog(const char* str, const char * name)
 		{

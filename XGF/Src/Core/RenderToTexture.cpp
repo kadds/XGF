@@ -15,33 +15,9 @@ namespace XGF
 	void RenderToTexture::Initialize(GDI * gdi, int textureWidth, int textureHeight)
 	{
 		mGDI = gdi;
-		D3D11_TEXTURE2D_DESC textureDesc;
-		D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
-		D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
-		ZeroMemory(&textureDesc, sizeof(textureDesc));
-		textureDesc.Width = textureWidth;
-		textureDesc.Height = textureHeight;
-		textureDesc.MipLevels = 1;
-		textureDesc.ArraySize = 1;
-		textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		textureDesc.SampleDesc.Count = 1;
-		textureDesc.Usage = D3D11_USAGE_DEFAULT;
-		textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-		textureDesc.CPUAccessFlags = 0;
-		textureDesc.MiscFlags = 0;
-		XGF_Error_Check(Render, gdi->GetDevice()->CreateTexture2D(&textureDesc, NULL, &mRenderTargetTexture), "CT2D Failed");
-		renderTargetViewDesc.Format = textureDesc.Format;
-		renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-		renderTargetViewDesc.Texture2D.MipSlice = 0;
-
-		XGF_Error_Check(Render, gdi->GetDevice()->CreateRenderTargetView(mRenderTargetTexture, &renderTargetViewDesc, &mRenderTargetView), "CreateRT Failed");
-
-		shaderResourceViewDesc.Format = textureDesc.Format;
-		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-		shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
-		shaderResourceViewDesc.Texture2D.MipLevels = 1;
-
-		XGF_Error_Check(Render, gdi->GetDevice()->CreateShaderResourceView(mRenderTargetTexture, &shaderResourceViewDesc, &mShaderResourceView), "CreateSRV Failed");
+		mHeight = textureHeight;
+		mWidth = textureWidth;
+		ReCreateTexture();
 	}
 
 	void RenderToTexture::Shutdown()
@@ -92,5 +68,61 @@ namespace XGF
 	ID3D11ShaderResourceView* RenderToTexture::GetShaderResourceView()
 	{
 		return mShaderResourceView;
+	}
+	void RenderToTexture::ReCreateTexture()
+	{
+		if (mRenderTargetTexture)
+			mRenderTargetTexture->Release();
+		if (mRenderTargetView)
+			mRenderTargetView->Release();
+		if (mShaderResourceView)
+			mShaderResourceView->Release();
+
+		D3D11_TEXTURE2D_DESC textureDesc;
+		D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
+		D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
+		ZeroMemory(&textureDesc, sizeof(textureDesc));
+		textureDesc.Width = mWidth;
+		textureDesc.Height = mHeight;
+		textureDesc.MipLevels = 1;
+		textureDesc.ArraySize = 1;
+		textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		auto q = mGDI->Query4xMsaaQuality();
+		auto enable = mGDI->IsEnable4xMsaa();
+		if(enable && q > 0)
+		{
+			textureDesc.SampleDesc.Count = 4;
+			textureDesc.SampleDesc.Quality = q - 1;
+		}
+		else
+		{
+			textureDesc.SampleDesc.Count = 1;
+			textureDesc.SampleDesc.Quality = 0;
+		}
+		textureDesc.Usage = D3D11_USAGE_DEFAULT;
+		textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+		textureDesc.CPUAccessFlags = 0;
+		textureDesc.MiscFlags = 0;
+		XGF_Error_Check(Render, mGDI->GetDevice()->CreateTexture2D(&textureDesc, NULL, &mRenderTargetTexture), "CT2D Failed");
+		renderTargetViewDesc.Format = textureDesc.Format;
+		if(enable && q > 0)
+			renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
+		else
+			renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+
+		renderTargetViewDesc.Texture2D.MipSlice = 0;
+
+		XGF_Error_Check(Render, mGDI->GetDevice()->CreateRenderTargetView(mRenderTargetTexture, &renderTargetViewDesc, &mRenderTargetView), "CreateRT Failed");
+
+		shaderResourceViewDesc.Format = textureDesc.Format;
+		if(enable && q > 0)
+			shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS;
+		else
+			shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
+		shaderResourceViewDesc.Texture2D.MipLevels = 1;
+
+		XGF_Error_Check(Render, mGDI->GetDevice()->CreateShaderResourceView(mRenderTargetTexture, &shaderResourceViewDesc, &mShaderResourceView), "CreateSRV Failed");
+
 	}
 };
