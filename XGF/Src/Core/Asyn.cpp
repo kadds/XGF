@@ -67,13 +67,13 @@ namespace XGF {
 			if (!EventPool::IsNullEvent(ev))
 				if (ev.GetEventGroup() == EventGroupType::System && ev.GetSystemEventId() == SystemEventId::Exit)
 				{
-					EventPool::DistoryAEvent(ev);
+					EventPool::DestroyAEvent(ev);
 					return true;
 				}
 				else
 				{
 					func(ev);
-					EventPool::DistoryAEvent(ev);
+					EventPool::DestroyAEvent(ev);
 				}
 			else
 				break;
@@ -86,9 +86,9 @@ namespace XGF {
 		return msgQueue.GetMsg();
 	}
 
-	void Asyn::DistoryEvent(const Event & ev)
+	void Asyn::DestroyEvent(const Event & ev)
 	{
-		EventPool::DistoryAEvent(ev);
+		EventPool::DestroyAEvent(ev);
 	}
 
 }

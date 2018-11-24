@@ -78,7 +78,7 @@ namespace XGF
 	void ShapeRenderer::DrawCircle(float x, float y, float r, int precision, float z, const SM::Color & color)
 	{
 		Shape::Circle ce(precision);
-		ce.SetPosiotionAndRadius(x, y, r);
+		ce.SetPositionAndRadius(x, y, r);
 		ce.SetZ(z);
 		auto cb = std::make_shared<PolygonPleConstantColorBinder>(color, ce.mPolygon->mCount);
 		BindingBridge bb;
@@ -91,7 +91,7 @@ namespace XGF
 	void ShapeRenderer::DrawCircle(float x, float y, float r, int precision, float z, const SM::Color & color, const SM::Color & centerColor)
 	{
 		Shape::Circle ce(precision);
-		ce.SetPosiotionAndRadius(x, y, r);
+		ce.SetPositionAndRadius(x, y, r);
 		ce.SetZ(z);
 		int layer[2];
 		auto cb = std::make_shared<PolygonPleConstantExColorBinder>(layer, ce.GetLayer(layer));

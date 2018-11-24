@@ -12,32 +12,10 @@ namespace XGF
 {
 	bool XGFramework::_Update(float time)
 	{
-		if (mTheard->HandleMessage()) return true;
+		if (mThread->HandleMessage()) return true;
 		mInputManager.Tick(time);
 		if (mScene != nullptr)
 			mScene->_Update(time);
-		if (mSceneAnimation != nullptr)
-		{
-			mSceneAnimation->Update(time);
-			if (mSceneAnimation->IsEnd())
-			{
-				mSceneAnimation = nullptr;
-			}
-		}
-		if (mLastScene != nullptr)
-		{
-			mLastScene->_Update(time);
-			if (mLastSceneAnimation != nullptr)
-			{
-				mLastSceneAnimation->Update(time);
-				if (mLastSceneAnimation->IsEnd())//动画执行完毕，结束
-				{
-					mLastScene->OnDestroy();
-					mLastScene = nullptr;
-				}
-			}
-		}
-
 		return false;
 	}
 
@@ -45,46 +23,16 @@ namespace XGF
 	{
 		for (;;)
 		{
-			mDeltaTime = mainTimer.Tick();
+			mDeltaTime = mMainTimer.Tick();
 			if (_Update(mDeltaTime))
 				return;
 			DebugInscriber_Begin(mDeltaTime);
-			WVPMatrix wvp;
-			mRenderCamera.GetCameraMatrix(wvp);
-			mUIBatches.Begin(wvp);
-			if (mLastScene != nullptr)
+			if (mScene != nullptr)
 			{
-				mGDI->PushRTTLayer(&mRenderToTexture);
-				mGDI->PushRTTLayer(&mLastRenderToTexture);
-				mGDI->DrawRTT();
-				mLastScene->_Render(mDeltaTime);
-				mGDI->PopRTTLayer();
-				mGDI->DrawRTT();
-				if (mScene != nullptr)
-					mScene->_Render(mDeltaTime);
-				mGDI->PopRTTLayer();
-				mGDI->DrawRTT();
-				DrawSceneAnimation();
+				mScene->_Render(mDeltaTime);//无动画
 			}
-			else if (mScene != nullptr)
-			{
-				if (mSceneAnimation != nullptr)
-				{
-					mGDI->PushRTTLayer(&mRenderToTexture);
-					mGDI->DrawRTT();
-					mScene->_Render(mDeltaTime);
-					mGDI->PopRTTLayer();
-					mGDI->DrawRTT();
-					DrawSceneAnimation();
-				}
-				else
-				{
-					mScene->_Render(mDeltaTime);//无动画
-				}
-			}
-			mUIBatches.End();
 			mInputManager.Draw();
-			mGDI->Present(mIsVsync);
+			mGDI->Present(mIsVSync);
 			DebugInscriber_End();
 		}
 	}
@@ -92,37 +40,20 @@ namespace XGF
 	{
 		CoInitializeEx(nullptr, COINITBASE_MULTITHREADED);
 		mGDI = gdi;
-		mTheard = asyn;
+		mThread = asyn;
 		asyn->SetCallBackFunc(std::bind(&EventDispatcher::Dispatch, &mFrameWorkEventDispatcher, std::placeholders::_1));
 		mFrameWorkEventDispatcher.InsertAllEventListener(std::bind(&XGFramework::_OnMessage, this, std::placeholders::_1));
 		mGDI->Create();
 		ConstantData::GetInstance().Initialize(gdi);
-		mInputManager.Initialize(gdi, gdi->GetInstance(), gdi->GetTopHwnd(), mTheard);
-		mSceneBatch.Initialize(gdi, ConstantData::GetInstance().GetPCTShaders(), 24, 24);
-		mSceneBatch.GetShaderStage()->SetBlendState(BlendState::AddOneOneAdd);
-		mSceneBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthDisable);
-		mRenderToTexture.Initialize(mGDI, mGDI->GetWidth(), mGDI->GetHeight());
-		mLastRenderToTexture.Initialize(mGDI, mGDI->GetWidth(), mGDI->GetHeight());
-		mUIBatches.Initialize(gdi);
+		mInputManager.Initialize(gdi, gdi->GetInstance(), gdi->GetTopHwnd(), mThread);
 	}
 
 	void XGFramework::_OnDestroy()
 	{
-		mUIBatches.Shutdown();
 		if (mScene != nullptr)
 		{
 			mScene->_OnDestroy();
-			mScene = nullptr;
-			if (mLastScene != nullptr)
-			{
-				mLastScene->_OnDestroy();
-				mLastScene = nullptr;
-			}
-
 		}
-		mSceneBatch.Shutdown();
-		mRenderToTexture.Shutdown();
-		mLastRenderToTexture.Shutdown();
 		mInputManager.Shutdown();
 		ConstantData::GetInstance().Shutdown();
 		mGDI->Destroy();
@@ -141,16 +72,7 @@ namespace XGF
 		if (ClientY <= 0) ClientY = 1;
 		mGDI->SizeChanged(ClientX, ClientY);
 		mInputManager.UpdateCameraMatrix(ClientX, ClientY);
-		mRenderCamera.UpdateProject(ClientX, ClientY);
 		Batch::SetClientSize({ ClientX, ClientY });
-		mLastRenderRectangle.SetPositionAndSize(0.f, 0.f, static_cast<float>(ClientX), static_cast<float>(ClientY));
-		mLastRenderRectangle.SetZ(0.1f);
-		mRenderRectangle.SetPositionAndSize(0, 0, static_cast<float>(ClientX), static_cast<float>(ClientY));
-		mRenderRectangle.SetZ(0.01f);
-		mRenderToTexture.Shutdown();
-		mLastRenderToTexture.Shutdown();
-		mRenderToTexture.Initialize(mGDI, ClientX, ClientY);
-		mLastRenderToTexture.Initialize(mGDI, ClientX, ClientY);
 	}
 
 	void XGFramework::_OnMessage(const Event& ev)
@@ -212,85 +134,15 @@ namespace XGF
 		XGF_Debug(Framework, "A scene to switch");
 		scene->_OnCreate(this);
 		scene->OnSize(mGDI->GetWidth(), mGDI->GetHeight());
-		SceneAnimation * sa = scene->OnSwitchIn();
-		SceneAnimation * la = mScene->OnSwitchOut();
-		mLastSceneAnimation = la;
-		mSceneAnimation = sa;
 		bool k = false;
-		if (sa != nullptr)
-		{
-			sa->BeginAnimation();
-			k = true;
-		}
-		if (la != nullptr)
-		{
-			la->BeginAnimation();
-			k = true;
-		}
-		if (!k)
-		{
-			mScene->_OnDestroy();
-			mScene = scene;
-		}
-		else
-		{
-			mLastScene = mScene;
-			mScene = scene;
-		}
+		mScene->_OnDestroy();
+		mScene = scene;
 	}
-	void XGFramework::DrawSceneAnimation()
-	{
-		mGDI->Clear(SM::Color(1.0f, 1.0f, 1.0f, 1.f));
-		WVPMatrix wvp;
-		SM::Color c;
-		BindingBridge bbr;
-		auto ppb = std::make_shared<PolygonPleTextureBinder>(4);
-		auto cc = std::make_shared<PolygonPleConstantColorBinder>(SM::Color(0.f, 0.f, 0.f, 1.f), 4);
-		bbr.AddBinder(cc);
-		bbr.AddBinder(ppb);
-		ppb->SetPosition(0.f, 1.f, 0.f, 1.f);
-		mRenderCamera.GetCameraMatrix(wvp);
-		mSceneBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
-		mSceneBatch.Begin();
-		if (mLastSceneAnimation != nullptr)
-		{
-			mLastRenderRectangle.GetTransform().SetMatrix(mLastSceneAnimation->GetMatrix());
-			mLastSceneAnimation->GetColor(c, 0);
-			cc->Set(0, 1, c);
-			mLastRenderRectangle.Render(mSceneBatch, bbr, mLastRenderToTexture.GetShaderResourceView());
-		}
-		else {
-			mRenderRectangle.GetTransform().SetMatrix(DirectX::XMMatrixIdentity());
-			mLastRenderRectangle.Render(mSceneBatch, bbr, mLastRenderToTexture.GetShaderResourceView());
-		}
-		mSceneBatch.Flush();
-		if (mSceneAnimation != nullptr)
-		{
-			mRenderRectangle.GetTransform().SetMatrix(mSceneAnimation->GetMatrix());
-			mSceneAnimation->GetColor(c, 0);
-			cc->Set(0, 1, c);
-			mRenderRectangle.Render(mSceneBatch, bbr, mRenderToTexture.GetShaderResourceView());
-		}
-		else
-		{
-			mRenderRectangle.GetTransform().SetMatrix(DirectX::XMMatrixIdentity());
-			cc->Set(0, 1, SM::Color(1.f, 1.f, 1.f, 1.f));
-			mRenderRectangle.Render(mSceneBatch, bbr, mRenderToTexture.GetShaderResourceView());
-		}
-
-		mSceneBatch.End();
-
-
-	}
+	
 	void XGFramework::AddScene(std::shared_ptr<Scene> scene)
 	{
 		scene->_OnCreate(this);
-		SceneAnimation * sa = scene->OnSwitchIn();
-		if (sa != nullptr)
-		{
-			mSceneAnimation = sa;
-			sa->BeginAnimation();
-		}
+		mScene->_OnDestroy();
 		mScene = scene;
 	}
 	void XGFramework::RenderScene()
@@ -299,7 +151,7 @@ namespace XGF
 	}
 	void XGFramework::SwitchScene(std::shared_ptr<Scene> scene)
 	{
-		mTheard->PostEvent(SystemEventId::SwitchScene, { scene });
+		mThread->PostEvent(SystemEventId::SwitchScene, { scene });
 	}
 	void XGFramework::Clear(float color[]) const
 	{
@@ -316,9 +168,9 @@ namespace XGF
 		mGDI->ClearDepthStencilBuffer();
 	}
 
-	void XGFramework::Present(bool isVsync) const
+	void XGFramework::Present(bool isVSync) const
 	{
-		mGDI->Present(isVsync);
+		mGDI->Present(isVSync);
 	}
 
 	HWND XGFramework::GetTopHwnd() const
@@ -349,13 +201,13 @@ namespace XGF
 	void XGFramework::Exit(int code)
 	{
 		PostMessage(mGDI->GetTopHwnd(), WM_CLOSE, 1, code);
-		mTheard->PostExitEvent();
+		mThread->PostExitEvent();
 	}
 
 
-	XGFramework::XGFramework() : mGDI(nullptr), mDeltaTime(0), mTheard(nullptr), mIsVsync(false),
+	XGFramework::XGFramework() : mGDI(nullptr), mDeltaTime(0), mThread(nullptr), mIsVSync(false),
 	                             mOnCloseListener(nullptr),
-	                             mOnInputListener(nullptr), mSceneAnimation(nullptr), mLastSceneAnimation(nullptr)
+	                             mOnInputListener(nullptr)
 	{
 		EventPool::Initialize(100);
 	}

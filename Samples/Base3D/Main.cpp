@@ -167,7 +167,7 @@ int RunGame(HINSTANCE hInstance)
 	GDI gdi;
 
 	auto gameScene = make_shared<GameScene>();
-	framework.SetOnCloseListener([](XGFramework &) {return true; });
+	framework.SetOnCloseListener(XGFramework::AutoClose());
 
 	WindowProperty windowProperty;
 	windowProperty.title = L"Base3D";

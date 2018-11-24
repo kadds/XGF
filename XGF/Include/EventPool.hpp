@@ -17,7 +17,7 @@ namespace XGF
 		static Event& CreateAEvent(EventIdType id, EventGroupType evGroup, int frameLimit, long maxLiveTime, std::initializer_list<EventDataType>);
 
 		static Event& GetNullEvent();
-		static void DistoryAEvent(const Event & event);
+		static void DestroyAEvent(const Event & event);
 
 		inline static bool IsNullEvent(const Event & ev) { return  ev.GetEventGroup() == EventGroupType::Null; }
 	private:

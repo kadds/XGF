@@ -66,7 +66,7 @@ namespace XGF
 		return nullEvent;
 	}
 
-	void EventPool::DistoryAEvent(const Event & event)
+	void EventPool::DestroyAEvent(const Event & event)
 	{
 		if (!IsNullEvent(event))
 		{

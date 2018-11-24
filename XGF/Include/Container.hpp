@@ -41,7 +41,7 @@ namespace XGF
 		EventDispatcher & GetEventDispatcher() { return mEventDispatcher; };
 		Transform & GetTransform() { return mTransform; };
 
-		Scene * GetScene() { return mScene; }
+		Scene & GetScene() { return *mScene; }
 
 		void SetPosition(const Point & p) {};//TODO::
 		void SetSize(const Point & size) {};

@@ -23,7 +23,7 @@ namespace XGF
 		mPCTVShader.Initialize(gdi, ShaderConst::shaderPCTVS, ShaderConst::shaderPCTVSSize, 1);
 		mPCTPShader.Initialize(gdi, ShaderConst::shaderPCTPS, ShaderConst::shaderPCTPSSize);
 		mPCTShaders = { &mPCTVShader, &mPCTPShader, nullptr };
-		auto fileData = Tools::LoadTextFromFile(L"./BasicMaterial.fx");
+		auto fileData = Tools::LoadFromFile(L"./BasicMaterial.fx");
 		mBasicVShader.Initialize(gdi, (unsigned char*)fileData.first.get(), fileData.second, "./BasicMaterial.fx");
 		mBasicPShader.Initialize(gdi, (unsigned char*)fileData.first.get(), fileData.second, "./BasicMaterial.fx");
 		mBasicShaders = { &mBasicVShader, &mBasicPShader, nullptr };

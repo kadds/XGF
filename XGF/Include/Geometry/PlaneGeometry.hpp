@@ -27,7 +27,7 @@ namespace XGF::Shape
 		}
 
 		void Init();
-		virtual ~PlaneGeometry() {};
+		virtual ~PlaneGeometry() = default;
 	private:
 		template<typename GeometryMapping = PlaneGeometryMapping>
 		void GenerateMapping()
@@ -37,7 +37,7 @@ namespace XGF::Shape
 			int count = mPolygon->mCount;
 			for (int j = 0; j < count; j++)
 			{
-				mPolygonPleUvs->mPoint[j] = mapping(j, mPolygon->mPoint[j].x / mWidth + 0.5, mPolygon->mPoint[j].z / mHeight + 0.5);
+				mPolygonPleUvs->mPoint[j] = mapping(j, mPolygon->mPoint[j].x / mWidth + 0.5f, mPolygon->mPoint[j].z / mHeight + 0.5f);
 			}
 
 		};

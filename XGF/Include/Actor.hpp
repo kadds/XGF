@@ -28,7 +28,7 @@ namespace XGF
 		virtual void OnAddToContainer() = 0;
 		virtual void OnRemoveFromContainer() = 0;
 
-		int GetId() { return mId; };
+		int GetId() const { return mId; }
 		void SetId(int id) { mId = id; };
 	protected:
 		Container * mParent;

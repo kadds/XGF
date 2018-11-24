@@ -34,9 +34,9 @@ namespace XGF
 
 		void _OnActivate(const Event & ev);
 		virtual void OnActivate(bool isActivate) {};
-		XGFramework * GetFramework()
+		XGFramework & GetFramework()
 		{
-			return mFramework;
+			return *mFramework;
 		}
 		void AddChild(std::shared_ptr<Container> container);
 		void SwitchScene(std::shared_ptr<Scene> scene);

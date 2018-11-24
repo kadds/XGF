@@ -16,6 +16,7 @@ namespace XGF
 {
 	class Scene;
 	class GDI;
+	
 	/*
 	这是应用程序框架
 	*/
@@ -47,21 +48,20 @@ namespace XGF
 		void Clear(float color[]) const;
 		void Clear(SM::Color &color) const;
 		void ClearDepthStencilBuffer() const;
-		void Present(bool isVsync) const;
+		void Present(bool isVSync) const;
 
-		void OpenVsync() { mIsVsync = true; }
-		void CloseVsync() { mIsVsync = false; }
+		void OpenVSync() { mIsVSync = true; }
+		void CloseVSync() { mIsVSync = false; }
 		HWND GetTopHwnd() const;
 		HINSTANCE GetInstance() const;
-		Asyn * GetTheard() const { return mTheard; }
+		Asyn * GetThread() const { return mThread; }
 		GDI * GetGDI() const;
 
 		int GetWindowsWidth() const;
 		int GetWindowsHeight() const;
 		//退出循环
 		void Exit(int code);
-		//切换Scene。注意，该函数只是在消息队列中添加了消息，下一帧才会切换，实际切换代码在ISwithScene中
-		//可确保在Click事件中调用不会破坏迭代器
+		//切换Scene。注意，该函数只是在消息队列中添加了消息，下一帧才会切换，实际切换代码在ISwitchScene中
 		void SwitchScene(std::shared_ptr<Scene> scene);
 		void AddScene(std::shared_ptr<Scene> scene);
 		//渲染Scene
@@ -73,38 +73,34 @@ namespace XGF
 
 		void SetOnCloseListener(std::function<bool(XGFramework &)> f) { mOnCloseListener = f; }
 		void SetOnInputListener(std::function<bool(XGFramework &, const Event &ev)> f) { mOnInputListener = f; };
-
+		UIBatches & GetUIBatches() const { return mUiBatches; }
 		EventDispatcher & GetEventDispatcher() { return mEventDispatcher; }
-
-		UIBatches & GetUIBatches() { return mUIBatches; };
+		struct AutoClose
+		{
+			bool operator()(XGFramework &)
+			{
+				return true;
+			}
+		};
 	protected://来自外部初始化的变量
 		GDI *mGDI;
 	protected:
 		std::shared_ptr<Scene> mScene;
-		std::shared_ptr<Scene> mLastScene;
 		void ISwitchScene(std::shared_ptr<Scene> scene);
-		Timer mainTimer;
+		Timer mMainTimer;
 		float mDeltaTime;
 		InputManager mInputManager;
 
-		Asyn * mTheard;
-		bool mIsVsync;
-
+		Asyn * mThread;
+		bool mIsVSync;
+		UIBatches mUiBatches;
 		std::function<bool(XGFramework &)> mOnCloseListener;
 		std::function<bool(XGFramework &, const Event &ev)> mOnInputListener;
 
-		RenderToTexture mRenderToTexture, mLastRenderToTexture;
-		SceneAnimation * mSceneAnimation, *mLastSceneAnimation;
-		Batch mSceneBatch;
-		OrthoCamera mRenderCamera;
-		Shape::Rectangle mRenderRectangle, mLastRenderRectangle;
-
-		UIBatches mUIBatches;
 	private:
 		EventDispatcher mEventDispatcher;
 
 		EventDispatcher mFrameWorkEventDispatcher;
-		void DrawSceneAnimation();
 		DISALLOW_COPY_AND_ASSIGN(XGFramework);
 	};
 

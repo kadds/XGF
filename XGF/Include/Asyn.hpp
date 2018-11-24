@@ -29,7 +29,7 @@ namespace XGF
 		void SetCallBackFunc(std::function<void(const Event& ev)> c) { func = c; }
 		bool HandleMessage();
 		const Event& GetAMessage();
-		void DistoryEvent(const Event& ev);
+		void DestroyEvent(const Event& ev);
 	private:
 		void PostEvent(EventIdType id, EventGroupType evGroup, std::initializer_list<EventDataType> init);
 		std::unique_ptr<std::thread> mThread;

@@ -84,7 +84,7 @@ namespace XGF
 	}
 	UIBatches & Control::GetUIBatches()
 	{
-		return mParent->GetScene()->GetFramework()->GetUIBatches();
+		return mParent->GetScene().GetFramework()->GetUIBatches();
 	}
 	void Control::DrawSkin()
 	{

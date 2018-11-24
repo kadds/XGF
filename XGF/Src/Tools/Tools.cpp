@@ -116,7 +116,7 @@ namespace XGF
 			delete[]ch;
 			return str;
 		}
-		std::pair<std::unique_ptr<char>, int> LoadTextFromFile(string file)
+		std::pair<std::unique_ptr<char>, int> LoadFromFile(string file)
 		{
 			std::ifstream fs(file, std::ios::binary);
 			if(!fs)
@@ -125,7 +125,8 @@ namespace XGF
 				return std::pair<std::unique_ptr<char>, int>();
 			}
 			auto pbuf = fs.rdbuf();
-			long size = pbuf->pubseekoff(0, std::ios::end, std::ios::in);
+			// FIXME: sizeof(long) 
+			long size = static_cast<long>(pbuf->pubseekoff(0, std::ios::end, std::ios::in));
 			fs.seekg(0, std::ios::beg);
 			auto cdata = new char[size];
 			auto data = std::make_pair(std::unique_ptr<char>(cdata), size);

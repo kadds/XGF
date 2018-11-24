@@ -42,7 +42,7 @@ namespace XGF
 		else
 		{
 			long size = ReadFileToBuffer(name);
-			error = FT_New_Memory_Face(pFTLib, (unsigned char *) mFileBuffer, size, 0, &pFTFace);
+			error = FT_New_Memory_Face(pFTLib, reinterpret_cast<unsigned char *>(mFileBuffer.get()), size, 0, &pFTFace);
 			if (!error)
 			{
 				FT_Select_Charmap(pFTFace, FT_ENCODING_UNICODE);
@@ -88,6 +88,14 @@ namespace XGF
 		PutDebugString(mShaderResourceView);
 
 	}
+
+	long Font::ReadFileToBuffer(const std::wstring& name)
+	{
+		auto e = Tools::LoadFromFile(name);
+		mFileBuffer = std::move(e.first);
+		return e.second;
+	}
+
 	void Font::Shutdown()
 	{
 		if (pFTFace)
@@ -165,34 +173,9 @@ namespace XGF
 		return vet.x >> 6;
 	}
 
-	long Font::ReadFileToBuffer(const std::wstring & name)
-	{
-		std::filebuf *pbuf;
-		std::ifstream filestr;
-		long size;
-		filestr.open(name, std::ios::binary);
-		pbuf = filestr.rdbuf();
-
-		size = static_cast<long>(pbuf->pubseekoff(0, std::ios::end, std::ios::in));
-		pbuf->pubseekpos(0, std::ios::in);
-		if (size > 0)
-		{
-			mFileBuffer = new char[size];
-			pbuf->sgetn(mFileBuffer, size);
-		}
-		else
-		{
-			XGF_Error(Application, "File not exist!", name);
-		}
-		filestr.close();
-		return size;
-	}
-
 	void Font::CloseFileBuffer()
 	{
-		if (mFileBuffer)
-			delete[] mFileBuffer;
-		mFileBuffer = nullptr;
+		mFileBuffer.reset(nullptr);
 	}
 
 }

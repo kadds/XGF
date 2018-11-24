@@ -45,7 +45,7 @@ namespace XGF
 		int mFontSize;
 		float       mAddance;
 		float           mToplineHeigh;
-		char * mFileBuffer;
+		std::unique_ptr<char> mFileBuffer;
 	private:
 		void CreateView();
 		long ReadFileToBuffer(const std::wstring & name);
