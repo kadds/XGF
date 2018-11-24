@@ -30,10 +30,10 @@ namespace XGF
 		}
 
 
-		bool Rectangle::IsInBoundBox(const Point & p)
+		bool Rectangle::IsInBoundBox(const Point & p, const SM::Matrix & matrix)
 		{
 			auto ple = std::make_shared<PolygonPlePoint3>(4);
-			mPolygon->MulTo(ple, mTransform.GetMatrix());
+			mPolygon->MulTo(ple, matrix);
 			return pInPolygon(ple, p.x, p.y);
 		}
 

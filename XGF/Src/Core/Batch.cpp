@@ -15,6 +15,7 @@ namespace XGF
 
 	void Batch::DrawPolygon(const BindingBridge & bbridge)
 	{
+		XGF_ASSERT(mIsBegin);
 		//Map Buffer
 		if (!mIsMap) {
 			Map(false);
@@ -52,6 +53,7 @@ namespace XGF
 
 	void Batch::DrawPolygon(std::shared_ptr<PolygonPleIndex> pindex, const BindingBridge & bbridge)
 	{
+		XGF_ASSERT(mIsBegin);
 		if (mMaxIndexCount - mPosInIndices < pindex->mCount)
 		{
 			XGF_Warn(Render, "Out of Range In Index. You must set a larger buffer size.");
@@ -166,7 +168,7 @@ namespace XGF
 		mVertexBuffer = nullptr;
 	}*/
 
-	void Batch::StepVetices(int count)
+	void Batch::StepVertices(int count)
 	{
 		mPosInVertices += count;
 	}

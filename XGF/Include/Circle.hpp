@@ -12,7 +12,7 @@ namespace XGF
 			Circle(int precision);
 			~Circle();
 			void SetPositionAndRadius(float x, float y, float r);
-			virtual bool IsInBoundBox(const Point & p) override;
+			virtual bool IsInBoundBox(const Point & p, const SM::Matrix & matrix) override;
 
 			virtual void SetPosition(const Point & p);
 			//always return 2

@@ -36,15 +36,14 @@ namespace XGF
 		virtual TextRenderer * GetTextRenderer(FontSize fs);
 		UIBatches & GetUIBatches();
 
-		void SetOnRemoveFromContainerLisener(std::function<void(Control *)> rm) { mOnRemoveFromContainerLisener = rm; }
+		void SetOnRemoveFromContainerListener(std::function<void(Control *)> rm) { mOnRemoveFromContainerListener = rm; }
 	protected:
 		std::shared_ptr<Skin> mSkin;
 		SkinState mNowState;
 		ClickHelper mClickHelper;
 		FontSize mFontSize;
 
-		std::function<void(Control *)> mOnRemoveFromContainerLisener;
-
+		std::function<void(Control *)> mOnRemoveFromContainerListener;
 		static inline float minZdivision = 0.001f;
 	protected:
 		//子类调用

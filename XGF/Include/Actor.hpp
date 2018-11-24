@@ -31,8 +31,10 @@ namespace XGF
 		int GetId() const { return mId; }
 		void SetId(int id) { mId = id; };
 	protected:
+		const SM::Matrix & GetMixMatrix();
 		Container * mParent;
-		
+	private:
+		SM::Matrix mMatrix;
 		int mId;
 	};
 

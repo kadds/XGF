@@ -1,6 +1,8 @@
 #define _XGF_DEBUG_ALLOC
 #include "../../XGF/Include/XGF.h"
 #include <fmt/format.h>
+#include <memory>
+using namespace std;
 using namespace XGF;
 #include <iomanip>
 #define _CRTDBG_MAP_ALLOC  
@@ -39,6 +41,7 @@ public:
 	virtual ~GameScene() {};
 	virtual void OnCreate(GDI * gdi) override
 	{
+		mBtnGroup = make_unique<Container>();
 		auto fname = Tools::GetFontPath(L"msyh");
 		mFont.Initialize(gdi, fname, 16);
 		mFont_s.Initialize(gdi, fname, 12);
@@ -47,23 +50,25 @@ public:
 		mTextRenderer_s.Initialize(gdi, &mFont_s, 1000);
 		mTextRenderer_b.Initialize(gdi, &mFont_b, 200);
 		mFramework->GetUIBatches().SetTextRenderer(FontSize::Default, &mUITextRenderer);
-		
+		GetRootContainer().AddChild(mBtnGroup);
 		std::shared_ptr<Label> label = std::make_shared<Label>(0, L"Direct3D11");
 		label->SetPositionAndSize(200, 200, 100, 20);
 		label->SetZ(0.4f);
 		GetRootContainer().AddChild(label);
 		
-		label->GetClickHelper().AddOnClickListener([this](auto, const MousePoint & ms, int mouseButton) {
-			AsyncTask::NewTask(mFramework->GetTheard(), [this](std::shared_ptr<AsyncTask> asyn) {
+		label->GetClickHelper().AddOnClickListener([this](Control *label, const MousePoint & ms, int mouseButton) {
+			AsyncTask::NewTask(mFramework->GetThread(), [this](std::shared_ptr<AsyncTask> asyn) {
 				MessageBox(NULL, L"YOU CLICK Label!!", L"Exe", 0);
 				asyn->Finish(0, 0);
 			});
-			// 捕获label 会导致内存泄漏
-			//label->mTransform.AddTranslationAction(Action::Make(Point(200, 2, 0), 2.0, false, LinearInterpolator::GetInterpolator()));
+			if(label->GetShape()->GetTransform().GetTranslateX() < 180)
+				label->GetShape()->GetTransform().AddTranslationAction(Action::Make(Point(200, 2, 0), 1.f, false, LinearInterpolator::GetInterpolator()));
+			else
+				label->GetShape()->GetTransform().AddTranslationAction(Action::Make(Point(50, 2, 0), 1.f, false, LinearInterpolator::GetInterpolator()));
 		});
 		
 		std::shared_ptr<Button> nextButton = std::make_shared<Button>(2, L"switch to next scene.");
-		GetRootContainer().AddChild(nextButton);
+		mBtnGroup->AddChild(nextButton);
 		nextButton->SetPositionAndSize(0, 240, 80, 40);
 		nextButton->SetZ(0.06f);
 		nextButton->SetBorderSize(1.f);
@@ -71,14 +76,14 @@ public:
 			//this->GetFramework()->SwitchScene();
 		});
 		
-		std::shared_ptr<Button> buttonux = std::make_shared<Button>(1, string(L"Switch Mode"));
-		GetRootContainer().AddChild(buttonux);
+		std::shared_ptr<Button> buttonux = std::make_shared<Button>(1, XGF::string(L"Switch Mode"));
+		mBtnGroup->AddChild(buttonux);
 
 		buttonux->SetPositionAndSize(10, 100, 60, 40);
 		buttonux->SetBorderSize(2);
 		buttonux->SetZ(0.07f);
 		buttonux->GetClickHelper().AddOnClickListener([this](auto, const MousePoint & ms, int mouseButton) {
-			auto gdi = this->GetFramework()->GetGDI();
+			auto gdi = GetFramework().GetGDI();
 			if (gdi->GetDisplayMode() == DisplayMode::Borderless)
 				gdi->SetDisplayMode(DisplayMode::Windowed, 0, 0, 600, 400, false);
 			else if (gdi->GetDisplayMode() == DisplayMode::FullScreen)
@@ -108,7 +113,7 @@ public:
 		res.push_back(ResourceInfo(L"_activate.png", L"activate"));
 		res.push_back(ResourceInfo(L"cursor.png", L"cursor"));
 
-		mTextureResourceManager.LoadResourceAsync(gdi, res, mFramework->GetTheard(), [this](std::vector<ResourceInfo> ress, int success) {
+		mTextureResourceManager.LoadResourceAsync(gdi, res, mFramework->GetThread(), [this](std::vector<ResourceInfo> ress, int success) {
 			if (success < 4) return;
 			auto t1 = Texture(*mTextureResourceManager.GetResourceByAlias(L"normal"));
 			auto t2 = Texture(*mTextureResourceManager.GetResourceByAlias(L"hover"));
@@ -117,8 +122,8 @@ public:
 			t1.Set9PathBorderSize(3);
 			t2.Set9PathBorderSize(3);
 			t3.Set9PathBorderSize(3);
-			std::static_pointer_cast<Button>(GetRootContainer().GetActorById(1))->SetSkin(Skin::CreateFromTextures(&t1, &t2, &t3));
-			std::static_pointer_cast<Button>(GetRootContainer().GetActorById(2))->SetSkin(Skin::CreateFromTextures(&t1, &t2, &t3));
+			std::static_pointer_cast<Button>(GetRootContainer().GetActorById(1, true))->SetSkin(Skin::CreateFromTextures(&t1, &t2, &t3));
+			std::static_pointer_cast<Button>(GetRootContainer().GetActorById(2, true))->SetSkin(Skin::CreateFromTextures(&t1, &t2, &t3));
 
 			t1.Set9PathBorderSize(3.5);
 			t2.Set9PathBorderSize(3.5);
@@ -128,6 +133,7 @@ public:
 
 			mFramework->GetInputManager()->GetCursor()->SetStaticTexture(cursor);
 		});
+		mBtnGroup->GetTransform().TranslateToX(100);
 	};
 	virtual void OnDestroy() override
 	{
@@ -175,13 +181,30 @@ public:
 		std::wstring fps_str = fmt::format(L"FPS:{0}\nFC:{1}ms", debug->GetAverageFPS(), debug->GetFrameCost());
 		mTextRenderer_b.DrawString(fps_str.c_str(), SM::Color(0.2f, 0.2f, 0.8f, 1.0f), 4, 4);
 		mTextRenderer_b.End();
+		RenderUI(wvp2D);
 	};
 	virtual void Update(float deltaTime) override
 	{
 		mCamera2D.Update();
-		auto ip = GetFramework()->GetInputManager();
-		if (ip->IskeyDowm(DIK_ESCAPE))
-			GetFramework()->Exit(0);
+		if(mDirection)
+		{
+			mBtnGroup->GetTransform().TranslateX(-deltaTime * 20);
+			if (mBtnGroup->GetTransform().GetTranslateX() < 50)
+			{
+				mDirection = false;
+			}
+		}
+		else
+		{
+			mBtnGroup->GetTransform().TranslateX(deltaTime * 20);
+			if (mBtnGroup->GetTransform().GetTranslateX() > 150)
+			{
+				mDirection = true;
+			}
+		}
+		auto ip = GetFramework().GetInputManager();
+		if (ip->IskeyDown(DIK_ESCAPE))
+			GetFramework().Exit(0);
 	};
 	virtual void OnSize(int ClientX, int ClientY) override
 	{
@@ -197,8 +220,11 @@ private:
 	TextRenderer mTextRenderer_s;
 	Font mFont_b;
 	TextRenderer mTextRenderer_b;
+	shared_ptr<Container> mBtnGroup;
 
 	TextureResourceManager mTextureResourceManager;
+
+	bool mDirection = true;
 };
 
 
@@ -209,7 +235,7 @@ int RunGame(HINSTANCE hInstance)
 	GDI gdi;
 
 	auto gameScene = std::make_shared<GameScene>();
-	framework.SetOnCloseListener([](XGFramework &) {return true; });
+	framework.SetOnCloseListener(XGFramework::AutoClose());
 
 	WindowProperty windowProperty;
 	windowProperty.title = L"UI";

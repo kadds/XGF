@@ -22,9 +22,9 @@ namespace XGF
 		::XGF::Shape::Rectangle rc;
 		RectangleB::GetInerBorderRectangle(rc);
 		rc.SetZ(GetZ() - minZdivision);
-		auto renderer = this->mParent->GetScene()->GetFramework()->GetUIBatches().GetTextRenderer(mFontSize);
+		auto renderer = mParent->GetScene().GetFramework().GetUIBatches().GetTextRenderer(mFontSize);
 		if (renderer != nullptr && !mText.empty())
-			renderer->DrawString(mText.c_str(), mTextColor, &rc, &mTransform.GetMatrix());
+			renderer->DrawString(mText.c_str(), mTextColor, &rc, &GetMixMatrix());
 	}
 
 	void Button::SetText(const string & text)

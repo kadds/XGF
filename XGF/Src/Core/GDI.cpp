@@ -29,19 +29,7 @@ namespace XGF
 				dxgi_adapter->GetDesc1(&dc);
 				XGF_Debug(Framework, "Adapter List", "Adpapter:", i, ",DeviceID:", dc.DeviceId, ",DedicatedSystemMemory:", (dc.DedicatedSystemMemory >> 20), "MB,DedicatedVideoMemory", (dc.DedicatedVideoMemory >> 20)
 					, "MB,SharedSystemMemory:", dc.SharedSystemMemory >> 20, "MB,AdapterLuid:", dc.AdapterLuid.LowPart, ",Revision:", dc.Revision, ",VendorId:", dc.VendorId
-					, ",SubSysId:", dc.SubSysId, ",Description:", Logger::WCharToChar((wchar_t *) dc.Description))
-
-
-
-
-
-
-
-
-
-
-
-;
+					, ",SubSysId:", dc.SubSysId, ",Description:", Logger::WCharToChar((wchar_t *) dc.Description));
 
 				mAdapters.push_back(dxgi_adapter);
 
@@ -407,6 +395,7 @@ namespace XGF
 		ID3D11Debug *d3dDebug;
 		mD3dDevice->QueryInterface(__uuidof(ID3D11Debug), reinterpret_cast<void**>(&d3dDebug));
 		d3dDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+		d3dDebug->Release();
 	}
 #endif
 

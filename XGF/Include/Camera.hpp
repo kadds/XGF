@@ -7,7 +7,7 @@ namespace XGF
 	{
 	public:
 		Camera();
-		~Camera();
+		virtual  ~Camera();
 		void GetCameraMatrix(WVPMatrix & wvp, const SM::Matrix * pro = nullptr);
 		virtual void UpdateProject(int cx, int cy)
 		{

@@ -60,7 +60,7 @@ namespace XGF
 			else if (wParam == VK_UP)
 				mFocus->CaretToUp(), mCaret.ResetTime();
 			else  if (wParam == VK_DOWN)
-				mFocus->CaretToDowm(), mCaret.ResetTime();
+				mFocus->CaretToDown(), mCaret.ResetTime();
 			break;
 		case WM_CHAR:
 		{
@@ -91,7 +91,7 @@ namespace XGF
 		dinput.OnActivate(isActivate);
 	}
 
-	bool InputManager::IsFocus(TextInputProcessor * in)
+	bool InputManager::IsFocus(TextInputProcessor * in) const
 	{
 		if (mFocus != nullptr)
 			if (mFocus == in)
@@ -150,7 +150,7 @@ namespace XGF
 	{
 		dinput.UpdateSize(x, y);
 		mCamera.UpdateProject(x, y);
-		if (mMouseMode == CustomCenter)
+		if (mMouseMode == MouseMode::CustomCenter)
 		{
 			mCursor.SetPosition(x / 2.f, y / 2.f);
 		}
@@ -186,29 +186,44 @@ namespace XGF
 			SetFocus(nullptr);
 		}
 	}
+
+	Cursor* InputManager::GetCursor()
+	{
+		return &mCursor;
+	}
+
+	void InputManager::OnMouseMove(float x, float y)
+	{
+		if (MouseMode::CustomCenter == mMouseMode)
+		{
+			return;
+		}
+		mCursor.SetPosition(x, y);
+	}
+
 	void InputManager::SetMouseMode(MouseMode mm)
 	{
 		switch (mm)
 		{
-		case Default:
+		case MouseMode::Default:
 			dinput.SetMoveable(true);
 			mCursor.Hide();
 			PostMessage(mHwnd, WM_X_SHOWORHIDECURSOR, TRUE, 0);
 			break;
-		case Center:
+		case MouseMode::Center:
 			mCursor.Hide();
 			dinput.SetMoveable(false);
 			dinput.SetPosition(Batch::GetClientWidth() / 2, Batch::GetClientHeight() / 2);
 			dinput.SetRelativeMode(true);
 			PostMessage(mHwnd, WM_X_SHOWORHIDECURSOR, TRUE, 0);
 			break;
-		case Custom:
+		case MouseMode::Custom:
 			dinput.SetMoveable(true);
 			dinput.SetRelativeMode(false);
 			mCursor.Show();
 			PostMessage(mHwnd, WM_X_SHOWORHIDECURSOR, FALSE, 0);
 			break;
-		case CustomCenter:
+		case MouseMode::CustomCenter:
 			dinput.SetMoveable(true);
 			dinput.SetPosition(Batch::GetClientWidth() / 2, Batch::GetClientHeight() / 2);
 			dinput.SetRelativeMode(true);
@@ -231,7 +246,7 @@ namespace XGF
 		dinput.SetExclusiveMode(false);
 	}
 
-	bool InputManager::IskeyDowm(Key k)
+	bool InputManager::IskeyDown(Key k)
 	{
 		return dinput.IsPress(k);
 	}

@@ -45,6 +45,7 @@ namespace XGF
 		mFrameWorkEventDispatcher.InsertAllEventListener(std::bind(&XGFramework::_OnMessage, this, std::placeholders::_1));
 		mGDI->Create();
 		ConstantData::GetInstance().Initialize(gdi);
+		mUiBatches.Initialize(gdi);
 		mInputManager.Initialize(gdi, gdi->GetInstance(), gdi->GetTopHwnd(), mThread);
 	}
 
@@ -55,6 +56,7 @@ namespace XGF
 			mScene->_OnDestroy();
 		}
 		mInputManager.Shutdown();
+		mUiBatches.Shutdown();
 		ConstantData::GetInstance().Shutdown();
 		mGDI->Destroy();
 
@@ -142,7 +144,6 @@ namespace XGF
 	void XGFramework::AddScene(std::shared_ptr<Scene> scene)
 	{
 		scene->_OnCreate(this);
-		mScene->_OnDestroy();
 		mScene = scene;
 	}
 	void XGFramework::RenderScene()

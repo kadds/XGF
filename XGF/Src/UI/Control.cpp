@@ -25,7 +25,7 @@ namespace XGF
 
 	void Control::OnMouseDown(const Event & ev)
 	{
-		bool isInControl = static_cast<Shape::Shape2D *>(GetShape())->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f));
+		bool isInControl = static_cast<Shape::Shape2D *>(GetShape())->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f), GetMixMatrix());
 		if (isInControl)
 		{
 			mNowState = SkinState::active;
@@ -39,7 +39,7 @@ namespace XGF
 
 	void Control::OnMouseUp(const Event & ev)
 	{
-		bool isInControl = static_cast<Shape::Shape2D *>(GetShape())->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f));
+		bool isInControl = static_cast<Shape::Shape2D *>(GetShape())->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f), GetMixMatrix());
 		if (isInControl)
 		{
 			mNowState = SkinState::hover;
@@ -49,7 +49,7 @@ namespace XGF
 
 	void Control::OnMouseMove(const Event & ev)
 	{
-		bool isInControl = static_cast<Shape::Shape2D *>(GetShape())->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f));
+		bool isInControl = static_cast<Shape::Shape2D *>(GetShape())->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f), GetMixMatrix());
 		if (isInControl)
 		{
 			if(mNowState != SkinState::active)
@@ -75,16 +75,16 @@ namespace XGF
 		mParent->GetEventDispatcher().RemoveMouseEventListener(MouseEventId::MouseDown, std::bind(&Control::OnMouseDown, this, std::placeholders::_1));
 		mParent->GetEventDispatcher().RemoveMouseEventListener(MouseEventId::MouseMove, std::bind(&Control::OnMouseMove, this, std::placeholders::_1));
 		mParent->GetEventDispatcher().RemoveMouseEventListener(MouseEventId::MouseUp, std::bind(&Control::OnMouseUp, this, std::placeholders::_1));
-		if (mOnRemoveFromContainerLisener)
-			mOnRemoveFromContainerLisener(this);
+		if (mOnRemoveFromContainerListener)
+			mOnRemoveFromContainerListener(this);
 	}
 	TextRenderer * Control::GetTextRenderer(FontSize fs)
 	{
-		return mParent->GetScene()->GetFramework()->GetUIBatches().GetTextRenderer(fs);
+		return mParent->GetScene().GetFramework().GetUIBatches().GetTextRenderer(fs);
 	}
 	UIBatches & Control::GetUIBatches()
 	{
-		return mParent->GetScene().GetFramework()->GetUIBatches();
+		return mParent->GetScene().GetFramework().GetUIBatches();
 	}
 	void Control::DrawSkin()
 	{
@@ -94,11 +94,16 @@ namespace XGF
 			skin = mSkin->GetTexture(mNowState);
 			if (skin)
 			{
-				auto textureBinder = std::make_shared<PolygonPleTextureBinder>(GetShape()->mPolygon->mCount);
+				auto shape = GetShape();
+				auto textureBinder = std::make_shared<PolygonPleTextureBinder>(shape->mPolygon->mCount);
 				BindingBridge bbrige;
+				std::shared_ptr<PolygonPlePoint3> ppp = std::make_shared<PolygonPlePoint3>(shape->mPolygon->mCount);
+				shape->mPolygon->MulTo(ppp, GetMixMatrix());
+				bbrige.AddBinder(ppp);
 				textureBinder->FromTexture(skin);
 				bbrige.AddBinder(textureBinder);
-				GetShape()->Render(*(this->mParent->GetScene()->GetFramework()->GetUIBatches().GetBatch(BATCHES_BATCH_DEFAULT_PT)), bbrige, *skin);
+				mParent->GetScene().GetFramework().GetUIBatches().GetBatch(BATCHES_BATCH_DEFAULT_PT)->GetShaderStage()->SetPSSRV(0, skin->GetRawTexture());
+				mParent->GetScene().GetFramework().GetUIBatches().GetBatch(BATCHES_BATCH_DEFAULT_PT)->DrawPolygon(shape->mPolygonPleIndex, bbrige);
 			}
 		}
 	}

@@ -21,9 +21,9 @@ namespace XGF
 	void Label::Render()
 	{
 		DrawSkin();
-		auto renderer = this->mParent->GetScene()->GetFramework()->GetUIBatches().GetTextRenderer(mFontSize);
+		auto renderer = this->mParent->GetScene().GetFramework().GetUIBatches().GetTextRenderer(mFontSize);
 		if(renderer != nullptr)
-			renderer->DrawString(mText.c_str(), mTextColor, this, &mTransform.GetMatrix());
+			renderer->DrawString(mText.c_str(), mTextColor, this, &GetMixMatrix());
 	}
 
 	void Label::SetText(const string & text)

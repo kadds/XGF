@@ -54,6 +54,58 @@ namespace XGF
 	{
 		mIsChange = true;
 	}
+	bool Transform::IsChange() const
+	{
+		return mIsChange;
+	}
+	float Transform::GetTranslateX() const
+	{
+		return mTranslation.x;
+	}
+	float Transform::GetTranslateY() const
+	{
+		return mTranslation.y;
+	}
+	float Transform::GetTranslateZ() const
+	{
+		return mTranslation.z;
+	}
+	float Transform::GetScaleX() const
+	{
+		return mScale.x;
+	}
+	float Transform::GetScaleY() const
+	{
+		return mScale.y;
+	}
+	float Transform::GetScaleZ() const
+	{
+		return mScale.z;
+	}
+	float Transform::GetRotationX() const
+	{
+		return mRotation.x;
+	}
+	float Transform::GetRotationY() const
+	{
+		return mRotation.y;
+	}
+	float Transform::GetRotaionZ() const
+	{
+		return mRotation.z;
+	}
+	const Point & Transform::GetTranslate() const
+	{
+		return mTranslation;
+	}
+	const Point & Transform::GetScale() const
+	{
+		return mScale;
+	}
+	const Point & Transform::GetRotation() const
+	{
+		return mRotation;
+	}
 	void Transform::SetTranslation(const Point & translation) {
 		mTranslation = translation;
 		mIsChange = true;

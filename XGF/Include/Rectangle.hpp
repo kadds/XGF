@@ -13,7 +13,7 @@ namespace XGF
 			virtual ~Rectangle();
 			void SetPositionAndSize(float x, float y, float width, float height);
 
-			virtual bool IsInBoundBox(const Point & p) override;
+			virtual bool IsInBoundBox(const Point & p, const SM::Matrix & matrix) override;
 
 			bool SubRectangle(Rectangle * pol, float x, float y, float width, float height) const;
 			virtual void SetPosition(const Point & p);

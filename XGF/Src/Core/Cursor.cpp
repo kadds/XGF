@@ -36,7 +36,8 @@ namespace XGF
 			mRc.SetPositionAndSize(mPosition.x - mPointDeviation.x, mPosition.y - mPointDeviation.y, mSize.x, mSize.y);
 			mPtBinder->FromTexture(&mTexture);
 			mRc.SetZ(0.1f);
-			//mRc.Render(mTextureBatch, mBbrg, mTexture.GetRawTexture());
+			mTextureBatch.GetShaderStage()->SetPSSRV(0, mTexture.GetRawTexture());
+			mTextureBatch.DrawPolygon(mRc.mPolygonPleIndex, mBbrg);
 			mTextureBatch.End();
 		}
 		else
@@ -51,7 +52,8 @@ namespace XGF
 			mTextureBatch.Begin();
 			mRc.SetPositionAndSize(mPosition.x - mPointDeviation.x, mPosition.y - mPointDeviation.y, mSize.x, mSize.y);
 			mRc.SetZ(0.1f);
-			//mRc.Render(mTextureBatch, mBbrg, mAnimation->GetTexture()->GetRawTexture());
+			mTextureBatch.GetShaderStage()->SetPSSRV(0, mTexture.GetRawTexture());
+			mTextureBatch.DrawPolygon(mRc.mPolygonPleIndex, mBbrg);
 			mTextureBatch.End();
 		}
 	}

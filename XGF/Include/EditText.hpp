@@ -12,7 +12,7 @@ namespace XGF
 	public:
 		virtual void Render() override;
 		virtual void OnFocus(bool isForce);
-		virtual void GetInerBox(::XGF::Shape::Rectangle & rc);
+		virtual void GetInnerBox(::XGF::Shape::Rectangle & rc);
 
 		virtual void OnAddToContainer() override;
 		virtual void OnRemoveFromContainer() override;

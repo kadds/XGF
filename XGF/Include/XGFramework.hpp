@@ -73,7 +73,7 @@ namespace XGF
 
 		void SetOnCloseListener(std::function<bool(XGFramework &)> f) { mOnCloseListener = f; }
 		void SetOnInputListener(std::function<bool(XGFramework &, const Event &ev)> f) { mOnInputListener = f; };
-		UIBatches & GetUIBatches() const { return mUiBatches; }
+		UIBatches & GetUIBatches() { return mUiBatches; }
 		EventDispatcher & GetEventDispatcher() { return mEventDispatcher; }
 		struct AutoClose
 		{

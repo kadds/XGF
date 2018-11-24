@@ -44,6 +44,8 @@ namespace XGF
 		void ClearDepthStencilBuffer();
 
 		Container & GetRootContainer() { return mRootContainer; };
+
+		void RenderUI(WVPMatrix & matrix);
 	protected:
 		Container mRootContainer;
 

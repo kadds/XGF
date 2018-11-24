@@ -89,7 +89,7 @@ namespace XGF
 		{
 			p = mPolygon->mPoint[0];
 		}
-		bool RectangleC::IsInBoundBox(const Point & p)
+		bool RectangleC::IsInBoundBox(const Point & p, const SM::Matrix & matrix)
 		{
 			auto ple = std::make_shared<PolygonPlePoint3>(4);
 
@@ -97,7 +97,7 @@ namespace XGF
 			{
 				ple->mPoint[i] = mPolygon->mPoint[i];
 			}
-			ple->Mul(mTransform.GetMatrix());
+			ple->Mul(matrix);
 			return pInPolygon(ple, p.x, p.y);
 		}
 	}

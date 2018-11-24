@@ -46,6 +46,7 @@ namespace XGF
 		bool mHideCursor;
 		HCURSOR mSysCursor;
 	private:
+		void RenderThreadStart(GDI * gdi, std::shared_ptr<Scene> scene);
 		ATOM RegisterWindowsClass(HINSTANCE hInstance, const wchar_t * className, int ICON, int sICON);
 		DISALLOW_COPY_AND_ASSIGN(Application);
 	};

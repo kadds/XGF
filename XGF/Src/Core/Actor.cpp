@@ -1,4 +1,5 @@
 #include "../../Include/Actor.hpp"
+#include "../../Include/Container.hpp"
 namespace XGF{
 	Actor::Actor():mParent(nullptr)
 	{
@@ -14,7 +15,16 @@ namespace XGF{
 
 	void Actor::_Update(float deltaTime)
 	{
+		GetShape()->GetTransform().UpdateAction(deltaTime);
 		Update(deltaTime);
+	}
+
+	const SM::Matrix & Actor::GetMixMatrix()
+	{
+		bool c = GetShape()->GetTransform().IsChange() || mParent->HasDFlag();
+		if (c)
+			mMatrix = GetShape()->GetTransform().GetMatrix() * mParent->GetMixMatrix();
+		return mMatrix;
 	}
 
 

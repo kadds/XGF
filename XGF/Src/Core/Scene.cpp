@@ -16,15 +16,15 @@ namespace XGF
 	{
 		Update(dt);
 		mRootContainer._Update(dt);
+		mRootContainer.GenerateMixMatrix(SM::Matrix::Identity, false);
 	}
 	void Scene::_Render(float deltaTime)
 	{
 		Render(deltaTime);
-		mRootContainer._Render();
 	}
 	void Scene::SwitchScene(std::shared_ptr<Scene> scene)
 	{
-		static_cast<XGFramework *>(GetFramework())->SwitchScene(scene);
+		static_cast<XGFramework *>(&GetFramework())->SwitchScene(scene);
 	}
 	void Scene::Clear(const SM::Color & c)
 	{
@@ -34,6 +34,14 @@ namespace XGF
 	{
 		mFramework->GetGDI()->ClearDepthStencilBuffer();
 	}
+
+	void Scene::RenderUI(WVPMatrix& matrix)
+	{
+		GetFramework().GetUIBatches().Begin(matrix);
+		mRootContainer._Render();
+		GetFramework().GetUIBatches().End();
+	}
+
 	SceneAnimation * Scene::OnSwitchIn()
 	{
 		return nullptr;
@@ -51,7 +59,6 @@ namespace XGF
 	void Scene::AddChild(std::shared_ptr<Container> container)
 	{
 		container->SetParent(&mRootContainer);
-
 		mRootContainer.AddChild(container);
 		container->_OnCreate(this);
 	}
@@ -69,7 +76,7 @@ namespace XGF
 	void Scene::_OnDestroy()
 	{
 		OnDestroy();
-		mRootContainer._OnDestory();
+		mRootContainer._OnDestroy();
 		mFramework->GetEventDispatcher().RemoveAllEventListener(std::bind(&EventDispatcher::Dispatch, &mRootContainer.GetEventDispatcher(), std::placeholders::_1));
 		mFramework->GetEventDispatcher().RemoveSystemEventListener(SystemEventId::Size, std::bind(&Scene::_OnSize, this, std::placeholders::_1));
 		mFramework->GetEventDispatcher().RemoveSystemEventListener(SystemEventId::Activate, std::bind(&Scene::_OnActivate, this, std::placeholders::_1));

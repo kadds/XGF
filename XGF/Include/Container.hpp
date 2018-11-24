@@ -21,7 +21,7 @@ namespace XGF
 		~Container();
 
 		void _OnCreate(Scene * scene);
-		void _OnDestory();
+		void _OnDestroy();
 
 		void _Render();
 		void _Update(float deltaTime);
@@ -29,7 +29,7 @@ namespace XGF
 		void SetParent(Container * c);
 
 		std::shared_ptr<Actor> AddChild(std::shared_ptr<Actor> actor);
-		void AddChild(std::shared_ptr<Container> container);
+		std::shared_ptr<Container> AddChild(std::shared_ptr<Container> container);
 
 		void RemoveChild(std::shared_ptr<Actor> actor);
 		void RemoveChild(std::shared_ptr<Container> container);
@@ -43,23 +43,28 @@ namespace XGF
 
 		Scene & GetScene() { return *mScene; }
 
-		void SetPosition(const Point & p) {};//TODO::
-		void SetSize(const Point & size) {};
-
-		float GetZOrder() { return mZOrder; };
+		float GetZOrder() const { return mZOrder; };
 
 		std::shared_ptr<Actor> GetActorById(int Id, bool includeChildContainer = false);
+
+		void SetScene(Scene * scene);
+
+		bool HasDFlag();
+		const SM::Matrix & GetMixMatrix();
 	protected:
 		float mZOrder;
+	public:
+		void GenerateMixMatrix(const SM::Matrix & matrix, bool isChange);
 	private:
+		static void EventDispatch(const Event & e, EventDispatcher & edp);
 		Container * mParent;
 		std::vector<std::shared_ptr<Actor>> mChild;
 		std::vector<std::shared_ptr<Container>> mContainerChild;
 
 		EventDispatcher mEventDispatcher;
-		Point mSize;
-		Point mPosition;
 		Scene * mScene;
 		Transform mTransform;
+		SM::Matrix mMatrix;
+		bool mDFlag;
 	};
 }

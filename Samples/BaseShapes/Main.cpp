@@ -109,6 +109,7 @@ public:
 		PolygonPleTextureBinder textureBinder(4);
 		textureBinder.SetPosition(0.f, 1.f, 0.f, 1.f);
 		BindingBridge bb;
+		bb.AddBinder(mRc.mPolygon);
 		bb.AddBinder(std::shared_ptr<PolygonPleTextureBinder>(&textureBinder, [](const PolygonPleTextureBinder *) {}));
 
 		auto debug = DebugInscriber::GetInstance();
@@ -117,7 +118,8 @@ public:
 		mTextRenderer.End();
 		mTextureBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
 		mTextureBatch.Begin();
-		mRc.Render(mTextureBatch, bb, mRenderToTexture.GetShaderResourceView());
+		mTextureBatch.GetShaderStage()->SetPSSRV(0, mRenderToTexture.GetShaderResourceView());
+		mTextureBatch.DrawPolygon(mRc.mPolygonPleIndex, bb);
 		mTextureBatch.End();
 		/*
 		auto c = mRenderToTexture.GetShaderResourceView();
@@ -129,7 +131,7 @@ public:
 	};
 	virtual void Update(float deltaTime) override
 	{
-		if (mFramework->GetInputManager()->IskeyDowm(DIK_F11) && mTime >= 5.f)
+		if (mFramework->GetInputManager()->IskeyDown(DIK_F11) && mTime >= 5.f)
 		{
 			auto gdi = mFramework->GetGDI();
 			if (!gdi->IsFullScreen())
@@ -179,7 +181,7 @@ int RunGame(HINSTANCE hInstance)
 	GDI gdi;
 
 	auto gameScene = std::make_shared<GameScene>();
-	framework.SetOnCloseListener([](XGFramework &) {return true; });
+	framework.SetOnCloseListener(XGFramework::AutoClose());
 
 	WindowProperty windowProperty;
 	windowProperty.title = L"BaseShapes";

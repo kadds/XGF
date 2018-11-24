@@ -2,7 +2,7 @@
 #include "../../Include/Actor.hpp"
 namespace XGF
 {
-	Container::Container()
+	Container::Container() : mZOrder(0)
 	{
 	}
 	Container::~Container()
@@ -13,9 +13,10 @@ namespace XGF
 	{
 		mScene = scene;
 		mParent = nullptr;
+		mDFlag = true;
 	}
 
-	void Container::_OnDestory()
+	void Container::_OnDestroy()
 	{
 		RemoveAllChild();
 		mScene = nullptr;
@@ -59,11 +60,13 @@ namespace XGF
 		return actor;
 	}
 
-	void Container::AddChild(std::shared_ptr<Container> container)
+	std::shared_ptr<Container> Container::AddChild(std::shared_ptr<Container> container)
 	{
 		mContainerChild.push_back(container);
 		container->SetParent(this);
-		
+		GetEventDispatcher().InsertAllEventListener(std::bind(&EventDispatcher::Dispatch, &container->GetEventDispatcher(), std::placeholders::_1));
+		container->SetScene(mScene);
+		return container;
 	}
 
 	void Container::RemoveChild(std::shared_ptr<Actor> actor)
@@ -81,7 +84,8 @@ namespace XGF
 		auto it = std::find(mContainerChild.begin(), mContainerChild.end(), container);
 		if (it != mContainerChild.end())
 		{
-			container->_OnDestory();
+			GetEventDispatcher().RemoveAllEventListener(std::bind(&EventDispatcher::Dispatch, &container->GetEventDispatcher(), std::placeholders::_1));
+			container->_OnDestroy();
 			mContainerChild.erase(it);
 		}
 	}
@@ -102,7 +106,7 @@ namespace XGF
 	void Container::RemoveAllContainer()
 	{
 		for (auto it : mContainerChild)
-			it->_OnDestory();
+			it->_OnDestroy();
 		mContainerChild.clear();
 	}
 
@@ -113,15 +117,49 @@ namespace XGF
 				return it;
 		if (includeChildContainer)
 		{
-			std::shared_ptr<Actor> actor;
 			for (auto it : mContainerChild)
 			{
-				actor = it->GetActorById(Id, true);
-				if (actor != nullptr)
+				std::shared_ptr<Actor> actor = it->GetActorById(Id, true);
+				if (actor)
 					return actor;
 			}
 		}
 		return nullptr;
+	}
+
+	void Container::SetScene(Scene* scene)
+	{
+		mScene = scene;
+	}
+
+	bool Container::HasDFlag()
+	{
+		return mDFlag;
+	}
+
+	const SM::Matrix& Container::GetMixMatrix()
+	{
+		return mMatrix;
+	}
+
+	void Container::GenerateMixMatrix(const SM::Matrix & matrix, bool isChange)
+	{
+		bool c = isChange || mTransform.IsChange();
+		if(c)
+		{
+			mMatrix = mTransform.GetMatrix() * matrix;
+		}
+		mDFlag = c;
+		for (auto & child : mContainerChild)
+		{
+			child->GenerateMixMatrix(mMatrix, c);
+		}
+	}
+
+	void Container::EventDispatch(const Event & e, EventDispatcher & edp)
+	{
+		edp.Dispatch(e);
+
 	}
 
 }

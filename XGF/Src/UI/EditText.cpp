@@ -49,7 +49,7 @@ namespace XGF
 		}
 	}
 
-	void EditText::GetInerBox(::XGF::Shape::Rectangle & rc)
+	void EditText::GetInnerBox(::XGF::Shape::Rectangle & rc)
 	{
 		GetInerBorderRectangle(rc);
 	}
@@ -61,7 +61,7 @@ namespace XGF
 
 	void EditText::OnRemoveFromContainer()
 	{
-		mParent->GetScene()->GetFramework()->GetInputManager()->ClearFocus(&mTextInputProcessor);
+		mParent->GetScene().GetFramework().GetInputManager()->ClearFocus(&mTextInputProcessor);
 		Control::OnRemoveFromContainer();
 	}
 
@@ -71,9 +71,9 @@ namespace XGF
 
 	void EditText::OnMouseMove(const Event & ev)
 	{
-		if (!mParent->GetScene()->GetFramework()->GetInputManager()->IsFocus(&mTextInputProcessor))
+		if (!mParent->GetScene().GetFramework().GetInputManager()->IsFocus(&mTextInputProcessor))
 		{
-			if(this->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f)))
+			if(this->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f), GetMixMatrix()))
 				mNowState = SkinState::hover;
 			else
 				mNowState = SkinState::normal;
@@ -86,9 +86,9 @@ namespace XGF
 
 	void EditText::OnMouseDown(const Event & ev)
 	{
-		if (this->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f)))
+		if (this->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f), GetMixMatrix()))
 		{
-			mParent->GetScene()->GetFramework()->GetInputManager()->SetFocus(&mTextInputProcessor);
+			mParent->GetScene().GetFramework().GetInputManager()->SetFocus(&mTextInputProcessor);
 			mNowState = SkinState::active;
 		}
 	}

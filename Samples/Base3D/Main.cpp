@@ -56,13 +56,13 @@ public:
 			make_unique<Shape::BoxGeometry>(1.f, 1.f, 1.f), 
 			make_unique<Shape::BasicMaterial>(SM::Color(1.0f, 0.2f, 0.f, 1.f), texture)
 		);
-		boxMesh->GetGeometry()->GetTransform().TranslateToY(0.51);
+		boxMesh->GetGeometry()->GetTransform().TranslateToY(0.51f);
 		
 		planeMesh = make_unique<Shape::Mesh>(
 			make_unique<Shape::PlaneGeometry>(10, 10, 2, 2),
 			make_unique<Shape::BasicMaterial>(SM::Color(1.f, 1.f, 1.f, 1.f), texture)
 		);
-		planeMesh->GetGeometry()->GetTransform().TranslateToY(-0.01);
+		planeMesh->GetGeometry()->GetTransform().TranslateToY(-0.01f);
 
 		sphereMesh = make_unique<Shape::Mesh>(
 			make_unique<Shape::SphereGeometry>(1, 16, 16),
@@ -121,11 +121,11 @@ public:
 	};
 	virtual void Update(float deltaTime) override
 	{
-		if (this->GetFramework()->GetInputManager()->IskeyDowm(DIK_A))
+		if (this->GetFramework().GetInputManager()->IskeyDown(DIK_A))
 		{
 			mCamera3D.LookAt(Point(1.f, 1.f, 1.f), Point(0, 0, 0), Point::Up);
 		}
-		if (this->GetFramework()->GetInputManager()->IskeyDowm(DIK_S))
+		if (this->GetFramework().GetInputManager()->IskeyDown(DIK_S))
 		{
 			mCamera3D.LookTo(Point(1.f, 1.f, 1.f), Point(-1, 1, -1), Point::Up);
 		}

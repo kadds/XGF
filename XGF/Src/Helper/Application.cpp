@@ -46,19 +46,7 @@ namespace XGF
 
 		mHideCursor = false;
 		//开启渲染线程==============================================
-		mRenderThread.DoAsyn(std::bind([this, &gdi, &firstScene](Asyn * RenderThread) {
-			XGF_Debug(Application, "Framework Start");
-			mFramework->_OnCreate(&gdi, RenderThread);
-			mFramework->AddScene(firstScene);
-			RenderThread->Notify();
-			//消息循环
-			XGF_Debug(Application, "Framework Loop Start");
-			mFramework->_Loop2();
-			XGF_Debug(Application, "Framework Destroy");
-			mFramework->_OnDestroy();
-			//通知主线程退出
-			RenderThread->Notify();
-		}, std::placeholders::_1));
+		mRenderThread.DoAsyn(std::bind(&Application::RenderThreadStart, this, &gdi, firstScene));
 		//======================================================
 		MSG msg;
 		mRenderThread.Wait();
@@ -76,6 +64,21 @@ namespace XGF
 		XGF_Debug(Application, "ApplicationEnd");
 		return exitCode;
 
+	}
+
+	void Application::RenderThreadStart(GDI * gdi, std::shared_ptr<Scene> scene)
+	{
+		XGF_Debug(Application, "Framework Start");
+		mFramework->_OnCreate(gdi, &mRenderThread);
+		mFramework->AddScene(scene);
+		mRenderThread.Notify();
+		//消息循环
+		XGF_Debug(Application, "Framework Loop Start");
+		mFramework->_Loop2();
+		XGF_Debug(Application, "Framework Destroy");
+		mFramework->_OnDestroy();
+		//通知主线程退出
+		mRenderThread.Notify();
 	}
 
 	ATOM Application::RegisterWindowsClass(HINSTANCE hInstance, const wchar_t * className, int ICON, int sICON)

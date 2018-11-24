@@ -36,7 +36,7 @@ namespace XGF
 				mFirst = false;
 			mBatch.GetShaderStage()->SetVSSRV(0, mCgpu.GetUnorderedAccessViews(0)->srv);
 			mBatch.GetShaderStage()->SetPSSRV(0, mTexture->GetRawTexture());
-			mBatch.StepVetices(100);
+			mBatch.StepVertices(100);
 			mBatch.End();
 		}
 		else

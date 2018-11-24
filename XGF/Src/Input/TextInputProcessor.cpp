@@ -1,3 +1,4 @@
+#include <utility>
 #include "..\..\Include\TextInputProcessor.hpp"
 #include "..\..\Include\TextRenderer.hpp"
 #include "../../Include/TextLayoutShaper.hpp"
@@ -9,7 +10,7 @@ namespace XGF
 		mFirstCharPos = 0;
 	}
 
-	TextInputProcessor::TextInputProcessor(const string & text) :mInputString(text), mCaretPos(0), mGetInnerRectangle(nullptr), mTextRenderer(nullptr), mFirstCharPos(0)
+	TextInputProcessor::TextInputProcessor(string text) :mInputString(std::move(text)), mCaretPos(0), mGetInnerRectangle(nullptr), mTextRenderer(nullptr), mFirstCharPos(0)
 	{
 	}
 
@@ -138,7 +139,7 @@ namespace XGF
 			mCaretPos = mCallBackBuffer.first;
 	}
 
-	void TextInputProcessor::CaretToDowm()
+	void TextInputProcessor::CaretToDown()
 	{
 		XGF_ASSERT(mGetInnerRectangle);
 		mCallBackBuffer.first = -1;
@@ -154,14 +155,14 @@ namespace XGF
 			mCaretPos = mCallBackBuffer.first;
 	}
 
-	void TextInputProcessor::GetCaretProperty(float & x, float & y, int & size)
+	void TextInputProcessor::GetCaretProperty(float & x, float & y, int & size) const
 	{
 		x = mCaretPosition.x;
 		y = mCaretPosition.y;
 		size = mTextRenderer->GetFontSize();
 	}
 
-	const wchar_t * TextInputProcessor::GetText()
+	const wchar_t * TextInputProcessor::GetText() 
 	{
 		return mInputString.c_str();
 	}

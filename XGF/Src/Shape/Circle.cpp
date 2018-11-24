@@ -35,7 +35,7 @@ namespace XGF
 				mPolygon->mPoint[i] = { px, py, 0.1f };
 			}
 		}
-		bool Circle::IsInBoundBox(const Point & p)
+		bool Circle::IsInBoundBox(const Point & p, const SM::Matrix & matrix)
 		{
 			float x = mPolygon->mPoint[0].x;
 			float y = mPolygon->mPoint[0].y;

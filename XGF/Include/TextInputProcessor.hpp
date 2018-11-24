@@ -18,9 +18,9 @@ namespace XGF
 	{
 	public:
 		TextInputProcessor();
-		TextInputProcessor(const string & text);
+		TextInputProcessor(string text);
 		~TextInputProcessor();
-		void SetCaretPosInText(int posx);
+		void SetCaretPosInText(int pos);
 		void AppendInputStr(wchar_t * str, int count);
 		void AppendInputStr(wchar_t str);
 		void DelInputStr();
@@ -30,10 +30,10 @@ namespace XGF
 		void CaretToLeft();
 		void CaretToRight();
 		void CaretToUp();
-		void CaretToDowm();
-		int GetCaretPosInText() { return mCaretPos; }
+		void CaretToDown();
+		int GetCaretPosInText() const { return mCaretPos; }
 
-		void GetCaretProperty(float &x, float &y, int &size);
+		void GetCaretProperty(float &x, float &y, int &size) const;
 		const wchar_t* GetText();
 
 		void OnFocus(bool isFocus);

@@ -65,7 +65,7 @@ namespace XGF
 			return mClientHeight / 2.f;
 		}
 		//void End(ID3D11Buffer * c, int count = 0);
-		void StepVetices(int count);
+		void StepVertices(int count);
 		static void SetClientSize(SIZE size) { mClientHeight = size.cy; mClientWidth = size.cx; }
 	protected:
 		static int mClientWidth;

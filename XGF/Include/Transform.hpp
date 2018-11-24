@@ -25,6 +25,11 @@ namespace XGF
 		void SetRotationAngle(const Point & angle);
 		void SetScale(const Point & p);
 		void SetTranslation(const Point & translation);
+
+		const Point & GetTranslate() const;
+		const Point & GetScale() const;
+		const Point & GetRotation() const;
+
 		void UpdateAction(float dt);
 		void SetScaleOrigin(Point &p) { mScaleOrigin = p; }
 		void SetRotationOrigin(Point &p) { mRotationOrigin = p; }
@@ -41,6 +46,19 @@ namespace XGF
 		void TranslateToZ(float d);
 		void TranslateZ(float d);
 		void SetChangeFlag();
+		bool IsChange() const;
+
+		float GetTranslateX() const;
+		float GetTranslateY() const;
+		float GetTranslateZ() const;
+
+		float GetScaleX() const;
+		float GetScaleY() const;
+		float GetScaleZ() const;
+
+		float GetRotationX() const;
+		float GetRotationY() const;
+		float GetRotaionZ() const;
 	private:
 		DirectX::XMFLOAT4X4 mMatrix;
 		bool mIsChange;

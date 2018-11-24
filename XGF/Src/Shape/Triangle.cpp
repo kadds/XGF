@@ -37,9 +37,11 @@ namespace XGF
 		{
 			p = mPolygon->mPoint[0];
 		}
-		bool Triangle::IsInBoundBox(const Point & p)
+		bool Triangle::IsInBoundBox(const Point & p, const SM::Matrix & matrix)
 		{
-			return pInPolygon(mPolygon, p.x, p.y);//TODO::EX
+			auto ple = std::make_shared<PolygonPlePoint3>(3);
+			mPolygon->MulTo(ple, matrix);
+			return pInPolygon(ple, p.x, p.y);//TODO::EX
 		}
 	}
 }
