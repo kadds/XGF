@@ -51,7 +51,7 @@ namespace XGF
 		long ReadFileToBuffer(const std::wstring & name);
 		void CloseFileBuffer();
 		std::unordered_map<wchar_t, PosSize*> map;
-		byte * mBuffer;
+		unsigned char * mBuffer;
 		unsigned            mBufferWidth;
 		unsigned            mBufferHeight;
 		ID3D11ShaderResourceView * mShaderResourceView;

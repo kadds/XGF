@@ -66,6 +66,31 @@ namespace XGF
 
 	}
 
+	Asyn& Application::GetRenderThread()
+	{
+		return mRenderThread;
+	}
+
+	XGFramework& Application::GetFramework()
+	{
+		return *mFramework;
+	}
+
+	bool Application::IsSetHideCursor()
+	{
+		return mHideCursor;
+	}
+
+	void Application::SetHideCursor(bool ishide)
+	{
+		mHideCursor = ishide;
+	}
+
+	HCURSOR Application::GetSysCursor()
+	{
+		return mSysCursor;
+	}
+
 	void Application::RenderThreadStart(GDI * gdi, std::shared_ptr<Scene> scene)
 	{
 		XGF_Debug(Application, "Framework Start");
@@ -123,9 +148,9 @@ namespace XGF
 		case WM_KEYDOWN:
 			//把消息交给InputManage处理
 			app = WndAppMap.find(hWnd)->second;
-			if (app != nullptr && app->GetFramework() != nullptr)
+			if (app != nullptr)
 			{
-				return app->GetFramework()->OnInputMessage(message, wParam, lParam);
+				return app->GetFramework().OnInputMessage(message, wParam, lParam);
 			}
 			break;
 		case WM_DESTROY:
@@ -141,7 +166,7 @@ namespace XGF
 			app = WndAppMap.find(hWnd)->second;
 			if (app != nullptr)
 			{
-				app->GetRenderThread()->PostEvent(SystemEventId::Activate, { LOWORD(wParam) != WA_INACTIVE});
+				app->GetRenderThread().PostEvent(SystemEventId::Activate, { LOWORD(wParam) != WA_INACTIVE});
 			}
 			break;
 		case WM_SIZE:
@@ -152,7 +177,7 @@ namespace XGF
 			if (app != nullptr && SIZE_MINIMIZED != wParam && SIZE_MAXHIDE != wParam)
 			{
 				XGF_Debug(Application, "WM_SIZE IN");
-				app->GetRenderThread()->PostWithoutRepeat(SystemEventId::Size, { static_cast<int>(rc.right - rc.left), static_cast<int>(rc.bottom - rc.top) });
+				app->GetRenderThread().PostWithoutRepeat(SystemEventId::Size, { static_cast<int>(rc.right - rc.left), static_cast<int>(rc.bottom - rc.top) });
 			}
 		}
 		break;
@@ -189,14 +214,14 @@ namespace XGF
 				if (wParam == 1)
 				{
 					app->SetExitCode((int)lParam);
-					app->GetRenderThread()->Wait();
+					app->GetRenderThread().Wait();
 					XGF_Debug(Application, "Wait End Close Window");
 					DestroyWindow(hWnd);
 				}
 				else
 				{
 					XGF_Debug(Application, "Send CloseMessage to System");
-					app->GetRenderThread()->PostEvent(SystemEventId::Close, { wParam != 0 });
+					app->GetRenderThread().PostEvent(SystemEventId::Close, { wParam != 0 });
 				}
 			}
 			break;
@@ -206,7 +231,7 @@ namespace XGF
 			app = WndAppMap.find(hWnd)->second;
 			if (app != nullptr)
 			{
-				app->GetFramework()->GetInputManager()->OnActivate(!wParam);
+				app->GetFramework().GetInputManager().OnActivate(!wParam);
 			}
 			break;
 		}

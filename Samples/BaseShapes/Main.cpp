@@ -39,7 +39,7 @@ public:
 	virtual ~GameScene() {};
 	void MyRender(WVPMatrix & wvp, bool end)
 	{
-		mFramework->ClearDepthStencilBuffer();
+		GetFramework().ClearDepthStencilBuffer();
 		mShapeRenderer.DrawCircle(240, 240, 40, GetPrecision(40, 5), 0.01f, SM::Color(1.f, 1.f, 0.f, 1.f), SM::Color(0.f, 1.f, 0.f, 1.f));
 		mTextRenderer.DrawString(L"Circle", 200, 180);
 		mShapeRenderer.DrawRectangleC(50, 50, 100, 100, 0.1f, SM::Color(1.f, 0.f, 0.0f, 1.f), 8.f, SM::Color(0.f, 0.f, 1.f, 1.f), SM::Color(0.f, 1.f, 0.f, 1.f));
@@ -131,13 +131,13 @@ public:
 	};
 	virtual void Update(float deltaTime) override
 	{
-		if (mFramework->GetInputManager()->IskeyDown(DIK_F11) && mTime >= 5.f)
+		if (GetFramework().GetInputManager().IskeyDown(DIK_F11) && mTime >= 5.f)
 		{
-			auto gdi = mFramework->GetGDI();
-			if (!gdi->IsFullScreen())
-				gdi->SetDisplayMode(DisplayMode::FullScreen, 0, 0, 1440, 900, false, true);
+			auto & gdi = GetFramework().GetGDI();
+			if (!gdi.IsFullScreen())
+				gdi.SetDisplayMode(DisplayMode::FullScreen, 0, 0, 1440, 900, false, true);
 			else
-				gdi->SetDisplayMode(DisplayMode::Windowed, 400, 400, 600, 400, false, true);
+				gdi.SetDisplayMode(DisplayMode::Windowed, 400, 400, 600, 400, false, true);
 			mTime = 0.f;
 		}
 		else if (mTime >= 0.f)
@@ -149,10 +149,10 @@ public:
 	};
 	virtual void OnSize(int ClientX, int ClientY) override
 	{
-		auto gdi = mFramework->GetGDI();
+		auto & gdi = GetFramework().GetGDI();
 		mCamera.UpdateProject(ClientX, ClientY);
 		mRenderToTexture.Shutdown();
-		mRenderToTexture.Initialize(gdi, gdi->GetWidth(), gdi->GetHeight());
+		mRenderToTexture.Initialize(&gdi, gdi.GetWidth(), gdi.GetHeight());
 		mRc.SetPositionAndSize(0.f, ClientY * 2 / 3.f, ClientX / 3.f, ClientY / 3.f);
 	};
 

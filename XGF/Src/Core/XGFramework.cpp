@@ -150,6 +150,37 @@ namespace XGF
 	{
 		mScene->_Render(mDeltaTime);
 	}
+
+	LRESULT XGFramework::OnInputMessage(UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		return mInputManager.ProcessInputMessage(msg, wParam, lParam);
+	}
+
+	InputManager& XGFramework::GetInputManager()
+	{
+		return mInputManager;
+	}
+
+	void XGFramework::SetOnCloseListener(std::function<bool(XGFramework&)> f)
+	{
+		mOnCloseListener = f;
+	}
+
+	void XGFramework::SetOnInputListener(std::function<bool(XGFramework&, const Event& ev)> f)
+	{
+		mOnInputListener = f;
+	}
+
+	UIBatches& XGFramework::GetUIBatches()
+	{
+		return mUiBatches;
+	}
+
+	EventDispatcher& XGFramework::GetEventDispatcher()
+	{
+		return mEventDispatcher;
+	}
+
 	void XGFramework::SwitchScene(std::shared_ptr<Scene> scene)
 	{
 		mThread->PostEvent(SystemEventId::SwitchScene, { scene });
@@ -174,6 +205,16 @@ namespace XGF
 		mGDI->Present(isVSync);
 	}
 
+	void XGFramework::OpenVSync()
+	{
+		mIsVSync = true;
+	}
+
+	void XGFramework::CloseVSync()
+	{
+		mIsVSync = false;
+	}
+
 	HWND XGFramework::GetTopHwnd() const
 	{
 		return mGDI->GetTopHwnd();
@@ -184,9 +225,14 @@ namespace XGF
 		return mGDI->GetInstance();
 	}
 
-	GDI * XGFramework::GetGDI() const
+	Asyn &XGFramework::GetThread() const
 	{
-		return mGDI;
+		return *mThread;
+	}
+
+	GDI & XGFramework::GetGDI() const
+	{
+		return *mGDI;
 	}
 
 	int XGFramework::GetWindowsWidth() const

@@ -49,7 +49,8 @@ public:
 		mUITextRenderer.Initialize(gdi, &mFont, 1000);
 		mTextRenderer_s.Initialize(gdi, &mFont_s, 1000);
 		mTextRenderer_b.Initialize(gdi, &mFont_b, 200);
-		mFramework->GetUIBatches().SetTextRenderer(FontSize::Default, &mUITextRenderer);
+		auto & framework = GetFramework();
+		framework.GetUIBatches().SetTextRenderer(FontSize::Default, &mUITextRenderer);
 		GetRootContainer().AddChild(mBtnGroup);
 		std::shared_ptr<Label> label = std::make_shared<Label>(0, L"Direct3D11");
 		label->SetPositionAndSize(200, 200, 100, 20);
@@ -57,7 +58,7 @@ public:
 		GetRootContainer().AddChild(label);
 		
 		label->GetClickHelper().AddOnClickListener([this](Control *label, const MousePoint & ms, int mouseButton) {
-			AsyncTask::NewTask(mFramework->GetThread(), [this](std::shared_ptr<AsyncTask> asyn) {
+			AsyncTask::NewTask(&GetFramework().GetThread(), [](std::shared_ptr<AsyncTask> asyn) {
 				MessageBox(NULL, L"YOU CLICK Label!!", L"Exe", 0);
 				asyn->Finish(0, 0);
 			});
@@ -83,13 +84,13 @@ public:
 		buttonux->SetBorderSize(2);
 		buttonux->SetZ(0.07f);
 		buttonux->GetClickHelper().AddOnClickListener([this](auto, const MousePoint & ms, int mouseButton) {
-			auto gdi = GetFramework().GetGDI();
-			if (gdi->GetDisplayMode() == DisplayMode::Borderless)
-				gdi->SetDisplayMode(DisplayMode::Windowed, 0, 0, 600, 400, false);
-			else if (gdi->GetDisplayMode() == DisplayMode::FullScreen)
-				gdi->SetDisplayMode(DisplayMode::Borderless, 0, 0, 1920, 1080, true);
+			auto & gdi = GetFramework().GetGDI();
+			if (gdi.GetDisplayMode() == DisplayMode::Borderless)
+				gdi.SetDisplayMode(DisplayMode::Windowed, 0, 0, 600, 400, false);
+			else if (gdi.GetDisplayMode() == DisplayMode::FullScreen)
+				gdi.SetDisplayMode(DisplayMode::Borderless, 0, 0, 1920, 1080, true);
 			else
-				gdi->SetDisplayMode(DisplayMode::FullScreen, 0, 0, 1920, 1080, true);
+				gdi.SetDisplayMode(DisplayMode::FullScreen, 0, 0, 1920, 1080, true);
 		});
 
 		std::shared_ptr<EditText> edit1 = std::make_shared<EditText>(10);
@@ -113,7 +114,7 @@ public:
 		res.push_back(ResourceInfo(L"_activate.png", L"activate"));
 		res.push_back(ResourceInfo(L"cursor.png", L"cursor"));
 
-		mTextureResourceManager.LoadResourceAsync(gdi, res, mFramework->GetThread(), [this](std::vector<ResourceInfo> ress, int success) {
+		mTextureResourceManager.LoadResourceAsync(gdi, res, &GetFramework().GetThread(), [this](std::vector<ResourceInfo> ress, int success) {
 			if (success < 4) return;
 			auto t1 = Texture(*mTextureResourceManager.GetResourceByAlias(L"normal"));
 			auto t2 = Texture(*mTextureResourceManager.GetResourceByAlias(L"hover"));
@@ -131,7 +132,8 @@ public:
 			std::static_pointer_cast<Control>(GetRootContainer().GetActorById(10))->SetSkin(Skin::CreateFromTextures(&t1, &t2, &t3));
 			std::static_pointer_cast<Control>(GetRootContainer().GetActorById(11))->SetSkin(Skin::CreateFromTextures(&t1, &t2, &t3));
 
-			mFramework->GetInputManager()->GetCursor()->SetStaticTexture(cursor);
+			GetFramework().GetInputManager().GetCursor().SetStaticTexture(cursor);
+			GetFramework().GetInputManager().GetCursor().Show();
 		});
 		mBtnGroup->GetTransform().TranslateToX(100);
 	};
@@ -157,22 +159,22 @@ public:
 		mTextRenderer_s.Begin(wvp2D);
 
 		std::wstring costStr = fmt::format(L"IndicesRenderCountPerFrame:{0}", debug->GetIndicesRenderCountPerFrame());
-
-		mTextRenderer_s.DrawString(costStr.c_str(), 2.f, static_cast<float>(mFramework->GetWindowsHeight() - 80));
+		auto & framework = GetFramework();
+		mTextRenderer_s.DrawString(costStr.c_str(), 2.f, static_cast<float>(framework.GetWindowsHeight() - 80));
 		costStr = fmt::format(L"IndicesRenderCountPerSecond:{0}", debug->GetIndicesRenderCountPerSecond());
-		mTextRenderer_s.DrawString(costStr.c_str(), 300.f, static_cast<float>(mFramework->GetWindowsHeight() - 80));
+		mTextRenderer_s.DrawString(costStr.c_str(), 300.f, static_cast<float>(framework.GetWindowsHeight() - 80));
 		costStr = fmt::format(L"VerticesRenderCountPerFrame:{0}", debug->GetVerticesRenderCountPerFrame());
-		mTextRenderer_s.DrawString(costStr.c_str(), 2.f, static_cast<float>(mFramework->GetWindowsHeight() - 60));
+		mTextRenderer_s.DrawString(costStr.c_str(), 2.f, static_cast<float>(framework.GetWindowsHeight() - 60));
 		costStr = fmt::format(L"VerticesRenderCountPerSecond:{0}", debug->GetVerticesRenderCountPerSecond());
-		mTextRenderer_s.DrawString(costStr.c_str(), 300.f, static_cast<float>(mFramework->GetWindowsHeight() - 60));
+		mTextRenderer_s.DrawString(costStr.c_str(), 300.f, static_cast<float>(framework.GetWindowsHeight() - 60));
 		costStr = fmt::format(L"CallBatchPerFrame:{0}", debug->GetCallBatchPerFrame());
-		mTextRenderer_s.DrawString(costStr.c_str(), 2.f, static_cast<float>(mFramework->GetWindowsHeight() - 40));
+		mTextRenderer_s.DrawString(costStr.c_str(), 2.f, static_cast<float>(framework.GetWindowsHeight() - 40));
 		costStr = fmt::format(L"CallBatchPerSecond:{0}", debug->GetCallBatchPerSecond());
-		mTextRenderer_s.DrawString(costStr.c_str(), 300.f, static_cast<float>(mFramework->GetWindowsHeight() - 40));
+		mTextRenderer_s.DrawString(costStr.c_str(), 300.f, static_cast<float>(framework.GetWindowsHeight() - 40));
 		costStr = fmt::format(L"PolygonRenderCountPerSecond:{0}", debug->GetPolygonRenderCountPerSecond());
-		mTextRenderer_s.DrawString(costStr.c_str(), 300.f, static_cast<float>(mFramework->GetWindowsHeight() - 20));
+		mTextRenderer_s.DrawString(costStr.c_str(), 300.f, static_cast<float>(framework.GetWindowsHeight() - 20));
 		costStr = fmt::format(L"PolygonRenderCountPerFrame:{0}", debug->GetPolygonRenderCountPerFrame());
-		mTextRenderer_s.DrawString(costStr.c_str(), 2.f, static_cast<float>(mFramework->GetWindowsHeight() - 20));
+		mTextRenderer_s.DrawString(costStr.c_str(), 2.f, static_cast<float>(framework.GetWindowsHeight() - 20));
 
 		mTextRenderer_s.End();
 
@@ -202,8 +204,8 @@ public:
 				mDirection = true;
 			}
 		}
-		auto ip = GetFramework().GetInputManager();
-		if (ip->IskeyDown(DIK_ESCAPE))
+		auto & ip = GetFramework().GetInputManager();
+		if (ip.IskeyDown(DIK_ESCAPE))
 			GetFramework().Exit(0);
 	};
 	virtual void OnSize(int ClientX, int ClientY) override

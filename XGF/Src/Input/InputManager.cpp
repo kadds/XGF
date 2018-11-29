@@ -187,9 +187,9 @@ namespace XGF
 		}
 	}
 
-	Cursor* InputManager::GetCursor()
+	Cursor & InputManager::GetCursor()
 	{
-		return &mCursor;
+		return mCursor;
 	}
 
 	void InputManager::OnMouseMove(float x, float y)

@@ -21,6 +21,8 @@ namespace XGF
 	public:
 		InputManager();
 		~InputManager();
+		InputManager(const InputManager&) = delete;
+		InputManager & operator = (const InputManager &) = delete;
 		bool Initialize(GDI * gdi, HINSTANCE hs, HWND hwnd, Asyn * a);//¶¥²ã´°¿Ú
 		void Shutdown();
 		LRESULT ProcessInputMessage(UINT msg, WPARAM wParam, LPARAM lParam);
@@ -37,7 +39,7 @@ namespace XGF
 		void Tick(float time);
 		void StartForFocus();
 		void StopForFocus();
-		Cursor* GetCursor();
+		Cursor & GetCursor();
 		void ShowCursor() {
 			mCursor.Show();
 			SetExclusiveMouseMode();
@@ -61,7 +63,6 @@ namespace XGF
 
 		OrthoCamera mCamera;
 		std::vector<TextInputProcessor *> mInputs;
-		DISALLOW_COPY_AND_ASSIGN(InputManager);
 	};
 
 

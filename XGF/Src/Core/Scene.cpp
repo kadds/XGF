@@ -28,11 +28,16 @@ namespace XGF
 	}
 	void Scene::Clear(const SM::Color & c)
 	{
-		mFramework->GetGDI()->Clear(c);
+		mFramework->GetGDI().Clear(c);
 	}
 	void Scene::ClearDepthStencilBuffer()
 	{
-		mFramework->GetGDI()->ClearDepthStencilBuffer();
+		mFramework->GetGDI().ClearDepthStencilBuffer();
+	}
+
+	Container& Scene::GetRootContainer()
+	{
+		return mRootContainer;
 	}
 
 	void Scene::RenderUI(WVPMatrix& matrix)
@@ -56,6 +61,11 @@ namespace XGF
 		OnSize(ev.GetDataInt(0), ev.GetDataInt(1));
 	}
 
+	XGFramework& Scene::GetFramework()
+	{
+		return *mFramework;
+	}
+
 	void Scene::AddChild(std::shared_ptr<Container> container)
 	{
 		container->SetParent(&mRootContainer);
@@ -70,7 +80,7 @@ namespace XGF
 		mFramework->GetEventDispatcher().InsertAllEventListener(std::bind(&EventDispatcher::Dispatch, &mRootContainer.GetEventDispatcher(), std::placeholders::_1));
 		mFramework->GetEventDispatcher().InsertSystemEventListener(SystemEventId::Size, std::bind(&Scene::_OnSize, this, std::placeholders::_1));
 		mFramework->GetEventDispatcher().InsertSystemEventListener(SystemEventId::Activate, std::bind(&Scene::_OnActivate, this, std::placeholders::_1));
-		OnCreate(framework->GetGDI());
+		OnCreate(&framework->GetGDI());
 	}
 
 	void Scene::_OnDestroy()

@@ -16,6 +16,8 @@ namespace XGF
 	public:
 		Scene();
 		virtual ~Scene();
+		Scene(const Scene&) = delete;
+		Scene & operator = (const Scene &) = delete;
 
 		void _Render(float deltaTime);
 		virtual void Render(float deltaTime) = 0;
@@ -34,24 +36,19 @@ namespace XGF
 
 		void _OnActivate(const Event & ev);
 		virtual void OnActivate(bool isActivate) {};
-		XGFramework & GetFramework()
-		{
-			return *mFramework;
-		}
+		XGFramework& GetFramework();
 		void AddChild(std::shared_ptr<Container> container);
 		void SwitchScene(std::shared_ptr<Scene> scene);
 		void Clear(const SM::Color & c);
 		void ClearDepthStencilBuffer();
 
-		Container & GetRootContainer() { return mRootContainer; };
+		Container& GetRootContainer();;
 
 		void RenderUI(WVPMatrix & matrix);
 	protected:
 		Container mRootContainer;
-
-		XGFramework *mFramework;
 	private:
-		DISALLOW_COPY_AND_ASSIGN(Scene);
+		XGFramework *mFramework;
 	};
 
 

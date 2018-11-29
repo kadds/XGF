@@ -50,12 +50,12 @@ namespace XGF
 		void ClearDepthStencilBuffer() const;
 		void Present(bool isVSync) const;
 
-		void OpenVSync() { mIsVSync = true; }
-		void CloseVSync() { mIsVSync = false; }
+		void OpenVSync();
+		void CloseVSync();
 		HWND GetTopHwnd() const;
 		HINSTANCE GetInstance() const;
-		Asyn * GetThread() const { return mThread; }
-		GDI * GetGDI() const;
+		Asyn & GetThread() const;
+		GDI & GetGDI() const;
 
 		int GetWindowsWidth() const;
 		int GetWindowsHeight() const;
@@ -67,14 +67,15 @@ namespace XGF
 		//äÖÈ¾Scene
 		void RenderScene();
 		//Application¿ò¼Üµ÷ÓÃ
-		LRESULT OnInputMessage(UINT msg, WPARAM wParam, LPARAM lParam) { return mInputManager.ProcessInputMessage(msg, wParam, lParam); }
+		LRESULT OnInputMessage(UINT msg, WPARAM wParam, LPARAM lParam);
 
-		InputManager * GetInputManager() { return &mInputManager; }
+		InputManager& GetInputManager();
 
-		void SetOnCloseListener(std::function<bool(XGFramework &)> f) { mOnCloseListener = f; }
-		void SetOnInputListener(std::function<bool(XGFramework &, const Event &ev)> f) { mOnInputListener = f; };
-		UIBatches & GetUIBatches() { return mUiBatches; }
-		EventDispatcher & GetEventDispatcher() { return mEventDispatcher; }
+		void SetOnCloseListener(std::function<bool(XGFramework&)> f);
+		void SetOnInputListener(std::function<bool(XGFramework&, const Event& ev)> f);;
+		UIBatches& GetUIBatches();
+		EventDispatcher& GetEventDispatcher();
+
 		struct AutoClose
 		{
 			bool operator()(XGFramework &)

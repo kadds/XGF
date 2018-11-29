@@ -216,7 +216,7 @@ namespace XGF
 #pragma warning(disable:4644)
 	void DX8Input::HandleMouseEvent(DIDEVICEOBJECTDATA * didod, int len, Asyn * asyn)
 	{
-		bool isDowm;
+		bool isDown;
 		if (!mMoveable || mInvalid) {
 			return;
 		}
@@ -257,9 +257,9 @@ namespace XGF
 				asyn->PostEvent(MouseEventId::MouseWheel, { mouseState.pz});
 				break;
 			case DIMOFS_BUTTON0:
-				isDowm = static_cast<bool>(didod[i].dwData & 0x80);
-				mouseState.dowms[0] = isDowm;
-				if (isDowm)
+				isDown = static_cast<bool>(didod[i].dwData & 0x80);
+				mouseState.dowms[0] = isDown;
+				if (isDown)
 				{
 					mouseState.dowm |= MOUSE_BUTTON_LEFT;
 					asyn->PostEvent(MouseEventId::MouseDown, { mouseState.px, mouseState.py, MOUSE_BUTTON_LEFT });
@@ -271,9 +271,9 @@ namespace XGF
 				}
 				break;
 			case DIMOFS_BUTTON1:
-				isDowm = static_cast<bool>(didod[i].dwData & 0x80);
-				mouseState.dowms[1] = isDowm;
-				if (isDowm)
+				isDown = static_cast<bool>(didod[i].dwData & 0x80);
+				mouseState.dowms[1] = isDown;
+				if (isDown)
 				{
 					mouseState.dowm |= MOUSE_BUTTON_RIGHT;
 					asyn->PostEvent(MouseEventId::MouseDown, { mouseState.px, mouseState.py, MOUSE_BUTTON_RIGHT });
@@ -286,9 +286,9 @@ namespace XGF
 				break;
 			case DIMOFS_BUTTON2:
 
-				isDowm = static_cast<bool>(didod[i].dwData & 0x80);
-				mouseState.dowms[2] = isDowm;
-				if (isDowm)
+				isDown = static_cast<bool>(didod[i].dwData & 0x80);
+				mouseState.dowms[2] = isDown;
+				if (isDown)
 				{
 					mouseState.dowm |= MOUSE_BUTTON_MIDDLE;
 					asyn->PostEvent(MouseEventId::MouseDown, { mouseState.px, mouseState.py, MOUSE_BUTTON_MIDDLE });

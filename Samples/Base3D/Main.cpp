@@ -121,11 +121,11 @@ public:
 	};
 	virtual void Update(float deltaTime) override
 	{
-		if (this->GetFramework().GetInputManager()->IskeyDown(DIK_A))
+		if (GetFramework().GetInputManager().IskeyDown(DIK_A))
 		{
 			mCamera3D.LookAt(Point(1.f, 1.f, 1.f), Point(0, 0, 0), Point::Up);
 		}
-		if (this->GetFramework().GetInputManager()->IskeyDown(DIK_S))
+		if (GetFramework().GetInputManager().IskeyDown(DIK_S))
 		{
 			mCamera3D.LookTo(Point(1.f, 1.f, 1.f), Point(-1, 1, -1), Point::Up);
 		}
@@ -140,7 +140,8 @@ public:
 
 	void OnMouse(const Event & ev) 
 	{
-		mTrackballCameraController.HandleEvents(ev, mFramework->GetWindowsWidth(), mFramework->GetWindowsHeight());
+		auto & framework = GetFramework();
+		mTrackballCameraController.HandleEvents(ev, framework.GetWindowsWidth(), framework.GetWindowsHeight());
 	}
 
 private:
