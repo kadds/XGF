@@ -39,7 +39,7 @@ namespace XGF
 		XGFramework& GetFramework();
 		void AddChild(std::shared_ptr<Container> container);
 		void SwitchScene(std::shared_ptr<Scene> scene);
-		void Clear(const SM::Color & c);
+		void Clear(const Color & c);
 		void ClearDepthStencilBuffer();
 
 		Container& GetRootContainer();;

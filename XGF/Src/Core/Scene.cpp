@@ -26,7 +26,7 @@ namespace XGF
 	{
 		static_cast<XGFramework *>(&GetFramework())->SwitchScene(scene);
 	}
-	void Scene::Clear(const SM::Color & c)
+	void Scene::Clear(const Color & c)
 	{
 		mFramework->GetGDI().Clear(c);
 	}

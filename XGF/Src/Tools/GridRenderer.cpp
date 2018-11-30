@@ -19,26 +19,30 @@ namespace XGF
 		mBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthDisable);
 		mHeight = height;
 		mWidth = width;
-		mPolygon = std::make_shared<PolygonPlePoint3>(xcount * 2 + zcount * 2 + 4);
+		mPolygon = std::make_shared<PolygonPlePointBinder>(xcount * 2 + zcount * 2 + 4);
 		mPolygonPleIndex = std::make_shared<PolygonPleIndex> (xcount * 2 + zcount * 2 + 4);
 		int c[2] = { (int)xcount * 2 + 2, (int)zcount * 2 + 2 };
-		mColorBinder = std::make_shared<PolygonPleConstantExColorBinder>(c, 2);
-		mColorBinder->SetLayerColor(0, SM::Color(1.0f, 0.2f, 0.2f, 1.0f));
-		mColorBinder->SetLayerColor(1, SM::Color(0.2f, 1.0f, 0.2f, 1.0f));
+		std::vector<std::pair<int, Color>> vec =
+		{
+			std::make_pair(0, Color(1.0f, 0.2f, 0.2f, 1.0f)),
+			std::make_pair(xcount * 2  + 2, Color(0.2f, 1.0f, 0.2f, 1.0f))
+		};
+		mColorBinder = std::make_shared<PolygonPleConstantColorBinder>(mPolygon->Count(), vec);
 		mBindingBridge.AddBinder(mPolygon);
 		mBindingBridge.AddBinder(mColorBinder);
 		Point pstart = origin;
 		pstart.x = 0 - mWidth * xcount / 2.0f;//x
 		pstart.z = 0 - mHeight * (zcount - 1.f);//z
+		auto data = mPolygon->GetData();
 		for (unsigned int i = 0; i < xcount * 2 + 2; i += 2)
 		{
-			mPolygon->mPoint[i].x = pstart.x;
-			mPolygon->mPoint[i].y = origin.y;
-			mPolygon->mPoint[i].z = pstart.z;
+			data[i].x = pstart.x;
+			data[i].y = origin.y;
+			data[i].z = pstart.z;
 
-			mPolygon->mPoint[i + 1].x = pstart.x;
-			mPolygon->mPoint[i + 1].y = origin.y;
-			mPolygon->mPoint[i + 1].z = -pstart.z;
+			data[i + 1].x = pstart.x;
+			data[i + 1].y = origin.y;
+			data[i + 1].z = -pstart.z;
 			mPolygonPleIndex->mIndex[i] = i;
 			mPolygonPleIndex->mIndex[i + 1] = i + 1;
 			pstart.x += mWidth;
@@ -47,13 +51,13 @@ namespace XGF
 		pstart.z = 0 - mHeight * zcount / 2.0f;//z
 		for (unsigned int j = xcount * 2 + 2; j < xcount * 2 + zcount * 2 + 4; j += 2)
 		{
-			mPolygon->mPoint[j].x = pstart.x;
-			mPolygon->mPoint[j].y = origin.y;
-			mPolygon->mPoint[j].z = pstart.z;
+			data[j].x = pstart.x;
+			data[j].y = origin.y;
+			data[j].z = pstart.z;
 
-			mPolygon->mPoint[j + 1].x = -pstart.x;
-			mPolygon->mPoint[j + 1].y = origin.y;
-			mPolygon->mPoint[j + 1].z = pstart.z;
+			data[j + 1].x = -pstart.x;
+			data[j + 1].y = origin.y;
+			data[j + 1].z = pstart.z;
 			mPolygonPleIndex->mIndex[j] = j;
 			mPolygonPleIndex->mIndex[j + 1] = j + 1;
 			pstart.z += mWidth;
@@ -87,18 +91,18 @@ namespace XGF
 
 	void GridRenderer::SetColor(SM::Color & cx, SM::Color & cz)
 	{
-		mColorBinder->SetLayerColor(0, cx);
-		mColorBinder->SetLayerColor(1, cz);
+		mColorBinder->Set(0, cx);
+		mColorBinder->Set(1, cz);
 	}
 
 	void GridRenderer::SetXColor(SM::Color & cx)
 	{
-		mColorBinder->SetLayerColor(0, cx);
+		mColorBinder->Set(0, cx);
 	}
 
 	void GridRenderer::SetZColor(SM::Color & cz)
 	{
-		mColorBinder->SetLayerColor(1, cz);
+		mColorBinder->Set(1, cz);
 	}
 
 
@@ -121,7 +125,7 @@ namespace XGF
 		{
 			for (unsigned int j = 0; j < maxLen; j++)
 			{
-				mPolygon->mPoint[i* (maxLen + 1) + j] = Point(i* (maxLen + 1)* width + pstart.x
+				mPolygon->GetData(i* (maxLen + 1) + j) = Point(i* (maxLen + 1)* width + pstart.x
 					, baseY, j * height + pstart.y);
 
 			}

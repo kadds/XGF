@@ -1,4 +1,5 @@
 #include "..\..\..\Include\Geometry\Geometry.hpp"
+#include "../../../Include/Polygon.hpp"
 
 namespace XGF
 {

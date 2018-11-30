@@ -72,7 +72,7 @@ namespace XGF
 		//框架调用
 		void Destroy();
 		void Clear(const float color[]);
-		void Clear(const SM::Color & c);
+		void Clear(const Color & c);
 		void ClearDepthStencilBuffer();
 		void Present(bool isVsync);
 		//初始化函数，必须是该类第一个调用的函数

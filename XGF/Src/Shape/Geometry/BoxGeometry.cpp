@@ -1,14 +1,14 @@
 #include "..\..\..\Include\Geometry\BoxGeometry.hpp"
-
+#include "../../../Include/Polygon.hpp"
 namespace XGF::Shape
 {
 	void BoxGeometry::Init(float x, float y, float z)
 	{
-		mPolygonPleNormal = std::make_shared<PolygonPlePoint3>(mPolygon->mCount);
+		mPolygonPleNormal = std::make_shared<PolygonPleNormalBinder>(mPolygon->Count());
 
 		float hx = x / 2.f, hy = y / 2.f, hz = z / 2.f;
-		Point* point = mPolygon->mPoint;
-		auto * normal = mPolygonPleNormal->mPoint;
+		auto * point = mPolygon->GetData();
+		auto * normal = mPolygonPleNormal->GetData();
 
 		// 1 ∏∫z÷·
 		*(point++) = { hx, hy, -hz };

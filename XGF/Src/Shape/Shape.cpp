@@ -1,13 +1,14 @@
 #include "../../Include/Shape.hpp"
 #include "../../Include/Batch.hpp"
-#include "../../Include/Texture.hpp"
+#include "../../Include/Polygon.hpp"
+
 namespace XGF
 {
 	namespace Shape
 	{
 		Shape::Shape(int n, int indexCount) 
 		{
-			mPolygon = std::make_shared<PolygonPlePoint3>(n);
+			mPolygon = std::make_shared<PolygonPlePointBinder>(n);
 			mPolygonPleIndex = std::make_shared<PolygonPleIndex>(indexCount);
 		}
 		Shape::~Shape()
@@ -15,7 +16,7 @@ namespace XGF
 		}
 		void Shape::GetPosition(Point & p) const
 		{
-			p = mPolygon->mPoint[0];
+			p = mPolygon->GetData(0);
 		}
 		std::shared_ptr<PolygonPleIndex> Shape::GetIndex() const
 		{
@@ -24,15 +25,20 @@ namespace XGF
 
 		void Shape::SetZ(float z)
 		{
-			for (int i = 0; i < mPolygon->mCount; i++)
+			for (int i = 0; i < mPolygon->Count(); i++)
 			{
-				mPolygon->mPoint[i].z = z;
+				mPolygon->GetData(i).z = z;
 			}
+		}
+
+		float Shape::GetZ()
+		{
+			return mPolygon->GetData()[0].z;
 		}
 
 		void Shape::Reset(int n, int indexCount)
 		{
-			mPolygon = std::make_shared<PolygonPlePoint3>(n);
+			mPolygon = std::make_shared<PolygonPlePointBinder>(n);
 			mPolygonPleIndex = std::make_shared<PolygonPleIndex>(indexCount);
 			// TODO: reset buffer
 		}
@@ -45,12 +51,12 @@ namespace XGF
 		}
 		// 判断2维点是否在图元内部
 		// 使用 PNPoly 算法
-		bool pInPolygon(const std::shared_ptr<PolygonPlePoint3> & ql, float x, float y)
+		bool pInPolygon(const std::shared_ptr<PolygonPlePointBinder> & ql, float x, float y)
 		{
-			auto point = ql->mPoint;
+			auto point = ql->GetData();
 			// 生成最小包围盒
 			Position minPosition = { point[0].x, point[0].y }, maxPosition = { point[0].x, point[0].y };
-			for (int i = 1; i < ql->mCount; i++) 
+			for (int i = 1; i < ql->Count(); i++) 
 			{
 				if (point[i].x < minPosition.x)
 					minPosition.x = point[i].x;
@@ -66,8 +72,8 @@ namespace XGF
 				return false;
 			bool k = false;
 			int i = 0;
-			int j = ql->mCount - 1;
-			for (; i < ql->mCount; j = i++) {
+			int j = ql->Count() - 1;
+			for (; i < ql->Count(); j = i++) {
 				if (((point[i].y > y) != (point[j].y > y)) &&
 					(x < (point[j].x - point[i].x) * (y - point[i].y) /
 					(point[j].y - point[i].y) + point[i].x))

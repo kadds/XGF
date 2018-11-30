@@ -86,7 +86,19 @@ namespace XGF
 	{
 		return mParent->GetScene().GetFramework().GetUIBatches();
 	}
-	void Control::DrawSkin()
+
+	Texture* Control::GetSkinTexture()
+	{
+		Texture * skin = nullptr;
+		if (mSkin)
+		{
+			skin = mSkin->GetTexture(mNowState);
+			return skin;
+		}
+		return nullptr;
+	}
+
+	void Control::DrawSkin(Shape::Rectangle & rc)
 	{
 		Texture * skin = nullptr;
 		if (mSkin)
@@ -95,15 +107,18 @@ namespace XGF
 			if (skin)
 			{
 				auto shape = GetShape();
-				auto textureBinder = std::make_shared<PolygonPleTextureBinder>(shape->mPolygon->mCount);
+				auto textureBinder = std::make_shared<PolygonPleTextureBinder>(4);
 				BindingBridge bbrige;
-				std::shared_ptr<PolygonPlePoint3> ppp = std::make_shared<PolygonPlePoint3>(shape->mPolygon->mCount);
-				shape->mPolygon->MulTo(ppp, GetMixMatrix());
-				bbrige.AddBinder(ppp);
-				textureBinder->FromTexture(skin);
+				
+				bbrige.AddBinder(rc.mPolygon);
+				textureBinder->GetData(1).x = textureBinder->GetData(0).x = 0.f;
+				textureBinder->GetData(2).x = textureBinder->GetData(3).x = 1.f;
+				textureBinder->GetData(1).y = textureBinder->GetData(2).y = 1.f;
+				textureBinder->GetData(3).y = textureBinder->GetData(0).y = 0.f;
+
 				bbrige.AddBinder(textureBinder);
 				mParent->GetScene().GetFramework().GetUIBatches().GetBatch(BATCHES_BATCH_DEFAULT_PT)->GetShaderStage()->SetPSSRV(0, skin->GetRawTexture());
-				mParent->GetScene().GetFramework().GetUIBatches().GetBatch(BATCHES_BATCH_DEFAULT_PT)->DrawPolygon(shape->mPolygonPleIndex, bbrige);
+				mParent->GetScene().GetFramework().GetUIBatches().GetBatch(BATCHES_BATCH_DEFAULT_PT)->DrawPolygon(rc.mPolygonPleIndex, bbrige);
 			}
 		}
 	}

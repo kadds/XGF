@@ -58,7 +58,6 @@ namespace XGF
 		std::shared_ptr<PolygonPleTextureBinder> textureBinder;
 		std::shared_ptr < PolygonPleConstantColorBinder> colorBinder;
 		wchar_t * mTemporarybuffer;
-
 	};
 
 	const int MAX_TEMPORARY_BUFFER_SIZE = 512;

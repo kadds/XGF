@@ -1,5 +1,5 @@
 #include "..\..\Include\TextLayoutShaper.hpp"
-
+#include "../../Include/Polygon.hpp"
 namespace XGF
 {
 	TextLayoutShaper::TextLayoutShaper()
@@ -52,8 +52,8 @@ namespace XGF
 					}
 					if (fun != nullptr && fun(i, c, &mRc, ps))
 					{
-						pos.x += mRc.mPolygon->mPoint[1].x;
-						pos.y += mRc.mPolygon->mPoint[0].y;
+						pos.x += mRc.mPolygon->GetData(1).x;
+						pos.y += mRc.mPolygon->GetData(0).y;
 					}
 					if (movec != nullptr)
 						if (movec(i, c, &pos))

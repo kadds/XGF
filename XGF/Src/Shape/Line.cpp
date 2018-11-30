@@ -1,5 +1,5 @@
 #include "..\..\Include\Line.hpp"
-
+#include "..\..\Include\Polygon.hpp"
 
 namespace XGF
 {
@@ -17,15 +17,15 @@ namespace XGF
 		}
 		void Line::SetPosition(const Point & p)
 		{
-			mPolygon->mPoint[0] = p;
+			mPolygon->GetData(0) = p;
 		}
 		void Line::SetEndPosition(Point p)
 		{
-			mPolygon->mPoint[1] = p;
+			mPolygon->GetData(1) = p;
 		}
 		void Line::GetPosition(Point & p) const
 		{
-			p = mPolygon->mPoint[0];
+			p = mPolygon->GetData(0);
 		}
 	}
 	

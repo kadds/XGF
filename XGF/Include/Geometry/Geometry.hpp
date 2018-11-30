@@ -4,6 +4,12 @@
 #include <functional>
 namespace XGF
 {
+	class PolygonPleBinder;
+	template<typename T>
+	class PolygonPleDataBinder;
+	typedef PolygonPleDataBinder<Point> PolygonPleNormalBinder;
+	typedef PolygonPleDataBinder<Point2> PolygonPleTextureBinder;
+
 	namespace Shape
 	{
 		class Face
@@ -26,7 +32,7 @@ namespace XGF
 			virtual ~Geometry();
 			std::vector<std::shared_ptr<PolygonPleBinder>> GetMapBinder();
 		public:
-			std::shared_ptr<PolygonPlePoint3> mPolygonPleNormal;
+			std::shared_ptr<PolygonPleNormalBinder> mPolygonPleNormal;
 			std::shared_ptr<PolygonPleTextureBinder> mPolygonPleUvs;
 			std::shared_ptr<PolygonPleTextureBinder> mPolygonPleColor;
 		protected:

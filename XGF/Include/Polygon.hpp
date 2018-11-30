@@ -3,6 +3,38 @@
 #include <vector>
 namespace XGF
 {
+	template<typename T>
+	struct BindingResourceTypeTraits {
+		constexpr static bool IsBindingType() {
+			return false;
+		}
+	};
+	template<>
+	struct BindingResourceTypeTraits<Point2> {
+		constexpr static bool IsBindingType() {
+			return true;
+		}
+	};
+	template<>
+	struct BindingResourceTypeTraits<Point> {
+		constexpr static bool IsBindingType() {
+			return true;
+		}
+	};
+	template<>
+	struct BindingResourceTypeTraits<Point4> {
+		constexpr static bool IsBindingType() {
+			return true;
+		}
+	};
+	template<>
+	struct BindingResourceTypeTraits<Color> {
+		constexpr static bool IsBindingType() {
+			return true;
+		}
+	};
+
+
 	class Texture;
 	/**
 	* 可绑定资源基类
@@ -10,35 +42,187 @@ namespace XGF
 	class PolygonPleBinder
 	{
 	public:
-		PolygonPleBinder() {}
-		virtual ~PolygonPleBinder() {}
-		int mCount;
+		PolygonPleBinder() = default;
+		virtual ~PolygonPleBinder() = default;
 		// 把数据复制到 Des 处 且长度为chunk
 		virtual void CopyTo(void * Des, unsigned int chunk) const = 0;
+		int Count() const
+		{
+			return mCount;
+		}
+	protected:
+		void SetCount(int c)
+		{
+			mCount = c;
+		}
+	private:
+		/**
+		 * 数据个数
+		 */
+		int mCount;
+		
 	};
 	/**
-	* 通用的 Float4 数据绑定器
+	* 数据绑定器
 	*/
+
+	template<typename Vector>
 	class PolygonPleDataBinder : public PolygonPleBinder
 	{
+	protected:
+		PolygonPleDataBinder()
+		{
+			static_assert(BindingResourceTypeTraits<Vector>::IsBindingType(), "Vector type must be Point Point2 Point4 Color");
+		};
+		std::unique_ptr<Vector[]> mData;
 	public:
-		PolygonPleDataBinder();
-		~PolygonPleDataBinder();
-		PolygonPleDataBinder(const PolygonPleDataBinder& pcb);
-		SM::Vector4 mData;
-		//chunk is byte
-		virtual void CopyTo(void * Des, unsigned int chunk) const override;
-		bool operator ==(const PolygonPleDataBinder &rx) const {
+		Vector * GetData()
+		{
+			return mData.get();
+		}
+		Vector & GetData(int n)
+		{ 
+			XGF_ASSERT(n >= 0 && n < Count());
+
+			return mData[n];
+		}
+		PolygonPleDataBinder(int count)
+		{
+			SetCount(count);
+			mData = std::make_unique<Vector[]>(count);
+		}
+		~PolygonPleDataBinder()
+		{
+		}
+
+		PolygonPleDataBinder(const PolygonPleDataBinder & pcb)
+		{
+			mData = std::move(pcb.mData);
+			SetCount(pcb.Count());
+		}
+		PolygonPleDataBinder & operator =(const PolygonPleDataBinder & pcb)
+		{
+			mData = std::move(pcb.mData);
+			SetCount(pcb.Count());
+			return *this;
+		}
+		virtual void PolygonPleDataBinder::CopyTo(void * Des, unsigned int chunk) const
+		{
+			unsigned char* desc = (unsigned char*)Des;
+			for(int i = 0; i < Count(); i ++)
+			{
+				auto * des = reinterpret_cast<Vector *>(desc);
+				*(des) = mData[i];
+				desc += chunk;
+			}
+		}
+
+		virtual bool operator ==(const PolygonPleDataBinder &rx) const {
 			if (&rx == this)
 				return true;
-			if (rx.mCount != mCount) return false;
-			for (int i = 0; i < mCount; i++)
+			if (rx.Count() != Count()) return false;
+			for (int i = 0; i < Count(); i++)
 			{
-				if (!(mData.x == rx.mData.x && mData.y == rx.mData.y && mData.x == rx.mData.x &&
-					mData.y == rx.mData.y && mData.z == rx.mData.z && mData.w == rx.mData.w))
+				if (mData[i] != rx.mData[i])
 					return false;
 			}
 			return  true;
+		}
+		virtual void ExpandAll(std::function<void(const Vector & src, Vector & dsc)> func)
+		{
+			for (int i = 0; i < Count(); i ++){
+				func(GetData(i), GetData(i));
+			}
+		}
+		virtual void ExpandAllTo(PolygonPleDataBinder& pdb, std::function<void(const Vector & src, Vector & dsc)> func)
+		{
+			for (int i = 0; i < Count(); i++) {
+				func(GetData(i), pdb.GetData(i));
+			}
+		}
+	};
+	
+	template<typename Vector>
+	class PolygonPleConstantDataBinder : public PolygonPleDataBinder<Vector>
+	{
+	private:
+		int mDataCount;
+		std::vector<int> tgLayer;
+	public:
+		PolygonPleConstantDataBinder(int count, const Vector & v): tgLayer(1)
+		{
+			this->SetCount(count);
+			this->mData = std::make_unique<Vector[]>(1);
+			mDataCount = 1;
+			tgLayer[0] = count;
+			this->mData[0] = v;
+		}
+		void Set(int layer, const Vector & vec)
+		{
+			XGF_ASSERT(layer < mDataCount && layer >= 0);
+			this->GetData(layer) = vec;
+		}
+		/**
+		 * \brief 常量数据
+		 * \param count 顶点个数
+		 * \param data 每一组数据对应的 ConstantData 索引开始处
+		 */
+		PolygonPleConstantDataBinder(int count, std::vector<std::pair<int, Vector>> data):tgLayer(data.size())
+		{
+			XGF_ASSERT(data.size() != 0);
+			this->SetCount(count);
+			this->mData = std::make_unique<Vector[]>(data.size());
+			mDataCount = data.size();
+			int i = 0;
+			this->mData[0] = data[0].second;
+			for (; i < data.size() - 1; i++)
+			{
+				tgLayer[i] = data[i + 1].first;
+				this->mData[i + 1] = data[i + 1].second;
+			}
+			tgLayer[i] = this->Count();
+			//XGF_ASSERT(tgLayer.back() == this->Count());
+		}
+		virtual void CopyTo(void * Des, unsigned int chunk) const
+		{
+			unsigned char* desc = (unsigned char*)Des;
+
+			int j = 0, sumStartIndex = tgLayer[0];
+			for (int i = 0; i < this->Count(); i++)
+			{
+				Vector * des = reinterpret_cast<Vector *>(desc);
+				if (i >= sumStartIndex)
+				{
+					sumStartIndex = tgLayer[++j];
+				}
+				*(des) = this->mData[j];
+				desc += chunk;
+			}
+		}
+
+	};
+	template<typename Vector>
+	class PolygonPleFunctionalDataBinder : public PolygonPleDataBinder<Vector>
+	{
+	private:
+		std::function<void(int index, Vector* desc)> func;
+	public:
+		PolygonPleFunctionalDataBinder(int count, std::function<void(int index, Vector* desc)> func)
+		{
+			this->mCount = count;
+			this->func = func;
+			this->mData = nullptr;
+		}
+		virtual void CopyTo(void * Des, unsigned int chunk) const
+		{
+			unsigned char* desc = (unsigned char*)Des;
+
+			for (int i = 0; i < this->Count(); i++)
+			{
+				auto * des = reinterpret_cast<Vector *>(desc);
+				func(i, des);
+				desc += chunk;
+			}
 		}
 	};
 	/**
@@ -70,100 +254,30 @@ namespace XGF
 		Index Get(int n) const;
 	};
 
-	/**
-	* 纹理UV绑定器
-	*/
-	class PolygonPleTextureBinder : public PolygonPleBinder
-	{
-	public:
-		Position *mPoint;
-		PolygonPleTextureBinder(int n);
-		~PolygonPleTextureBinder();
-		PolygonPleTextureBinder(const PolygonPleTextureBinder& tb);
-		void FromTexture(const Texture * tx);
-		bool operator ==(const PolygonPleTextureBinder &rx) const {
-			if (&rx == this)
-				return true;
-			if (rx.mCount != mCount) return false;
-			for (int i = 0; i < mCount; i++)
-			{
-				if (!(mPoint[i].x == rx.mPoint[i].x && mPoint[i].y == rx.mPoint[i].y))
-					return false;
-			}
-			return  true;
-		}
-		virtual void CopyTo(void * Des, unsigned int chunk) const override;
-		void SetPosition(float left, float right, float top, float bottom);
-	};
 
-	/**
-	* 颜色数据绑定器
-	*/
-	class PolygonPleColorBinder : public PolygonPleBinder
-	{
-	public:
-		PolygonPleColorBinder(int n);
-		~PolygonPleColorBinder();
-		PolygonPleColorBinder(const PolygonPleColorBinder& pcb);
-		SM::Color * mColor;
-		void Set(int start, int count, const SM::Color & c);
-		virtual SM::Color Get(int n);
-		virtual void CopyTo(void * Des, unsigned int chunk) const override;
-		bool operator ==(const PolygonPleColorBinder &rx) const {
-			if (&rx == this)
-				return true;
-			if (rx.mCount != mCount) return false;
-			for (int i = 0; i < mCount; i++)
-			{
-				if (!(mColor[i].x == rx.mColor[i].x && mColor[i].y == rx.mColor[i].y && mColor[i].x == rx.mColor[i].x && mColor[i].y == rx.mColor[i].y && mColor[i].z == rx.mColor[i].z && mColor[i].w == rx.mColor[i].w))
-					return false;
-			}
-			return  true;
-		}
-	};
-	/**
-	* 恒定颜色结构
-	*/
-	class PolygonPleConstantColorBinder : public PolygonPleColorBinder
-	{
-	public:
-		PolygonPleConstantColorBinder(const SM::Color & c, int Maxcount);
-		~PolygonPleConstantColorBinder();
-		PolygonPleConstantColorBinder(const PolygonPleConstantColorBinder& pcb);
-		virtual void CopyTo(void * Des, unsigned int chunk) const override;
-		virtual SM::Color Get(int n);
 
-		bool operator ==(const PolygonPleConstantColorBinder &rx) const {
-			if (&rx == this)
-				return true;
-			if (rx.mCount != mCount) return false;
-			return  mColor == rx.mColor;
-		}
-		int mAllCount;
-	};
-	/*
-	恒定多颜色结构
-	*/
-	class PolygonPleConstantExColorBinder : public PolygonPleColorBinder
-	{
-	public:
-		PolygonPleConstantExColorBinder(int CountInEachLayer[], int LayerCount);
-		~PolygonPleConstantExColorBinder();
-		PolygonPleConstantExColorBinder(const PolygonPleConstantExColorBinder& pcb);
-		virtual void CopyTo(void * Des, unsigned int chunk) const override;
-		virtual SM::Color Get(int n);
-		void SetLayerColor(int layer, const SM::Color & color);
-		bool operator ==(const PolygonPleConstantExColorBinder &rx) const {
-			if (&rx == this)
-				return true;
-			if (rx.mCount != mCount) return false;
-			return  mColor == rx.mColor;
-		}
-		int mAllCount;
-		int *mLayer;
-		int mLayerCount;
-	};
+	typedef PolygonPleDataBinder<Position> PolygonPleTextureBinder;
 
+	typedef PolygonPleDataBinder<Point> PolygonPlePointBinder;
+
+	
+	
+	typedef PolygonPleDataBinder<Point4> PolygonPlePoint4Binder;
+
+	typedef PolygonPleDataBinder<Point2> PolygonPlePoint2Binder;
+
+	typedef PolygonPleDataBinder<Color> PolygonPleColorBinder;
+
+	typedef PolygonPleConstantDataBinder<Point> PolygonPleConstantPointBinder;
+
+	typedef PolygonPleConstantDataBinder<Point4> PolygonPleConstantPoint4Binder;
+
+	typedef PolygonPleConstantDataBinder<Point2> PolygonPleConstantPoint2Binder;
+
+	typedef PolygonPleConstantDataBinder<Color> PolygonPleConstantColorBinder;
+
+	typedef PolygonPleDataBinder<Point> PolygonPleNormalBinder;
+	typedef PolygonPleConstantDataBinder<Point> PolygonPleConstantNormalBinder;
 	/**
 	* 顶点数据 - 桥
 	*/
@@ -192,69 +306,57 @@ namespace XGF
 		std::vector<std::shared_ptr<PolygonPleBinder>> binders;
 	};
 
-
-	/*
-	* 几何顶点结构
-	*/
-	class PolygonPlePoint : public PolygonPleBinder
+	namespace Operator
 	{
-	public:
-		virtual void CopyTo(void * Des, unsigned int chunk) const = 0;
-	};
-	class PolygonPlePoint3 : public PolygonPleBinder
-	{
-	public:
-		Point *mPoint;
-		PolygonPlePoint3(int n);
-		PolygonPlePoint3(const PolygonPlePoint3 & p);
-		~PolygonPlePoint3();
-		bool operator ==(const PolygonPlePoint3 &rx) const {
-			if (&rx == this)
-				return true;
-			if (rx.mCount != mCount) return false;
-			for (int i = 0; i < mCount; i++)
+		struct Transfrom
+		{
+			float xd2, yd2;
+			Transfrom(float centerXD2, float centerYD2) : xd2(centerXD2), yd2(centerYD2) {  }
+			void operator ()(const Point2 & vec, Point2 & out) const
 			{
-				if (mPoint[i].x != rx.mPoint[i].x || mPoint[i].y != rx.mPoint[i].y || mPoint[i].z != rx.mPoint[i].z)
-					return false;
+				out.x = vec.x - xd2;
+				out.y = -vec.y + yd2;
 			}
-			return true;
-		}
-		virtual void CopyTo(void * Des, unsigned int chunk) const override;
-		void CopyTo(PolygonPlePoint3 & ppe);
-	public:
-		void Transform(float centerXD2, float centerYD2);
-		void Translation(float x, float y, float z);
-		void TransformTo(std::shared_ptr<PolygonPlePoint3> qua, float centerXD2, float centerYD2) const;
-		void Mul(const DirectX::CXMMATRIX matrix);
-		void MulTo(std::shared_ptr < PolygonPlePoint3> pol, const DirectX::CXMMATRIX matrix) const;
-	};
-
-	class PolygonPlePoint4 : public PolygonPleBinder
-	{
-	public:
-		Point4 *mPoint;
-		PolygonPlePoint4(int n);
-		PolygonPlePoint4(const PolygonPlePoint4 & p);
-		~PolygonPlePoint4();
-		bool operator ==(const PolygonPlePoint4 &rx) const {
-			if (&rx == this)
-				return true;
-			if (rx.mCount != mCount) return false;
-			for (int i = 0; i < mCount; i++)
+		};
+		struct Translation
+		{
+			float x, y, z, w;
+			Translation(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {  }
+			void operator ()(const Point & vec, Point & out) const
 			{
-				if (mPoint[i].x != rx.mPoint[i].x || mPoint[i].y != rx.mPoint[i].y || mPoint[i].z != rx.mPoint[i].z)
-					return false;
+				out.x = vec.x + x;
+				out.y = vec.y + y;
+				out.z = vec.z + z;
 			}
-			return true;
-		}
-		virtual void CopyTo(void * Des, unsigned int chunk) const override;
-		void CopyTo(PolygonPlePoint4 & ppe);
-	public:
-		void Transform(float centerXD2, float centerYD2);
-		void TransformTo(PolygonPlePoint4 * pol, float centerXD2, float centerYD2) const;
-		void Translation(float x, float y, float z);
-		void Mul(const DirectX::CXMMATRIX matrix);
-		void MulTo(PolygonPlePoint4 * pol, const DirectX::CXMMATRIX matrix) const;
-	};
-
+			void operator ()(const Point2 & vec, Point2 & out) const
+			{
+				out.x = vec.x + x;
+				out.y = vec.y + y;
+			}
+			void operator ()(const Point4 & vec, Point4 & out) const
+			{
+				out.x = vec.x + x;
+				out.y = vec.y + y;
+				out.z = vec.z + z;
+				out.w = vec.w + w;
+			}
+		};
+		struct Multiply
+		{
+			DirectX::XMMATRIX matrix;
+			Multiply(DirectX::CXMMATRIX m) : matrix(m) {  }
+			void operator ()(const Point & vec, Point & out) const
+			{
+				DirectX::XMStoreFloat3(&out, DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat3(&vec), matrix));
+			}
+			void operator ()(const Point2 & vec, Point2 & out) const
+			{
+				DirectX::XMStoreFloat2(&out, DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat2(&vec), matrix));
+			}
+			void operator ()(const Point4 & vec, Point4 & out) const
+			{
+				DirectX::XMStoreFloat4(&out, DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat4(&vec), matrix));
+			}
+		};
+	}
 }

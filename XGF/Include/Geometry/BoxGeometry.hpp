@@ -1,5 +1,6 @@
 #pragma once
 #include "Geometry.hpp"
+#include "../Polygon.hpp"
 
 namespace XGF
 {
@@ -34,17 +35,18 @@ namespace XGF
 			template<typename GeometryMapping = BoxMapping>
 			void GenerateMapping()
 			{
-				mPolygonPleUvs = std::make_shared<PolygonPleTextureBinder>(mPolygon->mCount);
+				mPolygonPleUvs = std::make_shared<PolygonPleTextureBinder>(mPolygon->Count());
 
 				GeometryMapping mapping(this);
 				auto tb = std::make_shared<PolygonPleTextureBinder>(6);
 				int face = 6;
+				auto data = mPolygonPleUvs->GetData();
 				for (int j = 0; j < face; j++)
 				{
-					mPolygonPleUvs->mPoint[j * 4] = mapping(j, 0, 0);
-					mPolygonPleUvs->mPoint[j * 4 + 1] = mapping(j, 1, 0);
-					mPolygonPleUvs->mPoint[j * 4 + 2] = mapping(j, 1, 1);
-					mPolygonPleUvs->mPoint[j * 4 + 3] = mapping(j, 0, 1);
+					data[j * 4] = mapping(j, 0, 0);
+					data[j * 4 + 1] = mapping(j, 1, 0);
+					data[j * 4 + 2] = mapping(j, 1, 1);
+					data[j * 4 + 3] = mapping(j, 0, 1);
 				}
 
 			};

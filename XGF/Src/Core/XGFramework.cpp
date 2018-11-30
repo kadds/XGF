@@ -190,7 +190,7 @@ namespace XGF
 		mGDI->Clear(color);
 	}
 
-	void XGFramework::Clear(SM::Color & color) const
+	void XGFramework::Clear(Color & color) const
 	{
 		mGDI->Clear(color);
 	}

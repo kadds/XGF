@@ -4,11 +4,7 @@
 #include "InputManager.hpp"
 #include "Asyn.hpp"
 #include "SceneAnimation.hpp"
-#include "Batch.hpp"
 #include "Shader.hpp"
-#include "OrthoCamera.hpp"
-#include "Rectangle.hpp"
-#include "RenderToTexture.hpp"
 #include "EventDispatcher.hpp"
 #include "UIBatches.hpp"
 
@@ -46,7 +42,7 @@ namespace XGF
 		void _OnClose();
 
 		void Clear(float color[]) const;
-		void Clear(SM::Color &color) const;
+		void Clear(Color &color) const;
 		void ClearDepthStencilBuffer() const;
 		void Present(bool isVSync) const;
 

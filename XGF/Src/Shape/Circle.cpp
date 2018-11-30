@@ -1,5 +1,6 @@
 #include "..\..\Include\Circle.hpp"
-#include <math.h>
+#include "../../Include/Polygon.hpp"
+
 namespace XGF
 {
 	namespace Shape
@@ -22,9 +23,9 @@ namespace XGF
 		void Circle::SetPositionAndRadius(float x, float y, float r)
 		{
 			mRadius = r;
-			mPolygon->mPoint[0] = { x, y , 0.1f };
+			mPolygon->GetData(0) = { x, y , 0.1f };
 			float alpha;
-			int precision = mPolygon->mCount - 1;
+			int precision = mPolygon->Count() - 1;
 			float pie = DirectX::XM_2PI / precision;
 			for (int i = 1; i < precision + 1; i++)
 			{
@@ -32,13 +33,13 @@ namespace XGF
 				float px, py;
 				px = r * cos(alpha) + x;
 				py = r * sin(alpha) + y;
-				mPolygon->mPoint[i] = { px, py, 0.1f };
+				mPolygon->GetData(i) = { px, py, 0.1f };
 			}
 		}
 		bool Circle::IsInBoundBox(const Point & p, const SM::Matrix & matrix)
 		{
-			float x = mPolygon->mPoint[0].x;
-			float y = mPolygon->mPoint[0].y;
+			float x = mPolygon->GetData(0).x;
+			float y = mPolygon->GetData(0).y;
 			
 				return (p.x - x)*(p.x - x) + (p.y - y)*(p.y - y) <= mRadius * mRadius;
 			
@@ -52,7 +53,7 @@ namespace XGF
 		}
 		int Circle::GetLayer(int layer[])
 		{
-			layer[1] = mPolygon->mCount - 1;
+			layer[1] = mPolygon->Count() - 1;
 			layer[0] = 1;
 			return 2;
 		}

@@ -1,6 +1,6 @@
 #pragma once
 #include "Geometry.hpp"
-#include <algorithm>
+#include "../Polygon.hpp"
 
 namespace XGF::Shape
 {
@@ -32,12 +32,12 @@ namespace XGF::Shape
 		template<typename GeometryMapping = PlaneGeometryMapping>
 		void GenerateMapping()
 		{
-			mPolygonPleUvs = std::make_shared<PolygonPleTextureBinder>(mPolygon->mCount);
+			mPolygonPleUvs = std::make_shared<PolygonPleTextureBinder>(mPolygon->Count());
 			GeometryMapping mapping(this);
-			int count = mPolygon->mCount;
+			int count = mPolygon->Count();
 			for (int j = 0; j < count; j++)
 			{
-				mPolygonPleUvs->mPoint[j] = mapping(j, mPolygon->mPoint[j].x / mWidth + 0.5f, mPolygon->mPoint[j].z / mHeight + 0.5f);
+				mPolygonPleUvs->GetData(j) = mapping(j, mPolygon->GetData(j).x / mWidth + 0.5f, mPolygon->GetData(j).z / mHeight + 0.5f);
 			}
 
 		};

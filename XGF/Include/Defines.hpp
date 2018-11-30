@@ -100,6 +100,40 @@ namespace XGF
 	};
 	typedef Point2 Position;
 
+	class Color : public SM::Color
+	{
+	public:
+		Color() noexcept : SM::Color(0, 0, 0, 1.f) {}
+		XM_CONSTEXPR Color(float _r, float _g, float _b) : SM::Color(_r, _g, _b, 1.f) {}
+		XM_CONSTEXPR Color(float _r, float _g, float _b, float _a) : SM::Color(_r, _g, _b, _a) {}
+		explicit Color(const DirectX::SimpleMath::Vector3& clr) : SM::Color(clr.x, clr.y, clr.z, 1.f) {}
+		explicit Color(const DirectX::SimpleMath::Vector4& clr) : SM::Color(clr.x, clr.y, clr.z, clr.w) {}
+		explicit Color(_In_reads_(4) const float *pArray) : SM::Color(pArray) {}
+		Color(DirectX::FXMVECTOR V) { XMStoreFloat4(this, V); }
+		Color(const XMFLOAT4& c) { this->x = c.x; this->y = c.y; this->z = c.z; this->w = c.w; }
+		explicit Color(const DirectX::XMVECTORF32& F) { this->x = F.f[0]; this->y = F.f[1]; this->z = F.f[2]; this->w = F.f[3]; }
+
+		explicit Color(const DirectX::PackedVector::XMCOLOR& Packed);
+		// BGRA Direct3D 9 D3DCOLOR packed color
+
+		explicit Color(const DirectX::PackedVector::XMUBYTEN4& Packed);
+		// RGBA XNA Game Studio packed color
+
+		Color(const Color&) = default;
+		Color& operator=(const Color&) = default;
+
+		Color(Color&&) = default;
+		Color& operator=(Color&&) = default;
+
+		void Set(float r, float g, float b, float a)
+		{
+			this->x = r;
+			this->y = g;
+			this->z = b;
+			this->w = a;
+		}
+	};
+	
 	struct WVPMatrix
 	{
 		SM::Matrix worldMatrix;

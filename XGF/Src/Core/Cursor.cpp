@@ -34,7 +34,12 @@ namespace XGF
 			mTextureBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
 			mTextureBatch.Begin();
 			mRc.SetPositionAndSize(mPosition.x - mPointDeviation.x, mPosition.y - mPointDeviation.y, mSize.x, mSize.y);
-			mPtBinder->FromTexture(&mTexture);
+			
+			mPtBinder->GetData(0).x = mPtBinder->GetData(3).x = 0.f;
+			mPtBinder->GetData(0).y = mPtBinder->GetData(1).y = 0.f;
+			mPtBinder->GetData(1).x = mPtBinder->GetData(2).x = 1.f;
+			mPtBinder->GetData(2).y = mPtBinder->GetData(3).y = 1.f;
+
 			mRc.SetZ(0.1f);
 			mTextureBatch.GetShaderStage()->SetPSSRV(0, mTexture.GetRawTexture());
 			mTextureBatch.DrawPolygon(mRc.mPolygonPleIndex, mBbrg);
@@ -47,7 +52,11 @@ namespace XGF
 			bbr.AddBinder(mPtBinder);
 			float x, y, w, h;
 			mAnimation->GetPositionInTexture(x, y, w, h);
-			mPtBinder->SetPosition(x, w, y, h);
+			mPtBinder->GetData(0).x = mPtBinder->GetData(3).x = x;
+			mPtBinder->GetData(0).y = mPtBinder->GetData(1).y = y;
+			mPtBinder->GetData(1).x = mPtBinder->GetData(2).x = x + w;
+			mPtBinder->GetData(2).y = mPtBinder->GetData(3).y = y + h;
+
 			mTextureBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
 			mTextureBatch.Begin();
 			mRc.SetPositionAndSize(mPosition.x - mPointDeviation.x, mPosition.y - mPointDeviation.y, mSize.x, mSize.y);

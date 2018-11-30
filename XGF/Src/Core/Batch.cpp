@@ -21,10 +21,10 @@ namespace XGF
 			Map(false);
 			mIsMap = true;
 		}
-		else if (mMaxVertices - mPosInVertices <  bbridge.GetBinder(0)->mCount)
+		else if (mMaxVertices - mPosInVertices <  bbridge.GetBinder(0)->Count())
 		{
 			XGF_Warn(Render, "Out of Range In Vertex. You must set a larger buffer size.");
-			ResizeVertexBuffer(bbridge.GetBinder(0)->mCount + mPosInVertices);
+			ResizeVertexBuffer(bbridge.GetBinder(0)->Count() + mPosInVertices);
 			return;
 		}
 		auto vs = mShaderStage.GetVSShader();
@@ -47,7 +47,7 @@ namespace XGF
 			bbridge.GetBinder(i)->CopyTo(mVertexData[slotPosition] + slotStride * (mPosInVertices + mLastFrameVBStart) + nsizepos, slotStride);
 			nsizepos += stride[i];
 		}
-		mPosInVertices += bbridge.GetBinder(0)->mCount;
+		mPosInVertices += bbridge.GetBinder(0)->Count();
 		DebugInscriber_CallAPolygon();
 	}
 
@@ -61,7 +61,7 @@ namespace XGF
 			return;
 		}
 		DrawPolygon(bbridge);
-		pindex->CopyTo(mIndexData + mPosInIndices + mLastFrameIBStart, mPosInVertices - bbridge.GetBinder(0)->mCount + mLastFrameVBStart);
+		pindex->CopyTo(mIndexData + mPosInIndices + mLastFrameIBStart, mPosInVertices - bbridge.GetBinder(0)->Count() + mLastFrameVBStart);
 		mPosInIndices += pindex->mCount;
 	}
 

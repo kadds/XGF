@@ -1,5 +1,5 @@
 #include "..\..\Include\RectangleB.hpp"
-
+#include "../../Include/Polygon.hpp"
 namespace XGF
 {
 	namespace Shape
@@ -33,9 +33,9 @@ namespace XGF
 			{
 				mPolygonPleIndex->mIndex[i] = ide[i];
 			}
-			for (int i = 0; i < mPolygon->mCount; i++) 
+			for (int i = 0; i < mPolygon->Count(); i++) 
 			{
-				mPolygon->mPoint[i] = Point(0.f, 0.f, 0.f);
+				mPolygon->GetData(i) = Point(0.f, 0.f, 0.f);
 			}
 		}
 
@@ -46,7 +46,7 @@ namespace XGF
 
 		void RectangleB::SetPositionAndSize(float x, float y, float width, float height)
 		{
-			auto shapePos = mPolygon->mPoint;
+			auto shapePos = mPolygon->GetData();
 			shapePos[0].x = shapePos[1].x = shapePos[4].x = shapePos[5].x = x;
 			shapePos[0].y = shapePos[3].y = shapePos[4].y = shapePos[7].y = y;
 			shapePos[2].x = shapePos[3].x = shapePos[7].x = shapePos[6].x = x + width;
@@ -59,7 +59,7 @@ namespace XGF
 
 		void RectangleB::SetBorderSize(float width)
 		{
-			auto shapePos = mPolygon->mPoint;
+			auto shapePos = mPolygon->GetData();
 			shapePos[4].x = shapePos[5].x = shapePos[0].x + width;
 			shapePos[7].x = shapePos[6].x = shapePos[2].x - width;
 			shapePos[4].y = shapePos[7].y = shapePos[0].y + width;
@@ -73,14 +73,14 @@ namespace XGF
 		}
 		void RectangleB::GetInerBorderRectangle(Rectangle & rc)
 		{
-			for (int i = 0; i < rc.mPolygon->mCount; i++)
+			for (int i = 0; i < rc.mPolygon->Count(); i++)
 			{
-				rc.mPolygon->mPoint[i] = mPolygon->mPoint[4 + i];
+				rc.mPolygon->GetData(i) = mPolygon->GetData(4 + i);
 			}
 		}
 		void RectangleB::SetPosition(const Point & p)
 		{
-			auto shapePos = mPolygon->mPoint;
+			auto shapePos = mPolygon->GetData();
 			shapePos[2].x = shapePos[3].x += p.x - shapePos[0].x;
 			shapePos[1].y = shapePos[2].y += p.y - shapePos[0].y;
 			shapePos[0].x = shapePos[1].x = p.x;
@@ -88,17 +88,17 @@ namespace XGF
 		}
 		void RectangleB::GetPosition(Point & p) const
 		{
-			p = mPolygon->mPoint[0];
+			p = mPolygon->GetData(0);
 		}
 		bool RectangleB::IsInBoundBox(const Point & p, const SM::Matrix & matrix)
 		{
-			auto ple = std::make_shared<PolygonPlePoint3>(4);
+			auto ple = std::make_shared<PolygonPlePointBinder>(4);
 
 			for (int i = 0; i < 4; i++)
 			{
-				ple->mPoint[i] = mPolygon->mPoint[i];
+				ple->GetData(i) = mPolygon->GetData(i);
 			}
-			ple->Mul(matrix);
+			ple->ExpandAll(Operator::Multiply(matrix));
 			return pInPolygon(ple, p.x, p.y);
 
 		}

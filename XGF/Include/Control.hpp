@@ -2,7 +2,6 @@
 #include "Defines.hpp"
 #include "Actor.hpp"
 #include "Skin.hpp"
-#include <math.h>
 #include "UIBatches.hpp"
 #include <functional>
 #include "ClickHelper.hpp"
@@ -37,6 +36,8 @@ namespace XGF
 		UIBatches & GetUIBatches();
 
 		void SetOnRemoveFromContainerListener(std::function<void(Control *)> rm) { mOnRemoveFromContainerListener = rm; }
+
+		Texture * GetSkinTexture();
 	protected:
 		std::shared_ptr<Skin> mSkin;
 		SkinState mNowState;
@@ -45,9 +46,10 @@ namespace XGF
 
 		std::function<void(Control *)> mOnRemoveFromContainerListener;
 		static inline float minZdivision = 0.001f;
+
 	protected:
 		//子类调用
-		void DrawSkin();
+		void DrawSkin(Shape::Rectangle & rc);
 	};
 
 

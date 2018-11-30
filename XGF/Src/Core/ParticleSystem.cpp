@@ -59,19 +59,19 @@ namespace XGF
 			else
 			{
 				BindingBridge bbr;//cpu Ä£Äâ
-				auto ppc = std::make_shared<PolygonPleConstantColorBinder>(SM::Color(0, 0, 0, 0), 1);
-				auto pps = std::make_shared<PolygonPlePoint3>(1);
-				auto pp4 = std::make_shared<PolygonPlePoint4>(1);
-				pps->mPoint[0] = Point(5, 5, 5);
-				pp4->mPoint[0] = Point4(10, 10, 4, 4);
+				auto ppc = std::make_shared<PolygonPleConstantColorBinder>(1, SM::Color(0, 0, 0, 0));
+				auto pps = std::make_shared<PolygonPlePointBinder>(1);
+				auto pp4 = std::make_shared<PolygonPlePoint4Binder>(1);
+				pps->GetData(0) = Point(5, 5, 5);
+				pp4->GetData(0) = Point4(10, 10, 4, 4);
 				bbr.AddBinder(pps);
 				bbr.AddBinder(pp4);
 				bbr.AddBinder(ppc);
 				for (auto it = mParticles.begin(); it != mParticles.end(); ++it)
 				{
-					ppc->Set(0, 1, it->color);
-					pps->mPoint[0] = it->pos;
-					pp4->mPoint[0] = Point4(it->size.x, it->size.y, 0, 0);
+					ppc->Set(0, it->color);
+					pps->GetData(0) = it->pos;
+					pp4->GetData(0) = Point4(it->size.x, it->size.y, 0, 0);
 					mBatch.DrawPolygon(bbr);
 				}
 			}

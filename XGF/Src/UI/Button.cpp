@@ -18,13 +18,14 @@ namespace XGF
 	
 	void Button::Render()
 	{
-		DrawSkin();
 		::XGF::Shape::Rectangle rc;
 		RectangleB::GetInerBorderRectangle(rc);
 		rc.SetZ(GetZ() - minZdivision);
+		rc.mPolygon->ExpandAll(Operator::Multiply(GetMixMatrix()));
+		DrawSkin(rc);
 		auto renderer = mParent->GetScene().GetFramework().GetUIBatches().GetTextRenderer(mFontSize);
 		if (renderer != nullptr && !mText.empty())
-			renderer->DrawString(mText.c_str(), mTextColor, &rc, &GetMixMatrix());
+			renderer->DrawString(mText.c_str(), mTextColor, &rc, nullptr);
 	}
 
 	void Button::SetText(const string & text)

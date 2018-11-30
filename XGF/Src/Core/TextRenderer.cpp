@@ -7,7 +7,8 @@
 #include "../../Include/ConstantData.hpp"
 namespace XGF
 {
-	TextRenderer::TextRenderer() :mTemporarybuffer(nullptr), textureBinder(std::make_shared<PolygonPleTextureBinder>(4)), colorBinder(std::make_shared<PolygonPleConstantColorBinder>(SM::Color(0.f, 0.f, 0.f, 1.f), 4))
+	TextRenderer::TextRenderer() :mTemporarybuffer(nullptr), textureBinder(std::make_shared<PolygonPleTextureBinder>(4)),
+		colorBinder(std::make_shared<PolygonPleConstantColorBinder>(4, Color(0.f, 0.f, 0.f, 1.f)))
 	{
 	}
 
@@ -76,14 +77,14 @@ namespace XGF
 
 	void TextRenderer::DrawString(const wchar_t * str, SM::Color color, const Shape::Rectangle * ppe, const SM::Matrix * matrix)
 	{
-		colorBinder->Set(0, 1, color);
+		colorBinder->Set(0, color);
 		auto fun = std::bind(&TextRenderer::AddCharToBatch, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, matrix);
 		mLayoutShaper.DoLayouShaper(str, *ppe, *mFont, fun);
 	}
 	Position TextRenderer::DrawStringRtPosition(const wchar_t * str, SM::Color color, const Shape::Rectangle * ppe, const SM::Matrix * matrix, int pos)
 	{
 		Position p;
-		colorBinder->Set(0, 1, color);
+		colorBinder->Set(0, color);
 		auto fun = std::bind(&TextRenderer::AddCharToBatch, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, matrix);
 		auto fun2 = std::bind(&TextRenderer::PenMoveCallBackFunction, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, pos, &p);
 		mLayoutShaper.DoLayouShaper(str, *ppe, *mFont, fun, fun2);
@@ -115,9 +116,13 @@ namespace XGF
 	bool TextRenderer::AddCharToBatch(int i, wchar_t ch, Shape::Rectangle * rc, const PosSize *ps, const SM::Matrix * matrix)
 	{
 		if (matrix != nullptr)
-			rc->mPolygon->Mul(*matrix);
+			rc->mPolygon->ExpandAll(Operator::Multiply(*matrix));
 		bbridge.SetBinder(rc->mPolygon, 0);// here setBinder
-		textureBinder->SetPosition(ps->metrics.left, ps->metrics.right, ps->metrics.top, ps->metrics.bottom);
+		textureBinder->GetData(1).x = textureBinder->GetData(0).x = ps->metrics.left;
+		textureBinder->GetData(2).x = textureBinder->GetData(3).x = ps->metrics.right;
+		textureBinder->GetData(1).y = textureBinder->GetData(2).y = ps->metrics.bottom;
+		textureBinder->GetData(3).y = textureBinder->GetData(0).y = ps->metrics.top;
+
 		mBatch.DrawPolygon(rc->GetIndex(), bbridge);
 		return false;
 	}

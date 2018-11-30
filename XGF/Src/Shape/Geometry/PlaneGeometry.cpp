@@ -1,10 +1,10 @@
 #include "..\..\..\Include\Geometry\PlaneGeometry.hpp"
-
+#include "../../../Include/Polygon.hpp"
 namespace XGF::Shape
 {
 	void PlaneGeometry::Init()
 	{
-		mPolygonPleNormal = std::make_shared<PolygonPlePoint3>(mPolygon->mCount);
+		mPolygonPleNormal = std::make_shared<PolygonPleNormalBinder>(mPolygon->Count());
 		float width = mWidth, height = mHeight;
 		int widthSegments = mWidthSegments, heightSegments = mHeightSegments;
 		XGF_ASSERT(widthSegments > 0 && heightSegments > 0);
@@ -17,9 +17,9 @@ namespace XGF::Shape
 		const auto segmentHeight = height / heightSegments;
 
 		auto normal = Point(0, 1, 0);
-		auto* vec = mPolygon->mPoint;
+		auto* vec = mPolygon->GetData();
 		auto* inc = mPolygonPleIndex->mIndex;
-		auto* fc = mPolygonPleNormal->mPoint;
+		auto* fc = mPolygonPleNormal->GetData();
 		auto gs = heightSegments + 1;
 		auto ms = widthSegments + 1;
 		for (int i = 0; i < gs; i++)

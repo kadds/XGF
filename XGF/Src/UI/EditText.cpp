@@ -32,7 +32,11 @@ namespace XGF
 
 	void EditText::Render()
 	{
-		DrawSkin();
+		::XGF::Shape::Rectangle rc;
+		RectangleB::GetInerBorderRectangle(rc);
+		rc.SetZ(GetZ() - minZdivision);
+		rc.mPolygon->ExpandAll(Operator::Multiply(GetMixMatrix()));
+		DrawSkin(rc);
 		mTextInputProcessor.SetTextRenderer(GetTextRenderer(this->mFontSize));
 
 		mTextInputProcessor.RenderText(mTextColor);

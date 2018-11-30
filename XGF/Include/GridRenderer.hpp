@@ -43,10 +43,10 @@ namespace XGF
 		//MeshData * mMeshData;
 		float mWidth;
 		float mHeight;
-		std::shared_ptr<PolygonPlePoint3> mPolygon;
+		std::shared_ptr<PolygonPlePointBinder> mPolygon;
 		std::shared_ptr<PolygonPleIndex> mPolygonPleIndex;
 		BindingBridge mBindingBridge;
-		std::shared_ptr<PolygonPleConstantExColorBinder> mColorBinder;
+		std::shared_ptr<PolygonPleConstantColorBinder> mColorBinder;
 		unsigned mXcount;
 		unsigned mZcount;
 	};

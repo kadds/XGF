@@ -194,7 +194,7 @@ namespace XGF
 
 		mDeviceContext->PSSetShaderResources(0, 1, pSRV);
 	}
-	void GDI::Clear(const SM::Color & c)
+	void GDI::Clear(const Color & c)
 	{
 		if (!mRenderToTextures.empty())
 		{

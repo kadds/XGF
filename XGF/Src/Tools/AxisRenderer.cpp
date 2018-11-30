@@ -57,12 +57,13 @@ namespace XGF
 	void AxisRenderer::DrawAxis()
 	{
 		BindingBridge bbr;
-		auto cbb = std::make_shared<PolygonPleConstantColorBinder>(SM::Color(0, 0, 0, 0), 2);
+		auto cbb = std::make_shared<PolygonPleConstantColorBinder>(2, SM::Color(0, 0, 0, 0));
 		bbr.AddPlaceHolder();
 		bbr.AddBinder(cbb);
 		int i = 0;
 		std::for_each(lines.begin(), lines.end(), [this, &cbb, &i, &bbr](std::unique_ptr<Shape::Line> &var) {
-			cbb->Set(0, 1, mColor[i]);
+			cbb->Set(0, mColor[i]);
+
 			bbr.SetBinder(var->mPolygon, 0);
 			mBatch.DrawPolygon(var->mPolygonPleIndex, bbr);
 			i++;

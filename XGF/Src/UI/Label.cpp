@@ -20,7 +20,7 @@ namespace XGF
 
 	void Label::Render()
 	{
-		DrawSkin();
+		//DrawSkin();
 		auto renderer = this->mParent->GetScene().GetFramework().GetUIBatches().GetTextRenderer(mFontSize);
 		if(renderer != nullptr)
 			renderer->DrawString(mText.c_str(), mTextColor, this, &GetMixMatrix());

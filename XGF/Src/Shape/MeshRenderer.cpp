@@ -102,9 +102,9 @@ namespace XGF
 						it.second->GetShaderStage()->SetPSConstantBuffer(i, cb[i]);
 					}
 					BindingBridge bbr = element->GetBindingBridge();
-					auto ppe = std::make_shared<PolygonPlePoint3>(bbr.GetBinder(0)->mCount);
+					auto ppe = std::make_shared<PolygonPlePointBinder>(bbr.GetBinder(0)->Count());
 					auto matirix = element->GetGeometry()->GetTransform().GetMatrix();
-					element->GetGeometry()->mPolygon->MulTo(ppe, matirix);
+					element->GetGeometry()->mPolygon->ExpandAllTo(*ppe.get(), Operator::Multiply(matirix));
 					bbr.SetBinder(ppe, 0);
 					it.second->DrawPolygon(element->GetGeometry()->mPolygonPleIndex, bbr);
 				}
