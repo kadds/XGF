@@ -1,6 +1,6 @@
 #           XGF
 ### 一个用于学习的2d/3d游戏渲染框架
-  
+
 ## 功能
 
 *  渲染器
@@ -22,24 +22,23 @@
     * 场景切换动画 (开发中)
 * Particle
     * 基于GPU的粒子系统 (开发中)
-  
+
 ## 如何编译
-编译器： VC++14.1或更高 (仅支持 MSVC14.1+)  
-推荐使用VS2017  
-  
-###### 注意：Demo 需要复制Bin目录的资源到执行目录
+编译器： VC++14.1或更高 (仅支持 MSVC14.1+) 
+
  预览图
  Demo1:  
 ![Demo](https://raw.githubusercontent.com/kadds/XGF/master/Preview/preview1.PNG)
-  
+
   Demo2:  
 ![Demo](https://raw.githubusercontent.com/kadds/XGF/master/Preview/preview2.PNG)
- 
+
 ## 联系方式
-  
-* Email: <itmyxyf@gmail.com>
+
+* Email: itmyxyf#gmail.com
   
 ## 感谢
 * [Freetype](https://www.freetype.org/) 
 * [DirectXTK](https://github.com/Microsoft/DirectXT)
 * [DirectXTex](https://github.com/Microsoft/DirectXTex)
+* [Spdlog](https://github.com/gabime/spdlog)
