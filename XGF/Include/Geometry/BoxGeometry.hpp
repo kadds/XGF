@@ -21,17 +21,12 @@ namespace XGF
 		{
 		public:
 			virtual ~BoxGeometry() {};
-
-			void Init(float x, float y, float z);
-
-			template<typename GeometryMapping = BoxMapping>
 			BoxGeometry(float x, float y, float z, int xSegments = 1, int ySegments = 1, int zSegments = 1)
 				: Geometry(24, 36), x(x), y(y), z(z), mXSegments(xSegments), mYSegments(ySegments), mZSegments(zSegments)
 			{
 				Init(x, y, z);
-				GenerateMapping<BoxMapping>();
+				GenerateMapping<>();
 			}
-
 			template<typename GeometryMapping = BoxMapping>
 			void GenerateMapping()
 			{
@@ -50,8 +45,8 @@ namespace XGF
 				}
 
 			};
-
-		private:
+		protected:
+			void Init(float x, float y, float z);
 			void InitializeIndex();
 			float x, y, z;
 			int mXSegments, mYSegments, mZSegments;

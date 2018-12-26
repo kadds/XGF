@@ -19,18 +19,14 @@ namespace XGF
 		class SphereGeometry : public Geometry
 		{
 		public:
-			template<typename GeometryMapping = SphereGeometryMapping>
 			SphereGeometry(float radius, int widthSegments, int heightSegments, float phiStart = 0, float phiLength = DirectX::XM_2PI, float thetaStart = 0, float thetaLength = DirectX::XM_PI)
 			: Geometry((heightSegments + 1) * (widthSegments + 1), heightSegments * widthSegments * 6),
 			mWidthSegments(widthSegments), mHeightSegments(heightSegments),
 			mRadius(radius), mPhiStart(phiStart), mPhiLength(phiLength), mThetaStart(thetaStart), mThetaLength(thetaLength)
 			{
 				Init();
-				GenerateMapping();
+				GenerateMapping<>();
 			}
-
-			~SphereGeometry() = default;
-		private:
 			template<typename GeometryMapping = SphereGeometryMapping>
 			void GenerateMapping()
 			{
@@ -39,7 +35,7 @@ namespace XGF
 
 				for (int i = 0; i <= mHeightSegments; i++)
 				{
-					float h = i / (float) (mHeightSegments + 1);
+					float h = i / (float)(mHeightSegments + 1);
 					for (int j = 0; j <= mWidthSegments; j++)
 					{
 						float w = j / (float)(mWidthSegments + 1);
@@ -48,9 +44,9 @@ namespace XGF
 				}
 
 			};
-
+			~SphereGeometry() = default;
+		protected:
 			void Init();
-		private:
 			int mWidthSegments, mHeightSegments;
 			float mRadius;
 			float mPhiStart, mPhiLength, mThetaStart, mThetaLength;

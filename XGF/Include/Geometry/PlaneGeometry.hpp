@@ -17,18 +17,13 @@ namespace XGF::Shape
 	class PlaneGeometry : public Geometry
 	{
 	public:
-		template<typename GeometryMapping = PlaneGeometryMapping>
 		PlaneGeometry(float width, float height, int widthSegments = 1, int heightSegments = 1)
 			: Geometry((widthSegments + 1) * (heightSegments + 1), widthSegments * heightSegments * 6), mWidth(width), mHeight(height),
 			mWidthSegments(widthSegments), mHeightSegments(heightSegments)
 		{
 			Init();
-			GenerateMapping<GeometryMapping>();
+			GenerateMapping<>();
 		}
-
-		void Init();
-		virtual ~PlaneGeometry() = default;
-	private:
 		template<typename GeometryMapping = PlaneGeometryMapping>
 		void GenerateMapping()
 		{
@@ -41,7 +36,10 @@ namespace XGF::Shape
 			}
 
 		};
+		
+		virtual ~PlaneGeometry() = default;
 	protected:
+		void Init();
 		int mWidthSegments;
 		int mHeightSegments;
 		float mWidth, mHeight;
