@@ -31,7 +31,7 @@ namespace XGF
 		mCursor.Shutdown();
 		dinput.Shutdown();
 	}
-
+	// main thread
 	LRESULT InputManager::ProcessInputMessage(UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		switch (msg)

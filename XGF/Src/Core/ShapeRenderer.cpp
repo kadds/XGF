@@ -18,7 +18,7 @@ namespace XGF
 
 	void ShapeRenderer::Initialize(GDI * gdi, unsigned int MaxVetices, unsigned int MaxIndices)
 	{
-		mBatch.Initialize(gdi, ConstantData::GetInstance().GetPCShaders(), MaxVetices, MaxIndices, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		mBatch.Initialize(gdi, ConstantData::GetInstance().GetPositionColorShader(), MaxVetices, MaxIndices, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		mBatch.GetShaderStage()->SetBlendState(BlendState::AddOneOneAdd);
 		mBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthEnable);
 	}
@@ -31,6 +31,8 @@ namespace XGF
 	void ShapeRenderer::Begin(WVPMatrix & wvp)
 	{
 		mBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
+		mBatch.GetShaderStage()->SetPSConstantBuffer(0, Color(1.f, 1.f, 1.f, 1.f));
+
 		mBatch.Begin();
 	}
 

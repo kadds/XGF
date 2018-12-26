@@ -23,12 +23,20 @@ namespace XGF
 				return &mBatchPT;
 			return nullptr;
 		};
-		virtual void Begin(WVPMatrix & wvp) { mBatchPC.GetShaderStage()->SetVSConstantBuffer(0, &wvp);mBatchPT.GetShaderStage()->SetVSConstantBuffer(0, &wvp); mBatchPC.Begin(); mBatchPT.Begin(); };
-		virtual void End() { mBatchPC.End();mBatchPT.End(); };
+		virtual void Begin(WVPMatrix & wvp)
+		{
+			mBatchPC.GetShaderStage()->SetVSConstantBuffer(0, &wvp); 
+			mBatchPT.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
+			mBatchPC.GetShaderStage()->SetPSConstantBuffer(0, Color(1.f, 1.f, 1.f, 1.f));
+			mBatchPT.GetShaderStage()->SetPSConstantBuffer(0, Color(1.f, 1.f, 1.f, 1.f));
+			mBatchPC.Begin();
+			mBatchPT.Begin();
+		};
+		virtual void End() { mBatchPC.End(); mBatchPT.End(); };
 		virtual void Initialize(GDI * gdi, unsigned int CmaxVetices = 1024, unsigned int CmaxIndices = 1024 * 2, unsigned int TmaxVetices = 1024, unsigned int TmaxIndices = 1024 * 2)
 		{
-			mBatchPC.Initialize(gdi, ConstantData::GetInstance().GetPCShaders(), CmaxVetices, CmaxIndices);
-			mBatchPT.Initialize(gdi, ConstantData::GetInstance().GetPTShaders(), TmaxVetices, TmaxIndices);
+			mBatchPC.Initialize(gdi, ConstantData::GetInstance().GetPositionColorShader(), CmaxVetices, CmaxIndices);
+			mBatchPT.Initialize(gdi, ConstantData::GetInstance().GetPositionTextureShader(), TmaxVetices, TmaxIndices);
 			mBatchPC.GetShaderStage()->SetBlendState(BlendState::AddOneOneAdd);
 			mBatchPT.GetShaderStage()->SetBlendState(BlendState::AddOneOneAdd);
 			mBatchPT.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthEnable);

@@ -12,9 +12,10 @@ namespace XGF
 
 	void Cursor::Initialize(GDI * gdi)
 	{
-		mTextureBatch.Initialize(gdi, ConstantData::GetInstance().GetPTShaders(), 4, 6);
+		mTextureBatch.Initialize(gdi, ConstantData::GetInstance().GetPositionTextureShader(), 4, 6);
 		mTextureBatch.GetShaderStage()->SetBlendState(BlendState::AddOneOneAdd);
 		mTextureBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthDisable);
+		mBbrg.AddBinder(mRc.mPolygon);
 		mBbrg.AddBinder(mPtBinder);
 		mSize.x = 16;
 		mSize.y = 16;
@@ -28,17 +29,18 @@ namespace XGF
 
 	void Cursor::Draw(const WVPMatrix & wvp)
 	{
+		mTextureBatch.GetShaderStage()->SetPSConstantBuffer(0, Color(1.f, 1.f, 1.f, 1.f));
 		if (mUsedStaticTexture)
 		{
 			if (!mIsShow || mTextureResource == nullptr || mTexture.GetRawTexture() == nullptr)  return;
 			mTextureBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
 			mTextureBatch.Begin();
 			mRc.SetPositionAndSize(mPosition.x - mPointDeviation.x, mPosition.y - mPointDeviation.y, mSize.x, mSize.y);
-			
-			mPtBinder->GetData(0).x = mPtBinder->GetData(3).x = 0.f;
-			mPtBinder->GetData(0).y = mPtBinder->GetData(1).y = 0.f;
-			mPtBinder->GetData(1).x = mPtBinder->GetData(2).x = 1.f;
-			mPtBinder->GetData(2).y = mPtBinder->GetData(3).y = 1.f;
+
+			mPtBinder->GetData(1).x = mPtBinder->GetData(0).x = 0.f;
+			mPtBinder->GetData(2).x = mPtBinder->GetData(3).x = 1.f;
+			mPtBinder->GetData(1).y = mPtBinder->GetData(2).y = 1.f;
+			mPtBinder->GetData(3).y = mPtBinder->GetData(0).y = 0.f;
 
 			mRc.SetZ(0.1f);
 			mTextureBatch.GetShaderStage()->SetPSSRV(0, mTexture.GetRawTexture());

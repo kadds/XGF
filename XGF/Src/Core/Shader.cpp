@@ -318,21 +318,21 @@ namespace XGF {
 	}
 
 
-	unsigned int * VertexShader::GetStrideAtSlot(unsigned int slot)
+	const unsigned int * VertexShader::GetStrideAtSlot(unsigned int slot) const
 	{
 		XGF_ASSERT(slot < mSlotElementStartPosition.size());
 		return &mSlotStride[mSlotElementStartPosition[slot]];
 	}
 
-	unsigned int * VertexShader::GetSlotElementStartPositionArray()
+	const unsigned int * VertexShader::GetSlotElementStartPositionArray() const
 	{
 		return mSlotElementStartPosition.data();
 	}
 
-	unsigned int VertexShader::GetStrideAllSizeAtSlot(unsigned int slot)
+	unsigned int VertexShader::GetStrideAllSizeAtSlot(unsigned int slot) const
 	{
 		XGF_ASSERT(slot < mSlotElementStartPosition.size());
-		std::vector<unsigned int>::iterator end;
+		std::vector<unsigned int>::const_iterator end;
 		if (slot == mSlotElementStartPosition.size() - 1)
 		{
 			end = mSlotStride.end();
@@ -344,14 +344,23 @@ namespace XGF {
 		return std::accumulate(mSlotStride.begin() + mSlotElementStartPosition[slot], end, 0);
 	}
 
-	unsigned int VertexShader::GetSlotCount()
+	unsigned int VertexShader::GetSlotCount() const
 	{
 		return static_cast<unsigned int>(mSlotElementStartPosition.size());
 	}
+	unsigned int VertexShader::GetInputCount() const
+	{
+		return mSlotStride.size();
+	}
 
-	unsigned int * VertexShader::GetStride()
+	const unsigned int * VertexShader::GetStride() const
 	{
 		return mSlotStride.data();
+	}
+
+	unsigned int VertexShader::GetInputLayoutCount() const
+	{
+		return mLayoutCount;
 	}
 
 

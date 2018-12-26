@@ -148,7 +148,7 @@ namespace XGF
 
 		ID3D11RasterizerState * mRasterizerState[(int)RasterizerState::InvalidValue];
 		UINT m4xMsaaQuality = 0;
-		bool mEnable4xMsaa = true;
+		bool mEnable4xMsaa = false;
 		bool mIsStandby = false;
 		//ÏÔÊ¾µÄ´°¿Ú¾ä±ú
 		HWND mHwnd;

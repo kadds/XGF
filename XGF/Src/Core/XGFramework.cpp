@@ -112,6 +112,8 @@ namespace XGF
 
 	void XGFramework::_OnMouseMessage(const Event & ev)
 	{
+		if(ev.GetMouseEventId() == MouseEventId::MouseMove)
+			mInputManager.OnMouseMove(ev.GetData<int>(0), ev.GetData<int>(1));
 		if (ev.GetMouseEventId() == MouseEventId::MouseDown)
 		{
 			mInputManager.SetFocus(nullptr);
@@ -247,6 +249,7 @@ namespace XGF
 
 	void XGFramework::Exit(int code)
 	{
+		// ÉèÖÃÍË³öÂë
 		PostMessage(mGDI->GetTopHwnd(), WM_CLOSE, 1, code);
 		mThread->PostExitEvent();
 	}

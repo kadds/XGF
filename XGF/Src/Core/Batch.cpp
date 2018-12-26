@@ -16,6 +16,7 @@ namespace XGF
 	void Batch::DrawPolygon(const BindingBridge & bbridge)
 	{
 		XGF_ASSERT(mIsBegin);
+		VerifyInputLayout(bbridge);
 		//Map Buffer
 		if (!mIsMap) {
 			Map(false);
@@ -32,8 +33,8 @@ namespace XGF
 		//copy 顶点数据
 		unsigned int slotPosition = 0;
 		unsigned int count = vs->GetSlotCount();
-		unsigned int * elementSlotInfo = vs->GetSlotElementStartPositionArray();
-		unsigned int * stride = vs->GetStride();
+		const unsigned int * elementSlotInfo = vs->GetSlotElementStartPositionArray();
+		const unsigned int * stride = vs->GetStride();
 
 		unsigned int slotStride = vs->GetStrideAllSizeAtSlot(slotPosition);
 		for (unsigned int i = 0; i < bbridge.Count(); i++)
@@ -340,6 +341,35 @@ namespace XGF
 		UINT offset[4] = { 0 };
 		mGDI->GetDeviceContext()->SOSetTargets(1, &b, offset);
 		mShaderStage.UnBindStage();
+	}
+
+	bool Batch::VerifyInputLayout(const BindingBridge & bbridge)
+	{
+		// TODO:: 检查多slot
+		// 仅调试模式时检查
+#ifdef _DEBUG
+		if (mShaderStage.GetVSShader()->GetInputCount() != bbridge.Count())
+		{
+			XGF_Warn(Shader, "The number of input layout structures is inconsistent with BindingBridge.", 
+				"The shader input layout count is:", mShaderStage.GetVSShader()->GetInputCount(), ".",
+				"The binding bridge element count is:", bbridge.Count());
+			return false;
+		}
+		bool success = true;
+		auto stride = mShaderStage.GetVSShader()->GetStride();
+		for(int i = 0; i != bbridge.Count(); i++)
+		{
+			if(stride[i] != bbridge.GetBinder(i)->SizeOf())
+			{
+				XGF_Warn(Shader, "The bytes of the input layout structure are inconsistent with BindingBridge.", "The index at shader:", i, "."
+					"The SizeOf Shader:", stride[i], ".", "The SizeOf binding bridge:", bbridge.GetBinder(i)->SizeOf());
+				success = false;
+			}
+		}
+		return success;
+#else
+		return true;
+#endif
 	}
 
 	void Batch::CreateIndexBuffer()

@@ -77,6 +77,7 @@ namespace XGF {
 		{
 		private:
 			bool openConsole;
+			bool mRemoveWhenClose;
 			std::vector<std::shared_ptr<spdlog::logger>> loggers;
 		public:
 			LogRecorder();
@@ -87,17 +88,17 @@ namespace XGF {
 				loggers[(int) system]->debug(formatStr, file, functionName, line, JoinParameter(args...));
 			};
 			template<typename ...Args>
-			void Info(LogSystem::LogSystem system, const char * file, const char * functionName, int line, Args &... args)
+			void Info(LogSystem::LogSystem system, const char * file, const char * functionName, int line, const Args &... args)
 			{
 				loggers[(int) system]->info(formatStr, file, functionName, line, JoinParameter(args...));
 			};
 			template<typename ...Args>
-			void Warn(LogSystem::LogSystem system, const char * file, const char *  functionName, int line, Args &... args)
+			void Warn(LogSystem::LogSystem system, const char * file, const char *  functionName, int line, const Args &... args)
 			{
 				loggers[(int) system]->warn(formatStr, file, functionName, line, JoinParameter(args...));
 			};
 			template<typename ...Args>
-			void Error(LogSystem::LogSystem system, const char * file, const char *  functionName, int line, Args &... args)
+			void Error(LogSystem::LogSystem system, const char * file, const char *  functionName, int line, const Args &... args)
 			{
 				loggers[(int) system]->error(formatStr, file, functionName, line, JoinParameter(args...));
 				ShowXGFDialog("A serious error has occurred, do you need to check it?", gFilename);

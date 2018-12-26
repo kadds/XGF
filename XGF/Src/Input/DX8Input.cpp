@@ -205,10 +205,6 @@ namespace XGF
 		ScreenToClient(mHwnd, &p);
 		mouseState.px = p.x;
 		mouseState.py = p.y;
-		if (mouseState.px < 0 || mouseState.py < 0 )
-		{
-			return false;
-		}
 		return true;
 	}
 

@@ -16,7 +16,7 @@ namespace XGF
 	void Caret::Initialize(GDI * gdi)
 	{
 		mIsCaretShow = false;
-		mColorBatch.Initialize(gdi, ConstantData::GetInstance().GetPCShaders(), 16, 16, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+		mColorBatch.Initialize(gdi, ConstantData::GetInstance().GetPositionColorShader(), 16, 16, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 		mColorBatch.GetShaderStage()->SetBlendState(BlendState::AddOneOneAdd);
 		mColorBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthDisable);
 		

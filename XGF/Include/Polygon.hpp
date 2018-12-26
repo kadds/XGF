@@ -50,6 +50,7 @@ namespace XGF
 		{
 			return mCount;
 		}
+		virtual int SizeOf() const  = 0;
 	protected:
 		void SetCount(int c)
 		{
@@ -85,6 +86,10 @@ namespace XGF
 			XGF_ASSERT(n >= 0 && n < Count());
 
 			return mData[n];
+		}
+		virtual int SizeOf() const override
+		{
+			return sizeof(Vector);
 		}
 		PolygonPleDataBinder(int count)
 		{

@@ -116,10 +116,30 @@ namespace XGF
 			delete[]ch;
 			return str;
 		}
-		std::pair<std::unique_ptr<char>, int> LoadFromFile(string file)
+		std::pair<std::unique_ptr<char>, int> LoadFromFile(const std::string & file)
 		{
 			std::ifstream fs(file, std::ios::binary);
 			if(!fs)
+			{
+				XGF_Warn(IO, "can't find file ", file);
+				return std::pair<std::unique_ptr<char>, int>();
+			}
+			auto pbuf = fs.rdbuf();
+			// FIXME: sizeof(long) 
+			long size = static_cast<long>(pbuf->pubseekoff(0, std::ios::end, std::ios::in));
+			fs.seekg(0, std::ios::beg);
+			auto cdata = new char[size];
+			auto data = std::make_pair(std::unique_ptr<char>(cdata), size);
+			pbuf->pubseekpos(0, std::ios::in);
+			pbuf->sgetn(cdata, size);
+			fs.close();
+			return data;
+		}
+
+		std::pair<std::unique_ptr<char>, int> LoadFromFile(const std::wstring & file)
+		{
+			std::ifstream fs(file, std::ios::binary);
+			if (!fs)
 			{
 				XGF_Warn(IO, "can't find file ", ::XGF::Logger::WCharToChar(file.c_str()));
 				return std::pair<std::unique_ptr<char>, int>();

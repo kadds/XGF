@@ -35,7 +35,11 @@ namespace XGF {
 		{
 			XGF_Info(Application, "end application");
 			spdlog::drop_all();
-			CloseConsole();	
+			CloseConsole();
+			if(mRemoveWhenClose)
+			{
+				DeleteFileA(gFilename);
+			}
 		}
 
 
@@ -97,7 +101,7 @@ namespace XGF {
 		}
 
 
-		LogRecorder::LogRecorder()
+		LogRecorder::LogRecorder(): mRemoveWhenClose(true)
 		{
 			setlocale(LC_CTYPE, "");
 			OpenConsole();

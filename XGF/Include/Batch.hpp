@@ -103,6 +103,7 @@ namespace XGF
 		void CreateIndexBuffer();
 		ID3D11Buffer *  CreateVertexBuffer(unsigned len);
 		void EndWithoutFrame(bool drawAuto = false);
+		bool VerifyInputLayout(const BindingBridge& bbridge);
 	private:
 		int mNewIndexCount;
 		int mNewVertexCount;

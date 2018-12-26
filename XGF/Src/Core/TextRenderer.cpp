@@ -20,19 +20,19 @@ namespace XGF
 	void TextRenderer::Initialize(GDI * gdi, Font * font, int MaxCount)
 	{
 		mFont = font;
-		mBatch.Initialize(gdi, ConstantData::GetInstance().GetFontShaders(), MaxCount * 4, MaxCount * 6, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		mBatch.Initialize(gdi, ConstantData::GetInstance().GetPositionAlphaTextureColorShader(), MaxCount * 4, MaxCount * 6, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		mBatch.GetShaderStage()->SetBlendState(BlendState::AddZeroOneAdd);
-		mBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthEnable);
+		// 文字渲染采用不同的深度函数方法，在同深度的UI控件绘制中以写入缓冲区
+		mBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthEnableWithLessEqual);
 		bbridge.AddPlaceHolder();
-		bbridge.AddBinder(colorBinder);
 		bbridge.AddBinder(textureBinder);
+		bbridge.AddBinder(colorBinder);
 	}
 
 	void TextRenderer::Shutdown()
 	{
 		mBatch.Shutdown();
-		if (mTemporarybuffer != nullptr)
-			delete[] mTemporarybuffer;
+		delete[] mTemporarybuffer;
 	}
 
 	void TextRenderer::DrawString(const wchar_t * str, float x, float y, float z)
@@ -40,10 +40,10 @@ namespace XGF
 		Shape::Rectangle rc;
 		rc.SetPositionAndSize(x, y, 100000.f, 100000.f);
 		rc.SetZ(z);
-		DrawString(str, SM::Color(1.0f, 1.0f, 1.0f, 1.0f), &rc, nullptr);
+		DrawString(str, Color(1.0f, 1.0f, 1.0f, 1.0f), &rc, nullptr);
 	}
 
-	void TextRenderer::DrawString(const wchar_t * str, SM::Color color, float x, float y, float z)
+	void TextRenderer::DrawString(const wchar_t * str, Color color, float x, float y, float z)
 	{
 		Shape::Rectangle rc;
 		rc.SetPositionAndSize(static_cast<float>(x), static_cast<float>(y), 1000.0f, 1000.0f);
@@ -63,7 +63,7 @@ namespace XGF
 		DrawString(mTemporarybuffer, SM::Color(1.0f, 1.0f, 1.0f, 1.0f), x, y);
 	}
 
-	void TextRenderer::DrawStringEx(float x, float y, SM::Color color, const wchar_t * str, ...)
+	void TextRenderer::DrawStringEx(float x, float y, Color color, const wchar_t * str, ...)
 	{
 		va_list vlArgs = NULL;
 		va_start(vlArgs, str);
@@ -75,13 +75,13 @@ namespace XGF
 		DrawString(mTemporarybuffer, color, x, y);
 	}
 
-	void TextRenderer::DrawString(const wchar_t * str, SM::Color color, const Shape::Rectangle * ppe, const SM::Matrix * matrix)
+	void TextRenderer::DrawString(const wchar_t * str, Color color, const Shape::Rectangle * ppe, const SM::Matrix * matrix)
 	{
 		colorBinder->Set(0, color);
 		auto fun = std::bind(&TextRenderer::AddCharToBatch, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, matrix);
 		mLayoutShaper.DoLayouShaper(str, *ppe, *mFont, fun);
 	}
-	Position TextRenderer::DrawStringRtPosition(const wchar_t * str, SM::Color color, const Shape::Rectangle * ppe, const SM::Matrix * matrix, int pos)
+	Position TextRenderer::DrawStringRtPosition(const wchar_t * str, Color color, const Shape::Rectangle * ppe, const SM::Matrix * matrix, int pos)
 	{
 		Position p;
 		colorBinder->Set(0, color);
@@ -98,6 +98,7 @@ namespace XGF
 	void TextRenderer::Begin(const WVPMatrix & matrix)
 	{
 		mBatch.GetShaderStage()->SetVSConstantBuffer(0, &matrix);
+		mBatch.GetShaderStage()->SetPSConstantBuffer(0, Color(1.f, 1.f, 1.f, 1.f));
 		mBatch.GetShaderStage()->SetPSSRV(0, mFont->GetShaderResourceView());
 		mBatch.Begin();
 		

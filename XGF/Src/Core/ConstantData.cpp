@@ -6,27 +6,30 @@ namespace XGF
 {
 	ConstantData ConstantData::mConstantData;
 	UINT ConstantData::mRanowmSize = 128;
+	const std::string ConstantData::mFileNames[] = {
+		"BasicMaterial.P.hlsl",
+		"BasicMaterial.PT.hlsl", 
+		"BasicMaterial.PC.hlsl",
+		"BasicMaterial.PN.hlsl",
+		"BasicMaterial.PTC.hlsl",
+		"BasicMaterial.PTC.Alpha.hlsl",
+		"BasicMaterial.PNT.hlsl",
+		"BasicMaterial.PNC.hlsl", 
+		"BasicMaterial.PNTC.hlsl"};
 	void ConstantData::Initialize(GDI * gdi)
 	{
-		mFontVShader.Initialize(gdi, ShaderConst::fontVS, ShaderConst::fontVSSize);
-		mFontPShader.Initialize(gdi, ShaderConst::fontPS, ShaderConst::fontPSSize);
-		mFontShaders = { &mFontVShader, &mFontPShader , nullptr};
+		for(int i = 0; i < mMaxConstantShaderCount; i++)
+		{
+			auto fileData = Tools::LoadFromFile(mFileNames[i]);
+			auto vs = new VertexShader();
+			auto ps = new PixelShader();
 
-		mPTVShader.Initialize(gdi, ShaderConst::shaderPTVS, ShaderConst::shaderPTVSSize);
-		mPTPShader.Initialize(gdi, ShaderConst::shaderPTPS, ShaderConst::shaderPTPSSize);
-		mPTShaders = { &mPTVShader, &mPTPShader, nullptr };
+			vs->Initialize(gdi, (unsigned char*)fileData.first.get(), fileData.second, mFileNames[i].c_str());
+			ps->Initialize(gdi, (unsigned char*)fileData.first.get(), fileData.second, mFileNames[i].c_str());
 
-		mPCVShader.Initialize(gdi, ShaderConst::shaderPCVS, ShaderConst::shaderPCVSSize);
-		mPCPShader.Initialize(gdi, ShaderConst::shaderPCPS, ShaderConst::shaderPCPSSize);
-		mPCShaders = { &mPCVShader, &mPCPShader, nullptr };
-
-		mPCTVShader.Initialize(gdi, ShaderConst::shaderPCTVS, ShaderConst::shaderPCTVSSize, 1);
-		mPCTPShader.Initialize(gdi, ShaderConst::shaderPCTPS, ShaderConst::shaderPCTPSSize);
-		mPCTShaders = { &mPCTVShader, &mPCTPShader, nullptr };
-		auto fileData = Tools::LoadFromFile(L"./BasicMaterial.fx");
-		mBasicVShader.Initialize(gdi, (unsigned char*)fileData.first.get(), fileData.second, "./BasicMaterial.fx");
-		mBasicPShader.Initialize(gdi, (unsigned char*)fileData.first.get(), fileData.second, "./BasicMaterial.fx");
-		mBasicShaders = { &mBasicVShader, &mBasicPShader, nullptr };
+			mShaders[i] = { vs, ps, nullptr };
+		}
+		
 		//random
 		ID3D11Texture1D *texture;
 		D3D11_TEXTURE1D_DESC desc;
@@ -62,18 +65,24 @@ namespace XGF
 
 	void ConstantData::Shutdown()
 	{
-		mFontVShader.Shutdown();
-		mFontPShader.Shutdown();
-		mPTPShader.Shutdown();
-		mPTVShader.Shutdown();
-		mPCPShader.Shutdown();
-		mPCVShader.Shutdown();
-		mPCTPShader.Shutdown();
-		mPCTVShader.Shutdown();
-		mBasicPShader.Shutdown();
-		mBasicVShader.Shutdown();
-
 		mRandomSRV->Release();
+		for (int i = 0; i < mMaxConstantShaderCount; i++)
+		{
+			if (mShaders[i].vs) {
+				mShaders[i].vs->Shutdown();
+				delete mShaders[i].vs;
+				mShaders[i].vs = nullptr;
+			}
+			if (mShaders[i].ps) {
+				mShaders[i].ps->Shutdown();
+				delete mShaders[i].ps;
+				mShaders[i].ps = nullptr;
+			}
+			if (mShaders[i].gs) {
+				mShaders[i].gs->Shutdown();
+				delete mShaders[i].gs;
+				mShaders[i].gs = nullptr;
+			}
+		}
 	}
-
 }

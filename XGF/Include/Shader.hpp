@@ -86,11 +86,13 @@ namespace XGF
 
 		void Shutdown();
 		void SetInputLayout();
-		unsigned int * GetStrideAtSlot(unsigned int slot);
-		unsigned int * GetSlotElementStartPositionArray();
-		unsigned int GetStrideAllSizeAtSlot(unsigned int slot);
-		unsigned int GetSlotCount();
-		unsigned int * GetStride();
+		const unsigned int * GetStrideAtSlot(unsigned int slot) const;
+		const unsigned int * GetSlotElementStartPositionArray() const;
+		unsigned int GetStrideAllSizeAtSlot(unsigned int slot) const;
+		unsigned int GetSlotCount() const;
+		unsigned int GetInputCount() const;
+		const unsigned int * GetStride() const;
+		unsigned int GetInputLayoutCount() const;
 	private:
 		friend class ShaderStage;
 		ID3D11VertexShader * mVertexShader;

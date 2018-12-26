@@ -21,7 +21,7 @@ namespace XGF
 	void UIBatches::End()
 	{
 		Batches::End();
-		for each(auto tx in maps)
+		for each(auto tx in maps) 
 			tx.second->End();
 	}
 

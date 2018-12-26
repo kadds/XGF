@@ -106,7 +106,6 @@ namespace XGF
 			skin = mSkin->GetTexture(mNowState);
 			if (skin)
 			{
-				auto shape = GetShape();
 				auto textureBinder = std::make_shared<PolygonPleTextureBinder>(4);
 				BindingBridge bbrige;
 				

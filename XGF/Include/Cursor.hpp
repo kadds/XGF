@@ -9,19 +9,22 @@ namespace XGF
 	class Cursor
 	{
 	public:
+		friend class InputManager;
 		Cursor();
 		~Cursor();
 		void Initialize(GDI * gdi);
 		void Shutdown();
+		
+		void SetStaticTexture(TextureResource * res);
+		void SetAnimation(Animation * mm);
+		void SetPointDeviation(Position & p) { mPointDeviation = p; };
+		
+	private:
 		void Draw(const WVPMatrix & wvp);
 		void SetPosition(float x, float y);
 		void Show();
 		void Tick(float time);
-		void SetStaticTexture(TextureResource * res);
-		void SetAnimation(Animation * mm);
-		void SetPointDeviation(Position & p) { mPointDeviation = p; };
 		void Hide();
-	private:
 		Batch mTextureBatch;
 		Position mPosition;
 		Position mPointDeviation;

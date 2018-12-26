@@ -133,7 +133,7 @@ public:
 			std::static_pointer_cast<Control>(GetRootContainer().GetActorById(11))->SetSkin(Skin::CreateFromTextures(&t1, &t2, &t3));
 
 			GetFramework().GetInputManager().GetCursor().SetStaticTexture(cursor);
-			GetFramework().GetInputManager().GetCursor().Show();
+			GetFramework().GetInputManager().SetMouseMode(MouseMode::Custom);
 		});
 		mBtnGroup->GetTransform().TranslateToX(100);
 	};

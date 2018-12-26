@@ -20,7 +20,7 @@ namespace XGF
 		void Initialize(GDI * gdi, Font * font, int MaxCount);
 		void Shutdown();
 		void DrawString(const wchar_t * str, float x, float y, float z = 0.01f);
-		void DrawString(const wchar_t * str, SM::Color color, float x, float y, float z = 0.01f);
+		void DrawString(const wchar_t * str, Color color, float x, float y, float z = 0.01f);
 		
 		template <typename T>
 		DEPRECATED("Please use DrawString")
@@ -29,17 +29,17 @@ namespace XGF
 			std::wstringstream  strk;
 			strk.str(str);
 			strk << c;
-			DrawString(strk.str().c_str(), SM::Color(1.0f, 1.0f, 1.0f, 1.0f), x, y);
+			DrawString(strk.str().c_str(), Color(1.0f, 1.0f, 1.0f, 1.0f), x, y);
 		}
 
 		DEPRECATED("Please use DrawString")
 		void DrawStringEx(float x, float y, const wchar_t * str, ...);
 
 		DEPRECATED("Please use DrawString")
-		void DrawStringEx(float x, float y, SM::Color color, const wchar_t * str, ...);
+		void DrawStringEx(float x, float y, Color color, const wchar_t * str, ...);
 		//äÖÈ¾×Ö·û´® ÑÕÉ«£¬äÖÈ¾ÏÞ¶¨¾ØÐÎ£¬±ä»»¾ØÕó
-		void DrawString(const wchar_t * str, SM::Color color, const Shape::Rectangle * ppe, const SM::Matrix * matrix);
-		Position DrawStringRtPosition(const wchar_t * str, SM::Color color, const Shape::Rectangle * ppe, const SM::Matrix * matrix, int pos);
+		void DrawString(const wchar_t * str, Color color, const Shape::Rectangle * ppe, const SM::Matrix * matrix);
+		Position DrawStringRtPosition(const wchar_t * str, Color color, const Shape::Rectangle * ppe, const SM::Matrix * matrix, int pos);
 		int GetFontSize();
 		TextLayoutShaper & GetLayoutShaper() { return mLayoutShaper; }
 		Font & GetFont() { return *mFont; };

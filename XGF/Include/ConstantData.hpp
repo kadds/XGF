@@ -15,33 +15,27 @@ namespace XGF
 		void Initialize(GDI * gdi);//¶¥²ã´°¿Ú
 		void Shutdown();
 
-		Shaders GetFontShaders() { return mFontShaders; }
-		Shaders GetPTShaders() { return mPTShaders; }
-		Shaders GetPCShaders() { return mPCShaders; }
-		Shaders GetBasicShaders() { return mBasicShaders; }
-		Shaders GetPCTShaders() { return mPCTShaders; }
+		Shaders GetPositionShader() { return mShaders[0]; }
+		Shaders GetPositionTextureShader() { return mShaders[1]; }
+		Shaders GetPositionColorShader() { return mShaders[2]; }
+		Shaders GetPositionNormalShader() { return mShaders[3]; }
+		Shaders GetPositionTextureColorShader() { return mShaders[4]; }
+		Shaders GetPositionAlphaTextureColorShader() { return mShaders[5]; }
+		Shaders GetPositionNormalTextureShader() { return mShaders[6]; }
+		Shaders GetPositionNormalColorShader() { return mShaders[7]; }
+		Shaders GetPositionNormalTextureColorShader() { return mShaders[8]; }
+
 		static ConstantData & GetInstance() {
 			return mConstantData;
 		};
 		ID3D11ShaderResourceView * GetRandomSRV() { return mRandomSRV; };
 	private:
-		VertexShader mFontVShader;
-		PixelShader mFontPShader;
-		VertexShader mPTVShader;
-		PixelShader mPTPShader;
-		VertexShader mPCVShader;
-		PixelShader mPCPShader;
-		VertexShader mPCTVShader;
-		PixelShader mPCTPShader;
+		static const int mMaxConstantShaderCount = 9;
+		static const std::string mFileNames[mMaxConstantShaderCount];
+		VertexShader mVShader[mMaxConstantShaderCount];
+		PixelShader mPShader[mMaxConstantShaderCount];
 
-		VertexShader mBasicVShader;
-		PixelShader mBasicPShader;
-
-		Shaders mFontShaders;
-		Shaders mPTShaders;
-		Shaders mPCShaders;
-		Shaders mPCTShaders;
-		Shaders mBasicShaders;
+		Shaders mShaders[mMaxConstantShaderCount];
 
 		ID3D11ShaderResourceView * mRandomSRV;
 		static ConstantData mConstantData;

@@ -15,7 +15,7 @@ namespace XGF
 	void AxisRenderer::Initialize(GDI * gdi, float len)
 	{
 		auto p = DirectX::XMMatrixIdentity();
-		mBatch.Initialize(gdi, ConstantData::GetInstance().GetPCShaders(), 2 * 3 * 2, 2 * 3 * 2, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+		mBatch.Initialize(gdi, ConstantData::GetInstance().GetPositionColorShader(), 2 * 3 * 2, 2 * 3 * 2, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 		mBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthEnable);
 		mBatch.GetShaderStage()->SetBlendState(BlendState::NoneBlend);
 		
@@ -61,6 +61,7 @@ namespace XGF
 		bbr.AddPlaceHolder();
 		bbr.AddBinder(cbb);
 		int i = 0;
+		mBatch.GetShaderStage()->SetPSConstantBuffer(0, Color(1.f, 1.f, 1.f, 1.f));
 		std::for_each(lines.begin(), lines.end(), [this, &cbb, &i, &bbr](std::unique_ptr<Shape::Line> &var) {
 			cbb->Set(0, mColor[i]);
 

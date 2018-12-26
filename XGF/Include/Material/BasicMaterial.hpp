@@ -29,7 +29,7 @@ namespace XGF::Shape
 	public:
 		BasicMaterial(const SM::Color & color, Texture * basicTexture = nullptr) : basicColor(color), basicMap(basicTexture), dFlag(true)
 		{
-			mShaders = ConstantData::GetInstance().GetBasicShaders();
+			mShaders = ConstantData::GetInstance().GetPositionNormalTextureShader();
 		}
 		virtual ~BasicMaterial() {};
 

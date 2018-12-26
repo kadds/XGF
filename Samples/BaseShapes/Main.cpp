@@ -69,7 +69,7 @@ public:
 		mFont.Initialize(gdi, Tools::GetFontPath(L"msyh"), 16);
 		mTextRenderer.Initialize(gdi, &mFont, 240);
 
-		mTextureBatch.Initialize(gdi, ConstantData::GetInstance().GetPTShaders(), 200, 400);
+		mTextureBatch.Initialize(gdi, ConstantData::GetInstance().GetPositionTextureShader(), 200, 400);
 		mTextureBatch.GetShaderStage()->SetBlendState(BlendState::AddZeroOneAdd);
 		mTextureBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthDisable);
 		mRenderToTexture.Initialize(gdi, gdi->GetWidth(), gdi->GetHeight());
@@ -121,6 +121,7 @@ public:
 		mTextRenderer.DrawString(str.c_str(), 4, 4);
 		mTextRenderer.End();
 		mTextureBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
+		mTextureBatch.GetShaderStage()->SetPSConstantBuffer(0, Color(1.f, 1.f, 1.f, 1.f));
 		mTextureBatch.Begin();
 		mTextureBatch.GetShaderStage()->SetPSSRV(0, mRenderToTexture.GetShaderResourceView());
 		mTextureBatch.DrawPolygon(mRc.mPolygonPleIndex, bb);
