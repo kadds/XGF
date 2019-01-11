@@ -1,6 +1,7 @@
 #define _XGF_DEBUG_ALLOC
 #include "./../../XGF/Include/XGF.h"
 #include <fmt/format.h>
+#include <iostream>
 using namespace XGF;
 #include <iomanip>
 #define _CRTDBG_MAP_ALLOC  
@@ -39,7 +40,9 @@ public:
 	virtual ~GameScene() {};
 	void MyRender(WVPMatrix & wvp, bool end)
 	{
-		GetFramework().ClearDepthStencilBuffer();
+		auto & context = Context::Current();
+
+		context.QueryGraphicsDeviceInterface().Clear(Color(0, 0, 0, 1));
 		mShapeRenderer.DrawCircle(240, 240, 40, GetPrecision(40, 5), 0.01f, Color(1.f, 1.f, 0.f, 1.f), Color(0.f, 1.f, 0.f, 1.f));
 		mTextRenderer.DrawString(L"Circle", 200, 180);
 		mShapeRenderer.DrawRectangleC(50, 50, 100, 100, 0.1f, Color(1.f, 0.f, 0.0f, 1.f), 8.f, Color(0.f, 0.f, 1.f, 1.f), Color(0.f, 1.f, 0.f, 1.f));
@@ -63,18 +66,18 @@ public:
 			mTextRenderer.Flush();
 		}
 	};
-	virtual void OnCreate(GDI * gdi) override
+	virtual void OnCreate() override
 	{
-		mShapeRenderer.Initialize(gdi);
-		mFont.Initialize(gdi, Tools::GetFontPath(L"msyh"), 16);
-		mTextRenderer.Initialize(gdi, &mFont, 240);
-
-		mTextureBatch.Initialize(gdi, ConstantData::GetInstance().GetPositionTextureShader(), 200, 400);
+		mShapeRenderer.Initialize();
+		mFont.Initialize(Tools::GetFontPath(L"msyh"), 16);
+		mTextRenderer.Initialize(&mFont, 240);
+		auto & context = Context::Current();
+		mTextureBatch.Initialize(context.QueryShaderManager().GetBasicShaders(false, true, false), 200, 400);
 		mTextureBatch.GetShaderStage()->SetBlendState(BlendState::AddZeroOneAdd);
 		mTextureBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthDisable);
-		mRenderToTexture.Initialize(gdi, gdi->GetWidth(), gdi->GetHeight());
+		mRenderToTexture.Initialize(context.QueryGraphicsDeviceInterface().GetWidth(), context.QueryGraphicsDeviceInterface().GetHeight());
 
-		mRc.SetPositionAndSize(0, gdi->GetHeight() - 100.f, 130.f, 100.f);
+		mRc.SetPositionAndSize(0, context.QueryGraphicsDeviceInterface().GetHeight() - 100.f, 130.f, 100.f);
 		mRc.SetZ(0.001f);
 		mTime = 0.f;
 	};
@@ -88,7 +91,9 @@ public:
 	};
 	virtual void Render(float deltaTime) override
 	{
-		Clear(Color(0.5f, 0.5f, 0.5f, 1.0f));
+		auto & context = Context::Current();
+
+		context.QueryGraphicsDeviceInterface().Clear(Color(0.5, 0.5, 0.5, 1));
 		WVPMatrix wvp;
 		mCamera.GetCameraMatrix(wvp);
 		mShapeRenderer.Begin(wvp);
@@ -136,9 +141,9 @@ public:
 	};
 	virtual void Update(float deltaTime) override
 	{
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
 		if (GetFramework().GetInputManager().IskeyDown(DIK_F11) && mTime >= 5.f)
 		{
-			auto & gdi = GetFramework().GetGDI();
 			if (!gdi.IsFullScreen())
 				gdi.SetDisplayMode(DisplayMode::FullScreen, 0, 0, 1440, 900, false, true);
 			else
@@ -154,10 +159,10 @@ public:
 	};
 	virtual void OnSize(int ClientX, int ClientY) override
 	{
-		auto & gdi = GetFramework().GetGDI();
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
 		mCamera.UpdateProject(ClientX, ClientY);
 		mRenderToTexture.Shutdown();
-		mRenderToTexture.Initialize(&gdi, gdi.GetWidth(), gdi.GetHeight());
+		mRenderToTexture.Initialize(gdi.GetWidth(), gdi.GetHeight());
 		mRc.SetPositionAndSize(0.f, ClientY * 2 / 3.f, ClientX / 3.f, ClientY / 3.f);
 	};
 

@@ -3,6 +3,8 @@
 #include "../../Include/GDI.hpp"
 #include "../../Include/Tools.hpp"
 #include <fstream>  
+#include "../../Include/Context.hpp"
+
 namespace XGF
 {
 	Font::Font() :mShaderResourceView(nullptr), mFileBuffer(nullptr)
@@ -14,9 +16,8 @@ namespace XGF
 	{
 	}
 
-	bool Font::Initialize(GDI * gdi, const std::wstring & name, int fontSize)
+	bool Font::Initialize(const std::wstring & name, int fontSize)
 	{
-		mGDI = gdi;
 		FT_Error    error = 0;
 		error = FT_Init_FreeType(&pFTLib);
 		if (error)
@@ -55,6 +56,7 @@ namespace XGF
 	}
 	void Font::CreateView()
 	{
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
 		D3D11_SUBRESOURCE_DATA __subData;
 		__subData.pSysMem = mBuffer;
 		__subData.SysMemPitch = mBufferWidth;
@@ -75,7 +77,7 @@ namespace XGF
 		Tex2Dtdesc.CPUAccessFlags = 0;
 		Tex2Dtdesc.MiscFlags = 0;
 
-		XGF_Error_Check(Application, mGDI->GetDevice()->CreateTexture2D(&Tex2Dtdesc, &__subData, &mTexture), "CreateTexture2D at font class failed");
+		XGF_Error_Check(Application, gdi.GetDevice()->CreateTexture2D(&Tex2Dtdesc, &__subData, &mTexture), "CreateTexture2D at font class failed");
 
 		PutDebugString(mTexture);
 		D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
@@ -84,7 +86,7 @@ namespace XGF
 		viewDesc.Texture2D.MipLevels = Tex2Dtdesc.MipLevels;
 		viewDesc.Texture2D.MostDetailedMip = 0;
 
-		XGF_Error_Check(Application, mGDI->GetDevice()->CreateShaderResourceView(mTexture, &viewDesc, &mShaderResourceView), "Create font SRV failed");
+		XGF_Error_Check(Application, gdi.GetDevice()->CreateShaderResourceView(mTexture, &viewDesc, &mShaderResourceView), "Create font SRV failed");
 		PutDebugString(mShaderResourceView);
 
 	}
@@ -125,7 +127,9 @@ namespace XGF
 		}
 		int ascender = pFTFace->size->metrics.ascender >> 6;
 		FT_Glyph glyph;
-		auto device = ((GDI *)(mGDI))->GetDevice();
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
+
+		auto device = gdi.GetDevice();
 		FT_Load_Glyph(pFTFace, FT_Get_Char_Index(pFTFace, ch), FT_LOAD_DEFAULT);
 		FT_Get_Glyph(pFTFace->glyph, &glyph);
 		FT_Render_Glyph(pFTFace->glyph, FT_RENDER_MODE_NORMAL);
@@ -160,7 +164,7 @@ namespace XGF
 		result->vy = static_cast<float>(-slot->bitmap_top + ascender);
 		map.insert(std::pair<wchar_t, PosSize  *>(ch, result));
 		FT_Done_Glyph(glyph);
-		mGDI->GetDeviceContext()->UpdateSubresource(mTexture, 0, NULL, mBuffer, mBufferWidth, 0);
+		gdi.GetDeviceContext()->UpdateSubresource(mTexture, 0, NULL, mBuffer, mBufferWidth, 0);
 
 		return result;
 	}

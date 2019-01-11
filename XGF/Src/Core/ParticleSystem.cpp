@@ -1,10 +1,10 @@
 #include "..\..\Include\ParticleSystem.hpp"
-#include "..\..\Include\ConstantData.hpp"
-#include "..\..\Include\ShaderConst.hpp"
 #include "..\..\Include\Texture.hpp"
 #include "..\..\Include\Tools.hpp"
 #include "..\..\Include\GDI.hpp"
 #include <algorithm>
+#include "../../Include/Context.hpp"
+
 namespace XGF
 {
 	using namespace DirectX;
@@ -79,34 +79,33 @@ namespace XGF
 		}
 	}
 
-	void ParticleFire::Initialize(GDI * gdi, int count, ParticleDevice device)
+	void ParticleFire::Initialize(int count, ParticleDevice device)
 	{
 		XGF_ASSERT(count > 0);
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
 		mTexture = nullptr;
 		if (device == ParticleDevice::Auto)
-			mUseCPU = (gdi->CheckFeatureLevel() < D3D_FEATURE_LEVEL_11_0);
+			mUseCPU = (gdi.CheckFeatureLevel() < D3D_FEATURE_LEVEL_11_0);
 		else if (device == ParticleDevice::CPU)
 			mUseCPU = true;
 		else mUseCPU = false;
 		if (!mUseCPU)//gpu
 		{
-			wchar_t buffer[MAX_PATH];
-			Tools::GetPathBy(L"../../fx/fx/ParticleCompute.fx", buffer, MAX_PATH);
-			mComputerShader.Initialize(gdi, buffer);
+			//wchar_t buffer[MAX_PATH];
 			mCgpu.Initialize(&mComputerShader, 10000);
 
-			mVertexShader.Initialize(gdi, ShaderConst::ParticleComputerDoVS, ShaderConst::ParticleComputerDoVSSize);
-			mGeometryShader.Initialize(gdi, ShaderConst::ParticleComputerDoGS, ShaderConst::ParticleComputerDoGSSize, false);
-			mPixelShader.Initialize(gdi, ShaderConst::ParticleComputerDoPS, ShaderConst::ParticleComputerDoPSSize);
+			//mVertexShader.Initialize(gdi, ShaderConst::ParticleComputerDoVS, ShaderConst::ParticleComputerDoVSSize);
+			//mGeometryShader.Initialize(gdi, ShaderConst::ParticleComputerDoGS, ShaderConst::ParticleComputerDoGSSize, false);
+			//mPixelShader.Initialize(gdi, ShaderConst::ParticleComputerDoPS, ShaderConst::ParticleComputerDoPSSize);
 		}
 		else
 		{
-			mVertexShader.Initialize(gdi, ShaderConst::ParticleFireworksVS, ShaderConst::ParticleFireworksVSSize);
-			mGeometryShader.Initialize(gdi, ShaderConst::ParticleFireworksGS, ShaderConst::ParticleFireworksGSSize, false);
-			mPixelShader.Initialize(gdi, ShaderConst::ParticleFireworksPS, ShaderConst::ParticleFireworksPSSize);
+			//mVertexShader.Initialize(gdi, ShaderConst::ParticleFireworksVS, ShaderConst::ParticleFireworksVSSize);
+			//mGeometryShader.Initialize(gdi, ShaderConst::ParticleFireworksGS, ShaderConst::ParticleFireworksGSSize, false);
+			//mPixelShader.Initialize(gdi, ShaderConst::ParticleFireworksPS, ShaderConst::ParticleFireworksPSSize);
 		}
 		mShaders = { &mVertexShader, &mPixelShader, &mGeometryShader };
-		mBatch.Initialize(gdi, mShaders, 4096, 0, D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
+		mBatch.Initialize(mShaders, 4096, 0, D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 		mBatch.GetShaderStage()->SetBlendState(BlendState::AddOneOneAdd);
 		mBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthDisable);
 		mBatch.GetShaderStage()->SetRasterizerState(RasterizerState::SolidAndCutNone);
@@ -142,7 +141,7 @@ namespace XGF
 		if (!mUseCPU)
 		{
 			mCgpu.SetCSSRV(0, mCgpu.GetUnorderedAccessViews(0)->srv);
-			mCgpu.SetCSSRV(1, ConstantData::GetInstance().GetRandomSRV());
+			//mCgpu.SetCSSRV(1, ConstantData::GetInstance().GetRandomSRV());
 			mCgpu.Bind();
 			mCgpu.Run(false);
 			mCgpu.UnBind();

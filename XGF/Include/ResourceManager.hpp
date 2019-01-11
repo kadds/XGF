@@ -2,11 +2,6 @@
 #include "Defines.hpp"
 #include "AsyncTask.hpp"
 #include <functional>
-#include <vector>
-#include <memory>
-#include <map>
-#include <functional>
-#include <unordered_map>
 #include <any>
 namespace XGF
 {
@@ -40,8 +35,8 @@ namespace XGF
 		
 		TextureResource * GetResource(const wchar_t * name);
 		TextureResource * GetResourceByAlias(const wchar_t * alias);
-		void LoadResourceAsync(GDI * gdi, std::vector<ResourceInfo> & infoArray, Asyn * gameThread,std::function<void(std::vector<ResourceInfo>, int success)> finishFunction);
-		void LoadResource(GDI * gdi, std::vector<ResourceInfo> & infoArray);
+		void LoadResourceAsync(std::vector<ResourceInfo> & infoArray, Asyn * gameThread,std::function<void(std::vector<ResourceInfo>, int success)> finishFunction);
+		void LoadResource(std::vector<ResourceInfo> & infoArray);
 
 		void ReleaseAllResource();
 

@@ -26,7 +26,7 @@ namespace XGF
 	public:
 		GridRenderer();
 		~GridRenderer();
-		void Initialize(GDI * gdi, float widthPreRect, float heightPreRect, unsigned xcount, unsigned zcount, const Point & origin = Point(0.f, 0.f, 0.f));
+		void Initialize(float widthPreRect, float heightPreRect, unsigned xcount, unsigned zcount, const Point & origin = Point(0.f, 0.f, 0.f));
 		void Shutdown();
 		//every frame call it
 		void Begin(const WVPMatrix & matrix);

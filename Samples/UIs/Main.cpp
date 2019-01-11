@@ -39,16 +39,16 @@ class GameScene :
 public:
 	GameScene() {};
 	virtual ~GameScene() {};
-	virtual void OnCreate(GDI * gdi) override
+	virtual void OnCreate() override
 	{
 		mBtnGroup = make_unique<Container>();
 		auto fname = Tools::GetFontPath(L"msyh");
-		mFont.Initialize(gdi, fname, 16);
-		mFont_s.Initialize(gdi, fname, 12);
-		mFont_b.Initialize(gdi, fname, 20);
-		mUITextRenderer.Initialize(gdi, &mFont, 1000);
-		mTextRenderer_s.Initialize(gdi, &mFont_s, 1000);
-		mTextRenderer_b.Initialize(gdi, &mFont_b, 200);
+		mFont.Initialize(fname, 16);
+		mFont_s.Initialize(fname, 12);
+		mFont_b.Initialize(fname, 20);
+		mUITextRenderer.Initialize(&mFont, 1000);
+		mTextRenderer_s.Initialize(&mFont_s, 1000);
+		mTextRenderer_b.Initialize(&mFont_b, 200);
 		auto & framework = GetFramework();
 		framework.GetUIBatches().SetTextRenderer(FontSize::Default, &mUITextRenderer);
 		GetRootContainer().AddChild(mBtnGroup);
@@ -82,9 +82,9 @@ public:
 
 		buttonux->SetPositionAndSize(10, 100, 60, 40);
 		buttonux->SetBorderSize(2);
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
 		buttonux->SetZ(0.07f);
-		buttonux->GetClickHelper().AddOnClickListener([this](auto, const MousePoint & ms, int mouseButton) {
-			auto & gdi = GetFramework().GetGDI();
+		buttonux->GetClickHelper().AddOnClickListener([this, &gdi](auto, const MousePoint & ms, int mouseButton) {
 			if (gdi.GetDisplayMode() == DisplayMode::Borderless)
 				gdi.SetDisplayMode(DisplayMode::Windowed, 0, 0, 600, 400, false);
 			else if (gdi.GetDisplayMode() == DisplayMode::FullScreen)
@@ -114,7 +114,7 @@ public:
 		res.push_back(ResourceInfo(L"_activate.png", L"activate"));
 		res.push_back(ResourceInfo(L"cursor.png", L"cursor"));
 
-		mTextureResourceManager.LoadResourceAsync(gdi, res, &GetFramework().GetThread(), [this](std::vector<ResourceInfo> ress, int success) {
+		mTextureResourceManager.LoadResourceAsync(res, &GetFramework().GetThread(), [this](std::vector<ResourceInfo> ress, int success) {
 			if (success < 4) return;
 			auto t1 = Texture(*mTextureResourceManager.GetResourceByAlias(L"normal"));
 			auto t2 = Texture(*mTextureResourceManager.GetResourceByAlias(L"hover"));
@@ -151,30 +151,32 @@ public:
 	};
 	virtual void Render(float deltaTime) override
 	{
-		Clear(SM::Color(0.5f, 0.5f, 0.5f, 1.0f));
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
+
+		gdi.Clear(Color(0.5f, 0.5f, 0.5f, 1.0f));
 		WVPMatrix wvp2D;
 		mCamera2D.GetCameraMatrix(wvp2D);
 
 		auto debug = DebugInscriber::GetInstance();
 		mTextRenderer_s.Begin(wvp2D);
-
+		auto height = gdi.GetHeight();
 		std::wstring costStr = fmt::format(L"IndicesRenderCountPerFrame:{0}", debug->GetIndicesRenderCountPerFrame());
 		auto & framework = GetFramework();
-		mTextRenderer_s.DrawString(costStr.c_str(), 2.f, static_cast<float>(framework.GetWindowsHeight() - 80));
+		mTextRenderer_s.DrawString(costStr.c_str(), 2.f, static_cast<float>(height - 80));
 		costStr = fmt::format(L"IndicesRenderCountPerSecond:{0}", debug->GetIndicesRenderCountPerSecond());
-		mTextRenderer_s.DrawString(costStr.c_str(), 300.f, static_cast<float>(framework.GetWindowsHeight() - 80));
+		mTextRenderer_s.DrawString(costStr.c_str(), 300.f, static_cast<float>(height - 80));
 		costStr = fmt::format(L"VerticesRenderCountPerFrame:{0}", debug->GetVerticesRenderCountPerFrame());
-		mTextRenderer_s.DrawString(costStr.c_str(), 2.f, static_cast<float>(framework.GetWindowsHeight() - 60));
+		mTextRenderer_s.DrawString(costStr.c_str(), 2.f, static_cast<float>(height - 60));
 		costStr = fmt::format(L"VerticesRenderCountPerSecond:{0}", debug->GetVerticesRenderCountPerSecond());
-		mTextRenderer_s.DrawString(costStr.c_str(), 300.f, static_cast<float>(framework.GetWindowsHeight() - 60));
+		mTextRenderer_s.DrawString(costStr.c_str(), 300.f, static_cast<float>(height - 60));
 		costStr = fmt::format(L"CallBatchPerFrame:{0}", debug->GetCallBatchPerFrame());
-		mTextRenderer_s.DrawString(costStr.c_str(), 2.f, static_cast<float>(framework.GetWindowsHeight() - 40));
+		mTextRenderer_s.DrawString(costStr.c_str(), 2.f, static_cast<float>(height  - 40));
 		costStr = fmt::format(L"CallBatchPerSecond:{0}", debug->GetCallBatchPerSecond());
-		mTextRenderer_s.DrawString(costStr.c_str(), 300.f, static_cast<float>(framework.GetWindowsHeight() - 40));
+		mTextRenderer_s.DrawString(costStr.c_str(), 300.f, static_cast<float>(height - 40));
 		costStr = fmt::format(L"PolygonRenderCountPerSecond:{0}", debug->GetPolygonRenderCountPerSecond());
-		mTextRenderer_s.DrawString(costStr.c_str(), 300.f, static_cast<float>(framework.GetWindowsHeight() - 20));
+		mTextRenderer_s.DrawString(costStr.c_str(), 300.f, static_cast<float>(height - 20));
 		costStr = fmt::format(L"PolygonRenderCountPerFrame:{0}", debug->GetPolygonRenderCountPerFrame());
-		mTextRenderer_s.DrawString(costStr.c_str(), 2.f, static_cast<float>(framework.GetWindowsHeight() - 20));
+		mTextRenderer_s.DrawString(costStr.c_str(), 2.f, static_cast<float>(height - 20));
 
 		mTextRenderer_s.End();
 

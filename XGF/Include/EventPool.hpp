@@ -2,7 +2,6 @@
 #include "Defines.hpp"
 #include "StateList.hpp"
 #include "Event.hpp"
-#include <memory>
 #include <any>
 
 namespace XGF
@@ -13,7 +12,7 @@ namespace XGF
 		static void Initialize(unsigned int count);
 		static void Shutdown();
 		static Event& CreateAEvent(EventIdType id, EventGroupType evGroup, std::initializer_list<EventDataType>);
-		//maxLiveTime:最大生存时间， ms计 以0为开始计时
+
 		static Event& CreateAEvent(EventIdType id, EventGroupType evGroup, int frameLimit, long maxLiveTime, std::initializer_list<EventDataType>);
 
 		static Event& GetNullEvent();

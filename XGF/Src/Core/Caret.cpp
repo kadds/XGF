@@ -1,5 +1,6 @@
 #include "..\..\Include\Caret.hpp"
-#include "..\..\Include\ConstantData.hpp"
+#include "../../Include/Context.hpp"
+#include "../../Include/ShaderManager.hpp"
 
 namespace XGF
 {
@@ -13,10 +14,10 @@ namespace XGF
 	{
 	}
 
-	void Caret::Initialize(GDI * gdi)
+	void Caret::Initialize()
 	{
 		mIsCaretShow = false;
-		mColorBatch.Initialize(gdi, ConstantData::GetInstance().GetPositionColorShader(), 16, 16, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+		mColorBatch.Initialize(Context::Current().QueryShaderManager().GetBasicShaders(false, false, true), 16, 16, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 		mColorBatch.GetShaderStage()->SetBlendState(BlendState::AddOneOneAdd);
 		mColorBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthDisable);
 		

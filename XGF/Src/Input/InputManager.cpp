@@ -1,5 +1,7 @@
 #include "..\..\Include\InputManager.hpp"
 #include "../../Include/Application.hpp"
+#include "../../Include/Context.hpp"
+
 namespace XGF
 {
 	InputManager::InputManager() :mFocus(nullptr), mHasSetFocus(false)
@@ -11,14 +13,15 @@ namespace XGF
 	{
 	}
 
-	bool InputManager::Initialize(GDI * gdi, HINSTANCE hs, HWND hwnd, Asyn * a)
+	bool InputManager::Initialize()
 	{
-		if (!dinput.Initialize(hs, hwnd))
+		if (!dinput.Initialize())
 			return false;
-		dinput.DoEvent(a);
-		mHwnd = hwnd;
-		mCaret.Initialize(gdi);
-		mCursor.Initialize(gdi);
+		auto & thread = Context::Current().QueryGameThread();
+		dinput.DoEvent(&thread);
+		mHwnd = Context::Current().QueryGraphicsDeviceInterface().GetTopHwnd();
+		mCaret.Initialize();
+		mCursor.Initialize();
 		mCaretPosInText = 0;
 		mCamera.SetMinDistance(0.00001f);
 		SetMouseMode(MouseMode::Default);

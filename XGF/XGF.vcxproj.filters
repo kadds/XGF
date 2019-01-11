@@ -52,8 +52,11 @@
     <Filter Include="头文件\Material">
       <UniqueIdentifier>{ec34a47b-0f60-455f-9419-6f3a3925e3bc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="源文件\Shape\Mapping">
-      <UniqueIdentifier>{93a0f23d-ef04-4023-a616-e80e2185bd8d}</UniqueIdentifier>
+    <Filter Include="源文件\Shape\Light">
+      <UniqueIdentifier>{d7cb9e9e-6e5c-43c3-b67f-c84d5e3aa171}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Light">
+      <UniqueIdentifier>{4db70718-d768-4f2e-99cc-b06d5fb8a800}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -183,9 +186,6 @@
     <ClInclude Include="Include\RectangleB.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Include\ShaderConst.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Batches.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -220,9 +220,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\GridRenderer.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\ConstantData.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\Caret.hpp">
@@ -310,6 +307,36 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\Geometry\SphereGeometry.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Material\PhongMaterial.hpp">
+      <Filter>头文件\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Light\Light.hpp">
+      <Filter>头文件\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Light\DirectionalLight.hpp">
+      <Filter>头文件\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Light\PointLight.hpp">
+      <Filter>头文件\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Light\SpotLight.hpp">
+      <Filter>头文件\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Light\AmbientLight.hpp">
+      <Filter>头文件\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ShaderManager.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Material\LightMaterial.hpp">
+      <Filter>头文件\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Material\LambertMaterial.hpp">
+      <Filter>头文件\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Context.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -422,9 +449,6 @@
     <ClCompile Include="Src\Shape\RectangleB.cpp">
       <Filter>源文件\Shape</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Core\ShaderConst.cpp">
-      <Filter>源文件\Core</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Core\Batches.cpp">
       <Filter>源文件\Core</Filter>
     </ClCompile>
@@ -454,9 +478,6 @@
     </ClCompile>
     <ClCompile Include="Src\Tools\GridRenderer.cpp">
       <Filter>源文件\Tools</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Core\ConstantData.cpp">
-      <Filter>源文件\Core</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\Caret.cpp">
       <Filter>源文件\Core</Filter>
@@ -544,6 +565,36 @@
     </ClCompile>
     <ClCompile Include="Src\Shape\Geometry\SphereGeometry.cpp">
       <Filter>源文件\Shape\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Shape\Material\PhongMaterial.cpp">
+      <Filter>源文件\Shape\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Shape\Light\Light.cpp">
+      <Filter>源文件\Shape\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\ShaderManager.cpp">
+      <Filter>源文件\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Shape\Material\LightMaterial.cpp">
+      <Filter>源文件\Shape\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Shape\Material\LambertMaterial.cpp">
+      <Filter>源文件\Shape\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Shape\Light\AmbientLight.cpp">
+      <Filter>源文件\Shape\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Shape\Light\DirectionalLight.cpp">
+      <Filter>源文件\Shape\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Shape\Light\PointLight.cpp">
+      <Filter>源文件\Shape\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Shape\Light\SpotLight.cpp">
+      <Filter>源文件\Shape\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\Context.cpp">
+      <Filter>源文件\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -3,30 +3,34 @@
 namespace XGF
 {
 	class Batch;
-	class GDI;
 	namespace Shape 
 	{
-		
+		class Light;
+
 		class Mesh;
 		
 		class MeshRenderer
 		{
 		public:
-			void Initialize(GDI * gdi);
+			void Initialize();
 			void Shutdown();
 			MeshRenderer();
 			~MeshRenderer();
 			void Add(Mesh * mesh);
 			void Remove(Mesh * mesh);
+			void Add(Light * light);
+			void Remove(Light * light);
 
 			void Begin(const WVPMatrix & wvp);
-			void Draw();
+			void Draw(const Point & cameraPosition);
 			void End();
 
+			void RefreshLightMesh();
 		private:
+			void CastLight(Mesh* mesh);;
 			std::vector<std::pair<std::vector<Mesh *>, ::XGF::Batch *>> mRendererGroup;
-
-			GDI * mGDI;
+			std::vector<Mesh *> mNullRendererGroup;
+			std::vector<Light *> mLights;
 
 		};
 

@@ -3,6 +3,8 @@
 #include "../../Include/Logger.hpp"
 #include "../../Include/Buffer.hpp"
 #include <numeric>
+#include "../../Include/Context.hpp"
+
 namespace XGF {
 	Shader::Shader()
 	{
@@ -69,7 +71,23 @@ namespace XGF {
 				mUAVInfo.push_back(uav);
 			}
 		}
-
+		// 按slot 排序
+		std::sort(mCBufferInfo.begin(), mCBufferInfo.end(), [](const CBufferInfo & v1, const CBufferInfo & v2)
+		{
+			return v1.slot < v2.slot;
+		});
+		std::sort(mTexture2D.begin(), mTexture2D.end(), [](const TextureInfo & v1, const TextureInfo & v2)
+		{
+			return v1.slot < v2.slot;
+		});
+		std::sort(mSamplerState.begin(), mSamplerState.end(), [](const SamplerInfo & v1, const SamplerInfo & v2)
+		{
+			return v1.slot < v2.slot;
+		});
+		std::sort(mUAVInfo.begin(), mUAVInfo.end(), [](const UAVInfo & v1, const UAVInfo & v2)
+		{
+			return v1.slot < v2.slot;
+		});
 		
 	}
 	unsigned int Shader::GetCBufferSize(unsigned int index)
@@ -79,10 +97,6 @@ namespace XGF {
 	unsigned int Shader::GetCBufferCount()
 	{
 		return static_cast<unsigned int>(mCBufferInfo.size());
-	}
-	GDI * Shader::GetGDI()
-	{
-		return mGDI;
 	}
 
 	unsigned int Shader::GetCBufferSlot(unsigned int index)
@@ -110,28 +124,14 @@ namespace XGF {
 		return mTexture2D[index].slot;
 	}
 
+	const std::string ComputeShader::mEntrypoint = "VS";
+	const std::string ComputeShader::mPerfixName = "vs_";
 
-	void ComputeShader::Initialize(GDI * gdi, const wchar_t * CSname)
+	void ComputeShader::Initialize(const unsigned char * CScode, unsigned int codeLen)
 	{
-		
-		ID3DBlob* pErrorBlob = nullptr;
-		ID3DBlob* pComputerBlob = nullptr;
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
 
-		HRESULT hr = D3DCompileFromFile(CSname, NULL,
-			NULL, "CS", gdi->CheckFeatureLevel() >= D3D_FEATURE_LEVEL_11_0 ? "cs_5_0" : "cs_4_0", 0, 0, &pComputerBlob, &pErrorBlob);
-		if (FAILED(hr))
-			if (pErrorBlob == nullptr)
-				XGF_Error(IO, "ComputeShader file not find", Logger::WCharToChar(CSname));
-			else
-				XGF_Error_Check(Shader, hr, std::string((const char *) pErrorBlob->GetBufferPointer()));
-		Initialize(gdi, static_cast<unsigned char *>(pComputerBlob->GetBufferPointer()), static_cast<unsigned int>(pComputerBlob->GetBufferSize()));
-		pComputerBlob->Release();
-	}
-
-	void ComputeShader::Initialize(GDI * gdi, const unsigned char * CScode, unsigned int codeLen)
-	{
-		mGDI = gdi;
-		XGF_Error_Check(IO, gdi->GetDevice()->CreateComputeShader(CScode,
+		XGF_Error_Check(IO, gdi.GetDevice()->CreateComputeShader(CScode,
 			codeLen, nullptr, &mComputeShader), "Create ComputeShader failed");
 		ID3D11ShaderReflection *reflector;
 		D3DReflect(CScode, codeLen, IID_ID3D11ShaderReflection, (void **)&reflector);
@@ -145,160 +145,116 @@ namespace XGF {
 		mComputeShader->Release();
 	}
 
-	void PixelShader::Initialize(GDI * gdi, const wchar_t * PSname)
+	const std::string& ComputeShader::GetEntrypoint()
 	{
-		ID3DBlob* pErrorBlob = nullptr;
-		ID3DBlob* pPixelBlob = nullptr;
-
-		HRESULT hr = D3DCompileFromFile(PSname, NULL,
-			NULL, "PS", "ps_4_0", 0, 0, &pPixelBlob, &pErrorBlob);
-		if (FAILED(hr))
-			if (pErrorBlob == nullptr)
-				XGF_Error(IO, "Pixel Shader file not find", Logger::WCharToChar(PSname));
-			else
-				XGF_Error_Check(Shader, hr, std::string((const char *) pErrorBlob->GetBufferPointer()));
-		Initialize(gdi, static_cast<unsigned char *>(pPixelBlob->GetBufferPointer()), static_cast<unsigned int>(pPixelBlob->GetBufferSize()));
-		pPixelBlob->Release();
+		return mEntrypoint;
 	}
 
-	void PixelShader::Initialize(GDI * gdi, const unsigned char * PScode, unsigned int codeLen)
+	const std::string& ComputeShader::GetPrefixName()
 	{
-		XGF_Error_Check(IO, gdi->GetDevice()->CreatePixelShader(PScode,
+		return mPerfixName;
+	}
+
+	void PixelShader::Initialize(const unsigned char * PScode, unsigned int codeLen)
+	{
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
+
+		XGF_Error_Check(IO, gdi.GetDevice()->CreatePixelShader(PScode,
 			codeLen, NULL, &mPixelShader), "Create pixel shader failed");
 		PutDebugString(mPixelShader);
 		ID3D11ShaderReflection *reflector;
 		D3DReflect(PScode, codeLen, IID_ID3D11ShaderReflection, (void **)&reflector);
 		ReflectStage(reflector);
 		reflector->Release();
-		mGDI = gdi;
-	}
-
-	void PixelShader::Initialize(GDI* gdi, const unsigned char* PSTextCode, unsigned textCodeLen, const char* fMark)
-	{
-		ID3DBlob* pErrorBlob = nullptr;
-		ID3DBlob* pPixelBlob = nullptr;
-		HRESULT hr = D3DCompile(PSTextCode, textCodeLen, fMark,
-			NULL, NULL, "PS", "ps_4_0", 0, 0, &pPixelBlob, &pErrorBlob);
-		if (FAILED(hr))
-			if (pErrorBlob == nullptr)
-				XGF_Error(IO, "Pixel Shader file not find", fMark);
-			else
-				XGF_Error_Check(Shader, hr, std::string((const char *)pErrorBlob->GetBufferPointer()));
-		Initialize(gdi, static_cast<unsigned char *>(pPixelBlob->GetBufferPointer()), static_cast<unsigned int>(pPixelBlob->GetBufferSize()));
-		pPixelBlob->Release();
 	}
 
 	void PixelShader::Shutdown()
 	{
 		mPixelShader->Release();
 	}
-
-	void VertexShader::Initialize(GDI * gdi, const wchar_t * VSname, unsigned int interval)
+	const std::string PixelShader::mEntrypoint = "PS";
+	const std::string PixelShader::mPerfixName = "ps_";
+	const std::string & PixelShader::GetEntrypoint()
 	{
-		ID3DBlob* pErrorBlob = nullptr;
-		ID3DBlob* pVertexBlob = nullptr;
-		mGDI = gdi;
-
-		HRESULT hr = D3DCompileFromFile(VSname, NULL,
-			NULL, "VS", "vs_4_0", 0, 0, &pVertexBlob, &pErrorBlob);
-		if (FAILED(hr))
-			if (pErrorBlob == nullptr)
-				XGF_Error(IO, "Vertex Shader file not find", Logger::WCharToChar(VSname));
-			else
-				XGF_Error_Check(Shader, hr, std::string((const char *) pErrorBlob->GetBufferPointer()));
-		Initialize(gdi, (unsigned char *)pVertexBlob->GetBufferPointer(), (int)pVertexBlob->GetBufferSize(), interval);
-		
-		pVertexBlob->Release();
+		return mEntrypoint;
 	}
 
-	void VertexShader::Initialize(GDI* gdi, const unsigned char* VSTextCode, unsigned int textCodeLen, const char * fMark, unsigned int interval)
+	const std::string & PixelShader::GetPrefixName()
 	{
-		ID3DBlob* pErrorBlob = nullptr;
-		ID3DBlob* pVertexBlob = nullptr;
-		mGDI = gdi;
-
-		HRESULT hr = D3DCompile(VSTextCode, textCodeLen, fMark,
-			NULL, NULL,  "VS", "vs_4_0", 0, 0, &pVertexBlob, &pErrorBlob);
-		if (FAILED(hr))
-			if (pErrorBlob == nullptr)
-				XGF_Error(IO, "Vertex Shader file not find ", fMark);
-			else
-				XGF_Error_Check(Shader, hr, std::string((const char *)pErrorBlob->GetBufferPointer()));
-		Initialize(gdi, (unsigned char *)pVertexBlob->GetBufferPointer(), (int)pVertexBlob->GetBufferSize(), interval);
-
-		pVertexBlob->Release();
+		return mPerfixName;
 	}
 
-	void VertexShader::Initialize(GDI * gdi, const unsigned char * VScode, unsigned int codeLen, unsigned int interval)
+	void VertexShader::Initialize(const unsigned char * VScode, unsigned int codeLen, unsigned int interval)
 	{
-		XGF_Error_Check(IO, gdi->GetDevice()->CreateVertexShader(VScode,
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
+
+		XGF_Error_Check(IO, gdi.GetDevice()->CreateVertexShader(VScode,
 			codeLen, NULL, &mVertexShader), "Create vertex shader failed");
 		PutDebugString(mVertexShader);
-		mGDI = gdi;
+
 		ID3D11ShaderReflection *reflector;
 		D3DReflect(VScode, codeLen, IID_ID3D11ShaderReflection, (void **)&reflector);
 		D3D11_SIGNATURE_PARAMETER_DESC desc;
-		int i = 0;
 		D3D11_SHADER_DESC ShaderDesc;
 		reflector->GetDesc(&ShaderDesc);
 		unsigned int layoutCount = ShaderDesc.InputParameters;
-		D3D11_INPUT_ELEMENT_DESC *d3dlayout = new D3D11_INPUT_ELEMENT_DESC[layoutCount];
-		
+		auto layouts = std::vector < D3D11_INPUT_ELEMENT_DESC>(layoutCount);
+		mInputElements.clear();
 		int inputSlot = 0;
 		mSlotElementStartPosition.push_back(0);
 		for(unsigned int i = 0 ; i < layoutCount; i++)
 		{
 			unsigned int stride = 0;
 			reflector->GetInputParameterDesc(i, &desc);
-			d3dlayout[i].SemanticName = desc.SemanticName;
-			d3dlayout[i].SemanticIndex = desc.SemanticIndex;
-			d3dlayout[i].InputSlot = inputSlot;
-			d3dlayout[i].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
-			d3dlayout[i].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-			d3dlayout[i].InstanceDataStepRate = 0;
+			layouts[i].SemanticName = desc.SemanticName;
+			layouts[i].SemanticIndex = desc.SemanticIndex;
+			layouts[i].InputSlot = inputSlot;
+			layouts[i].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+			layouts[i].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+			layouts[i].InstanceDataStepRate = 0;
 			
 			if (desc.Mask == 1)
 			{
 				stride = 4u;
-				if (desc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) d3dlayout[i].Format = DXGI_FORMAT_R32_UINT;
-				else if (desc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) d3dlayout[i].Format = DXGI_FORMAT_R32_SINT;
-				else if (desc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) d3dlayout[i].Format = DXGI_FORMAT_R32_FLOAT;
+				if (desc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) layouts[i].Format = DXGI_FORMAT_R32_UINT;
+				else if (desc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) layouts[i].Format = DXGI_FORMAT_R32_SINT;
+				else if (desc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) layouts[i].Format = DXGI_FORMAT_R32_FLOAT;
 			}
 			else if (desc.Mask <= 3)
 			{
 				stride = 8u;
-				if (desc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) d3dlayout[i].Format = DXGI_FORMAT_R32G32_UINT;
-				else if (desc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) d3dlayout[i].Format = DXGI_FORMAT_R32G32_SINT;
-				else if (desc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) d3dlayout[i].Format = DXGI_FORMAT_R32G32_FLOAT;
+				if (desc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) layouts[i].Format = DXGI_FORMAT_R32G32_UINT;
+				else if (desc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) layouts[i].Format = DXGI_FORMAT_R32G32_SINT;
+				else if (desc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) layouts[i].Format = DXGI_FORMAT_R32G32_FLOAT;
 			}
 			else if (desc.Mask <= 7)
 			{
 				stride = 12u;
-				if (desc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) d3dlayout[i].Format = DXGI_FORMAT_R32G32B32_UINT;
-				else if (desc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) d3dlayout[i].Format = DXGI_FORMAT_R32G32B32_SINT;
-				else if (desc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) d3dlayout[i].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+				if (desc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) layouts[i].Format = DXGI_FORMAT_R32G32B32_UINT;
+				else if (desc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) layouts[i].Format = DXGI_FORMAT_R32G32B32_SINT;
+				else if (desc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) layouts[i].Format = DXGI_FORMAT_R32G32B32_FLOAT;
 			}
 			else if (desc.Mask <= 15)
 			{
 				stride = 16u;
-				if (desc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) d3dlayout[i].Format = DXGI_FORMAT_R32G32B32A32_UINT;
-				else if (desc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) d3dlayout[i].Format = DXGI_FORMAT_R32G32B32A32_SINT;
-				else if (desc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) d3dlayout[i].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+				if (desc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) layouts[i].Format = DXGI_FORMAT_R32G32B32A32_UINT;
+				else if (desc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) layouts[i].Format = DXGI_FORMAT_R32G32B32A32_SINT;
+				else if (desc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) layouts[i].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 			}
 			else 
 			{
 				XGF_Warn(Shader, "The mask on inputLayout is incorrect");
 			}
 			inputSlot = interval == 0 ? 0 : (i + 1) / interval;
-			if (d3dlayout[i].InputSlot == inputSlot - 1 && i != layoutCount - 1)
+			if (layouts[i].InputSlot == inputSlot - 1 && i != layoutCount - 1)
 			{
 				mSlotElementStartPosition.push_back(i + 1);
 			}
 			mSlotStride.push_back(stride);
+			mInputElements.emplace_back(std::string(desc.SemanticName), inputSlot, desc.SemanticIndex, stride);
 		}
-		XGF_Error_Check(IO, gdi->GetDevice()->CreateInputLayout(d3dlayout, layoutCount,
+		XGF_Error_Check(IO, gdi.GetDevice()->CreateInputLayout(layouts.data(), layoutCount,
 			VScode, codeLen, &mInputLayout), "Create InputLayout failed");
-		delete[] d3dlayout;
 		ReflectStage(reflector);
 		reflector->Release();
 		mLayoutCount = layoutCount;
@@ -310,11 +266,14 @@ namespace XGF {
 	{
 		mVertexShader->Release();
 		mInputLayout->Release();
+		mInputElements.clear();
+		mSlotElementStartPosition.clear();
 	}
 
 	void VertexShader::SetInputLayout()
 	{
-		mGDI->GetDeviceContext()->IASetInputLayout(mInputLayout);
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
+		gdi.GetDeviceContext()->IASetInputLayout(mInputLayout);
 	}
 
 
@@ -350,7 +309,7 @@ namespace XGF {
 	}
 	unsigned int VertexShader::GetInputCount() const
 	{
-		return mSlotStride.size();
+		return static_cast<unsigned int>(mSlotStride.size());
 	}
 
 	const unsigned int * VertexShader::GetStride() const
@@ -363,33 +322,52 @@ namespace XGF {
 		return mLayoutCount;
 	}
 
-
-	void GeometryShader::Initialize(GDI * gdi, const wchar_t * GSname, bool streamOut)
+	bool VertexShader::HasSemanticTexcoord()
 	{
-		ID3DBlob* pErrorBlob = nullptr;
-		ID3DBlob* pGeometryBlob = nullptr;
-		
-
-		HRESULT hr = D3DCompileFromFile(GSname, NULL,
-			NULL, "GS", "gs_4_0", 0, 0, &pGeometryBlob, &pErrorBlob);
-		if (FAILED(hr))
-			if (pErrorBlob == nullptr)
-				XGF_Error(IO, "GeometryShader file not find!", Logger::WCharToChar(GSname));
-			else
-				XGF_Error_Check(Shader, hr, std::string((const char *)pErrorBlob->GetBufferPointer()));
-		Initialize(gdi,static_cast<unsigned char *>(pGeometryBlob->GetBufferPointer()), static_cast<unsigned int>(pGeometryBlob->GetBufferSize()), streamOut);
-		pGeometryBlob->Release();
+		return HasSemantic("TEXCOORD");
 	}
 
-	void GeometryShader::Initialize(GDI * gdi, const unsigned char * GScode, unsigned int codeLen, bool streamOut)
+	bool VertexShader::HasSemanticNormal()
 	{
-		mGDI = gdi;
+		return HasSemantic("NORMAL");
+	}
+	const std::string VertexShader::mEntrypoint = "VS";
+	const std::string VertexShader::mPerfixName = "vs_";
+	bool VertexShader::HasSemantic(const char * name)
+	{
+		for(auto & it : mInputElements)
+		{
+			if(it.name == name)
+				return true;
+		}
+		return false;
+	}
+	const std::string & VertexShader::GetEntrypoint()
+	{
+		return mEntrypoint;
+	}
+	const std::string & VertexShader::GetPrefixName()
+	{
+		return mPerfixName;
+	}
+	const std::string GeometryShader::mEntrypoint = "VS";
+	const std::string GeometryShader::mPerfixName = "vs_";
+
+	VertexShader::InputElement::InputElement(const std::string & name, int index, int slot, unsigned stride): name(name), index(index), slot(slot),
+	                                                                      stride(stride)
+	{
+	}
+
+	void GeometryShader::Initialize(const unsigned char * GScode, unsigned int codeLen, bool streamOut)
+	{
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
+
 		mStreamOut = streamOut;
 		ID3D11ShaderReflection *reflector;
 		D3DReflect(GScode, codeLen, IID_ID3D11ShaderReflection, (void **)&reflector);
 		if(!streamOut)
 		{
-			XGF_Error_Check(IO, gdi->GetDevice()->CreateGeometryShader(GScode,
+			XGF_Error_Check(IO, gdi.GetDevice()->CreateGeometryShader(GScode,
 				codeLen, NULL, &mGeometryShader), "Create GeometryShader failed");
 			mOutBuffer[0] = nullptr;
 			mOutBuffer[1] = nullptr;
@@ -435,7 +413,7 @@ namespace XGF {
 				}
 				so[i].OutputSlot = 0;
 			}
-			XGF_Error_Check(IO, gdi->GetDevice()->CreateGeometryShaderWithStreamOutput(GScode,
+			XGF_Error_Check(IO, gdi.GetDevice()->CreateGeometryShaderWithStreamOutput(GScode,
 					codeLen, so, i, isr, 1, D3D11_SO_NO_RASTERIZED_STREAM, NULL, &mGeometryShader), "Create GeometryShader failed");
 			
 			D3D11_BUFFER_DESC bufferDesc =
@@ -447,8 +425,8 @@ namespace XGF {
 				0,
 				0
 			};
-			gdi->GetDevice()->CreateBuffer(&bufferDesc, NULL, &mOutBuffer[0]);
-			gdi->GetDevice()->CreateBuffer(&bufferDesc, NULL, &mOutBuffer[1]);
+			gdi.GetDevice()->CreateBuffer(&bufferDesc, NULL, &mOutBuffer[0]);
+			gdi.GetDevice()->CreateBuffer(&bufferDesc, NULL, &mOutBuffer[1]);
 		}
 		PutDebugString(mGeometryShader);
 		ReflectStage(reflector);
@@ -468,6 +446,14 @@ namespace XGF {
 			mOutBuffer[1]->Release();
 		mGeometryShader->Release();
 	}
+	const std::string & GeometryShader::GetEntrypoint()
+	{
+		return mEntrypoint;
+	}
+	const std::string & GeometryShader::GetPrefixName()
+	{
+		return mPerfixName;
+	}
 	void InitializeConstantBuffer(Shader * shader, std::vector<ConstantBuffer> & cb)
 	{
 		if (shader != nullptr && shader->GetCBufferCount() > 0)
@@ -475,7 +461,7 @@ namespace XGF {
 			for (unsigned int i = 0; i < shader->GetCBufferCount(); i++)
 			{
 				ConstantBuffer cbb;
-				cbb.Initialize(shader->GetGDI(), shader->GetCBufferSize(i));
+				cbb.Initialize(shader->GetCBufferSize(i));
 				cb.push_back(cbb);
 			}
 				
@@ -591,6 +577,15 @@ namespace XGF {
 		else
 			XGF_Warn(Shader, "The index in the PS constant buffer is out of range");
 	}
+	void ShaderStage::SetPSConstantBuffer(unsigned int index, std::function<void(void *, int size)> func)
+	{
+		if (index < ps->GetCBufferCount())
+		{
+			func(mPSCBuffer[index].GetBufferPoint(), mPSCBuffer[index].GetSize());
+		}
+		else
+			XGF_Warn(Shader, "The index in the PS constant buffer is out of range");
+	}
 
 
 	void ShaderStage::SetVSSamplerState(unsigned int index, SamplerState ss)
@@ -642,7 +637,9 @@ namespace XGF {
 
 	void ShaderStage::BindStage()
 	{
-		auto dev = vs->mGDI->GetDeviceContext();
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
+
+		auto dev = gdi.GetDeviceContext();
 		dev->VSSetShader(vs->mVertexShader, 0, 0);
 		if(ps != nullptr)
 			dev->PSSetShader(ps->mPixelShader, 0, 0);
@@ -654,7 +651,7 @@ namespace XGF {
 			ID3D11Buffer * buf;
 			for (int i = 0; i < vs->mCBufferInfo.size(); i++)
 			{
-				mVSCBuffer[i].MapToGPU(vs->mGDI);
+				mVSCBuffer[i].MapToGPU(gdi);
 				buf = mVSCBuffer[i].GetRawBuffer();
 				dev->VSSetConstantBuffers(vs->GetCBufferSlot(i), 1, &buf);
 			}
@@ -664,7 +661,7 @@ namespace XGF {
 			ID3D11Buffer * buf;
 			for (int i = 0; i < ps->mCBufferInfo.size(); i++)
 			{
-				mPSCBuffer[i].MapToGPU(vs->mGDI);
+				mPSCBuffer[i].MapToGPU(gdi);
 				buf = mPSCBuffer[i].GetRawBuffer();
 				dev->PSSetConstantBuffers(ps->GetCBufferSlot(i), 1, &buf);
 			}
@@ -674,7 +671,7 @@ namespace XGF {
 			ID3D11Buffer * buf;
 			for (int i = 0; i < gs->mCBufferInfo.size(); i++)
 			{
-				mGSCBuffer[i].MapToGPU(gs->mGDI);
+				mGSCBuffer[i].MapToGPU(gdi);
 				buf = mGSCBuffer[i].GetRawBuffer();
 				dev->GSSetConstantBuffers(gs->GetCBufferSlot(i), 1, &buf);
 			}
@@ -694,35 +691,37 @@ namespace XGF {
 				if(mGSSRV[i].srv != nullptr)
 					dev->GSSetShaderResources(gs->GetTextureSlot(i), 1, &mGSSRV[i].srv);
 				else { XGF_Warn(Shader, "Invalid texture in gs"); }
-		vs->GetGDI()->SetBlendState(mBlendState);
+		gdi.SetBlendState(mBlendState);
 
 		ID3D11SamplerState *sps;
 		if (!mVSSamplerState.empty())
 			for (unsigned i = 0; i < vs->GetSamplerStateCount(); i++)
 			{
-				sps = vs->mGDI->GetRawSamplerState(mVSSamplerState[i]);
+				sps = gdi.GetRawSamplerState(mVSSamplerState[i]);
 				dev->VSSetSamplers(vs->GetSamplerStateSlot(i), 1, &sps);
 			}
 		if (!mPSSamplerState.empty())
 			for (unsigned i = 0; i < ps->GetSamplerStateCount(); i++)
 			{
-				sps = vs->mGDI->GetRawSamplerState(mPSSamplerState[i]);
+				sps = gdi.GetRawSamplerState(mPSSamplerState[i]);
 				dev->PSSetSamplers(ps->GetSamplerStateSlot(i), 1, &sps);
 			}
 		if (!mGSSamplerState.empty())
 			for (unsigned i = 0; i < gs->GetSamplerStateCount(); i++)
 			{
-				sps = gs->mGDI->GetRawSamplerState(mGSSamplerState[i]);
+				sps = gdi.GetRawSamplerState(mGSSamplerState[i]);
 				dev->GSSetSamplers(gs->GetSamplerStateSlot(i), 1, &sps);
 			}
-		vs->GetGDI()->SetDepthStencilState(mDepthStencilState);
-		vs->GetGDI()->SetRasterizerState(mRasterizerState);
+		gdi.SetDepthStencilState(mDepthStencilState);
+		gdi.SetRasterizerState(mRasterizerState);
 	}
 
 	void ShaderStage::UnBindStage()
 	{
 		void* null = 0 ;
-		auto dev = vs->mGDI->GetDeviceContext();
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
+
+		auto dev = gdi.GetDeviceContext();
 		dev->VSSetShader((ID3D11VertexShader *)null, 0, 0);
 		if (!mVSSRV.empty())
 			for (unsigned i = 0; i < vs->GetTextureCount(); i++)
@@ -742,9 +741,11 @@ namespace XGF {
 			dev->GSSetShader((ID3D11GeometryShader *)null, 0, 0);
 
 	}
-
+	
 	void ComputeGPU::Initialize(ComputeShader * cs, unsigned int buffersize)
 	{
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
+
 		this->cs = cs;
 		if (!cs->mUAVInfo.empty())
 		{
@@ -753,23 +754,23 @@ namespace XGF {
 				UnorderedAccessView uav;
 				if (cs->mUAVInfo[i].flags == D3D_SIT_UAV_APPEND_STRUCTURED)
 				{
-					uav.buffer = CreateBuffer(cs->mGDI, D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED, cs->mUAVInfo[i].size * buffersize, cs->mUAVInfo[i].size, D3D11_USAGE_DEFAULT, (D3D11_CPU_ACCESS_FLAG)0);
-					uav.uav = CreateUnorderedAccessView(cs->mGDI, uav.buffer, buffersize, DXGI_FORMAT_UNKNOWN, D3D11_BUFFER_UAV_FLAG_APPEND);
-					uav.srv = CreateShaderResourceView(cs->mGDI, uav.buffer, buffersize, DXGI_FORMAT_UNKNOWN, (D3D11_BUFFEREX_SRV_FLAG)0);
+					uav.buffer = CreateBuffer(gdi, D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED, cs->mUAVInfo[i].size * buffersize, cs->mUAVInfo[i].size, D3D11_USAGE_DEFAULT, (D3D11_CPU_ACCESS_FLAG)0);
+					uav.uav = CreateUnorderedAccessView(gdi, uav.buffer, buffersize, DXGI_FORMAT_UNKNOWN, D3D11_BUFFER_UAV_FLAG_APPEND);
+					uav.srv = CreateShaderResourceView(gdi, uav.buffer, buffersize, DXGI_FORMAT_UNKNOWN, (D3D11_BUFFEREX_SRV_FLAG)0);
 					mCSUAV.push_back(uav);
 				}
 				if (cs->mUAVInfo[i].flags == D3D_SIT_UAV_CONSUME_STRUCTURED)
 				{
-					uav.buffer = CreateBuffer(cs->mGDI, D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED, cs->mUAVInfo[i].size * buffersize, cs->mUAVInfo[i].size, D3D11_USAGE_DEFAULT, (D3D11_CPU_ACCESS_FLAG)0);
-					uav.uav = CreateUnorderedAccessView(cs->mGDI, uav.buffer, buffersize, DXGI_FORMAT_UNKNOWN, D3D11_BUFFER_UAV_FLAG_APPEND);
-					uav.srv = CreateShaderResourceView(cs->mGDI, uav.buffer, buffersize, DXGI_FORMAT_UNKNOWN, (D3D11_BUFFEREX_SRV_FLAG)0);
+					uav.buffer = CreateBuffer(gdi, D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED, cs->mUAVInfo[i].size * buffersize, cs->mUAVInfo[i].size, D3D11_USAGE_DEFAULT, (D3D11_CPU_ACCESS_FLAG)0);
+					uav.uav = CreateUnorderedAccessView(gdi, uav.buffer, buffersize, DXGI_FORMAT_UNKNOWN, D3D11_BUFFER_UAV_FLAG_APPEND);
+					uav.srv = CreateShaderResourceView(gdi, uav.buffer, buffersize, DXGI_FORMAT_UNKNOWN, (D3D11_BUFFEREX_SRV_FLAG)0);
 					mCSUAV.push_back(uav);
 				}
 				if (cs->mUAVInfo[i].flags == D3D_SIT_UAV_RWSTRUCTURED)
 				{
-					uav.buffer = CreateBuffer(cs->mGDI, D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED, cs->mUAVInfo[i].size * buffersize, cs->mUAVInfo[i].size, D3D11_USAGE_DEFAULT, (D3D11_CPU_ACCESS_FLAG)0);
-					uav.uav = CreateUnorderedAccessView(cs->mGDI, uav.buffer, buffersize, DXGI_FORMAT_UNKNOWN, D3D11_BUFFER_UAV_FLAG(0));
-					uav.srv = CreateShaderResourceView(cs->mGDI, uav.buffer, buffersize, DXGI_FORMAT_UNKNOWN, (D3D11_BUFFEREX_SRV_FLAG)0);
+					uav.buffer = CreateBuffer(gdi, D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED, cs->mUAVInfo[i].size * buffersize, cs->mUAVInfo[i].size, D3D11_USAGE_DEFAULT, (D3D11_CPU_ACCESS_FLAG)0);
+					uav.uav = CreateUnorderedAccessView(gdi, uav.buffer, buffersize, DXGI_FORMAT_UNKNOWN, D3D11_BUFFER_UAV_FLAG(0));
+					uav.srv = CreateShaderResourceView(gdi, uav.buffer, buffersize, DXGI_FORMAT_UNKNOWN, (D3D11_BUFFEREX_SRV_FLAG)0);
 					mCSUAV.push_back(uav);
 				}
 			}
@@ -810,63 +811,66 @@ namespace XGF {
 	}
 	void ComputeGPU::Run(bool asyn)
 	{
-		auto gdi = cs->GetGDI();
-		gdi->GetDeviceContext()->Dispatch(32, 1, 1);
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
+
+		gdi.GetDeviceContext()->Dispatch(32, 1, 1);
 		if (!asyn)//同步等待gpu运行结束
 		{
 			D3D11_QUERY_DESC pQueryDesc;
 			pQueryDesc.Query = D3D11_QUERY_EVENT;
 			pQueryDesc.MiscFlags = 0;
 			ID3D11Query *pEventQuery;
-			gdi->GetDevice()->CreateQuery(&pQueryDesc, &pEventQuery);
-			gdi->GetDeviceContext()->End(pEventQuery);
-			while (gdi->GetDeviceContext()->GetData(pEventQuery, NULL, 0, 0) == S_FALSE) {}
+			gdi.GetDevice()->CreateQuery(&pQueryDesc, &pEventQuery);
+			gdi.GetDeviceContext()->End(pEventQuery);
+			while (gdi.GetDeviceContext()->GetData(pEventQuery, NULL, 0, 0) == S_FALSE) {}
 			pEventQuery->Release();
 		}
 	}
 	void ComputeGPU::Bind()
 	{
-		auto gdi = cs->GetGDI();
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
+
 		ID3D11Buffer * cbuffer;
 		for (int i = 0; i < (int)cs->mCBufferInfo.size(); i++)
 		{
 			mCSCBuffer[i].MapToGPU(gdi);
 			cbuffer = mCSCBuffer[i].GetRawBuffer();
-			gdi->GetDeviceContext()->CSSetConstantBuffers(cs->mCBufferInfo[i].slot, 1, &cbuffer);
+			gdi.GetDeviceContext()->CSSetConstantBuffers(cs->mCBufferInfo[i].slot, 1, &cbuffer);
 		}
 
 		if (!mCSSamplerState.empty())
 			for (int i = 0; i < (int) cs->GetSamplerStateCount(); i++)
 			{
-				auto sps = gdi->GetRawSamplerState(mCSSamplerState[i]);
-				gdi->GetDeviceContext()->CSSetSamplers(cs->GetSamplerStateSlot(i), 1, &sps);
+				auto sps = gdi.GetRawSamplerState(mCSSamplerState[i]);
+				gdi.GetDeviceContext()->CSSetSamplers(cs->GetSamplerStateSlot(i), 1, &sps);
 			}
 		if (!mCSSRV.empty())
 			for (int i = 0; i < (int) cs->GetTextureCount(); i++)
 				if (mCSSRV[i].srv != nullptr)
-					gdi->GetDeviceContext()->CSSetShaderResources(cs->GetTextureSlot(i), 1, &mCSSRV[i].srv);
+					gdi.GetDeviceContext()->CSSetShaderResources(cs->GetTextureSlot(i), 1, &mCSSRV[i].srv);
 				else { XGF_Warn(Shader, "invalid srv in cs"); }
 		if (!mCSUAV.empty())
 			for (int i = 0; i < (int) cs->mUAVInfo.size(); i++)
 				if (mCSUAV[i].uav != nullptr)
-					gdi->GetDeviceContext()->CSSetUnorderedAccessViews(cs->mUAVInfo[i].slot, 1, &(mCSUAV[i].uav), 0);
+					gdi.GetDeviceContext()->CSSetUnorderedAccessViews(cs->mUAVInfo[i].slot, 1, &(mCSUAV[i].uav), 0);
 				else { XGF_Warn(Shader, "invalid uav in cs"); }
 
-		gdi->GetDeviceContext()->CSSetShader(cs->GetShader(), nullptr, 0);
+		gdi.GetDeviceContext()->CSSetShader(cs->GetShader(), nullptr, 0);
 				
 
 	}
 	void ComputeGPU::UnBind()
 	{
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
+
 		void* null = 0;
-		auto gdi = cs->GetGDI();
-		gdi->GetDeviceContext()->CSSetShader((ID3D11ComputeShader *)null, nullptr, 0);
+		gdi.GetDeviceContext()->CSSetShader((ID3D11ComputeShader *)null, nullptr, 0);
 		if (!mCSSRV.empty())
 			for (int i = 0; i < (int) cs->GetTextureCount(); i++)
-				gdi->GetDeviceContext()->CSSetShaderResources(cs->GetTextureSlot(i), 1, (ID3D11ShaderResourceView **)(&null));
+				gdi.GetDeviceContext()->CSSetShaderResources(cs->GetTextureSlot(i), 1, (ID3D11ShaderResourceView **)(&null));
 		if (!mCSUAV.empty())
 			for (int i = 0; i < (int) cs->mUAVInfo.size(); i++)
-				gdi->GetDeviceContext()->CSSetUnorderedAccessViews(cs->mUAVInfo[i].slot, 1, (ID3D11UnorderedAccessView **)(&null), 0);
+				gdi.GetDeviceContext()->CSSetUnorderedAccessViews(cs->mUAVInfo[i].slot, 1, (ID3D11UnorderedAccessView **)(&null), 0);
 	}
 	UnorderedAccessView * ComputeGPU::GetUnorderedAccessViews(int index)
 	{

@@ -1,5 +1,6 @@
 #include "..\..\Include\GridRenderer.hpp"
-#include "../../Include/ConstantData.hpp"
+#include "../../Include/ShaderManager.hpp"
+#include "../../Include/Context.hpp"
 
 namespace XGF
 {
@@ -12,10 +13,10 @@ namespace XGF
 	{
 	}
 
-	void GridRenderer::Initialize(GDI * gdi, float width, float height, unsigned xcount, unsigned zcount, const Point & origin)
+	void GridRenderer::Initialize(float width, float height, unsigned xcount, unsigned zcount, const Point & origin)
 	{
 		XGF_ASSERT(width > 0 && height > 0);
-		mBatch.Initialize(gdi, ConstantData::GetInstance().GetPositionColorShader(), (xcount * 2 + zcount * 2) + 4, xcount * 2 + zcount * 2 + 4, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+		mBatch.Initialize(Context::Current().QueryShaderManager().GetBasicShaders(false, false ,true), (xcount * 2 + zcount * 2) + 4, xcount * 2 + zcount * 2 + 4, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 		mBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthDisable);
 		mHeight = height;
 		mWidth = width;

@@ -4,7 +4,9 @@
 #include "..\..\Include\Circle.hpp"
 #include "..\..\Include\Triangle.hpp"
 #include "..\..\Include\Line.hpp"
-#include "..\..\Include\ConstantData.hpp"
+#include "..\..\Include\ShaderManager.hpp"
+#include "../../Include/Context.hpp"
+
 namespace XGF
 {
 	ShapeRenderer::ShapeRenderer()
@@ -16,9 +18,9 @@ namespace XGF
 	{
 	}
 
-	void ShapeRenderer::Initialize(GDI * gdi, unsigned int MaxVetices, unsigned int MaxIndices)
+	void ShapeRenderer::Initialize(unsigned int MaxVetices, unsigned int MaxIndices)
 	{
-		mBatch.Initialize(gdi, ConstantData::GetInstance().GetPositionColorShader(), MaxVetices, MaxIndices, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		mBatch.Initialize(Context::Current().QueryShaderManager().GetBasicShaders(false, false, true), MaxVetices, MaxIndices, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		mBatch.GetShaderStage()->SetBlendState(BlendState::AddOneOneAdd);
 		mBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthEnable);
 	}

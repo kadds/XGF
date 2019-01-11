@@ -7,7 +7,6 @@
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib,"d3dcompiler.lib")
 
-#include <vector> 
 #include "RenderToTexture.hpp"
 #include <stack>
 
@@ -55,10 +54,6 @@ namespace XGF
 		FrameAndCutNone,
 		InvalidValue
 	};
-	/*
-	底层图形接口
-	调整窗口尺寸可使用ResizeTarget函数
-	*/
 	class GDI
 	{
 	public:
@@ -67,18 +62,14 @@ namespace XGF
 		GDI(GDI &) = delete;
 		GDI & operator=(GDI &) = delete;
 
-		//框架调用
 		void Create();
-		//框架调用
 		void Destroy();
 		void Clear(const float color[]);
 		void Clear(const Color & c);
 		void ClearDepthStencilBuffer();
 		void Present(bool isVsync);
-		//初始化函数，必须是该类第一个调用的函数
-		//用户调用
 		void Initialize(HINSTANCE instance, HWND WndHwnd, HWND TopHwnd, UINT ClientWidth, UINT ClientHeight);
-		//框架调用
+		
 		void SizeChanged(UINT ClientWidth, UINT ClientHeight);
 
 		void ResizeTarget(UINT x, UINT y);
@@ -94,14 +85,13 @@ namespace XGF
 		HWND GetTopHwnd();
 		HINSTANCE GetInstance();
 		ID3D11DepthStencilView * GetDepthStencilView() { return mDepthStencilView; }
-		//恢复RenderTargetView
+		
 		void SetRenderTargetView();
 
 		bool IsFullScreen() { return mDisplayMode == DisplayMode::FullScreen; }
 		bool SetDisplayMode(DisplayMode dm, int left, int top, int cx, int cy, bool move, bool isClientSize = false);
 		DisplayMode GetDisplayMode() { return  mDisplayMode; };
-		//获取displaymode list
-		//返回值：DisplayMode数目
+		
 		int GetFullScreenDisplayModes(DXGI_MODE_DESC ** c) { *c = mScreenMode[0].second; return mScreenMode[0].first; }
 		void CheckFullScreenForce(bool isforce);
 		ID3D11BlendState * GetRawBlendState(BlendState bs);
@@ -150,9 +140,9 @@ namespace XGF
 		UINT m4xMsaaQuality = 0;
 		bool mEnable4xMsaa = false;
 		bool mIsStandby = false;
-		//显示的窗口句柄
+
 		HWND mHwnd;
-		//顶级窗口句柄
+
 		HWND mTopHwnd;
 
 		UINT mWidth;

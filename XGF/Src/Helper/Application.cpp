@@ -2,6 +2,8 @@
 #include "../../Include/XGFramework.hpp"
 #include "../../Include/Logger.hpp"
 #include "../../Include/GDI.hpp"
+#include "../../Include/Context.hpp"
+#include "../../Include/ShaderManager.hpp"
 
 namespace XGF
 {
@@ -46,7 +48,7 @@ namespace XGF
 
 		mHideCursor = false;
 		//开启渲染线程==============================================
-		mRenderThread.DoAsyn(std::bind(&Application::RenderThreadStart, this, &gdi, firstScene));
+		mRenderThread.DoAsyn(std::bind(&Application::RenderThreadStart, this, &gdi, std::move(firstScene)));
 		//======================================================
 		MSG msg;
 		mRenderThread.Wait();
@@ -93,17 +95,24 @@ namespace XGF
 
 	void Application::RenderThreadStart(GDI * gdi, std::shared_ptr<Scene> scene)
 	{
-		XGF_Debug(Application, "Framework Start");
-		mFramework->_OnCreate(gdi, &mRenderThread);
+		XGF_Debug(Framework, "Framework Start");
+		ShaderManager shaderManager;
+		Context::Initialize();
+		Context & gameContext = Context::MakeContext(gdi, mFramework, &mRenderThread, &shaderManager);
+		mFramework->_OnCreate();
 		mFramework->AddScene(scene);
 		mRenderThread.Notify();
 		//消息循环
-		XGF_Debug(Application, "Framework Loop Start");
+		XGF_Debug(Framework, "Framework Loop Start");
 		mFramework->_Loop2();
-		XGF_Debug(Application, "Framework Destroy");
+		XGF_Debug(Framework, "Framework Destroy");
+		shaderManager.ReleaseAll();
 		mFramework->_OnDestroy();
+		Context::ClearContext(gameContext);
+		Context::Shutdown();
 		//通知主线程退出
 		mRenderThread.Notify();
+		
 	}
 
 	ATOM Application::RegisterWindowsClass(HINSTANCE hInstance, const wchar_t * className, int ICON, int sICON)

@@ -1,6 +1,8 @@
 #include "../../Include/DX8Input.hpp"
 #include "../../Include/Logger.hpp"
 #include "../../Include/Batch.hpp"
+#include "../../Include/Context.hpp"
+
 namespace XGF
 {
 	DX8Input::DX8Input()
@@ -11,8 +13,11 @@ namespace XGF
 	{
 	}
 
-	bool DX8Input::Initialize(HINSTANCE hs, HWND hwnd)
+	bool DX8Input::Initialize()
 	{
+		auto & context = Context::Current();
+		HWND hwnd = context.QueryGraphicsDeviceInterface().GetTopHwnd();
+		auto hs = context.QueryGraphicsDeviceInterface().GetInstance();
 		XGF_ASSERT(hwnd != NULL);
 		XGF_ASSERT(hs != NULL);
 		hInstance = hs;

@@ -1,7 +1,6 @@
 #pragma once
 #include <Windows.h>
 #include "Defines.hpp"
-#include <unordered_map>
 #include "Asyn.hpp"
 namespace XGF
 {
@@ -19,8 +18,8 @@ namespace XGF
 	class GDI;
 	class Scene;
 	/*
-	此Helper类用于建立一个D3D窗口
-	同时与渲染线程通信
+	锟斤拷Helper锟斤拷锟斤拷锟节斤拷锟斤拷一锟斤拷D3D锟斤拷锟斤拷
+	同时锟斤拷锟斤拷染锟竭筹拷通锟斤拷
 	*/
 	class Application
 	{
@@ -29,7 +28,7 @@ namespace XGF
 		~Application();
 		Application(const Application&) = delete;
 		Application & operator = (const Application &) = delete;
-		//返回call framework Exit 的参数或call SetExitCode 的参数
+		//锟斤拷锟斤拷call framework Exit 锟侥诧拷锟斤拷锟斤拷call SetExitCode 锟侥诧拷锟斤拷
 		int CreateWindowsAndRunApplication(XGFramework &framework, GDI &gdi, HINSTANCE hInstance, WindowProperty windowProperty, std::shared_ptr<Scene> firstScene);
 
 		Asyn& GetRenderThread();

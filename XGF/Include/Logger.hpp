@@ -98,7 +98,7 @@ namespace XGF {
 				loggers[(int) system]->warn(formatStr, file, functionName, line, JoinParameter(args...));
 			};
 			template<typename ...Args>
-			void Error(LogSystem::LogSystem system, const char * file, const char *  functionName, int line, const Args &... args)
+			__declspec(noreturn) void Error(LogSystem::LogSystem system, const char * file, const char *  functionName, int line, const Args &... args)
 			{
 				loggers[(int) system]->error(formatStr, file, functionName, line, JoinParameter(args...));
 				ShowXGFDialog("A serious error has occurred, do you need to check it?", gFilename);

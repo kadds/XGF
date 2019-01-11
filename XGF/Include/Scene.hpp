@@ -2,13 +2,12 @@
 #include "Defines.hpp"
 #include "SceneAnimation.hpp"
 #include "Container.hpp"
-#include <vector>
 namespace XGF
 {
 	class GDI;
 	using std::vector;
 	/*
-	* ³¡¾°Àà
+	* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	*/
 	class XGFramework;
 	class Scene
@@ -30,7 +29,7 @@ namespace XGF
 		virtual void OnSize(int ClientX, int ClientY) = 0;
 
 		void _OnCreate(XGFramework * framework);
-		virtual void OnCreate(GDI * gdi) = 0;
+		virtual void OnCreate() = 0;
 		void _OnDestroy();
 		virtual void OnDestroy() = 0;
 
@@ -39,8 +38,6 @@ namespace XGF
 		XGFramework& GetFramework();
 		void AddChild(std::shared_ptr<Container> container);
 		void SwitchScene(std::shared_ptr<Scene> scene);
-		void Clear(const Color & c);
-		void ClearDepthStencilBuffer();
 
 		Container& GetRootContainer();;
 

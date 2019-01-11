@@ -26,14 +26,6 @@ namespace XGF
 	{
 		static_cast<XGFramework *>(&GetFramework())->SwitchScene(scene);
 	}
-	void Scene::Clear(const Color & c)
-	{
-		mFramework->GetGDI().Clear(c);
-	}
-	void Scene::ClearDepthStencilBuffer()
-	{
-		mFramework->GetGDI().ClearDepthStencilBuffer();
-	}
 
 	Container& Scene::GetRootContainer()
 	{
@@ -80,7 +72,7 @@ namespace XGF
 		mFramework->GetEventDispatcher().InsertAllEventListener(std::bind(&EventDispatcher::Dispatch, &mRootContainer.GetEventDispatcher(), std::placeholders::_1));
 		mFramework->GetEventDispatcher().InsertSystemEventListener(SystemEventId::Size, std::bind(&Scene::_OnSize, this, std::placeholders::_1));
 		mFramework->GetEventDispatcher().InsertSystemEventListener(SystemEventId::Activate, std::bind(&Scene::_OnActivate, this, std::placeholders::_1));
-		OnCreate(&framework->GetGDI());
+		OnCreate();
 	}
 
 	void Scene::_OnDestroy()

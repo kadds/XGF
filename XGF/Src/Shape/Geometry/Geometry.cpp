@@ -13,19 +13,29 @@ namespace XGF
 		{
 		}
 
-		std::vector<std::shared_ptr<PolygonPleBinder>> Geometry::GetMapBinder()
+		std::vector<std::shared_ptr<PolygonPleBinder>> Geometry::GetVertexBinders()
 		{
-			std::vector<std::shared_ptr<PolygonPleBinder>> binders;
-			binders.push_back(mPolygon);
-			if(mPolygonPleNormal)
-				binders.push_back(mPolygonPleNormal);
-			if (mPolygonPleUvs)
-				binders.push_back(mPolygonPleUvs);
-			if (mPolygonPleColor)
-				binders.push_back(mPolygonPleColor);
-			auto u = GetExtraBinders();
-			binders.insert(binders.end(), u.begin(), u.end());
-			return binders;
+			std::vector<std::shared_ptr<PolygonPleBinder>> v(1);
+			v[0] = mPolygon;
+			return v;
+		}
+
+		std::vector<std::shared_ptr<PolygonPleBinder>> Geometry::GetUVBinders()
+		{
+			std::vector<std::shared_ptr<PolygonPleBinder>> v(1);
+			v[0] = mPolygonPleUvs;
+			return v;
+		}
+		std::vector<std::shared_ptr<PolygonPleBinder>> Geometry::GetNormalBinders()
+		{
+			std::vector<std::shared_ptr<PolygonPleBinder>> v(1);
+			v[0] = mPolygonPleNormal;
+			return v;
+		}
+		std::vector<std::shared_ptr<PolygonPleBinder>> Geometry::GetDataBinders()
+		{
+			std::vector<std::shared_ptr<PolygonPleBinder>> v(0);
+			return v;
 		}
 	}
 }

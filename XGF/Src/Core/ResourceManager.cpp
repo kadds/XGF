@@ -2,6 +2,7 @@
 #include "../../Include/Texture.hpp"
 #include "../../Include/Tools.hpp"
 #include "../../Include/Logger.hpp"
+#include "../../Include/Context.hpp"
 
 namespace XGF
 {
@@ -26,11 +27,12 @@ namespace XGF
 		return GetResource(it->second.c_str());
 	}
 
-	void TextureResourceManager::LoadResourceAsync(GDI * gdi, std::vector<ResourceInfo> & infoArray, Asyn * gameThread,std::function<void(std::vector<ResourceInfo>, int success)> finishFunction)
+	void TextureResourceManager::LoadResourceAsync(std::vector<ResourceInfo> & infoArray, Asyn * gameThread,std::function<void(std::vector<ResourceInfo>, int success)> finishFunction)
 	{
-		
-		AsyncTask::NewTask(gameThread, [this, gdi, infoArray](std::shared_ptr<AsyncTask> that) 
+		auto & context = Context::Current();
+		AsyncTask::NewTask(gameThread, [this, infoArray, &context](std::shared_ptr<AsyncTask> that)
 		{
+			Context::JoinContext(context);
 			if (mIsLoadingResource)
 				while (mIsLoadingResource);
 			mIsLoadingResource = true;
@@ -41,13 +43,13 @@ namespace XGF
 				TextureResource textureResource;
 				if (it.inMemory)
 				{
-					if (textureResource.Load(gdi, it.mem, it.memSize))
+					if (textureResource.Load( it.mem, it.memSize))
 						okCount++;
 				}
 				else
 				{
 					Tools::GetPathBy(it.name.c_str(), buffer, MAX_PATH);
-					if (textureResource.Load(gdi, buffer))
+					if (textureResource.Load( buffer))
 						okCount++;
 				}
 				if (textureResource.GetTexture() != nullptr)
@@ -57,13 +59,14 @@ namespace XGF
 			}
 			mIsLoadingResource = false;
 			that->Finish(okCount, 0);
+			Context::DetachContext();
 		})->SetFinshListener([finishFunction, infoArray, this](int code, std::any data)
 		{
 			finishFunction(infoArray, code);
 		});
 	}
 
-	void TextureResourceManager::LoadResource(GDI * gdi, std::vector<ResourceInfo> & infoArray)
+	void TextureResourceManager::LoadResource(std::vector<ResourceInfo> & infoArray)
 	{
 		if (mIsLoadingResource)
 			while (mIsLoadingResource) ;
@@ -75,13 +78,13 @@ namespace XGF
 			TextureResource textureResource;
 			if (it.inMemory)
 			{
-				if (textureResource.Load(gdi, it.mem, it.memSize))
+				if (textureResource.Load(it.mem, it.memSize))
 					okCount++;
 			}
 			else
 			{
 				Tools::GetPathBy(it.name.c_str(), buffer, MAX_PATH);
-				if (textureResource.Load(gdi, buffer))
+				if (textureResource.Load( buffer))
 					okCount++;
 			}
 			if (textureResource.GetTexture() != nullptr)

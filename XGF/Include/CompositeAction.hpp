@@ -1,7 +1,6 @@
 #pragma once
 #include "Defines.hpp"
 #include "Action.hpp"
-#include <vector>
 #include <algorithm>
 namespace XGF
 {

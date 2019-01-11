@@ -2,7 +2,6 @@
 #include "Batch.hpp"
 namespace XGF
 {
-	class GDI;
 	/*
 	用Color渲染几何图形2d
 	Begin，Draw，End
@@ -12,7 +11,7 @@ namespace XGF
 	public:
 		ShapeRenderer();
 		~ShapeRenderer();
-		void Initialize(GDI * gdi, unsigned int MaxVetices = 8192, unsigned int MaxIndices = 8192 / 4 * 6);
+		void Initialize(unsigned int MaxVetices = 8192, unsigned int MaxIndices = 8192 / 4 * 6);
 		void Shutdown();
 
 		void Begin(WVPMatrix & wvp);

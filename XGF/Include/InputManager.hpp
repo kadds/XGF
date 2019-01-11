@@ -6,7 +6,6 @@
 #include "OrthoCamera.hpp"
 #include "Caret.hpp"
 #include "Cursor.hpp"
-#include <vector>
 namespace XGF
 {
 	enum class MouseMode {
@@ -15,15 +14,15 @@ namespace XGF
 		Custom,
 		CustomCenter
 	};
-
+	class Context;
 	class InputManager
 	{
 	public:
 		InputManager();
 		~InputManager();
+		bool Initialize();
 		InputManager(const InputManager&) = delete;
 		InputManager & operator = (const InputManager &) = delete;
-		bool Initialize(GDI * gdi, HINSTANCE hs, HWND hwnd, Asyn * a);//¶¥²ã´°¿Ú
 		void Shutdown();
 		LRESULT ProcessInputMessage(UINT msg, WPARAM wParam, LPARAM lParam);
 		void OnActivate(bool isActivate);

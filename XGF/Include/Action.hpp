@@ -1,7 +1,6 @@
 #pragma once
 #include "Defines.hpp"
 #include "Interpolator\Interpolator.hpp"
-#include <memory>
 namespace XGF
 {
 	/*
@@ -11,7 +10,7 @@ namespace XGF
 	public:
 		Action();
 		virtual ~Action();
-		//返回True ：已经结束Action
+		//閿熸枻鎷烽敓鏂ゆ嫹True 閿熸枻鎷烽敓绐栨拝鎷烽敓鏂ゆ嫹閿熸枻鎷稟ction
 		bool Tick(Point * out, float deltaTime);
 		static std::unique_ptr<Action> Make(const Point & to, float duration, bool isRelative,std::shared_ptr<Interpolator> interpolator)
 		{

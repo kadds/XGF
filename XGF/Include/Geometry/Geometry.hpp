@@ -1,6 +1,5 @@
 #pragma once
 #include "../Shape.hpp"
-#include <vector>
 #include <functional>
 namespace XGF
 {
@@ -30,13 +29,14 @@ namespace XGF
 		public:
 			Geometry(unsigned int vertexCount, unsigned int indexCount);
 			virtual ~Geometry();
-			std::vector<std::shared_ptr<PolygonPleBinder>> GetMapBinder();
+			std::vector<std::shared_ptr<PolygonPleBinder>> GetVertexBinders();
+			std::vector<std::shared_ptr<PolygonPleBinder>> GetUVBinders();
+			std::vector<std::shared_ptr<PolygonPleBinder>> GetNormalBinders();
+			std::vector<std::shared_ptr<PolygonPleBinder>> GetDataBinders();
 		public:
 			std::shared_ptr<PolygonPleNormalBinder> mPolygonPleNormal;
 			std::shared_ptr<PolygonPleTextureBinder> mPolygonPleUvs;
 			std::shared_ptr<PolygonPleTextureBinder> mPolygonPleColor;
-		protected:
-			virtual std::vector< std::shared_ptr<PolygonPleBinder>> GetExtraBinders() { return std::vector< std::shared_ptr<PolygonPleBinder>>(); };
 		};
 	}
 }

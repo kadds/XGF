@@ -1,6 +1,5 @@
 #pragma once
 #include "Defines.hpp"
-#include <vector>
 namespace XGF
 {
 	template<typename T>
@@ -36,15 +35,13 @@ namespace XGF
 
 
 	class Texture;
-	/**
-	* 可绑定资源基类
-	*/
+
 	class PolygonPleBinder
 	{
 	public:
 		PolygonPleBinder() = default;
 		virtual ~PolygonPleBinder() = default;
-		// 把数据复制到 Des 处 且长度为chunk
+
 		virtual void CopyTo(void * Des, unsigned int chunk) const = 0;
 		int Count() const
 		{
@@ -57,15 +54,9 @@ namespace XGF
 			mCount = c;
 		}
 	private:
-		/**
-		 * 数据个数
-		 */
 		int mCount;
 		
 	};
-	/**
-	* 数据绑定器
-	*/
 
 	template<typename Vector>
 	class PolygonPleDataBinder : public PolygonPleBinder
@@ -168,16 +159,16 @@ namespace XGF
 			this->GetData(layer) = vec;
 		}
 		/**
-		 * \brief 常量数据
-		 * \param count 顶点个数
-		 * \param data 每一组数据对应的 ConstantData 索引开始处
+		 * \brief
+		 * \param count
+		 * \param data
 		 */
 		PolygonPleConstantDataBinder(int count, std::vector<std::pair<int, Vector>> data):tgLayer(data.size())
 		{
 			XGF_ASSERT(data.size() != 0);
 			this->SetCount(count);
 			this->mData = std::make_unique<Vector[]>(data.size());
-			mDataCount = data.size();
+			mDataCount = static_cast<int>(data.size());
 			int i = 0;
 			this->mData[0] = data[0].second;
 			for (; i < data.size() - 1; i++)
@@ -230,15 +221,12 @@ namespace XGF
 			}
 		}
 	};
-	/**
-	* 索引结构
-	*/
+
 	class PolygonPleIndex
 	{
 	public:
-		// 起始地址
+
 		Index *mIndex;
-		// 索引个数
 		int mCount;
 		PolygonPleIndex(int n);
 		~PolygonPleIndex();
@@ -283,9 +271,7 @@ namespace XGF
 
 	typedef PolygonPleDataBinder<Point> PolygonPleNormalBinder;
 	typedef PolygonPleConstantDataBinder<Point> PolygonPleConstantNormalBinder;
-	/**
-	* 顶点数据 - 桥
-	*/
+
 	class BindingBridge
 	{
 	public:

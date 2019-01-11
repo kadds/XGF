@@ -5,7 +5,6 @@
 #include <freetype/ftglyph.h>
 #include <d3d11_1.h>
 
-#include <unordered_map>
 namespace XGF
 {
 	struct FontMetrics {
@@ -20,7 +19,7 @@ namespace XGF
 	{
 		float height;
 		float width;
-		float advanceX;//²½½ø¾àÀë
+		float advanceX;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		int n;
 		float vx;
 		float vy;
@@ -31,7 +30,7 @@ namespace XGF
 	public:
 		Font();
 		~Font();
-		bool Initialize(GDI * gdi, const std::wstring & name, int fontSize);
+		bool Initialize(const std::wstring & name, int fontSize);
 		void Shutdown();
 		PosSize* GetCharGlyph(wchar_t ch);
 		ID3D11ShaderResourceView * GetShaderResourceView() { return mShaderResourceView; }
@@ -56,7 +55,6 @@ namespace XGF
 		unsigned            mBufferHeight;
 		ID3D11ShaderResourceView * mShaderResourceView;
 		ID3D11Texture2D* mTexture;
-		GDI* mGDI;
 	};
 
 

@@ -2,16 +2,15 @@
 #include "Defines.hpp"
 #include <d3d11_1.h>
 #include <d3dcompiler.h>
-#include "gdi.hpp"
 #include "Logger.hpp"
-#include <vector>
 #include <functional>
 #include <string>
-#include <typeinfo>
+#include "GDI.hpp"
+#include "Buffer.hpp"
 namespace XGF
 {
+	
 	class IConstantBuffer;
-	class GDI;
 	class ConstantBuffer;
 	struct CBufferInfo
 	{
@@ -36,15 +35,16 @@ namespace XGF
 		std::string name;
 		unsigned int slot;
 	};
+
 	class Shader
 	{
 	public:
 		Shader();
-		~Shader();
+		virtual ~Shader();
+		virtual void Shutdown() = 0;
 		void ReflectStage(ID3D11ShaderReflection *reflector);
 		unsigned int GetCBufferSize(unsigned int index);
 		unsigned int GetCBufferCount();
-		GDI* GetGDI();
 		unsigned int GetCBufferSlot(unsigned int index);
 		unsigned int GetSamplerStateCount();
 		unsigned int GetSamplerStateSlot(unsigned int index);
@@ -53,7 +53,6 @@ namespace XGF
 	protected:
 		friend class ComputeGPU;
 		friend class ShaderStage;
-		GDI *mGDI;
 
 		std::vector<CBufferInfo> mCBufferInfo;
 		std::vector<UAVInfo> mUAVInfo;
@@ -65,26 +64,25 @@ namespace XGF
 	class PixelShader : public Shader
 	{
 	public:
-		void Initialize(GDI* gdi, const wchar_t* PSname);
-		void Initialize(GDI* gdi, const unsigned char* PScode, unsigned int codeLen);
-		void Initialize(GDI* gdi, const unsigned char* PSTextCode, unsigned int textCodeLen, const char * fMark);
-
-		void Shutdown();
+		void Initialize(const unsigned char* PScode, unsigned int codeLen);
+		void Shutdown() override;
 		PixelShader() {};
+		static const std::string & GetEntrypoint();
+		static const std::string & GetPrefixName();
 	private:
 		friend class ShaderStage;
 		std::vector<ID3D11ShaderResourceView *> mResviews;
 		ID3D11PixelShader * mPixelShader;
+		static const std::string mEntrypoint;
+		static const std::string mPerfixName;
 	};
 	class VertexShader : public Shader
 	{
 	public:
-		//interval = 0 默认全在一个 slot 中
-		void Initialize(GDI* gdi, const wchar_t* VSname, unsigned int interval = 0);
-		void Initialize(GDI* gdi, const unsigned char* VScode, unsigned int codeLen, unsigned int interval = 0);
-		void Initialize(GDI* gdi, const unsigned char* VSTextCode, unsigned int textCodeLen, const char * fMark, unsigned int interval = 0);
+		//interval = 0 
+		void Initialize(const unsigned char* VScode, unsigned int codeLen, unsigned int interval = 0);
 
-		void Shutdown();
+		void Shutdown() override;
 		void SetInputLayout();
 		const unsigned int * GetStrideAtSlot(unsigned int slot) const;
 		const unsigned int * GetSlotElementStartPositionArray() const;
@@ -93,11 +91,28 @@ namespace XGF
 		unsigned int GetInputCount() const;
 		const unsigned int * GetStride() const;
 		unsigned int GetInputLayoutCount() const;
+		bool HasSemanticTexcoord();
+		bool HasSemanticNormal();
+		bool HasSemantic(const char * name);
+		static const std::string & GetEntrypoint();
+		static const std::string & GetPrefixName();
 	private:
 		friend class ShaderStage;
+		static const std::string mEntrypoint;
+		static const std::string mPerfixName;
 		ID3D11VertexShader * mVertexShader;
 		ID3D11InputLayout * mInputLayout;
-		
+		class InputElement
+		{
+		public:
+			std::string name;
+			int index;
+			int slot;
+			unsigned stride;
+			InputElement(const std::string & name, int index, int slot, unsigned stride);
+		};
+		std::vector<InputElement> mInputElements;
+
 		std::vector<unsigned int> mSlotStride;
 		std::vector<unsigned int> mSlotElementStartPosition;
 		unsigned int mLayoutCount;
@@ -105,34 +120,38 @@ namespace XGF
 	class GeometryShader : public Shader
 	{
 	public:
-		void Initialize(GDI* gdi, const wchar_t* GSname, bool streamOut = false);
-		void Initialize(GDI* gdi, const unsigned char* GScode, unsigned int codeLen, bool streamOut = false);
+		void Initialize(const unsigned char* GScode, unsigned int codeLen, bool streamOut = false);
 		void Swap();
-		void Shutdown();
+		void Shutdown() override;
 		bool IsStreamOut() { return mStreamOut; }
 		ID3D11Buffer * GetStreamOutBuffer() { return mOutBuffer[0]; };
+		static const std::string & GetEntrypoint();
+		static const std::string & GetPrefixName();
 	private:
+		static const std::string mEntrypoint;
+		static const std::string mPerfixName;
 		bool mStreamOut;
 		friend class ShaderStage;
 		ID3D11GeometryShader * mGeometryShader;
 		D3D11_PRIMITIVE mPrimitive;
-		//2个实现缓冲区交换
+
 		ID3D11Buffer * mOutBuffer[2];
 	};
 	
 	class ComputeShader : public Shader
 	{
 	public:
-		void Initialize(GDI* gdi, const wchar_t* CSname);
-		void Initialize(GDI* gdi, const unsigned char* CScode, unsigned int codeLen);
-		void Shutdown();
+		void Initialize(const unsigned char* CScode, unsigned int codeLen);
+		void Shutdown() override;
 		ID3D11ComputeShader * GetShader() { return mComputeShader; }
-		
+		static const std::string & GetEntrypoint();
+		static const std::string & GetPrefixName();
 	private:
 		friend class ComputeGPU;
+		static const std::string mEntrypoint;
+		static const std::string mPerfixName;
 		ID3D11ComputeShader * mComputeShader;
 	};
-
 
 	class ShaderResourceView
 	{
@@ -146,23 +165,29 @@ namespace XGF
 		ID3D11ShaderResourceView * srv;
 		ID3D11Buffer * buffer;
 	};
-	struct Shaders // 一系列shader
+	struct Shaders // 一系锟斤拷shader
 	{
 		VertexShader * vs;
 		PixelShader * ps;
 		GeometryShader * gs;
 	public:
-		bool operator == (const Shaders & shaders)
+		Shaders(VertexShader * vs, PixelShader * ps, GeometryShader * gs = nullptr) : vs(vs), ps(ps), gs(gs) {  }
+		Shaders() : vs(nullptr), ps(nullptr), gs(nullptr) {  }
+
+		bool operator == (const Shaders & shaders) const
 		{
 			return shaders.vs == vs && shaders.ps == ps && shaders.gs == gs;
 		}
-		bool operator != (const Shaders & shaders)
+		bool operator != (const Shaders & shaders) const
 		{
 			return shaders.vs != vs || shaders.ps != ps || shaders.gs != gs;
 		}
+		bool IsNullShaders() const
+		{
+			return vs == nullptr && gs == nullptr && ps == nullptr;
+		}
 	};
-	//gpu通用计算
-	//不会负责建立UAV和SRV
+
 	class ComputeGPU
 	{
 	private:
@@ -183,8 +208,7 @@ namespace XGF
 		UnorderedAccessView * GetUnorderedAccessViews(int index);
 		unsigned int GetUnorderedAccessViewCount();
 	};
-	//自动建立buffer
-	//可编程阶段
+
 	class ShaderStage
 	{
 	private:
@@ -215,6 +239,7 @@ namespace XGF
 		void SetVSConstantBuffer(unsigned int index, const void * data);
 		void SetGSConstantBuffer(unsigned int index, const void * data);
 		void SetPSConstantBuffer(unsigned int index, const void * data);
+		void SetPSConstantBuffer(unsigned index, std::function<void(void*, int size)> func);
 		template<typename Tshader>
 		Shader * GetTemplateShader()
 		{
@@ -287,3 +312,4 @@ namespace XGF
 
 	};
 }
+

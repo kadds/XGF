@@ -3,7 +3,6 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <mutex>
-#include <memory>
 namespace XGF
 {
 	//view this: http://inloop.github.io/interpolator/

@@ -5,9 +5,10 @@
 #include "../../Include/Batch.hpp"
 #include "../../Include/DebugInscriber.hpp"
 #include "../../Include/AsyncTask.hpp"
-#include "../../Include/ConstantData.hpp"
 #include "../../Include/Scene.hpp"
 #include "../../Include/ScreenGrab.h"
+#include "../../Include/Context.hpp"
+
 namespace XGF
 {
 	bool XGFramework::_Update(float time)
@@ -32,21 +33,20 @@ namespace XGF
 				mScene->_Render(mDeltaTime);//无动画
 			}
 			mInputManager.Draw();
-			mGDI->Present(mIsVSync);
+			Context::Current().QueryGraphicsDeviceInterface().Present(mIsVSync);
 			DebugInscriber_End();
 		}
 	}
-	void XGFramework::_OnCreate(GDI *gdi, Asyn* asyn)
+	void XGFramework::_OnCreate()
 	{
 		CoInitializeEx(nullptr, COINITBASE_MULTITHREADED);
-		mGDI = gdi;
-		mThread = asyn;
-		asyn->SetCallBackFunc(std::bind(&EventDispatcher::Dispatch, &mFrameWorkEventDispatcher, std::placeholders::_1));
+		auto & context = Context::Current();
+		mThread = &context.QueryGameThread();
+		context.QueryGameThread().SetCallBackFunc(std::bind(&EventDispatcher::Dispatch, &mFrameWorkEventDispatcher, std::placeholders::_1));
 		mFrameWorkEventDispatcher.InsertAllEventListener(std::bind(&XGFramework::_OnMessage, this, std::placeholders::_1));
-		mGDI->Create();
-		ConstantData::GetInstance().Initialize(gdi);
-		mUiBatches.Initialize(gdi);
-		mInputManager.Initialize(gdi, gdi->GetInstance(), gdi->GetTopHwnd(), mThread);
+		context.QueryGraphicsDeviceInterface().Create();
+		mUiBatches.Initialize();
+		mInputManager.Initialize();
 	}
 
 	void XGFramework::_OnDestroy()
@@ -57,14 +57,13 @@ namespace XGF
 		}
 		mInputManager.Shutdown();
 		mUiBatches.Shutdown();
-		ConstantData::GetInstance().Shutdown();
-		mGDI->Destroy();
+		Context::Current().QueryGraphicsDeviceInterface().Destroy();
 
 	}
 
 	void XGFramework::_OnActivate(bool isActivate)
 	{
-		mGDI->CheckFullScreenForce(isActivate);
+		Context::Current().QueryGraphicsDeviceInterface().CheckFullScreenForce(isActivate);
 		mInputManager.OnActivate(isActivate);
 	}
 
@@ -72,7 +71,7 @@ namespace XGF
 	{
 		if (ClientX <= 0) ClientX = 1;
 		if (ClientY <= 0) ClientY = 1;
-		mGDI->SizeChanged(ClientX, ClientY);
+		Context::Current().QueryGraphicsDeviceInterface().SizeChanged(ClientX, ClientY);
 		mInputManager.UpdateCameraMatrix(ClientX, ClientY);
 		Batch::SetClientSize({ ClientX, ClientY });
 	}
@@ -113,7 +112,7 @@ namespace XGF
 	void XGFramework::_OnMouseMessage(const Event & ev)
 	{
 		if(ev.GetMouseEventId() == MouseEventId::MouseMove)
-			mInputManager.OnMouseMove(ev.GetData<int>(0), ev.GetData<int>(1));
+			mInputManager.OnMouseMove(static_cast<float>(ev.GetData<int>(0)), static_cast<float>(ev.GetData<int>(1)));
 		if (ev.GetMouseEventId() == MouseEventId::MouseDown)
 		{
 			mInputManager.SetFocus(nullptr);
@@ -137,12 +136,18 @@ namespace XGF
 	{
 		XGF_Debug(Framework, "A scene to switch");
 		scene->_OnCreate(this);
-		scene->OnSize(mGDI->GetWidth(), mGDI->GetHeight());
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
+		scene->OnSize(gdi.GetWidth(), gdi.GetHeight());
 		bool k = false;
 		mScene->_OnDestroy();
 		mScene = scene;
 	}
 	
+	void XGFramework::SwitchScene(std::shared_ptr<Scene> scene)
+	{
+		mThread->PostEvent(SystemEventId::SwitchScene, { scene });
+	}
+
 	void XGFramework::AddScene(std::shared_ptr<Scene> scene)
 	{
 		scene->_OnCreate(this);
@@ -183,30 +188,6 @@ namespace XGF
 		return mEventDispatcher;
 	}
 
-	void XGFramework::SwitchScene(std::shared_ptr<Scene> scene)
-	{
-		mThread->PostEvent(SystemEventId::SwitchScene, { scene });
-	}
-	void XGFramework::Clear(float color[]) const
-	{
-		mGDI->Clear(color);
-	}
-
-	void XGFramework::Clear(Color & color) const
-	{
-		mGDI->Clear(color);
-	}
-
-	void XGFramework::ClearDepthStencilBuffer() const
-	{
-		mGDI->ClearDepthStencilBuffer();
-	}
-
-	void XGFramework::Present(bool isVSync) const
-	{
-		mGDI->Present(isVSync);
-	}
-
 	void XGFramework::OpenVSync()
 	{
 		mIsVSync = true;
@@ -217,45 +198,21 @@ namespace XGF
 		mIsVSync = false;
 	}
 
-	HWND XGFramework::GetTopHwnd() const
-	{
-		return mGDI->GetTopHwnd();
-	}
-
-	HINSTANCE XGFramework::GetInstance() const
-	{
-		return mGDI->GetInstance();
-	}
 
 	Asyn &XGFramework::GetThread() const
 	{
 		return *mThread;
 	}
 
-	GDI & XGFramework::GetGDI() const
-	{
-		return *mGDI;
-	}
-
-	int XGFramework::GetWindowsWidth() const
-	{
-		return mGDI->GetWidth();
-	}
-
-	int XGFramework::GetWindowsHeight() const
-	{
-		return mGDI->GetHeight();
-	}
-
 	void XGFramework::Exit(int code)
 	{
 		// 设置退出码
-		PostMessage(mGDI->GetTopHwnd(), WM_CLOSE, 1, code);
+		PostMessage(Context::Current().QueryGraphicsDeviceInterface().GetTopHwnd(), WM_CLOSE, 1, code);
 		mThread->PostExitEvent();
 	}
 
 
-	XGFramework::XGFramework() : mGDI(nullptr), mDeltaTime(0), mThread(nullptr), mIsVSync(false),
+	XGFramework::XGFramework() : mDeltaTime(0), mThread(nullptr), mIsVSync(false),
 	                             mOnCloseListener(nullptr),
 	                             mOnInputListener(nullptr)
 	{

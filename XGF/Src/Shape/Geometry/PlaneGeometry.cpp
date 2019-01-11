@@ -29,6 +29,7 @@ namespace XGF::Shape
 			{
 				float x = segmentWidth * j - halfWidth;
 				(vec++)->Set(x, 0, y);
+				*(fc++) = normal;
 			}
 		}
 		for (int i = 0; i < heightSegments; i++)
@@ -45,7 +46,6 @@ namespace XGF::Shape
 				*(inc++) = b;
 				*(inc++) = c;
 				*(inc++) = d;
-				*(fc++) = normal;
 			}
 		}
 	}

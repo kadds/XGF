@@ -13,7 +13,7 @@ namespace XGF
 	public:
 		RenderToTexture();
 		~RenderToTexture();
-		void Initialize(GDI * gdi, int textureWidth, int textureHeight);
+		void Initialize(int textureWidth, int textureHeight);
 		void Shutdown();
 		//°ÑÍ¼Ïñ»æÖÆµ½Texture
 		void SetRenderTarget();
@@ -27,7 +27,6 @@ namespace XGF
 		ID3D11Texture2D* mRenderTargetTexture;
 		ID3D11RenderTargetView* mRenderTargetView;
 		ID3D11ShaderResourceView* mShaderResourceView;
-		GDI* mGDI;
 		int mWidth, mHeight;
 	};
 

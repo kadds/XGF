@@ -1,7 +1,7 @@
 #pragma once
 #include "Defines.hpp"
-#include "ConstantData.hpp"
 #include "Batch.hpp"
+
 namespace XGF
 {
 	class Batch;
@@ -16,40 +16,15 @@ namespace XGF
 		Batch mBatchPT;
 		Batch mBatchPC;
 	public:
-		virtual Batch * GetBatch(int k) {
-			if (k == BATCHES_BATCH_DEFAULT_PC)
-				return &mBatchPC;
-			if (k == BATCHES_BATCH_DEFAULT_PT)
-				return &mBatchPT;
-			return nullptr;
-		};
-		virtual void Begin(WVPMatrix & wvp)
-		{
-			mBatchPC.GetShaderStage()->SetVSConstantBuffer(0, &wvp); 
-			mBatchPT.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
-			mBatchPC.GetShaderStage()->SetPSConstantBuffer(0, Color(1.f, 1.f, 1.f, 1.f));
-			mBatchPT.GetShaderStage()->SetPSConstantBuffer(0, Color(1.f, 1.f, 1.f, 1.f));
-			mBatchPC.Begin();
-			mBatchPT.Begin();
-		};
-		virtual void End() { mBatchPC.End(); mBatchPT.End(); };
-		virtual void Initialize(GDI * gdi, unsigned int CmaxVetices = 1024, unsigned int CmaxIndices = 1024 * 2, unsigned int TmaxVetices = 1024, unsigned int TmaxIndices = 1024 * 2)
-		{
-			mBatchPC.Initialize(gdi, ConstantData::GetInstance().GetPositionColorShader(), CmaxVetices, CmaxIndices);
-			mBatchPT.Initialize(gdi, ConstantData::GetInstance().GetPositionTextureShader(), TmaxVetices, TmaxIndices);
-			mBatchPC.GetShaderStage()->SetBlendState(BlendState::AddOneOneAdd);
-			mBatchPT.GetShaderStage()->SetBlendState(BlendState::AddOneOneAdd);
-			mBatchPT.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthEnable);
-			mBatchPC.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthEnable);
-		}
+		virtual Batch* GetBatch(int k);;
+		virtual void Begin(WVPMatrix& wvp);;
+		virtual void End();;
+		virtual void Initialize(unsigned int CmaxVetices = 1024, unsigned int CmaxIndices = 1024 * 2,
+		                        unsigned int TmaxVetices = 1024, unsigned int TmaxIndices = 1024 * 2);
 
-		virtual void Shutdown()
-		{
-			mBatchPC.Shutdown();
-			mBatchPT.Shutdown();
-		}
-		Batches() {};
-		virtual ~Batches() {};
+		virtual void Shutdown();
+		Batches();;
+		virtual ~Batches();;
 	};
 
 }

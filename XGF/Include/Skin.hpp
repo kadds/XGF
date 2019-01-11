@@ -2,7 +2,6 @@
 #include "Defines.hpp"
 #include <map>
 #include "Texture.hpp"
-#include <memory>
 namespace XGF
 {
 	enum class SkinState

@@ -1,13 +1,8 @@
 #pragma once
-#include <d3d11_1.h>
-#include "SimpleMath.h"
-#include <string>
-#include <vector>
-#include <memory>
 #ifdef _DEBUG
 #define _XGF_DEBUG_ALLOC
 #endif
-//freetype 使用静态库时定义此宏 动态库请自行编译
+
 #define XGF_USE_FREETYPE_STATIC
 
 #ifdef _XGF_DEBUG_ALLOC
@@ -16,6 +11,15 @@
 #include <crtdbg.h>  
 #define new new(_CLIENT_BLOCK, __FILE__, __LINE__)  
 #endif
+
+#include <d3d11_1.h>
+#include "SimpleMath.h"
+#include <string>
+#include <vector>
+#include <memory>
+#include <unordered_map>
+#include <map>
+
 #define  DEPRECATED(str) __declspec(deprecated(str))
 
 namespace XGF
@@ -59,7 +63,7 @@ namespace XGF
 		Point4(DirectX::FXMVECTOR V) :SM::Vector4(V) {  }
 		Point4(const DirectX::XMFLOAT4& V) : SM::Vector4(V) {}
 		explicit Point4(const DirectX::XMVECTORF32& F) : SM::Vector4(F) {}
-
+		Point4(const Point & p) :SM::Vector4(p.x, p.y, p.z, 1.0) {  }
 		Point4(const Point4&) = default;
 		Point4& operator=(const Point4&) = default;
 
@@ -133,7 +137,39 @@ namespace XGF
 			this->w = a;
 		}
 	};
-	
+
+	class Color3 : public SM::Vector3
+	{
+	public:
+		Color3() noexcept : Vector3() {}
+		constexpr explicit Color3(float x) : SM::Vector3(x) {}
+		constexpr Color3(float _r, float _g, float _b) : SM::Vector3(_r, _g, _b) {}
+		explicit Color3(const DirectX::SimpleMath::Vector3& clr) : SM::Vector3(clr.x, clr.y, clr.z) {}
+		explicit Color3(_In_reads_(3) const float *pArray) : SM::Vector3(pArray) {}
+		Color3(DirectX::FXMVECTOR V) :SM::Vector3(V) {  }
+		Color3(const XMFLOAT3& V) : SM::Vector3(V) {}
+		explicit Color3(const DirectX::XMVECTORF32& F) : SM::Vector3(F) {}
+
+		Color3(const Color3&) = default;
+		Color3& operator=(const Color3&) = default;
+
+		Color3(Color3&&) = default;
+		Color3& operator=(Color3&&) = default;
+		Color3& operator+=(Color & c)
+		{
+			this->x += c.x;
+			this->y += c.y;
+			this->z += c.z;
+			return *this;
+		}
+		void Set(float r, float g, float b)
+		{
+			this->x = r;
+			this->y = g;
+			this->z = b;
+		}
+	};
+
 	struct WVPMatrix
 	{
 		SM::Matrix worldMatrix;

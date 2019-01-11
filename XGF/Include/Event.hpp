@@ -1,7 +1,6 @@
 #pragma once
 #include "Defines.hpp"
 #include <variant>
-#include <vector>
 #include <any>
 
 namespace XGF {
@@ -43,13 +42,13 @@ namespace XGF {
 
 	class Event {
 	public:
-		//事件发生的时间 ms 计
+
 		time_t mTimeStamp;
-		// 第几帧接收事件
+
 		int mRecipteFrame;
-		//最长生存事件点， 要求大于事件发生的时间 如果为无限 ，则设置为负数
+
 		time_t mMaxLiveTime;
-		//优先级， 越小越高，
+
 		int mPriority;
 		
 		EventIdType mEventId;

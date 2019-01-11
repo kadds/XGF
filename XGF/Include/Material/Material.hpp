@@ -11,44 +11,41 @@ namespace XGF
 		class Material
 		{
 		public:
-			virtual ~Material() {};
+			Material();;
+			virtual ~Material();
 
 			Shaders GetShaders();
-			RasterizerState GetRasterizerState()
+			RasterizerState GetRasterizerState();
+			DepthStencilState GetDepthStencilState();
+
+			BlendState GetBlendState();
+
+			void SetRasterizerState(RasterizerState rs);
+			void SetDepthStencilState(DepthStencilState ds);
+			void SetBlendState(BlendState bs);
+
+			
+
+			virtual std::vector<void*> GetVSBindingConstantBuffers();
+			virtual std::vector<Texture *> GetVSBindingTextures();
+			virtual std::vector<void*> GetPSBindingConstantBuffers();
+			virtual std::vector<Texture *> GetPSBindingTextures();
+
+			bool IsChangeShaders();
+			void RemoveChangeShadersFlag();
+
+			virtual  bool CanLinkWithLight()
 			{
-				return mRasterizerState;
-			};
-			DepthStencilState GetDepthStencilState()
-			{
-				return mDepthStencilState;
+				return false;
 			}
-			BlendState GetBlendState()
-			{
-				return mBlendState;
-			}
-			void SetRasterizerState(RasterizerState rs)
-			{
-				if (rs != RasterizerState::InvalidValue)
-					mRasterizerState = rs;
-			};
-			void SetDepthStencilState(DepthStencilState ds)
-			{
-				if (ds != DepthStencilState::InvalidValue)
-					mDepthStencilState = ds;
-			};
-			void SetBlendState(BlendState bs)
-			{
-				if (bs != BlendState::InvalidValue)
-					mBlendState = bs;
-			}
-			virtual std::vector<void* > GetConstantBuffers() = 0;
-			virtual std::vector<Texture *> GetTextureBindingList() const = 0;
 		protected:
+			void SetShaders(Shaders shaders);
+		private:
 			RasterizerState mRasterizerState = RasterizerState::SolidAndCutBack;
 			DepthStencilState mDepthStencilState = DepthStencilState::DepthEnable;
 			BlendState mBlendState = BlendState::NoneBlend;
 			Shaders mShaders;
-
+			bool mIsChangeShaders;
 		};
 	}
 }

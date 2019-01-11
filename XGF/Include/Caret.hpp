@@ -4,13 +4,14 @@
 #include "Line.hpp"
 namespace XGF
 {
+	class Context;
 	class Caret
 	{
 	public:
 		Caret();
 		~Caret();
 
-		void Initialize(GDI * gdi);
+		void Initialize();
 		void Shutdown();
 		void Draw(const WVPMatrix & wvp);
 		void Tick(float time);

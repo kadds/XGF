@@ -6,6 +6,7 @@
 #include "../../Include/Texture.hpp"
 #include "../../Include/Shader.hpp"
 #include "../../Include/Polygon.hpp"
+#include "../../Include/Context.hpp"
 
 namespace XGF
 {
@@ -77,10 +78,9 @@ namespace XGF
 		}
 	}
 
-	void Batch::Initialize(GDI * gdi, Shaders shaders, int MaxVertices, int MaxIndexCount, TopologyMode tm)
+	void Batch::Initialize(Shaders shaders, int MaxVertices, int MaxIndexCount, TopologyMode tm)
 	{
 		XGF_ASSERT(MaxVertices > 0);
-		mGDI = gdi;
 		mMaxVertices = MaxVertices;
 		mMaxIndexCount = MaxIndexCount;
 		mShaderStage.Initialize(shaders.vs, shaders.ps, shaders.gs);
@@ -192,37 +192,39 @@ namespace XGF
 	void Batch::Map(bool discard)
 	{
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
-
+		auto * deivceContext = Context::Current().QueryGraphicsDeviceInterface().GetDeviceContext();
 		int i = 0;
 		for each (auto it in mVertexBuffers)
 		{
-			mGDI->GetDeviceContext()->Map(it, 0, discard ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE_NO_OVERWRITE, 0, &mappedResource);
+			deivceContext->Map(it, 0, discard ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE_NO_OVERWRITE, 0, &mappedResource);
 			mVertexData[i++] = static_cast<char*>(mappedResource.pData);
 		}
 
 		if (mUsingIndex)
 		{
-			mGDI->GetDeviceContext()->Map(mIndexBuffer, 0, discard ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE_NO_OVERWRITE, 0, &mappedResource);
+			deivceContext->Map(mIndexBuffer, 0, discard ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE_NO_OVERWRITE, 0, &mappedResource);
 			mIndexData = static_cast<Index *>(mappedResource.pData);
 		}
 	}
 
 	void Batch::UnMap()
 	{
+		auto * deivceContext = Context::Current().QueryGraphicsDeviceInterface().GetDeviceContext();
+
 		for each (auto it in mVertexBuffers)
 		{
-			mGDI->GetDeviceContext()->Unmap(it, 0);
+			deivceContext->Unmap(it, 0);
 		}
 		
 		if (mUsingIndex)
 		{
-			mGDI->GetDeviceContext()->Unmap(mIndexBuffer, 0);
+			deivceContext->Unmap(mIndexBuffer, 0);
 		}
 
 	}
 	void Batch::PrepareForRender()
 	{
-		auto gdi = mGDI;
+		auto * deivceContext = Context::Current().QueryGraphicsDeviceInterface().GetDeviceContext();
 		unsigned int offset[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT]{ 0 };
 		
 		ID3D11Buffer *mbuffer[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
@@ -237,20 +239,20 @@ namespace XGF
 			if (gs->IsStreamOut())
 			{
 				auto buf = mShaderStage.GetGSShader()->GetStreamOutBuffer();
-				gdi->GetDeviceContext()->SOSetTargets(1, &buf, offset);
+				deivceContext->SOSetTargets(1, &buf, offset);
 			}
 		}
 		
 		for (unsigned int i = 0; i < vs->GetSlotCount(); i++) {
 			unsigned int stride = vs->GetStrideAllSizeAtSlot(i);
-			gdi->GetDeviceContext()->IASetVertexBuffers(i, 1, &mVertexBuffers[i], &stride, offset);
+			deivceContext->IASetVertexBuffers(i, 1, &mVertexBuffers[i], &stride, offset);
 		}
 		if (mMaxVertices > 0)
-			gdi->GetDeviceContext()->IASetVertexBuffers(vs->GetSlotCount(), D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT - vs->GetSlotCount(), mbuffer, offset, offset);
+			deivceContext->IASetVertexBuffers(vs->GetSlotCount(), D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT - vs->GetSlotCount(), mbuffer, offset, offset);
 		
 		if (mUsingIndex)
-			gdi->GetDeviceContext()->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-		gdi->GetDeviceContext()->IASetPrimitiveTopology(mTopologyMode);
+			deivceContext->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		deivceContext->IASetPrimitiveTopology(mTopologyMode);
 		
 	}
 
@@ -292,6 +294,8 @@ namespace XGF
 
 	ID3D11Buffer * Batch::CreateVertexBuffer(unsigned len)
 	{
+		auto * device = Context::Current().QueryGraphicsDeviceInterface().GetDevice();
+
 		ID3D11Buffer * buffer;
 		D3D11_BUFFER_DESC vertexDesc;
 		char *vertices = new char[mMaxVertices * len * mMaxPreRenderFrameCount];
@@ -303,7 +307,7 @@ namespace XGF
 		D3D11_SUBRESOURCE_DATA resourceData;
 		ZeroMemory(&resourceData, sizeof(resourceData));
 		resourceData.pSysMem = vertices;
-		XGF_Error_Check(Render, mGDI->GetDevice()->CreateBuffer(&vertexDesc, &resourceData, &buffer), "CreateVertexBuffer Error");
+		XGF_Error_Check(Render, device->CreateBuffer(&vertexDesc, &resourceData, &buffer), "CreateVertexBuffer Error");
 		PutDebugString((buffer));
 		delete[] vertices;
 		return buffer;
@@ -314,6 +318,7 @@ namespace XGF
 		if (!mIsBegin)
 			return;//TODO::ERROR
 		mIsBegin = false;
+		auto * deviceContext = Context::Current().QueryGraphicsDeviceInterface().GetDeviceContext();
 
 		if (mIsMap) {
 			UnMap();
@@ -324,22 +329,22 @@ namespace XGF
 		PrepareForRender();
 		if (mShaderStage.GetGSShader() != nullptr && mShaderStage.GetGSShader()->IsStreamOut())
 		{
-			mGDI->GetDeviceContext()->Draw(mPosInVertices - mBeforeVertices, mLastFrameVBStart + mBeforeVertices);
+			deviceContext->Draw(mPosInVertices - mBeforeVertices, mLastFrameVBStart + mBeforeVertices);
 			mShaderStage.GetGSShader()->Swap();
 		}
 		else
 		{
 			if (!drawAuto)
 				if (mUsingIndex)
-					mGDI->GetDeviceContext()->DrawIndexed(mPosInIndices - mPosBeforeIndices, mLastFrameIBStart + mPosBeforeIndices, 0);
+					deviceContext->DrawIndexed(mPosInIndices - mPosBeforeIndices, mLastFrameIBStart + mPosBeforeIndices, 0);
 				else
-					mGDI->GetDeviceContext()->Draw(mPosInVertices - mBeforeVertices, mLastFrameVBStart + mBeforeVertices);
+					deviceContext->Draw(mPosInVertices - mBeforeVertices, mLastFrameVBStart + mBeforeVertices);
 			else
-				mGDI->GetDeviceContext()->DrawAuto();
+				deviceContext->DrawAuto();
 		}
 		ID3D11Buffer *b = nullptr;
 		UINT offset[4] = { 0 };
-		mGDI->GetDeviceContext()->SOSetTargets(1, &b, offset);
+		deviceContext->SOSetTargets(1, &b, offset);
 		mShaderStage.UnBindStage();
 	}
 
@@ -374,6 +379,8 @@ namespace XGF
 
 	void Batch::CreateIndexBuffer()
 	{
+		auto * device = Context::Current().QueryGraphicsDeviceInterface().GetDevice();
+
 		/*UINT index[]{
 		1, 2, 0,
 		0, 3, 1
@@ -391,7 +398,7 @@ namespace XGF
 		D3D11_SUBRESOURCE_DATA iinitData;
 		ZeroMemory(&iinitData, sizeof(iinitData));
 		iinitData.pSysMem = indexList;
-		XGF_Error_Check(Render, mGDI->GetDevice()->CreateBuffer(&ibd, &iinitData, &mIndexBuffer), "CreateIndexBuffer Error");
+		XGF_Error_Check(Render, device->CreateBuffer(&ibd, &iinitData, &mIndexBuffer), "CreateIndexBuffer Error");
 		//mIndexBuffer = CreateBuffer(mGDI, D3D11_BIND_INDEX_BUFFER, 0, sizeof(index) *(mMaxIndexCount * mMaxPreRenderFrameCount), 0, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 		PutDebugString(mIndexBuffer);
 		delete[] indexList;

@@ -1,6 +1,8 @@
 #include "..\..\Include\AxisRenderer.hpp"
-#include "..\..\Include\ConstantData.hpp"
+#include "..\..\Include\ShaderManager.hpp"
 #include <algorithm>
+#include "../../Include/Context.hpp"
+
 namespace XGF
 {
 	AxisRenderer::AxisRenderer()
@@ -12,10 +14,10 @@ namespace XGF
 	{
 	}
 
-	void AxisRenderer::Initialize(GDI * gdi, float len)
+	void AxisRenderer::Initialize(float len)
 	{
 		auto p = DirectX::XMMatrixIdentity();
-		mBatch.Initialize(gdi, ConstantData::GetInstance().GetPositionColorShader(), 2 * 3 * 2, 2 * 3 * 2, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+		mBatch.Initialize(Context::Current().QueryShaderManager().GetBasicShaders(false, false, true), 2 * 3 * 2, 2 * 3 * 2, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 		mBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthEnable);
 		mBatch.GetShaderStage()->SetBlendState(BlendState::NoneBlend);
 		

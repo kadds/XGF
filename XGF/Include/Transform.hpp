@@ -1,12 +1,11 @@
 #pragma once
 #include "Defines.hpp"
-#include <memory>
 #include "Action.hpp"
 #include "Actions.hpp"
 namespace XGF
 {
 	/*
-	* ×ª»»
+	* ×ªï¿½ï¿½
 	*/
 	class Transform
 	{

@@ -14,12 +14,11 @@
 #include "Font.hpp"
 #include "TextRenderer.hpp"
 #include "Scene.hpp"
-#include "ShaderConst.hpp"
 #include "ShapeRenderer.hpp"
+#include "ShaderManager.hpp"
 #include "ResourceManager.hpp"
 #include "RenderToTexture.hpp"
 #include "ParticleSystem.hpp"
-#include "ConstantData.hpp"
 //********************************
 
 //*********** UI *******************
@@ -60,5 +59,12 @@
 #include "Geometry\PlaneGeometry.hpp"
 #include "Geometry/SphereGeometry.hpp"
 #include "Material\BasicMaterial.hpp"
+#include "Material/PhongMaterial.hpp"
+#include "Material/LambertMaterial.hpp"
+#include "Light/AmbientLight.hpp"
+#include "Light/DirectionalLight.hpp"
+#include "Light/PointLight.hpp"
+#include "Light/SpotLight.hpp"
+
 //***********************************
 #include "TrackballCameraController.hpp"

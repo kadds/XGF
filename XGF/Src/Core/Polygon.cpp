@@ -40,7 +40,8 @@ namespace XGF
 
 	void BindingBridge::AddBinder(const std::shared_ptr<PolygonPleBinder> c)
 	{
-		binders.push_back(c);
+		if(c)
+			binders.push_back(c);
 	}
 
 	void BindingBridge::AddBinder(const BindingBridge & c)

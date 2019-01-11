@@ -5,6 +5,8 @@
 #include "../../Include/WICTextureLoader.h"
 #include <algorithm>
 #include <fstream>
+#include "../../Include/Context.hpp"
+
 namespace XGF
 {
 	Texture::Texture():mIs9Path(false), mTextureResource(nullptr)
@@ -74,11 +76,12 @@ namespace XGF
 
 	}
 
-	bool TextureResource::Load(GDI * gdi, void * mem, size_t size)
+	bool TextureResource::Load(void * mem, size_t size)
 	{
-		if (FAILED(DirectX::CreateDDSTextureFromMemory(gdi->GetDevice(), (uint8_t *)mem, size, (ID3D11Resource **)&mTexture, &mShaderResourceView)))
+		auto& gdi = Context::Current().QueryGraphicsDeviceInterface();
+		if (FAILED(DirectX::CreateDDSTextureFromMemory(gdi.GetDevice(), (uint8_t *)mem, size, (ID3D11Resource **)&mTexture, &mShaderResourceView)))
 		{
-			if (FAILED(DirectX::CreateWICTextureFromMemory(gdi->GetDevice(), (uint8_t *)mem, size, (ID3D11Resource **)&mTexture, &mShaderResourceView)))
+			if (FAILED(DirectX::CreateWICTextureFromMemory(gdi.GetDevice(), (uint8_t *)mem, size, (ID3D11Resource **)&mTexture, &mShaderResourceView)))
 			{
 				return false;
 			}
@@ -90,7 +93,7 @@ namespace XGF
 		return true;
 	}
 
-	bool TextureResource::Load(GDI * gdi, std::wstring fullPath)
+	bool TextureResource::Load(std::wstring fullPath)
 	{
 		std::ifstream inFile;
 		inFile.open(fullPath, std::ios::binary);
@@ -101,7 +104,7 @@ namespace XGF
 		{
 			char * buffer = new char[length];
 			inFile.read(buffer, length);
-			bool isok = Load(gdi, buffer, length);
+			bool isok = Load(buffer, length);
 			delete[] buffer;
 			inFile.close();
 			return isok;

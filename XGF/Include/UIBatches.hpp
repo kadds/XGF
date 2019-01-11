@@ -2,7 +2,6 @@
 #include "Defines.hpp"
 #include "Batches.hpp"
 #include "TextRenderer.hpp"
-#include <unordered_map>
 namespace XGF
 {
 	enum class FontSize {
@@ -13,7 +12,7 @@ namespace XGF
 		Huge,
 	};
 	/*
-	ÓÃÓÚUIÏµÍ³£¨°üÀ¨×ÖÌåäÖÈ¾£©µÄBatch¼¯ºÏ
+	ï¿½ï¿½ï¿½ï¿½UIÏµÍ³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¾ï¿½ï¿½ï¿½ï¿½Batchï¿½ï¿½ï¿½ï¿½
 	*/
 	class UIBatches : public Batches
 	{

@@ -4,7 +4,9 @@
 #include "../../Include/Rectangle.hpp"
 #include "../../Include/Font.hpp"
 #include "../../Include/Texture.hpp"
-#include "../../Include/ConstantData.hpp"
+#include "../../Include/ShaderManager.hpp"
+#include "../../Include/Context.hpp"
+
 namespace XGF
 {
 	TextRenderer::TextRenderer() :mTemporarybuffer(nullptr), textureBinder(std::make_shared<PolygonPleTextureBinder>(4)),
@@ -17,10 +19,10 @@ namespace XGF
 	{
 	}
 
-	void TextRenderer::Initialize(GDI * gdi, Font * font, int MaxCount)
+	void TextRenderer::Initialize(Font * font, int MaxCount)
 	{
 		mFont = font;
-		mBatch.Initialize(gdi, ConstantData::GetInstance().GetPositionAlphaTextureColorShader(), MaxCount * 4, MaxCount * 6, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		mBatch.Initialize(Context::Current().QueryShaderManager().GetFontShaders(true), MaxCount * 4, MaxCount * 6, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		mBatch.GetShaderStage()->SetBlendState(BlendState::AddZeroOneAdd);
 		// 文字渲染采用不同的深度函数方法，在同深度的UI控件绘制中以写入缓冲区
 		mBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthEnableWithLessEqual);

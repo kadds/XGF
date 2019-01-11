@@ -1,5 +1,7 @@
 #include "..\..\Include\Cursor.hpp"
-#include "..\..\Include\ConstantData.hpp"
+#include "../../Include/ShaderManager.hpp"
+#include "../../Include/Context.hpp"
+
 namespace XGF
 {
 	Cursor::Cursor() :mPtBinder(std::make_shared<PolygonPleTextureBinder>(4)), mIsShow(false), mUsedStaticTexture(true), mAnimation(0), mPointDeviation(0.f, 0.f), mPassTime(0.f), mTextureResource(nullptr)
@@ -10,9 +12,9 @@ namespace XGF
 	{
 	}
 
-	void Cursor::Initialize(GDI * gdi)
+	void Cursor::Initialize()
 	{
-		mTextureBatch.Initialize(gdi, ConstantData::GetInstance().GetPositionTextureShader(), 4, 6);
+		mTextureBatch.Initialize(Context::Current().QueryShaderManager().GetBasicShaders(false, true, false), 4, 6);
 		mTextureBatch.GetShaderStage()->SetBlendState(BlendState::AddOneOneAdd);
 		mTextureBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthDisable);
 		mBbrg.AddBinder(mRc.mPolygon);

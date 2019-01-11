@@ -1,5 +1,7 @@
+#ifdef USE_TEXTURE
 Texture2D gShaderTexture;
 SamplerState gSampleType;
+#endif
 cbuffer CBMatrix:register(b0)
 {
 	row_major float4x4 cbWrold;
@@ -15,20 +17,41 @@ cbuffer CBColor:register(b0)
 struct VertexIn
 {
 	float3 Pos: POSITION;
+#ifdef USE_NORMAL
+	float3 Normal: NORMAL;
+#endif
+#ifdef USE_TEXTURE
 	float2 Tex: TEXCOORD;
-	float4 Color: COLOR;
+#endif
+#ifdef USE_COLOR
+	float4 Color: Color;
+#endif
 };
 struct VertexOut
 {
 	float4 Pos: SV_POSITION;
+#ifdef USE_NORMAL
+	float3 Normal: NORMAL;
+#endif
+#ifdef USE_TEXTURE
 	float2 Tex: TEXCOORD;
-	float4 Color: COLOR;
+#endif
+#ifdef USE_COLOR
+	float4 Color: Color;
+#endif
 };
 
 
 float4 PS(VertexOut data) : SV_TARGET
 {
-	return gShaderTexture.Sample(gSampleType, data.Tex) * cbColor *  data.Color;
+	float4 c = cbColor;
+#ifdef USE_TEXTURE
+	c *= gShaderTexture.Sample(gSampleType, data.Tex);
+#endif
+#ifdef USE_COLOR
+	c *= data.Color;
+#endif
+	return c;
 }
 VertexOut VS(VertexIn data)
 {
@@ -36,7 +59,14 @@ VertexOut VS(VertexIn data)
 	vout.Pos= mul(float4(data.Pos, 1.0f), cbWrold);
 	vout.Pos = mul(vout.Pos, cbView);
 	vout.Pos = mul(vout.Pos, cbProj);
-	vout.Color = data.Color;
+#ifdef USE_NORMAL
+	vout.Normal = data.Normal;
+#endif
+#ifdef USE_TEXTURE
 	vout.Tex = data.Tex;
+#endif
+#ifdef USE_COLOR
+	vout.Color = data.Color;
+#endif
 	return vout;
 }

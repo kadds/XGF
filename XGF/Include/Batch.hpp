@@ -2,15 +2,13 @@
 #include "Defines.hpp"
 #include <d3d11_1.h>
 
-#include <vector>
-#include "Buffer.hpp"
 #include "Polygon.hpp"
 #include "Shader.hpp"
 namespace XGF
 {
 	using std::vector;
 
-	class GDI;
+	class Context;
 	struct WVPMatrix;
 	class Polygon;
 	class ShaderStage;
@@ -19,19 +17,13 @@ namespace XGF
 	typedef char* VertexDate;
 
 	typedef D3D_PRIMITIVE_TOPOLOGY TopologyMode;
-	//暂时不可用
+	
 	enum class InstanceMode
 	{
 		None,
 		Open
 	};
-	/*
-	渲染批次类
-	使用DrawPolygon写入缓存，渲染图形
-	所有导致状态改变的函数可能间接调用Flush函数，从而增加Call Batch的次数
-	请搭配Begin End 使用
-	未完成 Instance Render
-	*/
+
 	class Batch
 	{
 	public:
@@ -39,16 +31,15 @@ namespace XGF
 
 		void DrawPolygon(const BindingBridge & bbridge);
 		void DrawPolygon(std::shared_ptr<PolygonPleIndex> pindex, const BindingBridge & bbridge);
-		//提前提交图形
+
 		void Flush();
 		ShaderStage * GetShaderStage() { return &mShaderStage; }
-		void Initialize(GDI * gdi, Shaders shaders, int MaxVertices, int MaxIndexCount, TopologyMode tm = TopologyMode::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		void Initialize(Shaders shaders, int MaxVertices, int MaxIndexCount, TopologyMode tm = TopologyMode::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		void Shutdown();
 
 		void Begin();
 		void End();
-		//使状态改变
-		//改变拓扑模式，会导致Flush
+		
 		void ChangeTopologyMode(TopologyMode tm);
 		TopologyMode GetTopologyMode();
 		static int GetClientWidth() {
@@ -72,8 +63,6 @@ namespace XGF
 		static int mClientHeight;
 		static unsigned int mMaxPreRenderFrameCount;
 	protected:
-
-		GDI * mGDI;
 		std::vector<ID3D11Buffer *> mVertexBuffers;
 		ID3D11Buffer * mIndexBuffer;
 		//ShaderStage 

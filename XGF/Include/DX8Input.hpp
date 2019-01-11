@@ -31,7 +31,7 @@ namespace XGF
 	public:
 		DX8Input();
 		~DX8Input();
-		bool Initialize(HINSTANCE hs, HWND tophwnd);//¶¥²ã´°¿Ú
+		bool Initialize();
 		void Shutdown();
 		void OnActivate(bool isActivate);
 

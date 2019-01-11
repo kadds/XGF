@@ -1,6 +1,5 @@
 #pragma once
 #include "Defines.hpp"
-#include <vector>
 #include <functional>
 #include "Transform.hpp"
 #include "EventDispatcher.hpp"
@@ -10,7 +9,7 @@ namespace XGF
 	typedef std::function<void(void)> OnCreateListener;
 	typedef std::function<void(void)> OnDestroyListener;
 	/*
-	* containerÈÝÆ÷
+	* containerï¿½ï¿½ï¿½ï¿½
 	*/
 	class Scene;
 	class Actor;

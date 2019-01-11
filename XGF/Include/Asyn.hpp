@@ -4,13 +4,12 @@
 #include <functional>
 #include "MsgQueue.hpp"
 #include "EventPool.hpp"
-#include <memory>
 
 namespace XGF
 {
 	class GDI;
 	/*
-	存在在多线程下极少出现的Bug
+	锟斤拷锟斤拷锟节讹拷锟竭筹拷锟铰硷拷锟劫筹拷锟街碉拷Bug
 	*/
 	class Asyn
 	{

@@ -3,18 +3,16 @@
 #include "Line.hpp"
 #include "Shader.hpp"
 #include "Batch.hpp"
-#include <vector>
 #include <memory>
 namespace XGF
 {
 	class Camera;
-	class GDI;
 	class AxisRenderer
 	{
 	public:
 		AxisRenderer();
 		~AxisRenderer();
-		void Initialize(GDI * gdi, float len = 1e5);
+		void Initialize(float len = 1e5);
 		void SetAxisXColor(SM::Color color, SM::Color colorb);
 		void SetAxisYColor(SM::Color color, SM::Color colorb);
 		void SetAxisZColor(SM::Color color, SM::Color colorb);

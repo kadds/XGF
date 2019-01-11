@@ -17,7 +17,7 @@ namespace XGF
 	public:
 		TextRenderer();
 		~TextRenderer();
-		void Initialize(GDI * gdi, Font * font, int MaxCount);
+		void Initialize(Font * font, int MaxCount);
 		void Shutdown();
 		void DrawString(const wchar_t * str, float x, float y, float z = 0.01f);
 		void DrawString(const wchar_t * str, Color color, float x, float y, float z = 0.01f);

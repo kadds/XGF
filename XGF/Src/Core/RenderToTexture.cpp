@@ -1,6 +1,8 @@
 #include "..\..\Include\RenderToTexture.hpp"
 #include "..\..\Include\GDI.hpp"
 #include "..\..\Include\Logger.hpp"
+#include "../../Include/Context.hpp"
+
 namespace XGF
 {
 	RenderToTexture::RenderToTexture() :mRenderTargetTexture(nullptr), mShaderResourceView(nullptr), mRenderTargetView(nullptr)
@@ -12,9 +14,8 @@ namespace XGF
 	{
 	}
 
-	void RenderToTexture::Initialize(GDI * gdi, int textureWidth, int textureHeight)
+	void RenderToTexture::Initialize(int textureWidth, int textureHeight)
 	{
-		mGDI = gdi;
 		mHeight = textureHeight;
 		mWidth = textureWidth;
 		ReCreateTexture();
@@ -41,16 +42,19 @@ namespace XGF
 
 	void RenderToTexture::SetRenderTarget()
 	{
-		mGDI->GetDeviceContext()->OMSetRenderTargets(1, &mRenderTargetView, mGDI->GetDepthStencilView());
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
+		gdi.GetDeviceContext()->OMSetRenderTargets(1, &mRenderTargetView, gdi.GetDepthStencilView());
 	}
 
 	void RenderToTexture::Clear(const float color[])
 	{
-		mGDI->GetDeviceContext()->ClearRenderTargetView(mRenderTargetView, color);
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
 
-		mGDI->GetDeviceContext()->ClearDepthStencilView(mGDI->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+		gdi.GetDeviceContext()->ClearRenderTargetView(mRenderTargetView, color);
+
+		gdi.GetDeviceContext()->ClearDepthStencilView(gdi.GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 		ID3D11ShaderResourceView *const pSRV[1] = { nullptr };
-		mGDI->GetDeviceContext()->PSSetShaderResources(0, 1, pSRV);
+		gdi.GetDeviceContext()->PSSetShaderResources(0, 1, pSRV);
 	}
 	void RenderToTexture::Clear(const Color & c)
 	{
@@ -63,7 +67,9 @@ namespace XGF
 	}
 	void RenderToTexture::SetDefaultRenderTarget()
 	{
-		mGDI->SetRenderTargetView();
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
+
+		gdi.SetRenderTargetView();
 	}
 	ID3D11ShaderResourceView* RenderToTexture::GetShaderResourceView()
 	{
@@ -87,8 +93,10 @@ namespace XGF
 		textureDesc.MipLevels = 1;
 		textureDesc.ArraySize = 1;
 		textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		auto q = mGDI->Query4xMsaaQuality();
-		auto enable = mGDI->IsEnable4xMsaa();
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
+
+		auto q = gdi.Query4xMsaaQuality();
+		auto enable = gdi.IsEnable4xMsaa();
 		if(enable && q > 0)
 		{
 			textureDesc.SampleDesc.Count = 4;
@@ -103,7 +111,7 @@ namespace XGF
 		textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 		textureDesc.CPUAccessFlags = 0;
 		textureDesc.MiscFlags = 0;
-		XGF_Error_Check(Render, mGDI->GetDevice()->CreateTexture2D(&textureDesc, NULL, &mRenderTargetTexture), "CT2D Failed");
+		XGF_Error_Check(Render, gdi.GetDevice()->CreateTexture2D(&textureDesc, NULL, &mRenderTargetTexture), "CT2D Failed");
 		renderTargetViewDesc.Format = textureDesc.Format;
 		if(enable && q > 0)
 			renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
@@ -112,7 +120,7 @@ namespace XGF
 
 		renderTargetViewDesc.Texture2D.MipSlice = 0;
 
-		XGF_Error_Check(Render, mGDI->GetDevice()->CreateRenderTargetView(mRenderTargetTexture, &renderTargetViewDesc, &mRenderTargetView), "CreateRT Failed");
+		XGF_Error_Check(Render, gdi.GetDevice()->CreateRenderTargetView(mRenderTargetTexture, &renderTargetViewDesc, &mRenderTargetView), "CreateRT Failed");
 
 		shaderResourceViewDesc.Format = textureDesc.Format;
 		if(enable && q > 0)
@@ -122,7 +130,7 @@ namespace XGF
 		shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
 		shaderResourceViewDesc.Texture2D.MipLevels = 1;
 
-		XGF_Error_Check(Render, mGDI->GetDevice()->CreateShaderResourceView(mRenderTargetTexture, &shaderResourceViewDesc, &mShaderResourceView), "CreateSRV Failed");
+		XGF_Error_Check(Render, gdi.GetDevice()->CreateShaderResourceView(mRenderTargetTexture, &shaderResourceViewDesc, &mShaderResourceView), "CreateSRV Failed");
 
 	}
 };

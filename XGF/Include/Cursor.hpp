@@ -12,7 +12,7 @@ namespace XGF
 		friend class InputManager;
 		Cursor();
 		~Cursor();
-		void Initialize(GDI * gdi);
+		void Initialize();
 		void Shutdown();
 		
 		void SetStaticTexture(TextureResource * res);

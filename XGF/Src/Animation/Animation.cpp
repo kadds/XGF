@@ -1,5 +1,4 @@
 #include "../../Include/Animation.hpp"
-#include "../../Include/Control.hpp"
 namespace XGF
 {
 

@@ -2,7 +2,6 @@
 #define NOMINMAX
 #include <d3d11_1.h>
 #include "Defines.hpp"
-#include <vector>
 namespace XGF
 {
 
@@ -20,16 +19,13 @@ namespace XGF
 	public:
 		Size mSize;
 		TextureResource();
-		bool Load(GDI * gdi, void * mem, size_t size);
-		bool Load(GDI * gdi, std::wstring fullPath);
+		bool Load(void * mem, size_t size);
+		bool Load(std::wstring fullPath);
 		void Release();
 		ID3D11ShaderResourceView * GetShaderResourceView()const { return mShaderResourceView; }
 		ID3D11Texture2D * GetTexture() const { return mTexture; }
 	};
 
-	/*
-	Œ∆¿Ì”√¿‡
-	*/
 	class Texture
 	{
 	public:

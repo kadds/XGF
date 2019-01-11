@@ -3,16 +3,13 @@
 #include "Defines.hpp"
 #include "InputManager.hpp"
 #include "Asyn.hpp"
-#include "SceneAnimation.hpp"
-#include "Shader.hpp"
 #include "EventDispatcher.hpp"
 #include "UIBatches.hpp"
 
 namespace XGF
 {
 	class Scene;
-	class GDI;
-	
+	class Context;
 	/*
 	这是应用程序框架
 	*/
@@ -25,7 +22,7 @@ namespace XGF
 		//Application框架调用
 		void _Loop2();
 		//Application框架调用
-		void _OnCreate(GDI *gdi, Asyn * asyn);
+		void _OnCreate();
 		//Application框架调用
 		void _OnDestroy();
 
@@ -41,20 +38,9 @@ namespace XGF
 		//Application框架调用
 		void _OnClose();
 
-		void Clear(float color[]) const;
-		void Clear(Color &color) const;
-		void ClearDepthStencilBuffer() const;
-		void Present(bool isVSync) const;
-
 		void OpenVSync();
 		void CloseVSync();
-		HWND GetTopHwnd() const;
-		HINSTANCE GetInstance() const;
 		Asyn & GetThread() const;
-		GDI & GetGDI() const;
-
-		int GetWindowsWidth() const;
-		int GetWindowsHeight() const;
 		//退出循环
 		void Exit(int code);
 		//切换Scene。注意，该函数只是在消息队列中添加了消息，下一帧才会切换，实际切换代码在ISwitchScene中
@@ -79,8 +65,6 @@ namespace XGF
 				return true;
 			}
 		};
-	protected://来自外部初始化的变量
-		GDI *mGDI;
 	protected:
 		std::shared_ptr<Scene> mScene;
 		void ISwitchScene(std::shared_ptr<Scene> scene);
@@ -98,7 +82,6 @@ namespace XGF
 		EventDispatcher mEventDispatcher;
 
 		EventDispatcher mFrameWorkEventDispatcher;
-		DISALLOW_COPY_AND_ASSIGN(XGFramework);
 	};
 
 };

@@ -4,13 +4,9 @@
 #include "Shape.hpp"
 #include "Rectangle.hpp"
 #include "Shader.hpp"
-#include <vector>
 #include <random>
 namespace XGF
 {
-	//没有完成的功能
-	//随时更改
-	//Emitter base
 	class Emitter
 	{
 	public:
@@ -25,14 +21,13 @@ namespace XGF
 		void SetGravity(SM::Vector3 g, float w);
 		void SetFrequency(int countPerframe);
 		float mAliveTime;
-		float mPastTime;//过去的时间
-		bool isAlive;//是否渲染
-		float width;//
+		float mPastTime;
+		bool isAlive;
+		float width;
 		float height;
 		Point pos;
-		//XMFLOAT3 density;//xyz方向上的密度
-		int frequency;//频率每秒释放粒子个数
-		SM::Vector3 gravity;//重力 方向 xyz
+		int frequency;
+		SM::Vector3 gravity;
 		bool mIgnoreZ;
 
 		float delta;
@@ -53,7 +48,7 @@ namespace XGF
 		ComputeShader mComputerShader;
 		ComputeGPU mCgpu;
 		bool firstRun;
-		bool mUseCPU;//使用CPU计算？？？
+		bool mUseCPU;
 		unsigned int mMaxParticle;
 		std::random_device rdDevice;
 		std::mt19937 mtRandom;
@@ -99,8 +94,8 @@ namespace XGF
 		{
 			SM::Vector3 pos;
 			SM::Vector2 size;
-			SM::Vector3 velocity;//速度 xyz方向
-			SM::Vector3 acceleration;//加速度 xyz方向
+			SM::Vector3 velocity;
+			SM::Vector3 acceleration;
 			SM::Color color;
 			bool used;
 			ParticleData(Point p, Position s, Point v, Point acc, SM::Color & c) :pos(p), velocity(v), color(c), acceleration(acc),size(s),used(true){};
@@ -108,7 +103,7 @@ namespace XGF
 		void Draw();
 		void Begin(const WVPMatrix & matrix);
 		void End();
-		void Initialize(GDI * gdi, int count = 1024, ParticleDevice particleDevice = ParticleDevice::Auto);
+		void Initialize(int count = 1024, ParticleDevice particleDevice = ParticleDevice::Auto);
 		void Shutdown();
 		void Reset();
 		void AddEmitter(FireEmitter *e) { mEmitter = e; }
@@ -116,7 +111,6 @@ namespace XGF
 		void SetTexture(Texture *t) { mTexture = t; }
 
 	private:
-		GDI * mGDI;
 		Texture *mTexture;
 		FireEmitter * mEmitter;
 		std::vector<ParticleData> mParticles;
