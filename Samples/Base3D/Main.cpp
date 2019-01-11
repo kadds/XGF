@@ -45,15 +45,15 @@ public:
 		auto res = std::vector<ResourceInfo>();
 		res.push_back(ResourceInfo(L"logo.png", L"logo"));
 
-		mDirectionalLight = make_unique<Shape::DirectionalLight>(Point(-5, -5, -5), Color(1, 1, 1, 1));
-		mPointLight = make_unique<Shape::PointLight>(Point(-3,7, -4), Color(1, 1, 1, 1), Point(0.1, 0.001, 0.0000001));
+		mDirectionalLight = make_unique<Shape::DirectionalLight>(Point(-5, -5, -5), Color(0.3, 0.4, 0.4, 1));
+		mPointLight = make_unique<Shape::PointLight>(Point(-3,7, -4), Color(0.6, 0.6, 0.6, 1), Point(0.1, 0.001, 0.0000001));
 		mSpotLight = make_unique<Shape::SpotLight>(Point(5, 6, 5), Point(-1.4, -1.8, -1.2), Color(0.69, 0.65, 0.68, 1), 
 			Point(1, 0, 0), cos(DirectX::XM_PI / 4), cos(DirectX::XM_PI / 3));
-		mAmbientLight = make_unique<Shape::AmbientLight>(Color(0.5, 0.5, 0.5, 1));
-		//mDirectionalLight->SetGroup(1);
-		//mPointLight->SetGroup(1);
+		mAmbientLight = make_unique<Shape::AmbientLight>(Color(0.1, 0.1, 0.1, 1));
+		mDirectionalLight->SetGroup(1);
+		mPointLight->SetGroup(1);
 		mSpotLight->SetGroup(1);
-		//mAmbientLight->SetGroup(1);
+		mAmbientLight->SetGroup(1);
 
 		mTextureResourceManager.LoadResource(res);
 		texture = new Texture(*mTextureResourceManager.GetResourceByAlias(L"logo"));

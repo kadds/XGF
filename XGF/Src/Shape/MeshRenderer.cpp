@@ -276,6 +276,7 @@ namespace XGF
 					element->GetGeometry()->mPolygon->ExpandAllTo(*ppe.get(), Operator::Multiply(matrix));
 					bbr.SetBinder(ppe, 0);
 					it.second->DrawPolygon(element->GetGeometry()->mPolygonPleIndex, bbr);
+					it.second->Flush();
 				}
 			}
 		}
