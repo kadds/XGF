@@ -28,7 +28,8 @@ cbuffer CBMatrix:register(b0)
 
 cbuffer CBObject:register(b0)
 {
-	float4 cbEmissive; // 自发光
+	float3 cbColor;
+	float3 cbEmissive; // 自发光
 	float3 cbDiffuse; // 漫反射
 };
 struct DirectionalLight
@@ -39,9 +40,10 @@ struct DirectionalLight
 struct PointLight
 {
 	float3 color;
+	float __y;
 	float3 position;
 	// 占位
-	float __;
+	float __x;
 	// 光衰
 	float constantValue;
 	float linearValue;
@@ -50,7 +52,9 @@ struct PointLight
 struct SpotLight
 {
 	float3 color;
+	float __a;
 	float3 position;
+	float __b;
 	float3 direction;
 	// 外张角
 	float cutoffOuter;
@@ -101,6 +105,7 @@ float3 calcPointLight(PointLight light, float3 normal, float3 pos)
 	float3 lightDirection = normalize(light.position - pos);
 	float distance = length(light.position - pos);
 	float atte = 1.0f / (light.constantValue + light.linearValue * distance + light.quadraticValue * distance * distance);
+	atte = saturate(atte);
 	return calc(light.color, normal, lightDirection) * atte;
 }
 float3 calcDirectionalLight(DirectionalLight light, float3 normal)
@@ -115,11 +120,11 @@ float3 calcSpotLight(SpotLight light, float3 normal, float3 pos)
 	float atte = 1.0f / (light.constantValue	+ light.linearValue * distance + light.quadraticValue * distance * distance);
 	float epsilon = light.cutoff - light.cutoffOuter;
 	float theta = dot(lightDirection, normalize(-light.direction));
-	float intensity = clamp((theta - light.cutoffOuter) / epsilon, 0.0, 1.0); 
+	float intensity = saturate((theta - light.cutoffOuter) / epsilon); 
 	
 	float diff = calcDiffuse(normal, lightDirection);
 	float3 diffuse = diff * light.color * cbDiffuse * intensity;
-	
+	atte = saturate(atte);
 	return  diffuse * atte;
 }
 float4 PS(VertexOut data) : SV_TARGET
@@ -143,13 +148,13 @@ float4 PS(VertexOut data) : SV_TARGET
 	{
 		r += calcSpotLight(spotLights[i], norm, data.worldPos);
 	}
-	r += cbAmbient;
 #endif
-	float4 outColor = float4(r, 0.0) + cbEmissive;
+	r += cbAmbient;
+	float4 outColor = float4(r * cbColor, 1.0);
 #ifdef TEXTURE
 	outColor *= gShaderTexture.Sample(gSampleType, data.Tex);
 #endif
-	return outColor;
+	return outColor + float4(cbEmissive, 0.0);
 }
 VertexOut VS(VertexIn data)
 {

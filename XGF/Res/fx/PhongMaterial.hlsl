@@ -28,7 +28,8 @@ cbuffer CBMatrix:register(b0)
 
 cbuffer CBObject:register(b0)
 {
-	float4 cbEmissive; // 自发光
+	float3 cbColor;
+	float3 cbEmissive; // 自发光
 	float3 cbDiffuse; // 漫反射
 	float3 cbSpecular; // 高光
 	float cbShininess; // 高光指数
@@ -41,9 +42,10 @@ struct DirectionalLight
 struct PointLight
 {
 	float3 color;
+	float __y;
 	float3 position;
 	// 占位
-	float __;
+	float __x;
 	// 光衰
 	float constantValue;
 	float linearValue;
@@ -52,7 +54,9 @@ struct PointLight
 struct SpotLight
 {
 	float3 color;
+	float __a;
 	float3 position;
+	float __b;
 	float3 direction;
 	// 外张角
 	float cutoffOuter;
@@ -78,6 +82,7 @@ cbuffer CBExtra:register(b1)
 #endif
 {
 	float3 cbAmbient; // 环境光之和
+	float __none;
 #if N_OF_DIRECTIONALLIGHT!=0
 	DirectionalLight directionalLights[N_OF_DIRECTIONALLIGHT];
 #endif
@@ -129,7 +134,8 @@ float3 calcPointLight(PointLight light, float3 normal, float3 viewDirection, flo
 	float3 lightDirection = normalize(light.position - pos);
 	float distance = length(light.position - pos);
 	float atte = 1.0f / (light.constantValue + light.linearValue * distance + light.quadraticValue * distance * distance);
-	return calc(light.color, normal, viewDirection, lightDirection) * atte;
+	atte = saturate(atte);
+	return calc(light.color, normal, viewDirection, lightDirection);
 }
 float3 calcDirectionalLight(DirectionalLight light, float3 normal, float3 viewDirection)
 {
@@ -140,10 +146,10 @@ float3 calcSpotLight(SpotLight light, float3 normal, float3 viewDirection, float
 {
 	float3 lightDirection = normalize(light.position - pos);
 	float distance = length(light.position - pos);
-	float atte = 1.0f / (light.constantValue	+ light.linearValue * distance + light.quadraticValue * distance * distance);
+	float atte = 1.0f / (light.constantValue + light.linearValue * distance + light.quadraticValue * distance * distance);
 	float epsilon = light.cutoff - light.cutoffOuter;
 	float theta = dot(lightDirection, normalize(-light.direction));
-	float intensity = clamp((theta - light.cutoffOuter) / epsilon, 0.0, 1.0); 
+	float intensity = saturate((theta - light.cutoffOuter) / epsilon); 
 	
 	float diff = calcDiffuse(normal, lightDirection);
 	float3 diffuse = diff * light.color * cbDiffuse;
@@ -153,7 +159,7 @@ float3 calcSpotLight(SpotLight light, float3 normal, float3 viewDirection, float
 		spec = calcSpecular(normal, lightDirection, viewDirection);
 	}
 	float3 specular = spec * light.color * cbSpecular;
-	
+	atte = saturate(atte);
 	return (diffuse + specular) * intensity * atte;
 }
 float4 PS(VertexOut data) : SV_TARGET
@@ -163,7 +169,6 @@ float4 PS(VertexOut data) : SV_TARGET
 	float3 viewDirection = normalize(viewPos - data.worldPos);
 #endif
 	float3 r = float3(0,0,0);
-	r += cbAmbient;
 #if N_OF_DIRECTIONALLIGHT!=0
 	for(int i = 0; i < N_OF_DIRECTIONALLIGHT; i++)
 	{
@@ -182,11 +187,12 @@ float4 PS(VertexOut data) : SV_TARGET
 		r += calcSpotLight(spotLights[i], norm, viewDirection, data.worldPos);
 	}
 #endif
-	float4 outColor = float4(r, 0.0) + cbEmissive;
+	r += cbAmbient;
+	float4 outColor = float4(r * cbColor, 1.0);
 #ifdef TEXTURE
 	outColor *= gShaderTexture.Sample(gSampleType, data.Tex);
 #endif
-	return outColor;
+	return outColor + float4(cbEmissive, 0.0);
 }
 VertexOut VS(VertexIn data)
 {
