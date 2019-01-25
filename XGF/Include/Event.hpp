@@ -22,6 +22,8 @@ namespace XGF {
 		SwitchScene,
 		AsynReport,
 		AsynFinish,
+		RenderFrame,
+		LogicalFrame,
 	};
 	enum class MouseEventId
 	{
@@ -42,18 +44,19 @@ namespace XGF {
 
 	class Event {
 	public:
-
 		time_t mTimeStamp;
-
-		int mRecipteFrame;
-
-		time_t mMaxLiveTime;
-
-		int mPriority;
-		
+		float mMaxLiveTime;
 		EventIdType mEventId;
 		EventGroupType mEventType;
 		std::vector<EventDataType> mData;
+		Event()
+		{
+			
+		}
+		Event(EventGroupType group, EventIdType id, const std::vector<EventDataType> & data): mEventType(group), mEventId(id), mData(data)
+		{
+			
+		}
 	public:
 		SystemEventId GetSystemEventId() const
 		{

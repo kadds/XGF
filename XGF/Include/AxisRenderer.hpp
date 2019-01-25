@@ -2,7 +2,6 @@
 #include "Defines.hpp"
 #include "Line.hpp"
 #include "Shader.hpp"
-#include "Batch.hpp"
 #include <memory>
 namespace XGF
 {
@@ -13,9 +12,9 @@ namespace XGF
 		AxisRenderer();
 		~AxisRenderer();
 		void Initialize(float len = 1e5);
-		void SetAxisXColor(SM::Color color, SM::Color colorb);
-		void SetAxisYColor(SM::Color color, SM::Color colorb);
-		void SetAxisZColor(SM::Color color, SM::Color colorb);
+		void SetAxisXColor(Color color, Color colorb);
+		void SetAxisYColor(Color color, Color colorb);
+		void SetAxisZColor(Color color, Color colorb);
 
 		//call it after call Begin ,before call End
 		void DrawAxis();
@@ -26,9 +25,9 @@ namespace XGF
 		//every frame call it after call Begin
 		void End();
 	private:
-		Batch mBatch;
+		ShaderStage mShaderStage;
 		std::vector<std::unique_ptr<Shape::Line>> lines;
-		SM::Color mColor[6];
+		Color mColor[6];
 	};
 
 

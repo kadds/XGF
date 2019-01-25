@@ -3,8 +3,6 @@
 #define _XGF_DEBUG_ALLOC
 #endif
 
-#define XGF_USE_FREETYPE_STATIC
-
 #ifdef _XGF_DEBUG_ALLOC
 #define _CRTDBG_MAP_ALLOC  
 #include <stdlib.h>  
@@ -19,7 +17,6 @@
 #include <memory>
 #include <unordered_map>
 #include <map>
-
 #define  DEPRECATED(str) __declspec(deprecated(str))
 
 namespace XGF
@@ -27,18 +24,29 @@ namespace XGF
 	typedef std::wstring string;
 	typedef unsigned int Index;
 
-	namespace SM = DirectX::SimpleMath;
+	namespace SM = ::DirectX::SimpleMath;
+
+
+	class Rectangle: public SM::Rectangle
+	{
+	public:
+		using SM::Rectangle::Rectangle;
+
+		static Rectangle Intersect(const Rectangle& ra, const Rectangle& rb)
+		{
+			return Rectangle(SM::Rectangle::Intersect(ra, rb));
+		}
+		static Rectangle Union(const Rectangle& ra, const Rectangle& rb)
+		{
+			return Rectangle(SM::Rectangle::Union(ra, rb));
+		}
+	};
+
 
 	class Point : public SM::Vector3
 	{
 	public:
-		Point() noexcept : Vector3() {}
-		constexpr explicit Point(float x) : SM::Vector3(x) {}
-		constexpr Point(float _x, float _y, float _z) : SM::Vector3(_x, _y, _z) {}
-		explicit Point(_In_reads_(3) const float *pArray) : SM::Vector3(pArray) {}
-		Point(DirectX::FXMVECTOR V) :SM::Vector3(V){  }
-		Point(const XMFLOAT3& V): SM::Vector3(V){}
-		explicit Point(const DirectX::XMVECTORF32& F): SM::Vector3(F){}
+		using SM::Vector3::Vector3;
 
 		Point(const Point&) = default;
 		Point& operator=(const Point&) = default;
@@ -56,13 +64,8 @@ namespace XGF
 	class Point4 : public SM::Vector4
 	{
 	public:
-		Point4() noexcept : Vector4() {}
-		constexpr explicit Point4(float x) : SM::Vector4(x) {}
-		constexpr Point4(float _x, float _y, float _z, float _w) : SM::Vector4(_x, _y, _z, _w) {}
-		explicit Point4(_In_reads_(4) const float *pArray) : SM::Vector4(pArray) {}
-		Point4(DirectX::FXMVECTOR V) :SM::Vector4(V) {  }
-		Point4(const DirectX::XMFLOAT4& V) : SM::Vector4(V) {}
-		explicit Point4(const DirectX::XMVECTORF32& F) : SM::Vector4(F) {}
+		using SM::Vector4::Vector4;
+
 		Point4(const Point & p) :SM::Vector4(p.x, p.y, p.z, 1.0) {  }
 		Point4(const Point4&) = default;
 		Point4& operator=(const Point4&) = default;
@@ -82,13 +85,7 @@ namespace XGF
 	class Point2 : public SM::Vector2
 	{
 	public:
-		Point2() noexcept : Vector2() {}
-		constexpr explicit Point2(float x) : SM::Vector2(x) {}
-		constexpr Point2(float _x, float _y) : SM::Vector2(_x, _y) {}
-		explicit Point2(_In_reads_(2) const float *pArray) : SM::Vector2(pArray) {}
-		Point2(DirectX::FXMVECTOR V) :SM::Vector2(V) {  }
-		Point2(const DirectX::XMFLOAT2& V) : SM::Vector2(V) {}
-		explicit Point2(const DirectX::XMVECTORF32& F) : SM::Vector2(F) {}
+		using SM::Vector2::Vector2;
 
 		Point2(const Point2&) = default;
 		Point2& operator=(const Point2&) = default;
@@ -107,13 +104,9 @@ namespace XGF
 	class Color : public SM::Color
 	{
 	public:
-		Color() noexcept : SM::Color(0, 0, 0, 1.f) {}
-		XM_CONSTEXPR Color(float _r, float _g, float _b) : SM::Color(_r, _g, _b, 1.f) {}
-		XM_CONSTEXPR Color(float _r, float _g, float _b, float _a) : SM::Color(_r, _g, _b, _a) {}
+		using SM::Color::Color;
 		explicit Color(const DirectX::SimpleMath::Vector3& clr) : SM::Color(clr.x, clr.y, clr.z, 1.f) {}
-		explicit Color(const DirectX::SimpleMath::Vector4& clr) : SM::Color(clr.x, clr.y, clr.z, clr.w) {}
-		explicit Color(_In_reads_(4) const float *pArray) : SM::Color(pArray) {}
-		Color(DirectX::FXMVECTOR V) { XMStoreFloat4(this, V); }
+		
 		Color(const XMFLOAT4& c) { this->x = c.x; this->y = c.y; this->z = c.z; this->w = c.w; }
 		explicit Color(const DirectX::XMVECTORF32& F) { this->x = F.f[0]; this->y = F.f[1]; this->z = F.f[2]; this->w = F.f[3]; }
 
@@ -141,14 +134,8 @@ namespace XGF
 	class Color3 : public SM::Vector3
 	{
 	public:
-		Color3() noexcept : Vector3() {}
-		constexpr explicit Color3(float x) : SM::Vector3(x) {}
-		constexpr Color3(float _r, float _g, float _b) : SM::Vector3(_r, _g, _b) {}
-		explicit Color3(const DirectX::SimpleMath::Vector3& clr) : SM::Vector3(clr.x, clr.y, clr.z) {}
-		explicit Color3(_In_reads_(3) const float *pArray) : SM::Vector3(pArray) {}
-		Color3(DirectX::FXMVECTOR V) :SM::Vector3(V) {  }
-		Color3(const XMFLOAT3& V) : SM::Vector3(V) {}
-		explicit Color3(const DirectX::XMVECTORF32& F) : SM::Vector3(F) {}
+		
+		using SM::Vector3::Vector3;
 
 		Color3(const Color3&) = default;
 		Color3& operator=(const Color3&) = default;

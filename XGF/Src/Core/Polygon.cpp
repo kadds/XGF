@@ -77,16 +77,32 @@ namespace XGF
 		binders.clear();
 	}
 
+	unsigned BindingBridge::GetAllPolygonPleMemSize() const
+	{
+		auto i = std::accumulate(binders.begin(), binders.end(), 0u, [](unsigned i, std::shared_ptr<PolygonPleBinder> binder)
+		{
+			return binder->GetActualCount() * binder->SizeOf() + i;
+		});
+		return i;
+	}
+
 	////////////////////////////////////////////////////////////////////////////
 	PolygonPleIndex::PolygonPleIndex(int n)
 	{
 		mIndex = new Index[n];
 		mCount = n;
+		mMemCount = n;
 	}
 	Index PolygonPleIndex::Get(int n) const
 	{
 		return mIndex[n];
 	}
+
+	Index& PolygonPleIndex::Get(int n)
+	{
+		return mIndex[n];
+	}
+
 	PolygonPleIndex::~PolygonPleIndex()
 	{
 		delete[] mIndex;
@@ -98,6 +114,18 @@ namespace XGF
 			*(static_cast<Index *>(Des) + i) = mIndex[i] + offset;
 		}
 	}
+
+	void PolygonPleIndex::SetActualCount(int count)
+	{
+		XGF_ASSERT(mCount <= mMemCount);
+		mCount = count;
+	}
+
+	int PolygonPleIndex::GetActualCount() const
+	{
+		return mCount;
+	}
+
 	PolygonPleIndex::PolygonPleIndex(const PolygonPleIndex & tb)
 	{
 		if (&tb == this) return;

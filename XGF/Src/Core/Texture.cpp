@@ -6,90 +6,118 @@
 #include <algorithm>
 #include <fstream>
 #include "../../Include/Context.hpp"
+#include "../../Include/Shader.hpp"
 
 namespace XGF
 {
-	Texture::Texture():mIs9Path(false), mTextureResource(nullptr)
+	Texture::Texture()
 	{
-		mTextureRectangleNormalization = Point4(0.f, 0.f, 1.f, 1.f);
 	}
 
-	Texture::Texture(TextureResource & tres, Rect & rc) :mIs9Path(false)
+	ID3D11ShaderResourceView* Texture::GetRawTexture() const
 	{
-		if (&tres == nullptr) XGF_Warn(Application, "resource is not defined");
-		SetRectangle(rc);
-		mTextureResource = &tres;
+		return mTextureResource.shaderResourceView;
 	}
-	Texture::Texture(TextureResource & tres) : mIs9Path(false)
+
+	ID3D11ShaderResourceView* const* Texture::GetRawTexturePtr() const
 	{
-		if (&tres == nullptr) XGF_Warn(Application, "resource is not defined");
-		mTextureRectangleNormalization = Point4(0.f, 0.f, 1.f, 1.f);
-		mTextureResource = &tres;
+		return &mTextureResource.shaderResourceView;
 	}
+
+	ID3D11Texture2D* Texture::GetRawTexture2D() const
+	{
+		return mTextureResource.texture2d;
+	}
+
+	unsigned Texture::GetWidth() const
+	{
+		return mTextureResource.width;
+	}
+
+	unsigned Texture::GetHeight() const
+	{
+		return mTextureResource.height;
+	}
+
 	Texture::~Texture()
 	{
 	}
 
-	void Texture::SetRectangle(Rect & rc)
+	TextureResource& Texture::GetTextureResource()
 	{
-		mTextureRectangleNormalization.x = rc.Left / static_cast<float>(mTextureResource->mSize.Width);
-		mTextureRectangleNormalization.y = rc.Top / static_cast<float>(mTextureResource->mSize.Height);
-		mTextureRectangleNormalization.z = rc.Right / static_cast<float>(mTextureResource->mSize.Width);
-		mTextureRectangleNormalization.w = rc.Bottom / static_cast<float>(mTextureResource->mSize.Height);
-
-		mTextureRectangleNormalization.x = std::clamp(mTextureRectangleNormalization.x, 0.f, 1.f);
-		mTextureRectangleNormalization.y = std::clamp(mTextureRectangleNormalization.y, 0.f, 1.f);
-		mTextureRectangleNormalization.z = std::clamp(mTextureRectangleNormalization.z, m9Path.x, 1.f);
-		mTextureRectangleNormalization.w = std::clamp(mTextureRectangleNormalization.w, m9Path.y, 1.f);//TODO:: Maybe have problem here
-	}
-	void Texture::Set9PathInnerRect(Rect & rc)
-	{
-		m9Path.x = rc.Left / static_cast<float>(mTextureResource->mSize.Width);
-		m9Path.y = rc.Top / static_cast<float>(mTextureResource->mSize.Height);
-		m9Path.z = rc.Right / static_cast<float>(mTextureResource->mSize.Width);
-		m9Path.w = rc.Bottom / static_cast<float>(mTextureResource->mSize.Height);
-
-		m9Path.x = std::clamp(m9Path.x, 0.f, 1.f);
-		m9Path.y = std::clamp(m9Path.y, 0.f, 1.f);
-		m9Path.z = std::clamp(m9Path.z, m9Path.x, 1.f);
-		m9Path.w = std::clamp(m9Path.w, m9Path.y, 1.f);//TODO:: Maybe have problem here
-
-		mIs9Path = true;
+		return mTextureResource;
 	}
 
-	void Texture::Set9PathBorderSize(float border)
+	DynamicTexture::DynamicTexture(unsigned width, unsigned height, TextureFormat format, char * ptr): mPtr(ptr)
 	{
-		m9Path.x = border / static_cast<float>(mTextureResource->mSize.Width);
-		m9Path.y = border / static_cast<float>(mTextureResource->mSize.Height);
-		m9Path.z = (mTextureResource->mSize.Width - border) / static_cast<float>(mTextureResource->mSize.Width);
-		m9Path.w = (mTextureResource->mSize.Height - border) / static_cast<float>(mTextureResource->mSize.Height);
-
-		m9Path.x = std::clamp(m9Path.x, 0.f, 1.f);
-		m9Path.y = std::clamp(m9Path.y, 0.f, 1.f);
-		m9Path.z = std::clamp(m9Path.z, m9Path.x, 1.f);
-		m9Path.w = std::clamp(m9Path.w, m9Path.y, 1.f);//TODO:: Maybe have problem here
-		mIs9Path = true;
+		GetTextureResource().Create(width, height, format, ptr);
 	}
 
-	TextureResource::TextureResource():mShaderResourceView(nullptr)
+	void DynamicTexture::UpdateDirtyRectangle(const Rectangle & rect)
+	{
+		mDirtyRectangle = Rectangle::Union(rect, mDirtyRectangle);
+	}
+
+	void DynamicTexture::ClearDirtyRectangle()
+	{
+		mDirtyRectangle.width = 0;
+		mDirtyRectangle.height = 0;
+		mDirtyRectangle.x = 0;
+		mDirtyRectangle.y = 0;
+	}
+
+	const Rectangle& DynamicTexture::GetDirtyRectangle() const
+	{
+		return mDirtyRectangle;
+	}
+
+	void DynamicTexture::UpdateTexture()
+	{
+		auto * dc = Context::Current().QueryGraphicsDeviceInterface().GetDeviceContext();
+		auto & rect = GetDirtyRectangle();
+		if (rect.width <= 0 || rect.height <= 0) return;
+		D3D11_BOX box;
+		box.left = rect.x;
+		box.right = rect.x + rect.width;
+		box.top = rect.y;
+		box.bottom = rect.y + rect.height;
+		box.front = 0;
+		box.back = 1;
+		// here update dirty rectangle
+		dc->UpdateSubresource(GetRawTexture2D(), 0, &box, mPtr, GetWidth(), 0);
+		ClearDirtyRectangle();
+	}
+
+
+	TextureResource::TextureResource() :shaderResourceView(nullptr), texture2d(nullptr)
 	{
 
+	}
+
+	TextureResource::~TextureResource()
+	{
+		if (shaderResourceView)
+			shaderResourceView->Release();
+		shaderResourceView = nullptr;
+		if (texture2d)
+			texture2d->Release();
+		texture2d = nullptr;
 	}
 
 	bool TextureResource::Load(void * mem, size_t size)
 	{
 		auto& gdi = Context::Current().QueryGraphicsDeviceInterface();
-		if (FAILED(DirectX::CreateDDSTextureFromMemory(gdi.GetDevice(), (uint8_t *)mem, size, (ID3D11Resource **)&mTexture, &mShaderResourceView)))
+		if (FAILED(DirectX::CreateDDSTextureFromMemory(gdi.GetDevice(), (uint8_t *)mem, size, (ID3D11Resource **)&texture2d, &shaderResourceView)))
 		{
-			if (FAILED(DirectX::CreateWICTextureFromMemory(gdi.GetDevice(), (uint8_t *)mem, size, (ID3D11Resource **)&mTexture, &mShaderResourceView)))
+			if (FAILED(DirectX::CreateWICTextureFromMemory(gdi.GetDevice(), (uint8_t *)mem, size, (ID3D11Resource **)&texture2d, &shaderResourceView)))
 			{
 				return false;
 			}
 		}
 		D3D11_TEXTURE2D_DESC desc;
-		mTexture->GetDesc(&desc);
-		mSize.Height = desc.Height;
-		mSize.Width = desc.Width;
+		texture2d->GetDesc(&desc);
+		width = desc.Width;
+		height = desc.Height;
 		return true;
 	}
 
@@ -113,14 +141,16 @@ namespace XGF
 		return false;
 	}
 
-	void TextureResource::Release()
+	void TextureResource::Create(unsigned width, unsigned height, TextureFormat format, char* ptr)
 	{
-		if (mShaderResourceView != nullptr)
-			mShaderResourceView->Release();
-		mShaderResourceView = nullptr;
-		if (mTexture != nullptr)
-			mTexture->Release();
-		mTexture = nullptr;
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
+		auto srv = gdi.CreateRenderableTexture(width, height, format, ptr);
+		ID3D11Resource * resource;
+		srv->GetResource(&resource);
+		shaderResourceView = srv;
+		texture2d = static_cast<ID3D11Texture2D*>(resource);
+		this->width = width;
+		this->height = height;
 	}
 
 };

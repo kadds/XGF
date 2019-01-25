@@ -2,39 +2,21 @@
 #include "../../Include/GDI.hpp"
 #include "../../Include/Logger.hpp"
 #include <DirectXMath.h>
-#include "../../Include/Batch.hpp"
-#include "../../Include/DebugInscriber.hpp"
 #include "../../Include/AsyncTask.hpp"
 #include "../../Include/Scene.hpp"
 #include "../../Include/ScreenGrab.h"
 #include "../../Include/Context.hpp"
+#include "../../Include/Renderer.hpp"
 
 namespace XGF
 {
-	bool XGFramework::_Update(float time)
-	{
-		if (mThread->HandleMessage()) return true;
-		mInputManager.Tick(time);
-		if (mScene != nullptr)
-			mScene->_Update(time);
-		return false;
-	}
-
 	void XGFramework::_Loop2()
 	{
+		auto & context = Context::Current();
 		for (;;)
 		{
-			mDeltaTime = mMainTimer.Tick();
-			if (_Update(mDeltaTime))
-				return;
-			DebugInscriber_Begin(mDeltaTime);
-			if (mScene != nullptr)
-			{
-				mScene->_Render(mDeltaTime);//无动画
-			}
-			mInputManager.Draw();
-			Context::Current().QueryGraphicsDeviceInterface().Present(mIsVSync);
-			DebugInscriber_End();
+			mScheduler.DoSchedule();
+			if (mThread->HandleMessage()) return;
 		}
 	}
 	void XGFramework::_OnCreate()
@@ -44,9 +26,10 @@ namespace XGF
 		mThread = &context.QueryGameThread();
 		context.QueryGameThread().SetCallBackFunc(std::bind(&EventDispatcher::Dispatch, &mFrameWorkEventDispatcher, std::placeholders::_1));
 		mFrameWorkEventDispatcher.InsertAllEventListener(std::bind(&XGFramework::_OnMessage, this, std::placeholders::_1));
-		context.QueryGraphicsDeviceInterface().Create();
-		mUiBatches.Initialize();
 		mInputManager.Initialize();
+		context.QueryGameThread().PostEvent(SystemEventId::LogicalFrame, {});
+		mUpdateFixedTime = 0.0166666666f;
+		mScheduler.AddSchedule(ScheduleInfo(mUpdateFixedTime, std::bind(&XGFramework::_Update, this, std::placeholders::_1), "Update"));
 	}
 
 	void XGFramework::_OnDestroy()
@@ -56,14 +39,11 @@ namespace XGF
 			mScene->_OnDestroy();
 		}
 		mInputManager.Shutdown();
-		mUiBatches.Shutdown();
-		Context::Current().QueryGraphicsDeviceInterface().Destroy();
-
+		mScheduler.RemoveSchedule("Update");
 	}
 
 	void XGFramework::_OnActivate(bool isActivate)
 	{
-		Context::Current().QueryGraphicsDeviceInterface().CheckFullScreenForce(isActivate);
 		mInputManager.OnActivate(isActivate);
 	}
 
@@ -71,14 +51,13 @@ namespace XGF
 	{
 		if (ClientX <= 0) ClientX = 1;
 		if (ClientY <= 0) ClientY = 1;
-		Context::Current().QueryGraphicsDeviceInterface().SizeChanged(ClientX, ClientY);
 		mInputManager.UpdateCameraMatrix(ClientX, ClientY);
-		Batch::SetClientSize({ ClientX, ClientY });
 	}
 
 	void XGFramework::_OnMessage(const Event& ev)
 	{
 		if (ev.mEventType == EventGroupType::System)
+		{
 			switch (ev.GetSystemEventId())
 			{
 			case SystemEventId::Size:
@@ -99,9 +78,23 @@ namespace XGF
 			case SystemEventId::SwitchScene:
 				ISwitchScene(ev.GetDataSmartPointer<Scene>(0));
 				break;
+			case SystemEventId::LogicalFrame:
+				{
+					if(mUpdateFixedTime > 0.f)
+						_UpdateWithInterpolation(mScheduler.GetDeltaTimeFromLastSchedule() / mUpdateFixedTime);
+					if (mScene != nullptr)
+					{
+						mScene->_Render();//无动画
+					}
+					mInputManager.Draw();
+					auto & context = Context::Current();
+					context.QueryRenderThread().PostEvent(SystemEventId::RenderFrame, {});
+				}
+				break;
 			default:
 				break;
 			}
+		}
 		else if (ev.mEventType == EventGroupType::KeyBoard)
 			_OnKeyBoardMessage(ev);
 		else if (ev.mEventType == EventGroupType::Mouse)
@@ -155,7 +148,7 @@ namespace XGF
 	}
 	void XGFramework::RenderScene()
 	{
-		mScene->_Render(mDeltaTime);
+		mScene->_Render();
 	}
 
 	LRESULT XGFramework::OnInputMessage(UINT msg, WPARAM wParam, LPARAM lParam)
@@ -178,14 +171,24 @@ namespace XGF
 		mOnInputListener = f;
 	}
 
-	UIBatches& XGFramework::GetUIBatches()
-	{
-		return mUiBatches;
-	}
-
 	EventDispatcher& XGFramework::GetEventDispatcher()
 	{
 		return mEventDispatcher;
+	}
+
+	void XGFramework::SetLogicalFrameRate(int rate)
+	{
+		mScheduler.RemoveSchedule("Update");
+		if (rate == 0)
+			mUpdateFixedTime = 0.f;
+		else
+			mUpdateFixedTime = 1.f / rate;
+		mScheduler.AddSchedule(ScheduleInfo(mUpdateFixedTime, std::bind(&XGFramework::_Update, this, std::placeholders::_1), "Update"));
+	}
+
+	void XGFramework::SetInfoFrameCost(float frameCost)
+	{
+		mInfoFrameCost = frameCost;
 	}
 
 	void XGFramework::OpenVSync()
@@ -209,18 +212,32 @@ namespace XGF
 		// 设置退出码
 		PostMessage(Context::Current().QueryGraphicsDeviceInterface().GetTopHwnd(), WM_CLOSE, 1, code);
 		mThread->PostExitEvent();
+		Context::Current().QueryRenderThread().PostExitEvent();
 	}
 
 
-	XGFramework::XGFramework() : mDeltaTime(0), mThread(nullptr), mIsVSync(false),
+	XGFramework::XGFramework() : mThread(nullptr), mIsVSync(false),
 	                             mOnCloseListener(nullptr),
-	                             mOnInputListener(nullptr)
+	                             mOnInputListener(nullptr), mInfoFrameCost(1.f / 30)
 	{
-		EventPool::Initialize(100);
 	}
 
 	XGFramework::~XGFramework()
 	{
-		EventPool::Shutdown();
+	}
+
+	void XGFramework::_Update(float deltaTime)
+	{
+		if (deltaTime >= mInfoFrameCost)
+		{
+			XGF_Info(Framework, "logical frame delta time: ", deltaTime * 1000, "ms");
+		}
+		mInputManager.Tick(deltaTime);
+		if (mScene != nullptr)
+			mScene->_Update(deltaTime);
+	}
+	void XGFramework::_UpdateWithInterpolation(float percent)
+	{
+		_Update(percent * mUpdateFixedTime);
 	}
 }

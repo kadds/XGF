@@ -37,7 +37,7 @@ namespace XGF
 		rc.SetZ(GetZ() - minZdivision);
 		rc.mPolygon->ExpandAll(Operator::Multiply(GetMixMatrix()));
 		DrawSkin(rc);
-		mTextInputProcessor.SetTextRenderer(GetTextRenderer(this->mFontSize));
+		mTextInputProcessor.SetTextRenderer(GetTextRenderer());
 
 		mTextInputProcessor.RenderText(mTextColor);
 	}
@@ -45,11 +45,11 @@ namespace XGF
 	{
 		if (isForce)
 		{
-			mNowState = SkinState::active;
+			mNowState = ControlState::active;
 		}
 		else
 		{
-			mNowState = SkinState::normal;
+			mNowState = ControlState::normal;
 		}
 	}
 
@@ -78,13 +78,13 @@ namespace XGF
 		if (!mParent->GetScene().GetFramework().GetInputManager().IsFocus(&mTextInputProcessor))
 		{
 			if(this->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f), GetMixMatrix()))
-				mNowState = SkinState::hover;
+				mNowState = ControlState::hover;
 			else
-				mNowState = SkinState::normal;
+				mNowState = ControlState::normal;
 		}
 		else
 		{
-			mNowState = SkinState::active;
+			mNowState = ControlState::active;
 		}
 	}
 
@@ -93,7 +93,7 @@ namespace XGF
 		if (this->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f), GetMixMatrix()))
 		{
 			mParent->GetScene().GetFramework().GetInputManager().SetFocus(&mTextInputProcessor);
-			mNowState = SkinState::active;
+			mNowState = ControlState::active;
 		}
 	}
 

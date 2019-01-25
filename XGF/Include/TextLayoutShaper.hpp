@@ -17,7 +17,7 @@ namespace XGF
 		TextLayoutShaper();
 		~TextLayoutShaper();
 		Position MeasureStringSize(Font & font, wchar_t * str);
-		int DoLayouShaper(const wchar_t * str, const Shape::Rectangle & rc, Font & font,
+		int DoLayouShaper(const string & str, const Shape::Rectangle & rc, Font & font,
 			LayoutCallbackFunction fun, PenMoveCallback movec = nullptr);
 	private:
 		Shape::Rectangle mRc;

@@ -18,14 +18,14 @@
 #include "ShaderManager.hpp"
 #include "ResourceManager.hpp"
 #include "RenderToTexture.hpp"
-#include "ParticleSystem.hpp"
+#include "Context.hpp"
+#include "Renderer.hpp"
 //********************************
 
 //*********** UI *******************
 #include "Label.hpp"
 #include "Button.hpp"
 #include "EditText.hpp"
-#include "UIBatches.hpp"
 //**********************************
 
 //****** Animation And Interpolator *********

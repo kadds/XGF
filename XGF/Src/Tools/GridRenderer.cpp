@@ -1,6 +1,7 @@
 #include "..\..\Include\GridRenderer.hpp"
 #include "../../Include/ShaderManager.hpp"
 #include "../../Include/Context.hpp"
+#include "../../Include/Renderer.hpp"
 
 namespace XGF
 {
@@ -16,8 +17,9 @@ namespace XGF
 	void GridRenderer::Initialize(float width, float height, unsigned xcount, unsigned zcount, const Point & origin)
 	{
 		XGF_ASSERT(width > 0 && height > 0);
-		mBatch.Initialize(Context::Current().QueryShaderManager().GetBasicShaders(false, false ,true), (xcount * 2 + zcount * 2) + 4, xcount * 2 + zcount * 2 + 4, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-		mBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthDisable);
+		mShaderStage.Initialize(Context::Current().QueryShaderManager().GetBasicShaders(false, false ,true));
+		mShaderStage.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+		mShaderStage.SetDepthStencilState(DepthStencilState::DepthDisable);
 		mHeight = height;
 		mWidth = width;
 		mPolygon = std::make_shared<PolygonPlePointBinder>(xcount * 2 + zcount * 2 + 4);
@@ -28,7 +30,7 @@ namespace XGF
 			std::make_pair(0, Color(1.0f, 0.2f, 0.2f, 1.0f)),
 			std::make_pair(xcount * 2  + 2, Color(0.2f, 1.0f, 0.2f, 1.0f))
 		};
-		mColorBinder = std::make_shared<PolygonPleConstantColorBinder>(mPolygon->Count(), vec);
+		mColorBinder = std::make_shared<PolygonPleConstantColorBinder>(mPolygon->GetActualCount(), vec);
 		mBindingBridge.AddBinder(mPolygon);
 		mBindingBridge.AddBinder(mColorBinder);
 		Point pstart = origin;
@@ -44,8 +46,8 @@ namespace XGF
 			data[i + 1].x = pstart.x;
 			data[i + 1].y = origin.y;
 			data[i + 1].z = -pstart.z;
-			mPolygonPleIndex->mIndex[i] = i;
-			mPolygonPleIndex->mIndex[i + 1] = i + 1;
+			mPolygonPleIndex->Get(i) = i;
+			mPolygonPleIndex->Get(i + 1) = i + 1;
 			pstart.x += mWidth;
 		}
 		pstart.x = 0 - mWidth * (xcount - 1.f);//x
@@ -59,8 +61,8 @@ namespace XGF
 			data[j + 1].x = -pstart.x;
 			data[j + 1].y = origin.y;
 			data[j + 1].z = pstart.z;
-			mPolygonPleIndex->mIndex[j] = j;
-			mPolygonPleIndex->mIndex[j + 1] = j + 1;
+			mPolygonPleIndex->Get(j) = j;
+			mPolygonPleIndex->Get(j + 1) = j + 1;
 			pstart.z += mWidth;
 		}
 
@@ -70,24 +72,23 @@ namespace XGF
 
 	void GridRenderer::Shutdown()
 	{
-		mBatch.Shutdown();
+		mShaderStage.Shutdown();
 		//delete mMeshData;
 	}
 
 	void GridRenderer::Begin(const WVPMatrix & matrix)
 	{
-		mBatch.GetShaderStage()->SetVSConstantBuffer(0, &matrix);
-		mBatch.Begin();
+		mShaderStage.SetVSConstantBuffer(0, &matrix);
 	}
 
 	void GridRenderer::End()
 	{
-		mBatch.End();
+		
 	}
 
 	void GridRenderer::DrawGrid(Point & center)
 	{
-		mBatch.DrawPolygon(mPolygonPleIndex, mBindingBridge);
+		Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(mBindingBridge, *mPolygonPleIndex.get(), mShaderStage));
 	}
 
 	void GridRenderer::SetColor(SM::Color & cx, SM::Color & cz)

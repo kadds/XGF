@@ -1,4 +1,8 @@
 #include "../../Include/Asyn.hpp"
+#include <chrono>
+#include "../../Include/Timer.hpp"
+#include "../../Include/Logger.hpp"
+
 namespace XGF {
 	Asyn::Asyn()
 	{
@@ -10,9 +14,8 @@ namespace XGF {
 
 	void Asyn::PostEvent(EventIdType id, EventGroupType evGroup, std::initializer_list< EventDataType> init)
 	{
-		if (isExit) return;
-		Event& ev = EventPool::CreateAEvent(id, evGroup, init);
-		msgQueue.InsertMsg(ev);
+		if (mIsExit) return;
+		mMessageQueue.enqueue(Event(evGroup, id, init));
 	}
 	EventGroupType GetType(EventIdType t)
 	{
@@ -24,33 +27,38 @@ namespace XGF {
 			return EventGroupType::Mouse;
 		return EventGroupType::Custom;
 	}
-	
+
 	void Asyn::PostEvent(EventIdType id, std::initializer_list<EventDataType> init)
 	{
 		PostEvent(id, GetType(id), init);
 	}
 	void Asyn::PostExitEvent()
 	{
-		isExit = true;
-		Event& ev = EventPool::CreateAEvent(SystemEventId::Exit, EventGroupType::System, {});
-		ev.mPriority = -1;
-		msgQueue.InsertMsg(ev);
-	}
-
-	void Asyn::PostWithoutRepeat(EventIdType id, std::initializer_list<EventDataType> init)
-	{
-		Event& ev = EventPool::CreateAEvent(id, GetType(id), init);
-		msgQueue.InsertMsgWithoutRepeat(ev);
+		mIsExit = true;
+		mMessageQueue.enqueue(Event(EventGroupType::System, SystemEventId::Exit, {}));
 	}
 
 	void Asyn::Wait()
 	{
-		msgQueue.Wait();
+		auto m = std::unique_lock<std::mutex>(mutex);
+		mcVariable.wait(m);
+	}
+
+	void Asyn::Wait(unsigned long long microseconds)
+	{
+		auto m = std::unique_lock<std::mutex>(mutex);
+		mcVariable.wait_for(m, std::chrono::microseconds(microseconds));
+	}
+
+	void Asyn::Wait(std::function<bool()> predicate)
+	{
+		auto m = std::unique_lock<std::mutex>(mutex);
+		mcVariable.wait(m, predicate);
 	}
 
 	void Asyn::Notify()
 	{
-		msgQueue.Notify();
+		mcVariable.notify_all();
 	}
 
 	void Asyn::DoAsyn(std::function<void(Asyn * asyn)> fun)
@@ -61,34 +69,30 @@ namespace XGF {
 
 	bool Asyn::HandleMessage()
 	{
-		for (;;)
+		Event ev;
+		Timer timer;
+		while(mMessageQueue.try_dequeue(ev))
 		{
-			const Event &ev = msgQueue.GetMsg();
-			if (!EventPool::IsNullEvent(ev))
-				if (ev.GetEventGroup() == EventGroupType::System && ev.GetSystemEventId() == SystemEventId::Exit)
-				{
-					EventPool::DestroyAEvent(ev);
-					return true;
-				}
-				else
-				{
-					func(ev);
-					EventPool::DestroyAEvent(ev);
-				}
+			if (ev.GetEventGroup() == EventGroupType::System && ev.GetSystemEventId() == SystemEventId::Exit)
+			{
+				return true;
+			}
 			else
-				break;
+			{
+				mHandleCallback(ev);
+			}
+		}
+		float time = timer.Tick();
+		if(time> 0.016f)
+		{
+			XGF_Info(Framework, "Handle event time is too long ", time * 1000 , "ms");
 		}
 		return false;
 	}
 
-	const Event & Asyn::GetAMessage()
+	void Asyn::Sleep(unsigned long long microseconds)
 	{
-		return msgQueue.GetMsg();
+		auto d = std::chrono::microseconds(microseconds);
+		std::this_thread::sleep_for(d);
 	}
-
-	void Asyn::DestroyEvent(const Event & ev)
-	{
-		EventPool::DestroyAEvent(ev);
-	}
-
 }

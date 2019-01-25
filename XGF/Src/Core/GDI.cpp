@@ -29,7 +29,10 @@ namespace XGF
 				dxgi_adapter->GetDesc1(&dc);
 				XGF_Debug(Framework, "Adapter List", "Adpapter:", i, ",DeviceID:", dc.DeviceId, ",DedicatedSystemMemory:", (dc.DedicatedSystemMemory >> 20), "MB,DedicatedVideoMemory", (dc.DedicatedVideoMemory >> 20)
 					, "MB,SharedSystemMemory:", dc.SharedSystemMemory >> 20, "MB,AdapterLuid:", dc.AdapterLuid.LowPart, ",Revision:", dc.Revision, ",VendorId:", dc.VendorId
-					, ",SubSysId:", dc.SubSysId, ",Description:", Logger::WCharToChar((wchar_t *) dc.Description));
+					, ",SubSysId:", dc.SubSysId, ",Description:", Logger::WCharToChar((wchar_t *) dc.Description))
+
+
+;
 
 				mAdapters.push_back(dxgi_adapter);
 
@@ -389,6 +392,85 @@ namespace XGF
 			mSwapChain->ResizeTarget(&dxm);
 		}
 	}
+
+	GpuBuffer GDI::CreateIndexBuffer(unsigned len, GpuBufferType type, void* dataAddress)
+	{
+		auto *indexList = new Index[len];
+		D3D11_BUFFER_DESC ibd;
+		ZeroMemory(&ibd, sizeof(ibd));
+		ibd.Usage = D3D11_USAGE_DYNAMIC;
+		ibd.ByteWidth = sizeof(Index) *(len);
+		ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		ibd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		D3D11_SUBRESOURCE_DATA iinitData;
+		ZeroMemory(&iinitData, sizeof(iinitData));
+		iinitData.pSysMem = indexList;
+		ID3D11Buffer * indexBuffer;
+		XGF_Error_Check(Render, mD3dDevice->CreateBuffer(&ibd, &iinitData, &indexBuffer), "CreateIndexBuffer Error");
+		//mIndexBuffer = CreateBuffer(mGDI, D3D11_BIND_INDEX_BUFFER, 0, sizeof(index) *(mMaxIndexCount * mMaxPreRenderFrameCount), 0, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
+		PutDebugString(indexBuffer);
+		delete[] indexList;
+		return GpuBuffer(indexBuffer, len);
+	}
+
+	GpuBuffer GDI::CreateVertexBuffer(unsigned len, GpuBufferType type, void* dataAddress)
+	{
+		ID3D11Buffer * buffer;
+		D3D11_BUFFER_DESC vertexDesc;
+		char * data = (char *)dataAddress;
+		if(!dataAddress)
+			data = new char[len];
+		ZeroMemory(&vertexDesc, sizeof(vertexDesc));
+		vertexDesc.Usage = D3D11_USAGE_DYNAMIC;
+		vertexDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		vertexDesc.ByteWidth = len;
+		vertexDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		D3D11_SUBRESOURCE_DATA resourceData;
+		ZeroMemory(&resourceData, sizeof(resourceData));
+		resourceData.pSysMem = data;
+		XGF_Error_Check(Render, mD3dDevice->CreateBuffer(&vertexDesc, &resourceData, &buffer), "CreateVertexBuffer Error");
+		PutDebugString((buffer));
+		if(!dataAddress)
+			delete[] data;
+		return GpuBuffer(buffer, len);
+	}
+
+	GpuBuffer GDI::CreateConstantBuffer(unsigned size)
+	{
+		XGF_ASSERT(size % 4 == 0);
+
+		ID3D11Buffer * buffer;
+		D3D11_BUFFER_DESC desc;
+		ZeroMemory(&desc, sizeof(desc));
+		desc.Usage = D3D11_USAGE_DYNAMIC;
+		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		desc.ByteWidth = size;
+		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+		XGF_Error_Check(Render, mD3dDevice->CreateBuffer(&desc, 0, &buffer), "CreateVertexBuffer Error");
+		PutDebugString((buffer));
+		return GpuBuffer(buffer, size);
+	}
+
+	void* GDI::Map(GpuBuffer& gpuBuffer)
+	{
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
+
+		mDeviceContext->Map(gpuBuffer.buffer, 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &mappedResource);
+		return mappedResource.pData;
+	}
+
+	void GDI::UnMap(GpuBuffer & gpuBuffer)
+	{
+		mDeviceContext->Unmap(gpuBuffer.buffer, 0);
+	}
+
+	void GDI::CopyToBuffer(GpuBuffer& buffer, void* src)
+	{
+		auto * d = Map(buffer);
+		memcpy(d, src, buffer.size);
+		UnMap(buffer);
+	}
 #ifdef _DEBUG
 	void GDI::QueryDebugInterface()
 	{
@@ -480,6 +562,54 @@ namespace XGF
 			return false;
 		}
 		return true;
+	}
+
+	ID3D11ShaderResourceView * GDI::CreateRenderableTexture(unsigned width, unsigned height, DXGI_FORMAT format, char * ptrContent)
+	{
+		char * ptr = ptrContent;
+		if(!ptr)
+		{
+			ptr = new char[width * height];
+			memset(ptr, 0, width * height * sizeof(char));
+		}
+		ID3D11Texture2D * texutre;
+		D3D11_SUBRESOURCE_DATA __subData;
+		__subData.pSysMem = ptr;
+		__subData.SysMemPitch = width;
+		__subData.SysMemSlicePitch = width * height;
+		D3D11_TEXTURE2D_DESC  texture2d;
+
+		texture2d.Width = width;
+		texture2d.Height = height;
+		texture2d.MipLevels = 1;
+		texture2d.ArraySize = 1;
+
+		texture2d.SampleDesc.Count = 1;
+		texture2d.SampleDesc.Quality = 0;
+		texture2d.Usage = D3D11_USAGE_DEFAULT;
+		texture2d.Format = format;
+		texture2d.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+
+		texture2d.CPUAccessFlags = 0;
+		texture2d.MiscFlags = 0;
+
+		XGF_Error_Check(Application, GetDevice()->CreateTexture2D(&texture2d, &__subData, &texutre), "CreateTexture2D at font class failed");
+
+		PutDebugString(texutre);
+		D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
+		viewDesc.Format = texture2d.Format;
+		viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		viewDesc.Texture2D.MipLevels = texture2d.MipLevels;
+		viewDesc.Texture2D.MostDetailedMip = 0;
+		ID3D11ShaderResourceView * srv;
+		XGF_Error_Check(Application, GetDevice()->CreateShaderResourceView(texutre, &viewDesc, &srv), "Create font SRV failed");
+		PutDebugString(srv);
+		if(!ptrContent)
+		{
+			delete[] ptr;
+		}
+		texutre->Release();
+		return srv;
 	}
 
 
@@ -930,6 +1060,11 @@ namespace XGF
 	bool GDI::CanEnable4xMsaa()
 	{
 		return m4xMsaaQuality > 0;
+	}
+
+	bool GDI::IsDisplayMode(DisplayMode displayMode)
+	{
+		return mDisplayMode == displayMode;
 	}
 }
 

@@ -21,7 +21,7 @@ namespace XGF
 		void SetHeight(int height) { mHeight = height; };
 		void ResetTime();
 	private:
-		Batch mColorBatch;
+		ShaderStage mShaderStage;
 		float mTime;
 		//这是间隔标志变量
 		bool mHide;
@@ -29,7 +29,7 @@ namespace XGF
 		Shape::Line mLine;
 		BindingBridge mBbrg;
 		std::shared_ptr<PolygonPleConstantColorBinder> mPcColor;
-		SM::Color mCaretColor;
+		Color mCaretColor;
 		int mHeight;
 
 		DISALLOW_COPY_AND_ASSIGN(Caret);

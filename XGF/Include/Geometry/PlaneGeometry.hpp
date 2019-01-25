@@ -27,9 +27,9 @@ namespace XGF::Shape
 		template<typename GeometryMapping = PlaneGeometryMapping>
 		void GenerateMapping()
 		{
-			mPolygonPleUvs = std::make_shared<PolygonPleTextureBinder>(mPolygon->Count());
+			mPolygonPleUvs = std::make_shared<PolygonPleTextureBinder>(mPolygon->GetActualCount());
 			GeometryMapping mapping(this);
-			int count = mPolygon->Count();
+			int count = mPolygon->GetActualCount();
 			for (int j = 0; j < count; j++)
 			{
 				mPolygonPleUvs->GetData(j) = mapping(j, mPolygon->GetData(j).x / mWidth + 0.5f, mPolygon->GetData(j).z / mHeight + 0.5f);

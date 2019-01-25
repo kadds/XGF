@@ -112,6 +112,7 @@ namespace XGF
 	void DX8Input::DoEvent(Asyn * asyn)
 	{
 		mInputThread.DoAsyn([=](Asyn * as) {
+			Tools::SetCurrentThreadName("DX8Input Thread");
 			MSG msg{};
 			HANDLE had[2];
 
@@ -223,9 +224,10 @@ namespace XGF
 		}
 		if (mRelativeMode)
 		{
+			auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
 			POINT p;
-			p.x = static_cast<LONG>(Batch::GetClientWidthD2());
-			p.y = static_cast<LONG>(Batch::GetClientHeightD2());
+			p.x = static_cast<LONG>(gdi.GetWidth() / 2);
+			p.y = static_cast<LONG>(gdi.GetHeight() / 2);
 			ClientToScreen(mHwnd, &p);
 			SetCursorPos(p.x, p.y);
 		}

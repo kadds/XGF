@@ -1,13 +1,11 @@
 #pragma once
 #include "Defines.hpp"
 #include "Transform.hpp"
+#include "Polygon.hpp"
 
 namespace XGF
 {
 	class Batch;
-	template<typename T>
-	class PolygonPleDataBinder;
-	typedef PolygonPleDataBinder<Point> PolygonPlePointBinder;	
 	class PolygonPleIndex;
 	
 	namespace Shape

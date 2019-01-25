@@ -2,6 +2,8 @@
 #include "..\..\Include\ShaderManager.hpp"
 #include <algorithm>
 #include "../../Include/Context.hpp"
+#include "../../Include/Renderer.hpp"
+#include "../../Include/Polygon.hpp"
 
 namespace XGF
 {
@@ -17,10 +19,11 @@ namespace XGF
 	void AxisRenderer::Initialize(float len)
 	{
 		auto p = DirectX::XMMatrixIdentity();
-		mBatch.Initialize(Context::Current().QueryShaderManager().GetBasicShaders(false, false, true), 2 * 3 * 2, 2 * 3 * 2, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-		mBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthEnable);
-		mBatch.GetShaderStage()->SetBlendState(BlendState::NoneBlend);
 		
+		mShaderStage.Initialize(Context::Current().QueryShaderManager().GetBasicShaders(false, false, true));
+		mShaderStage.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+		mShaderStage.SetDepthStencilState(DepthStencilState::DepthEnable);
+		mShaderStage.SetBlendState(BlendState::NoneBlend);
 		SM::Color c = SM::Color(0.f, 0.f, 0.f, 1.f);
 		auto fun = [&](float x, float y, float z) {
 
@@ -38,19 +41,19 @@ namespace XGF
 		fun(0.f, 0.f, -len);
 	}
 
-	void AxisRenderer::SetAxisXColor(SM::Color color, SM::Color colorb)
+	void AxisRenderer::SetAxisXColor(Color color, Color colorb)
 	{
 		mColor[0] = color;
 		mColor[1] = colorb;
 	}
 
-	void AxisRenderer::SetAxisYColor(SM::Color color, SM::Color colorb)
+	void AxisRenderer::SetAxisYColor(Color color, Color colorb)
 	{
 		mColor[2] = color;
 		mColor[3] = colorb;
 	}
 
-	void AxisRenderer::SetAxisZColor(SM::Color color, SM::Color colorb)
+	void AxisRenderer::SetAxisZColor(Color color, Color colorb)
 	{
 		mColor[4] = color;
 		mColor[5] = colorb;
@@ -63,12 +66,15 @@ namespace XGF
 		bbr.AddPlaceHolder();
 		bbr.AddBinder(cbb);
 		int i = 0;
-		mBatch.GetShaderStage()->SetPSConstantBuffer(0, Color(1.f, 1.f, 1.f, 1.f));
-		std::for_each(lines.begin(), lines.end(), [this, &cbb, &i, &bbr](std::unique_ptr<Shape::Line> &var) {
+		mShaderStage.SetPSConstantBuffer(0, Color(1.f, 1.f, 1.f, 1.f));
+		auto & renderer = Context::Current().QueryRenderer();
+		
+		std::for_each(lines.begin(), lines.end(), [this, &cbb, &i, &bbr, &renderer](std::unique_ptr<Shape::Line> &var) {
 			cbb->Set(0, mColor[i]);
 
 			bbr.SetBinder(var->mPolygon, 0);
-			mBatch.DrawPolygon(var->mPolygonPleIndex, bbr);
+			renderer.Commit(RenderGroupType::Normal, 
+				DefaultRenderCommand::MakeRenderCommand(bbr, *var->GetIndex().get(), mShaderStage));
 			i++;
 		});
 	}
@@ -76,18 +82,17 @@ namespace XGF
 	void AxisRenderer::Shutdown()
 	{
 		lines.clear();
-		mBatch.Shutdown();
+		mShaderStage.Shutdown();
 	}
 
 	void AxisRenderer::Begin(const WVPMatrix & matrix)
 	{
-		mBatch.GetShaderStage()->SetVSConstantBuffer(0, &matrix);
-		mBatch.Begin();
+		mShaderStage.SetVSConstantBuffer(0, &matrix);
 	}
 
 	void AxisRenderer::End()
 	{
-		mBatch.End();
+		
 	}
 
 }

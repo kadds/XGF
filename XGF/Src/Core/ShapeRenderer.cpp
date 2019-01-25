@@ -6,6 +6,9 @@
 #include "..\..\Include\Line.hpp"
 #include "..\..\Include\ShaderManager.hpp"
 #include "../../Include/Context.hpp"
+#include "../../Include/Polygon.hpp"
+#include "../../Include/AxisRenderer.hpp"
+#include "../../Include/Renderer.hpp"
 
 namespace XGF
 {
@@ -20,32 +23,26 @@ namespace XGF
 
 	void ShapeRenderer::Initialize(unsigned int MaxVetices, unsigned int MaxIndices)
 	{
-		mBatch.Initialize(Context::Current().QueryShaderManager().GetBasicShaders(false, false, true), MaxVetices, MaxIndices, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		mBatch.GetShaderStage()->SetBlendState(BlendState::AddOneOneAdd);
-		mBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthEnable);
+		mShaderStage.Initialize(Context::Current().QueryShaderManager().GetBasicShaders(false, false, true));
 	}
 
 	void ShapeRenderer::Shutdown()
 	{
-		mBatch.Shutdown();
+		mShaderStage.Shutdown();
 	}
 
 	void ShapeRenderer::Begin(WVPMatrix & wvp)
 	{
-		mBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
-		mBatch.GetShaderStage()->SetPSConstantBuffer(0, Color(1.f, 1.f, 1.f, 1.f));
-
-		mBatch.Begin();
+		mShaderStage.SetVSConstantBuffer(0, &wvp);
+		mShaderStage.SetPSConstantBuffer(0, Color(1.f, 1.f, 1.f, 1.f));
 	}
 
 	void ShapeRenderer::End()
 	{
-		mBatch.End();
 	}
 
 	void ShapeRenderer::Flush()
 	{
-		mBatch.Flush();
 	}
 
 	void ShapeRenderer::DrawRectangle(float x, float y, float w, float h, float z, const Color & color)
@@ -53,12 +50,13 @@ namespace XGF
 		Shape::Rectangle rc;
 		rc.SetPositionAndSize(x, y, w, h);
 		rc.SetZ(z);
-		auto cb = std::make_shared<PolygonPleConstantColorBinder>(rc.mPolygon->Count(), color);
+		auto cb = std::make_shared<PolygonPleConstantColorBinder>(rc.mPolygon->GetActualCount(), color);
 		BindingBridge bb;
 		bb.AddBinder(rc.mPolygon);
 		bb.AddBinder(cb);
-		mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		mBatch.DrawPolygon(rc.mPolygonPleIndex, bb);
+		mShaderStage.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(
+			bb, *rc.mPolygonPleIndex.get(), mShaderStage));
 	}
 
 	void ShapeRenderer::DrawRectangleC(float x, float y, float w, float h, float z, const Color & bkcolor, float borderWidth, const Color & boderColor, const Color & boderOuterColor)
@@ -73,13 +71,14 @@ namespace XGF
 			std::make_pair(4, boderColor),
 			std::make_pair(8, bkcolor)
 		};
-		auto cb = std::make_shared<PolygonPleConstantColorBinder>(rc.mPolygon->Count(), vec);
+		auto cb = std::make_shared<PolygonPleConstantColorBinder>(rc.mPolygon->GetActualCount(), vec);
 
 		BindingBridge bb;
 		bb.AddBinder(rc.mPolygon);
 		bb.AddBinder(cb);
-		mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		mBatch.DrawPolygon(rc.mPolygonPleIndex, bb);
+		mShaderStage.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(
+			bb, *rc.mPolygonPleIndex.get(), mShaderStage));
 	}
 
 	void ShapeRenderer::DrawCircle(float x, float y, float r, int precision, float z, const Color & color)
@@ -87,12 +86,13 @@ namespace XGF
 		Shape::Circle ce(precision);
 		ce.SetPositionAndRadius(x, y, r);
 		ce.SetZ(z);
-		auto cb = std::make_shared<PolygonPleConstantColorBinder>(ce.mPolygon->Count(), color);
+		auto cb = std::make_shared<PolygonPleConstantColorBinder>(ce.mPolygon->GetActualCount(), color);
 		BindingBridge bb;
 		bb.AddBinder(ce.mPolygon);
 		bb.AddBinder(cb);
-		mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		mBatch.DrawPolygon(ce.mPolygonPleIndex, bb);
+		mShaderStage.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(
+			bb, *ce.mPolygonPleIndex.get(), mShaderStage));
 	}
 
 	void ShapeRenderer::DrawCircle(float x, float y, float r, int precision, float z, const Color & color, const Color & centerColor)
@@ -105,12 +105,13 @@ namespace XGF
 			std::make_pair(0, centerColor),
 			std::make_pair(1, color),
 		};
-		auto cb = std::make_shared<PolygonPleConstantColorBinder>(ce.mPolygon->Count(), vec);
+		auto cb = std::make_shared<PolygonPleConstantColorBinder>(ce.mPolygon->GetActualCount(), vec);
 		BindingBridge bb;
 		bb.AddBinder(ce.mPolygon);
 		bb.AddBinder(cb);
-		mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		mBatch.DrawPolygon(ce.mPolygonPleIndex, bb);
+		mShaderStage.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(
+			bb, *ce.mPolygonPleIndex.get(), mShaderStage));
 	}
 
 	void ShapeRenderer::DrawLine(float x, float y, float ex, float ey, float z, const Color & color)
@@ -122,8 +123,9 @@ namespace XGF
 		BindingBridge bb;
 		bb.AddBinder(line.mPolygon);
 		bb.AddBinder(cb);
-		mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
-		mBatch.DrawPolygon(line.mPolygonPleIndex, bb);
+		mShaderStage.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+		Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(
+			bb, *line.mPolygonPleIndex.get(), mShaderStage));
 	}
 	void ShapeRenderer::DrawLineList(const Position & points, int count, float z, const Color & color)
 	{
@@ -131,14 +133,15 @@ namespace XGF
 		for (int i = 0; i < count; i++)
 		{
 			shape.mPolygon->GetData(i) = Point((&points)[i].x, (&points)[i].y, z);
-			shape.mPolygonPleIndex->mIndex[i] = i;
+			shape.mPolygonPleIndex->Get(i) = i;
 		}
 		auto cb = std::make_shared<PolygonPleConstantColorBinder>(count, color);
 		BindingBridge bb;
 		bb.AddBinder(shape.mPolygon);
 		bb.AddBinder(cb);
-		mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
-		mBatch.DrawPolygon(shape.mPolygonPleIndex, bb);
+		mShaderStage.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+		Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(
+			bb, *shape.mPolygonPleIndex.get(), mShaderStage));
 	}
 	void ShapeRenderer::DrawTriangle(const Position & a, const Position & b, const Position & c, float z, const Color & ca, const Color & cb, const Color & cc)
 	{
@@ -152,8 +155,9 @@ namespace XGF
 		pp->GetData(1) = cb;
 		pp->GetData(2) = cc;
 
-		mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-		mBatch.DrawPolygon(tr.mPolygonPleIndex, bbr);
+		mShaderStage.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+		Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(
+			bbr, *tr.mPolygonPleIndex.get(), mShaderStage));
 	}
 	void ShapeRenderer::DrawTriangle(const Position & a, const Position & b, const Position & c, float z, const Color & cc)
 	{
@@ -165,13 +169,14 @@ namespace XGF
 		for (int i = 0; i < count; i++)
 		{
 			shape.mPolygon->GetData(i) = Point((&points)[i].x, (&points)[i].y, z);
-			shape.mPolygonPleIndex->mIndex[i] = i;
+			shape.mPolygonPleIndex->Get(i) = i;
 		}
 		auto cb = std::make_shared<PolygonPleConstantColorBinder>(count, color);
 		BindingBridge bb;
 		bb.AddBinder(shape.mPolygon);
 		bb.AddBinder(cb);
-		mBatch.ChangeTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-		mBatch.DrawPolygon(shape.mPolygonPleIndex, bb);
+		mShaderStage.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+		Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(
+			bb, *shape.mPolygonPleIndex.get(), mShaderStage));
 	}
 };

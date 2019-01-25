@@ -20,6 +20,7 @@ using namespace XGF;
 #pragma comment(lib,"./../../Bin/Release/XGF.lib")
 #endif
 #endif
+#include <random>
 using namespace std;
 
 int RunGame(HINSTANCE hInstance);
@@ -42,6 +43,9 @@ public:
 	
 	virtual void OnCreate() override
 	{
+		Context::Current().QueryRenderer().SetLimitFrameRate(180);
+		Context::Current().QueryFramework().SetLogicalFrameRate(15);
+		Context::Current().QueryFramework().SetInfoFrameCost(1.f / 50);
 		auto res = std::vector<ResourceInfo>();
 		res.push_back(ResourceInfo(L"logo.png", L"logo"));
 
@@ -56,7 +60,7 @@ public:
 		mAmbientLight->SetGroup(1);
 
 		mTextureResourceManager.LoadResource(res);
-		texture = new Texture(*mTextureResourceManager.GetResourceByAlias(L"logo"));
+		texture = mTextureResourceManager.GetResourceByAlias(L"logo");
 
 		mFont.Initialize(Tools::GetFontPath(L"msyh"), 16);
 		mTextRenderer.Initialize(&mFont, 64);
@@ -133,7 +137,6 @@ public:
 		mMeshRenderer.Shutdown();
 		mTextRenderer.Shutdown();
 		mFont.Shutdown();
-		delete texture;
 		planeMesh.reset(nullptr);
 		for (int i = 0; i < sizeof(boxMesh) / sizeof(boxMesh[0]); i++)
 		{
@@ -147,11 +150,11 @@ public:
 		mPointLight.reset();
 		mTextureResourceManager.ReleaseAllResource();
 	};
-	virtual void Render(float deltaTime) override
+	virtual void Render() override
 	{
 		WVPMatrix wvp2d, wvp3d;
 		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
-		gdi.Clear(Color(0.7f, 0.7f, 0.7f, 1));
+		Context::Current().QueryRenderer().Clear(Color(0.7, 0.7, 0.7, 1));
 		mCamera2D.GetCameraMatrix(wvp2d);
 		mCamera3D.GetCameraMatrix(wvp3d);
 
@@ -167,7 +170,7 @@ public:
 		mTextRenderer.Begin(wvp2d);
 		auto debug = DebugInscriber::GetInstance();
 		std::wstring s = fmt::format(L"FPS:{0}\nFC:{1}ms", debug->GetAverageFPS(), debug->GetFrameCost());
-		mTextRenderer.DrawString(s.c_str(), 4, 4);
+		mTextRenderer.DrawString(s, 4, 4);
 		mTextRenderer.End();
 		
 	};

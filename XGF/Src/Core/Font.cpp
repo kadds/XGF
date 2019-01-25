@@ -7,7 +7,7 @@
 
 namespace XGF
 {
-	Font::Font() :mShaderResourceView(nullptr), mFileBuffer(nullptr)
+	Font::Font() :mFileBuffer(nullptr)
 	{
 	}
 
@@ -30,10 +30,10 @@ namespace XGF
 		mBufferHeight = 256;
 		//error = FT_New_Memory_Face(pFTLib,(FT_Byte*) mFileBuffer, mFileLen, 0, &pFTFace);
 
-		mBuffer = new byte[mBufferWidth*mBufferHeight];
-		memset(mBuffer, 0, sizeof(byte)*mBufferWidth*mBufferHeight);
+		mBuffer = std::unique_ptr<char[]>(new char[mBufferWidth*mBufferHeight]);
+		memset(mBuffer.get(), 0, sizeof(char)*mBufferWidth*mBufferHeight);
 		error = FT_New_Face(pFTLib, Tools::WcharToChar(name.c_str(), name.length() + 1).c_str(), 0, &pFTFace);
-		CreateView();
+		mTexture = std::make_unique<DynamicTexture>(mBufferWidth, mBufferHeight, DXGI_FORMAT_A8_UNORM, mBuffer.get());
 		if (!error)
 		{
 			FT_Select_Charmap(pFTFace, FT_ENCODING_UNICODE);
@@ -54,43 +54,7 @@ namespace XGF
 			return false;
 		}
 	}
-	void Font::CreateView()
-	{
-		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
-		D3D11_SUBRESOURCE_DATA __subData;
-		__subData.pSysMem = mBuffer;
-		__subData.SysMemPitch = mBufferWidth;
-		__subData.SysMemSlicePitch = mBufferWidth*mBufferHeight;
-		D3D11_TEXTURE2D_DESC  Tex2Dtdesc;
-
-		Tex2Dtdesc.Width = mBufferWidth;
-		Tex2Dtdesc.Height = mBufferHeight;
-		Tex2Dtdesc.MipLevels = 1;
-		Tex2Dtdesc.ArraySize = 1;
-
-		Tex2Dtdesc.SampleDesc.Count = 1;
-		Tex2Dtdesc.SampleDesc.Quality = 0;
-		Tex2Dtdesc.Usage = D3D11_USAGE_DEFAULT;
-		Tex2Dtdesc.Format = DXGI_FORMAT_A8_UNORM;
-		Tex2Dtdesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-
-		Tex2Dtdesc.CPUAccessFlags = 0;
-		Tex2Dtdesc.MiscFlags = 0;
-
-		XGF_Error_Check(Application, gdi.GetDevice()->CreateTexture2D(&Tex2Dtdesc, &__subData, &mTexture), "CreateTexture2D at font class failed");
-
-		PutDebugString(mTexture);
-		D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
-		viewDesc.Format = Tex2Dtdesc.Format;
-		viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-		viewDesc.Texture2D.MipLevels = Tex2Dtdesc.MipLevels;
-		viewDesc.Texture2D.MostDetailedMip = 0;
-
-		XGF_Error_Check(Application, gdi.GetDevice()->CreateShaderResourceView(mTexture, &viewDesc, &mShaderResourceView), "Create font SRV failed");
-		PutDebugString(mShaderResourceView);
-
-	}
-
+	
 	long Font::ReadFileToBuffer(const std::wstring& name)
 	{
 		auto e = Tools::LoadFromFile(name);
@@ -106,10 +70,8 @@ namespace XGF
 			FT_Done_FreeType(pFTLib);
 		pFTLib = nullptr;
 		pFTFace = nullptr;
-		mTexture->Release();
-		if (mShaderResourceView != nullptr)
-			mShaderResourceView->Release();
-		delete[] mBuffer;
+		mTexture.reset();
+		mBuffer.reset();
 		CloseFileBuffer();
 		auto bg = map.begin();
 		for (auto it = map.begin(); it != map.end(); ++it)
@@ -164,8 +126,7 @@ namespace XGF
 		result->vy = static_cast<float>(-slot->bitmap_top + ascender);
 		map.insert(std::pair<wchar_t, PosSize  *>(ch, result));
 		FT_Done_Glyph(glyph);
-		gdi.GetDeviceContext()->UpdateSubresource(mTexture, 0, NULL, mBuffer, mBufferWidth, 0);
-
+		mTexture->UpdateDirtyRectangle(Rectangle(left, top, bitmap.width, bitmap.rows));
 		return result;
 	}
 
@@ -175,6 +136,11 @@ namespace XGF
 		FT_Get_Kerning(pFTFace, lastch, ch, FT_Kerning_Mode::FT_KERNING_DEFAULT, &vet);
 
 		return vet.x >> 6;
+	}
+
+	Texture* Font::GetTexture()
+	{
+		return mTexture.get();
 	}
 
 	void Font::CloseFileBuffer()

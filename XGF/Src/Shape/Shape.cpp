@@ -25,7 +25,7 @@ namespace XGF
 
 		void Shape::SetZ(float z)
 		{
-			for (int i = 0; i < mPolygon->Count(); i++)
+			for (int i = 0; i < mPolygon->GetActualCount(); i++)
 			{
 				mPolygon->GetData(i).z = z;
 			}
@@ -56,7 +56,7 @@ namespace XGF
 			auto point = ql->GetData();
 			// 生成最小包围盒
 			Position minPosition = { point[0].x, point[0].y }, maxPosition = { point[0].x, point[0].y };
-			for (int i = 1; i < ql->Count(); i++) 
+			for (int i = 1; i < ql->GetActualCount(); i++)
 			{
 				if (point[i].x < minPosition.x)
 					minPosition.x = point[i].x;
@@ -72,8 +72,8 @@ namespace XGF
 				return false;
 			bool k = false;
 			int i = 0;
-			int j = ql->Count() - 1;
-			for (; i < ql->Count(); j = i++) {
+			int j = ql->GetActualCount() - 1;
+			for (; i < ql->GetActualCount(); j = i++) {
 				if (((point[i].y > y) != (point[j].y > y)) &&
 					(x < (point[j].x - point[i].x) * (y - point[i].y) /
 					(point[j].y - point[i].y) + point[i].x))

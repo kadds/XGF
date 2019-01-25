@@ -54,11 +54,22 @@ namespace XGF
 		FrameAndCutNone,
 		InvalidValue
 	};
+	struct GpuBuffer
+	{
+		ID3D11Buffer * buffer;
+		unsigned int size;
+		GpuBuffer(ID3D11Buffer * b, unsigned int s) : buffer(b), size(s) {  };
+	};
+	enum class GpuBufferType
+	{
+		Static,
+		Dynamic,
+	};
 	class GDI
 	{
 	public:
-		explicit GDI() {};
-		~GDI() {};
+		explicit GDI() {}
+		~GDI() {}
 		GDI(GDI &) = delete;
 		GDI & operator=(GDI &) = delete;
 
@@ -78,6 +89,13 @@ namespace XGF
 		ID3D11Device * GetDevice() { return mD3dDevice; }
 		ID3D11DeviceContext * GetDeviceContext() { return mDeviceContext; }
 
+		GpuBuffer CreateIndexBuffer(unsigned len, GpuBufferType type, void * dataAddress = nullptr);
+		GpuBuffer CreateVertexBuffer(unsigned len, GpuBufferType type, void * dataAddress = nullptr);
+		GpuBuffer CreateConstantBuffer(unsigned size);
+
+		void * Map(GpuBuffer & gpuBuffer);
+		void UnMap(GpuBuffer & gpuBuffer);
+		void CopyToBuffer(GpuBuffer& buffer, void * src);
 
 		int GetWidth() { return mWidth; }
 		int GetHeight() { return mHeight; }
@@ -90,8 +108,9 @@ namespace XGF
 
 		bool IsFullScreen() { return mDisplayMode == DisplayMode::FullScreen; }
 		bool SetDisplayMode(DisplayMode dm, int left, int top, int cx, int cy, bool move, bool isClientSize = false);
-		DisplayMode GetDisplayMode() { return  mDisplayMode; };
-		
+		DisplayMode GetDisplayMode() { return  mDisplayMode; }
+		ID3D11ShaderResourceView * CreateRenderableTexture(unsigned width, unsigned height, DXGI_FORMAT format, char * ptrContent = nullptr);
+
 		int GetFullScreenDisplayModes(DXGI_MODE_DESC ** c) { *c = mScreenMode[0].second; return mScreenMode[0].first; }
 		void CheckFullScreenForce(bool isforce);
 		ID3D11BlendState * GetRawBlendState(BlendState bs);
@@ -113,6 +132,7 @@ namespace XGF
 		bool IsEnable4xMsaa();
 		int Query4xMsaaQuality();
 		bool CanEnable4xMsaa();
+		bool IsDisplayMode(DisplayMode displayMode);
 	protected:
 		IDXGIFactory2 * mFactory2 = nullptr;
 		IDXGIFactory1 * mFactory1 = nullptr;

@@ -9,11 +9,6 @@ namespace XGF
 	int Context::ContextTLSSlot = 0;
 	bool Context::HasInit = false;
 
-	Context::Context(GDI* gdi, XGFramework * framework, Asyn * gameThread, ShaderManager* shaderManager)
-		: mGDI(gdi), mGameThread(gameThread), mShaderManager(shaderManager), mFramework(framework)
-	{
-		
-	}
 
 	Context::~Context()
 	{
@@ -34,9 +29,19 @@ namespace XGF
 		return *mGameThread;
 	}
 
+	Asyn & Context::QueryRenderThread() const
+	{
+		return *mRenderThread;
+	}
+
 	XGFramework& Context::QueryFramework() const
 	{
 		return *mFramework;
+	}
+
+	Renderer& Context::QueryRenderer() const
+	{
+		return *mRenderer;
 	}
 
 	Context& Context::Current()
@@ -44,17 +49,19 @@ namespace XGF
 		return *(Context *)TlsGetValue(ContextTLSSlot);
 	}
 
-	Context & Context::MakeContext(GDI* gdi, XGFramework* framework, Asyn* gameThread, ShaderManager* shaderManager)
+	Context& Context::MakeContext(GDI* gdi, XGFramework* framework, Asyn* gameThread, Asyn* renderThread,
+		Renderer* renderer, ShaderManager* shaderManager)
 	{
-		void * context =(void *) LocalAlloc(LPTR, sizeof(Context) + sizeof(int));
+		void * context = (void *)LocalAlloc(LPTR, sizeof(Context) + sizeof(int));
 
-		auto realContext = new(context) Context(gdi, framework, gameThread, shaderManager);
+		auto realContext = new(context) Context(gdi, framework, gameThread, renderThread, renderer, shaderManager);
 
 		realContext->mLPVOID = context;
 		realContext->mIsJoin = false;
 		TlsSetValue(ContextTLSSlot, realContext);
 		return *realContext;
 	}
+
 	void Context::ClearContext(Context & context)
 	{
 		void * p = context.mLPVOID;
@@ -65,7 +72,7 @@ namespace XGF
 	{
 		void * context = (void *)LocalAlloc(LPTR, sizeof(Context) + sizeof(int));
 
-		auto realContext = new(context) Context(mainContext.mGDI, mainContext.mFramework, mainContext.mGameThread, mainContext.mShaderManager);
+		auto realContext = new(context) Context(mainContext.mGDI, mainContext.mFramework, mainContext.mGameThread, mainContext.mRenderThread, mainContext.mRenderer, mainContext.mShaderManager);
 
 		realContext->mIsJoin = true;
 		realContext->mLPVOID = context;
@@ -91,5 +98,12 @@ namespace XGF
 		TlsFree(ContextTLSSlot);
 		HasInit = false;
 		ContextTLSSlot = 0;
+	}
+
+	Context::Context(GDI* gdi, XGFramework* framework, Asyn* gameThread, Asyn* renderThread, Renderer* renderer,
+		ShaderManager* shaderManager) : mGDI(gdi), mGameThread(gameThread), mShaderManager(shaderManager), 
+										mFramework(framework), mRenderThread(renderThread), mRenderer(renderer)
+
+	{
 	}
 }

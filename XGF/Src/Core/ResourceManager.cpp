@@ -6,7 +6,7 @@
 
 namespace XGF
 {
-	TextureResource * TextureResourceManager::GetResource(const wchar_t * name)
+	Texture * TextureResourceManager::GetResource(const wchar_t * name)
 	{
 		auto it = mResourceMap.find(name);
 		if (it == mResourceMap.end())
@@ -14,10 +14,10 @@ namespace XGF
 			XGF_Warn(Application, "TextureResource can't find", Logger::WCharToChar(name));
 			return nullptr;
 		}
-		return &it->second;
+		return it->second;
 	}
 
-	TextureResource * TextureResourceManager::GetResourceByAlias(const wchar_t * alias)
+	Texture * TextureResourceManager::GetResourceByAlias(const wchar_t * alias)
 	{
 		auto it = mNameToAliasMap.find(alias);
 		if (it == mNameToAliasMap.end())
@@ -40,21 +40,21 @@ namespace XGF
 			int okCount = 0;
 			for (auto it : infoArray)
 			{
-				TextureResource textureResource;
+				Texture * texture = new Texture();
 				if (it.inMemory)
 				{
-					if (textureResource.Load( it.mem, it.memSize))
+					if (texture->GetTextureResource().Load( it.mem, it.memSize))
 						okCount++;
 				}
 				else
 				{
 					Tools::GetPathBy(it.name.c_str(), buffer, MAX_PATH);
-					if (textureResource.Load( buffer))
+					if (texture->GetTextureResource().Load( buffer))
 						okCount++;
 				}
-				if (textureResource.GetTexture() != nullptr)
+				if (texture->GetRawTexture() != nullptr)
 				{
-					this->InsertResource(it.name, it.alias, textureResource);
+					this->InsertResource(it.name, it.alias, texture);
 				}
 			}
 			mIsLoadingResource = false;
@@ -75,21 +75,25 @@ namespace XGF
 		mIsLoadingResource = true;
 		for (auto it : infoArray)
 		{
-			TextureResource textureResource;
+			Texture * texture = new Texture();
 			if (it.inMemory)
 			{
-				if (textureResource.Load(it.mem, it.memSize))
+				if (texture->GetTextureResource().Load(it.mem, it.memSize))
 					okCount++;
 			}
 			else
 			{
 				Tools::GetPathBy(it.name.c_str(), buffer, MAX_PATH);
-				if (textureResource.Load( buffer))
+				if (texture->GetTextureResource().Load( buffer))
 					okCount++;
 			}
-			if (textureResource.GetTexture() != nullptr)
+			if (texture->GetRawTexture() != nullptr)
 			{
-				this->InsertResource(it.name, it.alias, textureResource);
+				this->InsertResource(it.name, it.alias, texture);
+			}
+			else
+			{
+				delete texture;
 			}
 		}
 		mIsLoadingResource = false;
@@ -99,14 +103,14 @@ namespace XGF
 	void TextureResourceManager::ReleaseAllResource()
 	{
 		for (auto it : mResourceMap)
-			it.second.Release();
+			delete it.second;
 	}
 
-	void TextureResourceManager::InsertResource(std::wstring name, std::wstring alias, TextureResource & tRes)
+	void TextureResourceManager::InsertResource(std::wstring name, std::wstring alias, Texture * texture)
 	{
 		std::lock_guard<std::mutex> mtx(mutex);
 
-		this->mResourceMap.insert(std::make_pair(name, tRes));
+		this->mResourceMap.insert(std::make_pair(name, texture));
 		if ( alias != L"" && !alias.empty())
 		{
 			this->mNameToAliasMap.insert(std::make_pair(alias, name));

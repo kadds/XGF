@@ -1,7 +1,7 @@
 #pragma once
 #include "Defines.hpp"
 #include "Shape.hpp"
-#include "Batch.hpp"
+#include "Shader.hpp"
 #include "Polygon.hpp"
 namespace XGF
 {
@@ -39,7 +39,7 @@ namespace XGF
 		void SetXColor(SM::Color & cx);
 		void SetZColor(SM::Color & cz);
 	private:
-		Batch mBatch;
+		ShaderStage mShaderStage;
 		//MeshData * mMeshData;
 		float mWidth;
 		float mHeight;

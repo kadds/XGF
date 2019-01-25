@@ -105,16 +105,10 @@
     <ClInclude Include="Include\dxerr.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Include\EventPool.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Font.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\GDI.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\MsgQueue.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\OrthoCamera.hpp">
@@ -171,12 +165,6 @@
     <ClInclude Include="Include\Interpolator\Interpolator.hpp">
       <Filter>头文件\Interpolator</Filter>
     </ClInclude>
-    <ClInclude Include="Include\CompositeAction.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\StateList.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Include\DelayAction.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -184,9 +172,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\RectangleB.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Batches.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\Line.hpp">
@@ -199,9 +184,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\Actions.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\UIBatches.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\Defines.hpp">
@@ -237,9 +219,6 @@
     <ClInclude Include="Include\FPSCamera.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Include\ParticleSystem.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Buffer.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -256,9 +235,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\Container.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Skin.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\ResourceManager.hpp">
@@ -339,6 +315,15 @@
     <ClInclude Include="Include\Context.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Renderer.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\FrameRateLimiter.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Concurrentqueue.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\UI\Button.cpp">
@@ -363,9 +348,6 @@
       <Filter>源文件\Core</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\GDI.cpp">
-      <Filter>源文件\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Core\MsgQueue.cpp">
       <Filter>源文件\Core</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\OrthoCamera.cpp">
@@ -410,9 +392,6 @@
     <ClCompile Include="Src\Tools\dxerr.cpp">
       <Filter>源文件\Tools</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Tools\EventPool.cpp">
-      <Filter>源文件\Tools</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Tools\ScreenGrab.cpp">
       <Filter>源文件\Tools</Filter>
     </ClCompile>
@@ -449,9 +428,6 @@
     <ClCompile Include="Src\Shape\RectangleB.cpp">
       <Filter>源文件\Shape</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Core\Batches.cpp">
-      <Filter>源文件\Core</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Shape\Line.cpp">
       <Filter>源文件\Shape</Filter>
     </ClCompile>
@@ -463,9 +439,6 @@
     </ClCompile>
     <ClCompile Include="Src\Animation\Actions.cpp">
       <Filter>源文件\Animation</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\UI\UIBatches.cpp">
-      <Filter>源文件\UI</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\ShapeRenderer.cpp">
       <Filter>源文件\Core</Filter>
@@ -494,9 +467,6 @@
     <ClCompile Include="Src\Core\FPSCamera.cpp">
       <Filter>源文件\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Core\ParticleSystem.cpp">
-      <Filter>源文件\Core</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Core\Buffer.cpp">
       <Filter>源文件\Core</Filter>
     </ClCompile>
@@ -514,9 +484,6 @@
     </ClCompile>
     <ClCompile Include="Src\Core\Transform.cpp">
       <Filter>源文件\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\UI\Skin.cpp">
-      <Filter>源文件\UI</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\ResourceManager.cpp">
       <Filter>源文件\Core</Filter>
@@ -595,6 +562,12 @@
     </ClCompile>
     <ClCompile Include="Src\Core\Context.cpp">
       <Filter>源文件\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\Renderer.cpp">
+      <Filter>源文件\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Tools\FrameRateLimiter.cpp">
+      <Filter>源文件\Tools</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

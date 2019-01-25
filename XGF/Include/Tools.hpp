@@ -16,6 +16,8 @@ namespace XGF
 		std::string WcharToChar(const wchar_t* wch, size_t encode = CP_ACP);
 		std::pair<std::unique_ptr<char>, int> LoadFromFile(const std::string & file);
 		std::pair<std::unique_ptr<char>, int> LoadFromFile(const std::wstring & file);
+
+		void SetCurrentThreadName(const char * name);
 	};
 #define GetFilePath(filename, buffer, maxlen) Tools::GetPathBy(filename, buffer, maxlen)
 

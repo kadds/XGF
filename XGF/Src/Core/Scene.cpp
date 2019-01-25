@@ -18,9 +18,9 @@ namespace XGF
 		mRootContainer._Update(dt);
 		mRootContainer.GenerateMixMatrix(SM::Matrix::Identity, false);
 	}
-	void Scene::_Render(float deltaTime)
+	void Scene::_Render()
 	{
-		Render(deltaTime);
+		Render();
 	}
 	void Scene::SwitchScene(std::shared_ptr<Scene> scene)
 	{
@@ -34,9 +34,7 @@ namespace XGF
 
 	void Scene::RenderUI(WVPMatrix& matrix)
 	{
-		GetFramework().GetUIBatches().Begin(matrix);
 		mRootContainer._Render();
-		GetFramework().GetUIBatches().End();
 	}
 
 	SceneAnimation * Scene::OnSwitchIn()

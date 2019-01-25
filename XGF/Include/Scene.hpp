@@ -6,9 +6,6 @@ namespace XGF
 {
 	class GDI;
 	using std::vector;
-	/*
-	* ������
-	*/
 	class XGFramework;
 	class Scene
 	{
@@ -18,8 +15,8 @@ namespace XGF
 		Scene(const Scene&) = delete;
 		Scene & operator = (const Scene &) = delete;
 
-		void _Render(float deltaTime);
-		virtual void Render(float deltaTime) = 0;
+		void _Render();
+		virtual void Render() = 0;
 		void _Update(float deltaTime);
 		virtual void Update(float deltaTime) = 0;
 		virtual SceneAnimation * OnSwitchIn();

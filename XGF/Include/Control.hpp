@@ -1,15 +1,25 @@
 #pragma once
 #include "Defines.hpp"
 #include "Actor.hpp"
-#include "Skin.hpp"
-#include "UIBatches.hpp"
 #include <functional>
 #include "ClickHelper.hpp"
+#include "TextRenderer.hpp"
 
 namespace XGF
 {
+	namespace Shape {
+		class Rectangle;
+	}
+
 	class Event;
 	class TextRenderer;
+	enum class ControlState
+	{
+		normal,
+		hover,
+		active,
+		disable,
+	};
 	/*
 		控件基类
 	*/
@@ -19,7 +29,6 @@ namespace XGF
 		Control();
 		Control(int id);
 		virtual ~Control();
-		std::shared_ptr<Skin> SetSkin(std::shared_ptr<Skin>);
 		virtual void OnMouseDown(const Event & ev);
 		virtual void OnMouseUp(const Event & ev);
 		virtual void OnMouseMove(const Event & ev);
@@ -32,21 +41,18 @@ namespace XGF
 		ClickHelper & GetClickHelper() { return mClickHelper; }
 
 
-		virtual TextRenderer * GetTextRenderer(FontSize fs);
-		UIBatches & GetUIBatches();
-
+		TextRenderer * GetTextRenderer();
+		void SetTextRenderer(TextRenderer* renderer);
 		void SetOnRemoveFromContainerListener(std::function<void(Control *)> rm) { mOnRemoveFromContainerListener = rm; }
 
 		Texture * GetSkinTexture();
 	protected:
-		std::shared_ptr<Skin> mSkin;
-		SkinState mNowState;
+		ControlState mNowState;
 		ClickHelper mClickHelper;
-		FontSize mFontSize;
 
 		std::function<void(Control *)> mOnRemoveFromContainerListener;
 		static inline float minZdivision = 0.001f;
-
+		TextRenderer * mTextRenderer;
 	protected:
 		//子类调用
 		void DrawSkin(Shape::Rectangle & rc);

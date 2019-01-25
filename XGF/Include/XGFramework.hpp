@@ -4,7 +4,6 @@
 #include "InputManager.hpp"
 #include "Asyn.hpp"
 #include "EventDispatcher.hpp"
-#include "UIBatches.hpp"
 
 namespace XGF
 {
@@ -18,7 +17,8 @@ namespace XGF
 	public:
 		XGFramework();
 		~XGFramework();
-		bool _Update(float time);
+		void _Update(float deltaTime);
+		void _UpdateWithInterpolation(float percent);
 		//Application框架调用
 		void _Loop2();
 		//Application框架调用
@@ -55,9 +55,8 @@ namespace XGF
 
 		void SetOnCloseListener(std::function<bool(XGFramework&)> f);
 		void SetOnInputListener(std::function<bool(XGFramework&, const Event& ev)> f);;
-		UIBatches& GetUIBatches();
 		EventDispatcher& GetEventDispatcher();
-
+		void SetLogicalFrameRate(int rate);
 		struct AutoClose
 		{
 			bool operator()(XGFramework &)
@@ -65,23 +64,24 @@ namespace XGF
 				return true;
 			}
 		};
+
+		void SetInfoFrameCost(float frameCost);
 	protected:
 		std::shared_ptr<Scene> mScene;
 		void ISwitchScene(std::shared_ptr<Scene> scene);
-		Timer mMainTimer;
-		float mDeltaTime;
+		Scheduler mScheduler;
 		InputManager mInputManager;
 
 		Asyn * mThread;
 		bool mIsVSync;
-		UIBatches mUiBatches;
 		std::function<bool(XGFramework &)> mOnCloseListener;
 		std::function<bool(XGFramework &, const Event &ev)> mOnInputListener;
-
+		float mUpdateFixedTime;
 	private:
 		EventDispatcher mEventDispatcher;
 
 		EventDispatcher mFrameWorkEventDispatcher;
+		float mInfoFrameCost;
 	};
 
 };

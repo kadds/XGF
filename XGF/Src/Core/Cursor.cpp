@@ -1,10 +1,11 @@
 #include "..\..\Include\Cursor.hpp"
 #include "../../Include/ShaderManager.hpp"
 #include "../../Include/Context.hpp"
+#include "../../Include/Renderer.hpp"
 
 namespace XGF
 {
-	Cursor::Cursor() :mPtBinder(std::make_shared<PolygonPleTextureBinder>(4)), mIsShow(false), mUsedStaticTexture(true), mAnimation(0), mPointDeviation(0.f, 0.f), mPassTime(0.f), mTextureResource(nullptr)
+	Cursor::Cursor() :mPtBinder(std::make_shared<PolygonPleTextureBinder>(4)), mIsShow(false), mUsedStaticTexture(true), mAnimation(0), mPointDeviation(0.f, 0.f), mPassTime(0.f), mTexture(nullptr)
 	{
 	}
 
@@ -14,9 +15,9 @@ namespace XGF
 
 	void Cursor::Initialize()
 	{
-		mTextureBatch.Initialize(Context::Current().QueryShaderManager().GetBasicShaders(false, true, false), 4, 6);
-		mTextureBatch.GetShaderStage()->SetBlendState(BlendState::AddOneOneAdd);
-		mTextureBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthDisable);
+		mShaderStage.Initialize(Context::Current().QueryShaderManager().GetBasicShaders(false, true, false));
+		mShaderStage.SetBlendState(BlendState::AddOneOneAdd);
+		mShaderStage.SetDepthStencilState(DepthStencilState::DepthDisable);
 		mBbrg.AddBinder(mRc.mPolygon);
 		mBbrg.AddBinder(mPtBinder);
 		mSize.x = 16;
@@ -26,17 +27,16 @@ namespace XGF
 
 	void Cursor::Shutdown()
 	{
-		mTextureBatch.Shutdown();
+		mShaderStage.Shutdown();
 	}
 
 	void Cursor::Draw(const WVPMatrix & wvp)
 	{
-		mTextureBatch.GetShaderStage()->SetPSConstantBuffer(0, Color(1.f, 1.f, 1.f, 1.f));
+		mShaderStage.SetPSConstantBuffer(0, Color(1.f, 1.f, 1.f, 1.f));
 		if (mUsedStaticTexture)
 		{
-			if (!mIsShow || mTextureResource == nullptr || mTexture.GetRawTexture() == nullptr)  return;
-			mTextureBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
-			mTextureBatch.Begin();
+			if (!mIsShow || mTexture == nullptr)  return;
+			mShaderStage.SetVSConstantBuffer(0, &wvp);
 			mRc.SetPositionAndSize(mPosition.x - mPointDeviation.x, mPosition.y - mPointDeviation.y, mSize.x, mSize.y);
 
 			mPtBinder->GetData(1).x = mPtBinder->GetData(0).x = 0.f;
@@ -45,9 +45,8 @@ namespace XGF
 			mPtBinder->GetData(3).y = mPtBinder->GetData(0).y = 0.f;
 
 			mRc.SetZ(0.1f);
-			mTextureBatch.GetShaderStage()->SetPSSRV(0, mTexture.GetRawTexture());
-			mTextureBatch.DrawPolygon(mRc.mPolygonPleIndex, mBbrg);
-			mTextureBatch.End();
+			mShaderStage.SetPSTexture(0, mTexture);
+			Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(mBbrg, *mRc.mPolygonPleIndex.get(), mShaderStage));
 		}
 		else
 		{
@@ -61,13 +60,11 @@ namespace XGF
 			mPtBinder->GetData(1).x = mPtBinder->GetData(2).x = x + w;
 			mPtBinder->GetData(2).y = mPtBinder->GetData(3).y = y + h;
 
-			mTextureBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
-			mTextureBatch.Begin();
+			mShaderStage.SetVSConstantBuffer(0, &wvp);
 			mRc.SetPositionAndSize(mPosition.x - mPointDeviation.x, mPosition.y - mPointDeviation.y, mSize.x, mSize.y);
 			mRc.SetZ(0.1f);
-			mTextureBatch.GetShaderStage()->SetPSSRV(0, mTexture.GetRawTexture());
-			mTextureBatch.DrawPolygon(mRc.mPolygonPleIndex, mBbrg);
-			mTextureBatch.End();
+			mShaderStage.SetPSTexture(0, mTexture);
+			Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(mBbrg, *mRc.mPolygonPleIndex.get(), mShaderStage));
 		}
 	}
 
@@ -92,11 +89,10 @@ namespace XGF
 		}
 	}
 
-	void Cursor::SetStaticTexture(TextureResource * tres)
+	void Cursor::SetStaticTexture(Texture * texture)
 	{
-		mTextureResource = tres;
-		mTexture.SetTextureResource(tres);
-		mUsedStaticTexture = true;
+		mTexture = texture;
+		mUsedStaticTexture = texture != nullptr;
 	}
 
 	void Cursor::SetAnimation(Animation * mm)

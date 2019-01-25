@@ -17,10 +17,7 @@ namespace XGF
 	class XGFramework;
 	class GDI;
 	class Scene;
-	/*
-	��Helper�����ڽ���һ��D3D����
-	ͬʱ����Ⱦ�߳�ͨ��
-	*/
+	class Context;
 	class Application
 	{
 	public:
@@ -28,26 +25,31 @@ namespace XGF
 		~Application();
 		Application(const Application&) = delete;
 		Application & operator = (const Application &) = delete;
-		//����call framework Exit �Ĳ�����call SetExitCode �Ĳ���
+
 		int CreateWindowsAndRunApplication(XGFramework &framework, GDI &gdi, HINSTANCE hInstance, WindowProperty windowProperty, std::shared_ptr<Scene> firstScene);
 
-		Asyn& GetRenderThread();
+		Asyn & GetRenderThread();
+		Asyn & GetGameThread();
 		void SetExitCode(int ec);
 		XGFramework& GetFramework();
 
 		bool IsSetHideCursor();
 		void SetHideCursor(bool ishide);;
 		HCURSOR GetSysCursor();
+		bool HasExitFlag() const;
 	private:
 		XGFramework *mFramework;
 		HWND mHwnd;
 		Asyn mRenderThread;
+		Asyn mGameThread;
 		HINSTANCE mInstance;
 		int exitCode;
 		bool mHideCursor;
 		HCURSOR mSysCursor;
+		int mExitFlag;
 	private:
-		void RenderThreadStart(GDI * gdi, std::shared_ptr<Scene> scene);
+		void RenderThreadStart(Context * context);
+		void GameThreadStart(Context * context, std::shared_ptr<Scene> scene);
 		ATOM RegisterWindowsClass(HINSTANCE hInstance, const wchar_t * className, int ICON, int sICON);
 	};
 

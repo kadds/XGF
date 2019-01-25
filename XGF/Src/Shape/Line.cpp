@@ -7,8 +7,8 @@ namespace XGF
 	{
 		Line::Line() :Shape(2, 2)
 		{
-			mPolygonPleIndex->mIndex[0] = 0;
-			mPolygonPleIndex->mIndex[1] = 1;
+			mPolygonPleIndex->Get(0) = 0;
+			mPolygonPleIndex->Get(1) = 1;
 		}
 
 

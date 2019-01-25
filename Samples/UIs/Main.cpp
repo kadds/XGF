@@ -47,16 +47,15 @@ public:
 		mFont_s.Initialize(fname, 12);
 		mFont_b.Initialize(fname, 20);
 		mUITextRenderer.Initialize(&mFont, 1000);
-		mTextRenderer_s.Initialize(&mFont_s, 1000);
+		mTextRenderer_s.Initialize(&mFont_s, 500);
 		mTextRenderer_b.Initialize(&mFont_b, 200);
 		auto & framework = GetFramework();
-		framework.GetUIBatches().SetTextRenderer(FontSize::Default, &mUITextRenderer);
 		GetRootContainer().AddChild(mBtnGroup);
 		std::shared_ptr<Label> label = std::make_shared<Label>(0, L"Direct3D11");
 		label->SetPositionAndSize(200, 200, 100, 20);
 		label->SetZ(0.4f);
 		GetRootContainer().AddChild(label);
-		
+		label->SetTextRenderer(&mUITextRenderer);
 		label->GetClickHelper().AddOnClickListener([this](Control *label, const MousePoint & ms, int mouseButton) {
 			AsyncTask::NewTask(&GetFramework().GetThread(), [](std::shared_ptr<AsyncTask> asyn) {
 				MessageBox(NULL, L"YOU CLICK Label!!", L"Exe", 0);
@@ -76,7 +75,8 @@ public:
 		nextButton->GetClickHelper().AddOnClickListener([this](auto, const MousePoint & ms, int mouseButton) {
 			//this->GetFramework()->SwitchScene();
 		});
-		
+		nextButton->SetTextRenderer(&mUITextRenderer);
+
 		std::shared_ptr<Button> buttonux = std::make_shared<Button>(1, XGF::string(L"Switch Mode"));
 		mBtnGroup->AddChild(buttonux);
 
@@ -92,6 +92,7 @@ public:
 			else
 				gdi.SetDisplayMode(DisplayMode::FullScreen, 0, 0, 1920, 1080, true);
 		});
+		buttonux->SetTextRenderer(&mUITextRenderer);
 
 		std::shared_ptr<EditText> edit1 = std::make_shared<EditText>(10);
 		std::shared_ptr<EditText> edit2 = std::make_shared<EditText>(11);
@@ -106,31 +107,16 @@ public:
 
 		GetRootContainer().AddChild(edit1);
 		GetRootContainer().AddChild(edit2);
+		edit1->SetTextRenderer(&mUITextRenderer);
+		edit2->SetTextRenderer(&mUITextRenderer);
 
 		//resource loading
 		auto res = std::vector<ResourceInfo>();
-		res.push_back(ResourceInfo(L"_normal.png", L"normal"));
-		res.push_back(ResourceInfo(L"_hover.png", L"hover"));
-		res.push_back(ResourceInfo(L"_activate.png", L"activate"));
 		res.push_back(ResourceInfo(L"cursor.png", L"cursor"));
 
 		mTextureResourceManager.LoadResourceAsync(res, &GetFramework().GetThread(), [this](std::vector<ResourceInfo> ress, int success) {
-			if (success < 4) return;
-			auto t1 = Texture(*mTextureResourceManager.GetResourceByAlias(L"normal"));
-			auto t2 = Texture(*mTextureResourceManager.GetResourceByAlias(L"hover"));
-			auto t3 = Texture(*mTextureResourceManager.GetResourceByAlias(L"activate"));
+			if (success < 1) return;
 			auto cursor = mTextureResourceManager.GetResourceByAlias(L"cursor");
-			t1.Set9PathBorderSize(3);
-			t2.Set9PathBorderSize(3);
-			t3.Set9PathBorderSize(3);
-			std::static_pointer_cast<Button>(GetRootContainer().GetActorById(1, true))->SetSkin(Skin::CreateFromTextures(&t1, &t2, &t3));
-			std::static_pointer_cast<Button>(GetRootContainer().GetActorById(2, true))->SetSkin(Skin::CreateFromTextures(&t1, &t2, &t3));
-
-			t1.Set9PathBorderSize(3.5);
-			t2.Set9PathBorderSize(3.5);
-			t3.Set9PathBorderSize(3.5);
-			std::static_pointer_cast<Control>(GetRootContainer().GetActorById(10))->SetSkin(Skin::CreateFromTextures(&t1, &t2, &t3));
-			std::static_pointer_cast<Control>(GetRootContainer().GetActorById(11))->SetSkin(Skin::CreateFromTextures(&t1, &t2, &t3));
 
 			GetFramework().GetInputManager().GetCursor().SetStaticTexture(cursor);
 			GetFramework().GetInputManager().SetMouseMode(MouseMode::Custom);
@@ -149,11 +135,11 @@ public:
 
 		mTextureResourceManager.ReleaseAllResource();
 	};
-	virtual void Render(float deltaTime) override
+	virtual void Render() override
 	{
 		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
 
-		gdi.Clear(Color(0.5f, 0.5f, 0.5f, 1.0f));
+		Context::Current().QueryRenderer().Clear(Color(0.5, 0.5, 0.5, 1));
 		WVPMatrix wvp2D;
 		mCamera2D.GetCameraMatrix(wvp2D);
 
@@ -162,30 +148,32 @@ public:
 		auto height = gdi.GetHeight();
 		std::wstring costStr = fmt::format(L"IndicesRenderCountPerFrame:{0}", debug->GetIndicesRenderCountPerFrame());
 		auto & framework = GetFramework();
-		mTextRenderer_s.DrawString(costStr.c_str(), 2.f, static_cast<float>(height - 80));
+		mTextRenderer_s.DrawString(costStr, 2.f, static_cast<float>(height - 80));
 		costStr = fmt::format(L"IndicesRenderCountPerSecond:{0}", debug->GetIndicesRenderCountPerSecond());
-		mTextRenderer_s.DrawString(costStr.c_str(), 300.f, static_cast<float>(height - 80));
+		mTextRenderer_s.DrawString(costStr, 300.f, static_cast<float>(height - 80));
 		costStr = fmt::format(L"VerticesRenderCountPerFrame:{0}", debug->GetVerticesRenderCountPerFrame());
-		mTextRenderer_s.DrawString(costStr.c_str(), 2.f, static_cast<float>(height - 60));
+		mTextRenderer_s.DrawString(costStr, 2.f, static_cast<float>(height - 60));
 		costStr = fmt::format(L"VerticesRenderCountPerSecond:{0}", debug->GetVerticesRenderCountPerSecond());
-		mTextRenderer_s.DrawString(costStr.c_str(), 300.f, static_cast<float>(height - 60));
+		mTextRenderer_s.DrawString(costStr, 300.f, static_cast<float>(height - 60));
 		costStr = fmt::format(L"CallBatchPerFrame:{0}", debug->GetCallBatchPerFrame());
-		mTextRenderer_s.DrawString(costStr.c_str(), 2.f, static_cast<float>(height  - 40));
+		mTextRenderer_s.DrawString(costStr, 2.f, static_cast<float>(height  - 40));
 		costStr = fmt::format(L"CallBatchPerSecond:{0}", debug->GetCallBatchPerSecond());
-		mTextRenderer_s.DrawString(costStr.c_str(), 300.f, static_cast<float>(height - 40));
+		mTextRenderer_s.DrawString(costStr, 300.f, static_cast<float>(height - 40));
 		costStr = fmt::format(L"PolygonRenderCountPerSecond:{0}", debug->GetPolygonRenderCountPerSecond());
-		mTextRenderer_s.DrawString(costStr.c_str(), 300.f, static_cast<float>(height - 20));
+		mTextRenderer_s.DrawString(costStr, 300.f, static_cast<float>(height - 20));
 		costStr = fmt::format(L"PolygonRenderCountPerFrame:{0}", debug->GetPolygonRenderCountPerFrame());
-		mTextRenderer_s.DrawString(costStr.c_str(), 2.f, static_cast<float>(height - 20));
+		mTextRenderer_s.DrawString(costStr, 2.f, static_cast<float>(height - 20));
 
 		mTextRenderer_s.End();
 
 		mTextRenderer_b.Begin(wvp2D);
 
 		std::wstring fps_str = fmt::format(L"FPS:{0}\nFC:{1}ms", debug->GetAverageFPS(), debug->GetFrameCost());
-		mTextRenderer_b.DrawString(fps_str.c_str(), SM::Color(0.2f, 0.2f, 0.8f, 1.0f), 4, 4);
+		mTextRenderer_b.DrawString(fps_str, Color(0.2f, 0.2f, 0.8f, 1.0f), 4, 4);
 		mTextRenderer_b.End();
+		mUITextRenderer.Begin(wvp2D);
 		RenderUI(wvp2D);
+		mUITextRenderer.End();
 	};
 	virtual void Update(float deltaTime) override
 	{

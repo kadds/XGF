@@ -6,12 +6,11 @@
 #include <functional>
 #include <string>
 #include "GDI.hpp"
-#include "Buffer.hpp"
+
 namespace XGF
 {
-	
-	class IConstantBuffer;
-	class ConstantBuffer;
+	class Texture;
+
 	struct CBufferInfo
 	{
 		std::string name;
@@ -35,6 +34,7 @@ namespace XGF
 		std::string name;
 		unsigned int slot;
 	};
+	typedef D3D_PRIMITIVE_TOPOLOGY TopologyMode;
 
 	class Shader
 	{
@@ -71,7 +71,6 @@ namespace XGF
 		static const std::string & GetPrefixName();
 	private:
 		friend class ShaderStage;
-		std::vector<ID3D11ShaderResourceView *> mResviews;
 		ID3D11PixelShader * mPixelShader;
 		static const std::string mEntrypoint;
 		static const std::string mPerfixName;
@@ -83,7 +82,6 @@ namespace XGF
 		void Initialize(const unsigned char* VScode, unsigned int codeLen, unsigned int interval = 0);
 
 		void Shutdown() override;
-		void SetInputLayout();
 		const unsigned int * GetStrideAtSlot(unsigned int slot) const;
 		const unsigned int * GetSlotElementStartPositionArray() const;
 		unsigned int GetStrideAllSizeAtSlot(unsigned int slot) const;
@@ -157,6 +155,7 @@ namespace XGF
 	{
 	public:
 		ID3D11ShaderResourceView * srv;
+		ShaderResourceView(ID3D11ShaderResourceView * srv): srv(srv) {  }
 	};
 	class UnorderedAccessView
 	{
@@ -165,7 +164,7 @@ namespace XGF
 		ID3D11ShaderResourceView * srv;
 		ID3D11Buffer * buffer;
 	};
-	struct Shaders // һϵ��shader
+	struct Shaders
 	{
 		VertexShader * vs;
 		PixelShader * ps;
@@ -187,13 +186,23 @@ namespace XGF
 			return vs == nullptr && gs == nullptr && ps == nullptr;
 		}
 	};
+	class  StageConstantBuffer
+	{
+	public:
+		std::shared_ptr<char > ptr;
+		size_t size;
+		StageConstantBuffer(unsigned size);
+		StageConstantBuffer(const StageConstantBuffer& scb);
+		void* GetBufferPoint() const;
 
-	class ComputeGPU
+		size_t GetSize() const;
+	};
+	/*class ComputeGPU
 	{
 	private:
 		ComputeShader *cs;
 		std::vector<SamplerState> mCSSamplerState;
-		std::vector<ConstantBuffer> mCSCBuffer;
+		std::vector<StageConstantBuffer> mCSCBuffer;
 		std::vector<UnorderedAccessView> mCSUAV;
 		std::vector<ShaderResourceView> mCSSRV;
 	public:
@@ -208,7 +217,8 @@ namespace XGF
 		UnorderedAccessView * GetUnorderedAccessViews(int index);
 		unsigned int GetUnorderedAccessViewCount();
 	};
-
+*/
+	
 	class ShaderStage
 	{
 	private:
@@ -219,23 +229,39 @@ namespace XGF
 		BlendState mBlendState;
 		DepthStencilState mDepthStencilState;
 		std::vector<SamplerState> mVSSamplerState, mPSSamplerState, mGSSamplerState;
-		std::vector<ConstantBuffer> mVSCBuffer, mPSCBuffer, mGSCBuffer;
-		std::vector<ShaderResourceView> mVSSRV, mPSSRV, mGSSRV;
-
-		std::function<void()> mOnFlush;
+		std::vector<StageConstantBuffer> mVSCBuffer, mPSCBuffer, mGSCBuffer;
+		std::vector<Texture *> mVSTexture, mPSTexture, mGSTexture;
+		TopologyMode mTopologyMode;
 	public:
 		bool EqualsWithShaders(const Shaders & shaders);
 		void Initialize(VertexShader * vs, PixelShader * ps = nullptr, GeometryShader * gs = nullptr);
+		void Initialize(Shaders shaders);
 		void Shutdown();
-		void SetOnFlushListener(std::function<void()> f) { mOnFlush = f; };
+		void SetTopologyMode(TopologyMode topologyMode);
 
 		VertexShader * GetVSShader() { return vs; };
 		PixelShader * GetPSShader() { return ps; };
 		GeometryShader * GetGSShader() { return gs; };
+
+		const VertexShader * GetVSShader() const { return vs; };
+		const PixelShader * GetPSShader() const { return ps; };
+		const GeometryShader * GetGSShader() const { return gs; };
 		void SetBlendState(BlendState  bs);
 		void SetDepthStencilState(DepthStencilState ds);
 		void SetRasterizerState(RasterizerState rs);
 		BlendState GetBlendState();
+		std::vector<StageConstantBuffer> & GetVSConstantBuffer()
+		{
+			return mVSCBuffer;
+		}
+		std::vector<StageConstantBuffer> & GetPSConstantBuffer()
+		{
+			return mPSCBuffer;
+		}
+		std::vector<StageConstantBuffer> & GetGSConstantBuffer()
+		{
+			return mGSCBuffer;
+		}
 		void SetVSConstantBuffer(unsigned int index, const void * data);
 		void SetGSConstantBuffer(unsigned int index, const void * data);
 		void SetPSConstantBuffer(unsigned int index, const void * data);
@@ -291,9 +317,9 @@ namespace XGF
 			return 0;
 		};
 
-		void SetVSSRV(unsigned int index, ID3D11ShaderResourceView * srv );
-		void SetGSSRV(unsigned int index, ID3D11ShaderResourceView * srv);
-		void SetPSSRV(unsigned int index, ID3D11ShaderResourceView * srv);
+		void SetVSTexture(unsigned int index, Texture * texture);
+		void SetGSTexture(unsigned int index, Texture * texture);
+		void SetPSTexture(unsigned int index, Texture * texture);
 		template<typename Tshader>
 		int GetSRVIndexByName(const char * name)
 		{

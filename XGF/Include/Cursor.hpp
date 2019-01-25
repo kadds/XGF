@@ -1,9 +1,11 @@
 #pragma once
 #include "Defines.hpp"
-#include "Batch.hpp"
+#include "Shader.hpp"
 #include "Rectangle.hpp"
 #include "Texture.hpp"
 #include "Animation.hpp"
+#include "Polygon.hpp"
+
 namespace XGF
 {
 	class Cursor
@@ -15,7 +17,7 @@ namespace XGF
 		void Initialize();
 		void Shutdown();
 		
-		void SetStaticTexture(TextureResource * res);
+		void SetStaticTexture(Texture * texture);
 		void SetAnimation(Animation * mm);
 		void SetPointDeviation(Position & p) { mPointDeviation = p; };
 		
@@ -25,7 +27,7 @@ namespace XGF
 		void Show();
 		void Tick(float time);
 		void Hide();
-		Batch mTextureBatch;
+		ShaderStage mShaderStage;
 		Position mPosition;
 		Position mPointDeviation;
 		Position mSize;
@@ -36,8 +38,7 @@ namespace XGF
 		bool mUsedStaticTexture;
 		std::shared_ptr<PolygonPleTextureBinder> mPtBinder;
 
-		TextureResource * mTextureResource;
-		Texture mTexture;
+		Texture * mTexture;
 		Animation *mAnimation;
 		DISALLOW_COPY_AND_ASSIGN(Cursor);
 	};

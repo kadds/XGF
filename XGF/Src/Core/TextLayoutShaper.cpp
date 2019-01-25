@@ -17,7 +17,7 @@ namespace XGF
 		return pt;
 	}
 
-	int TextLayoutShaper::DoLayouShaper(const wchar_t * str, const Shape::Rectangle & rc, Font & font, LayoutCallbackFunction fun, PenMoveCallback movec)
+	int TextLayoutShaper::DoLayouShaper(const string & str, const Shape::Rectangle & rc, Font & font, LayoutCallbackFunction fun, PenMoveCallback movec)
 	{
 		PosSize *ps;
 		Position pos(0.f, 0.f);

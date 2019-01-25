@@ -5,7 +5,7 @@
 #include <any>
 namespace XGF
 {
-	class TextureResource;
+	class Texture;
 	struct ResourceInfo
 	{
 		std::wstring name;
@@ -33,18 +33,18 @@ namespace XGF
 	{
 	public:
 		
-		TextureResource * GetResource(const wchar_t * name);
-		TextureResource * GetResourceByAlias(const wchar_t * alias);
+		Texture * GetResource(const wchar_t * name);
+		Texture * GetResourceByAlias(const wchar_t * alias);
 		void LoadResourceAsync(std::vector<ResourceInfo> & infoArray, Asyn * gameThread,std::function<void(std::vector<ResourceInfo>, int success)> finishFunction);
 		void LoadResource(std::vector<ResourceInfo> & infoArray);
 
 		void ReleaseAllResource();
 
-		void InsertResource(std::wstring name, std::wstring alias, TextureResource & tRes);
+		void InsertResource(std::wstring name, std::wstring alias, Texture * texture);
 	private:
 		
 		std::map<std::wstring, std::wstring> mNameToAliasMap;
-		std::unordered_map<std::wstring, TextureResource> mResourceMap;
+		std::unordered_map<std::wstring, Texture *> mResourceMap;
 
 		std::mutex mutex;
 		

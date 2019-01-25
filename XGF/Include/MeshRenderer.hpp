@@ -1,8 +1,9 @@
 #pragma once
 #include "Defines.hpp"
+
 namespace XGF
 {
-	class Batch;
+	class ShaderStage;
 	namespace Shape 
 	{
 		class Light;
@@ -28,7 +29,7 @@ namespace XGF
 			void RefreshLightMesh();
 		private:
 			void CastLight(Mesh* mesh);;
-			std::vector<std::pair<std::vector<Mesh *>, ::XGF::Batch *>> mRendererGroup;
+			std::vector<std::pair<std::vector<Mesh *>, ::XGF::ShaderStage *>> mRendererGroup;
 			std::vector<Mesh *> mNullRendererGroup;
 			std::vector<Light *> mLights;
 

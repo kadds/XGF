@@ -171,7 +171,6 @@
     <ClInclude Include="Include\AsyncTask.hpp" />
     <ClInclude Include="Include\AxisRenderer.hpp" />
     <ClInclude Include="Include\Batch.hpp" />
-    <ClInclude Include="Include\Batches.hpp" />
     <ClInclude Include="Include\Bresenham.hpp" />
     <ClInclude Include="Include\Buffer.hpp" />
     <ClInclude Include="Include\Button.hpp" />
@@ -180,7 +179,7 @@
     <ClInclude Include="Include\Circle.hpp" />
     <ClInclude Include="Include\ClickHelper.hpp" />
     <ClInclude Include="Include\Color.hpp" />
-    <ClInclude Include="Include\CompositeAction.hpp" />
+    <ClInclude Include="Include\Concurrentqueue.hpp" />
     <ClInclude Include="Include\Context.hpp" />
     <ClInclude Include="Include\Control.hpp" />
     <ClInclude Include="Include\Cursor.hpp" />
@@ -194,9 +193,9 @@
     <ClInclude Include="Include\EditText.hpp" />
     <ClInclude Include="Include\Event.hpp" />
     <ClInclude Include="Include\EventDispatcher.hpp" />
-    <ClInclude Include="Include\EventPool.hpp" />
     <ClInclude Include="Include\Font.hpp" />
     <ClInclude Include="Include\FPSCamera.hpp" />
+    <ClInclude Include="Include\FrameRateLimiter.hpp" />
     <ClInclude Include="Include\GDI.hpp" />
     <ClInclude Include="Include\Geometry\BoxGeometry.hpp" />
     <ClInclude Include="Include\Geometry\Geometry.hpp" />
@@ -220,14 +219,13 @@
     <ClInclude Include="Include\Material\LightMaterial.hpp" />
     <ClInclude Include="Include\Mesh.hpp" />
     <ClInclude Include="Include\MeshRenderer.hpp" />
-    <ClInclude Include="Include\MsgQueue.hpp" />
     <ClInclude Include="Include\OrthoCamera.hpp" />
-    <ClInclude Include="Include\ParticleSystem.hpp" />
     <ClInclude Include="Include\PerspectiveCamera.hpp" />
     <ClInclude Include="Include\Polygon.hpp" />
     <ClInclude Include="Include\Rectangle.hpp" />
     <ClInclude Include="Include\RectangleB.hpp" />
     <ClInclude Include="Include\RectangleC.hpp" />
+    <ClInclude Include="Include\Renderer.hpp" />
     <ClInclude Include="Include\RenderToTexture.hpp" />
     <ClInclude Include="Include\RepeatAction.hpp" />
     <ClInclude Include="Include\ResourceManager.hpp" />
@@ -240,8 +238,6 @@
     <ClInclude Include="Include\Shape2D.hpp" />
     <ClInclude Include="Include\ShapeRenderer.hpp" />
     <ClInclude Include="Include\SimpleMath.h" />
-    <ClInclude Include="Include\Skin.hpp" />
-    <ClInclude Include="Include\StateList.hpp" />
     <ClInclude Include="Include\TextInputProcessor.hpp" />
     <ClInclude Include="Include\TextLayoutShaper.hpp" />
     <ClInclude Include="Include\TextRenderer.hpp" />
@@ -250,7 +246,6 @@
     <ClInclude Include="Include\Tools.hpp" />
     <ClInclude Include="Include\TrackballCameraController.hpp" />
     <ClInclude Include="Include\Triangle.hpp" />
-    <ClInclude Include="Include\UIBatches.hpp" />
     <ClInclude Include="Include\Container.hpp" />
     <ClInclude Include="Include\WICTextureLoader.h" />
     <ClInclude Include="Include\XGF.h" />
@@ -264,7 +259,6 @@
     <ClCompile Include="Src\Core\Actor.cpp" />
     <ClCompile Include="Src\Core\Asyn.cpp" />
     <ClCompile Include="Src\Core\Batch.cpp" />
-    <ClCompile Include="Src\Core\Batches.cpp" />
     <ClCompile Include="Src\Core\Buffer.cpp" />
     <ClCompile Include="Src\Core\Camera.cpp" />
     <ClCompile Include="Src\Core\Caret.cpp" />
@@ -275,11 +269,10 @@
     <ClCompile Include="Src\Core\Font.cpp" />
     <ClCompile Include="Src\Core\FPSCamera.cpp" />
     <ClCompile Include="Src\Core\GDI.cpp" />
-    <ClCompile Include="Src\Core\MsgQueue.cpp" />
     <ClCompile Include="Src\Core\OrthoCamera.cpp" />
-    <ClCompile Include="Src\Core\ParticleSystem.cpp" />
     <ClCompile Include="Src\Core\PerspectiveCamera.cpp" />
     <ClCompile Include="Src\Core\Polygon.cpp" />
+    <ClCompile Include="Src\Core\Renderer.cpp" />
     <ClCompile Include="Src\Core\RenderToTexture.cpp" />
     <ClCompile Include="Src\Core\ResourceManager.cpp" />
     <ClCompile Include="Src\Core\Scene.cpp" />
@@ -328,7 +321,7 @@
     <ClCompile Include="Src\Tools\DDSTextureLoader.cpp" />
     <ClCompile Include="Src\Tools\DebugInscriber.cpp" />
     <ClCompile Include="Src\Tools\dxerr.cpp" />
-    <ClCompile Include="Src\Tools\EventPool.cpp" />
+    <ClCompile Include="Src\Tools\FrameRateLimiter.cpp" />
     <ClCompile Include="Src\Tools\GridRenderer.cpp" />
     <ClCompile Include="Src\Tools\Logger.cpp" />
     <ClCompile Include="Src\Tools\ScreenGrab.cpp" />
@@ -340,8 +333,6 @@
     <ClCompile Include="Src\UI\Control.cpp" />
     <ClCompile Include="Src\UI\EditText.cpp" />
     <ClCompile Include="Src\UI\Label.cpp" />
-    <ClCompile Include="Src\UI\Skin.cpp" />
-    <ClCompile Include="Src\UI\UIBatches.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Include\SimpleMath.inl" />

@@ -4,12 +4,13 @@
 #include "../../Include/GDI.hpp"
 #include "../../Include/Context.hpp"
 #include "../../Include/ShaderManager.hpp"
-
+#include "../../Include/Renderer.hpp"
+#include "../../Include/Tools.hpp"
 namespace XGF
 {
 	std::unordered_map<HWND, Application*> WndAppMap;
 	LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-	Application::Application()
+	Application::Application(): mExitFlag(0)
 	{
 	}
 
@@ -23,7 +24,7 @@ namespace XGF
 		mInstance = hInstance;
 		mFramework = &framework;
 		SetProcessDPIAware();
-		
+		Tools::SetCurrentThreadName("Main Thread");
 		RegisterWindowsClass(hInstance, windowProperty.className, windowProperty.ICON, windowProperty.SICON);
 		HWND hWnd = CreateWindowW(windowProperty.className, windowProperty.title, !windowProperty.canResize ? WS_OVERLAPPEDWINDOW &~WS_THICKFRAME & ~WS_MAXIMIZEBOX : WS_OVERLAPPEDWINDOW,
 			windowProperty.point.x, windowProperty.point.y, windowProperty.size.cx, windowProperty.size.cy, nullptr, nullptr, hInstance, this);
@@ -47,11 +48,16 @@ namespace XGF
 		gdi.Initialize(mInstance, mHwnd, mHwnd, clientRc.right - clientRc.left, clientRc.bottom - clientRc.top);
 
 		mHideCursor = false;
+		Renderer renderer;
+		ShaderManager shaderManager;
+		Context::Initialize();
+		Context & context = Context::MakeContext(&gdi, mFramework, &mGameThread, &mRenderThread, &renderer,&shaderManager);
 		//开启渲染线程==============================================
-		mRenderThread.DoAsyn(std::bind(&Application::RenderThreadStart, this, &gdi, std::move(firstScene)));
+		mRenderThread.DoAsyn(std::bind(&Application::RenderThreadStart, this, &context));
 		//======================================================
+		mGameThread.DoAsyn(std::bind(&Application::GameThreadStart, this, &context, std::move(firstScene)));
+
 		MSG msg;
-		mRenderThread.Wait();
 		ShowWindow(mHwnd, SW_SHOW);
 		UpdateWindow(mHwnd);
 		// 主消息循环: 
@@ -63,7 +69,11 @@ namespace XGF
 				DispatchMessage(&msg);
 			}
 		}
+		
+		Context::ClearContext(context);
+		Context::Shutdown();
 		XGF_Debug(Application, "ApplicationEnd");
+		UnregisterClass(windowProperty.className, hInstance);
 		return exitCode;
 
 	}
@@ -71,6 +81,11 @@ namespace XGF
 	Asyn& Application::GetRenderThread()
 	{
 		return mRenderThread;
+	}
+
+	Asyn& Application::GetGameThread()
+	{
+		return mGameThread;
 	}
 
 	XGFramework& Application::GetFramework()
@@ -93,26 +108,50 @@ namespace XGF
 		return mSysCursor;
 	}
 
-	void Application::RenderThreadStart(GDI * gdi, std::shared_ptr<Scene> scene)
+	bool Application::HasExitFlag() const
 	{
+		return mExitFlag == 2;
+	}
+
+	void Application::RenderThreadStart(Context * context)
+	{
+		Tools::SetCurrentThreadName("Render Thread");
+		SetThreadAffinityMask(GetCurrentThread(), 2);
+		Context::JoinContext(*context);
+		ShaderManager & shaderManager = context->QueryShaderManager();
+
+		context->QueryRenderer().Create();
+		mGameThread.Notify();
+		mRenderThread.Wait();
+		context->QueryRenderer().Loop();
+		mGameThread.Notify();
+		mRenderThread.Wait();
+		shaderManager.ReleaseAll();
+		context->QueryRenderer().Destroy();
+		Context::DetachContext();
+		mExitFlag++;
+	}
+
+	void Application::GameThreadStart(Context* context, std::shared_ptr<Scene> scene)
+	{
+		Tools::SetCurrentThreadName("Game Thread");
+		SetThreadAffinityMask(GetCurrentThread(), 1);
+		Context::JoinContext(*context);
 		XGF_Debug(Framework, "Framework Start");
-		ShaderManager shaderManager;
-		Context::Initialize();
-		Context & gameContext = Context::MakeContext(gdi, mFramework, &mRenderThread, &shaderManager);
+		mGameThread.Wait();
 		mFramework->_OnCreate();
 		mFramework->AddScene(scene);
-		mRenderThread.Notify();
-		//消息循环
 		XGF_Debug(Framework, "Framework Loop Start");
-		mFramework->_Loop2();
-		XGF_Debug(Framework, "Framework Destroy");
-		shaderManager.ReleaseAll();
-		mFramework->_OnDestroy();
-		Context::ClearContext(gameContext);
-		Context::Shutdown();
-		//通知主线程退出
+
 		mRenderThread.Notify();
 		
+		mFramework->_Loop2();
+		mGameThread.Wait();
+		XGF_Debug(Framework, "Framework Destroy");
+		mFramework->_OnDestroy();
+		mRenderThread.Notify();
+		Context::DetachContext();
+		mExitFlag++;
 	}
 
 	ATOM Application::RegisterWindowsClass(HINSTANCE hInstance, const wchar_t * className, int ICON, int sICON)
@@ -176,6 +215,7 @@ namespace XGF
 			if (app != nullptr)
 			{
 				app->GetRenderThread().PostEvent(SystemEventId::Activate, { LOWORD(wParam) != WA_INACTIVE});
+				app->GetGameThread().PostEvent(SystemEventId::Activate, { LOWORD(wParam) != WA_INACTIVE });
 			}
 			break;
 		case WM_SIZE:
@@ -186,7 +226,9 @@ namespace XGF
 			if (app != nullptr && SIZE_MINIMIZED != wParam && SIZE_MAXHIDE != wParam)
 			{
 				XGF_Debug(Application, "WM_SIZE IN");
-				app->GetRenderThread().PostWithoutRepeat(SystemEventId::Size, { static_cast<int>(rc.right - rc.left), static_cast<int>(rc.bottom - rc.top) });
+				app->GetRenderThread().PostEvent(SystemEventId::Size, { static_cast<int>(rc.right - rc.left), static_cast<int>(rc.bottom - rc.top) });
+				app->GetGameThread().PostEvent(SystemEventId::Size, { static_cast<int>(rc.right - rc.left), static_cast<int>(rc.bottom - rc.top) });
+
 			}
 		}
 		break;
@@ -223,14 +265,15 @@ namespace XGF
 				if (wParam == 1)
 				{
 					app->SetExitCode((int)lParam);
-					app->GetRenderThread().Wait();
+					while (!app->HasExitFlag())
+						std::this_thread::sleep_for(std::chrono::milliseconds(50));
 					XGF_Debug(Application, "Wait End Close Window");
 					DestroyWindow(hWnd);
 				}
 				else
 				{
 					XGF_Debug(Application, "Send CloseMessage to System");
-					app->GetRenderThread().PostEvent(SystemEventId::Close, { wParam != 0 });
+					app->GetGameThread().PostEvent(SystemEventId::Close, { wParam != 0 });
 				}
 			}
 			break;

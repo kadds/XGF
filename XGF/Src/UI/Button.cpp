@@ -1,7 +1,6 @@
 #include "../../Include/Button.hpp"
 #include "../../Include/Scene.hpp"
 #include "../../Include/XGFramework.hpp"
-#include "../../Include/UIBatches.hpp"
 namespace XGF 
 {
 	Button::Button():mText(nullptr), mTextColor(SM::Color(0.f,0.f,0.f,1.f))
@@ -23,7 +22,7 @@ namespace XGF
 		rc.SetZ(GetZ() - minZdivision);
 		rc.mPolygon->ExpandAll(Operator::Multiply(GetMixMatrix()));
 		DrawSkin(rc);
-		auto renderer = mParent->GetScene().GetFramework().GetUIBatches().GetTextRenderer(mFontSize);
+		auto renderer = GetTextRenderer();
 		if (renderer != nullptr && !mText.empty())
 			renderer->DrawString(mText.c_str(), mTextColor, &rc, nullptr);
 	}

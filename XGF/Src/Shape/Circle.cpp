@@ -9,11 +9,12 @@ namespace XGF
 		{
 			for (int i = 0; i < precision; i++)
 			{
-				mPolygonPleIndex->mIndex[i * 3] = 0;
-				mPolygonPleIndex->mIndex[i * 3 + 1] = i + 1;
-				mPolygonPleIndex->mIndex[i * 3 + 2] = i + 2;
+				int ix = i * 3;
+				mPolygonPleIndex->Get(ix) = 0;
+				mPolygonPleIndex->Get(ix + 1) = i + 1;
+				mPolygonPleIndex->Get(ix + 2) = i + 2;
 			}
-			mPolygonPleIndex->mIndex[precision * 3 - 1] = 1;
+			mPolygonPleIndex->Get(precision * 3 - 1) = 1;
 		}
 
 
@@ -25,7 +26,7 @@ namespace XGF
 			mRadius = r;
 			mPolygon->GetData(0) = { x, y , 0.1f };
 			float alpha;
-			int precision = mPolygon->Count() - 1;
+			int precision = mPolygon->GetActualCount() - 1;
 			float pie = DirectX::XM_2PI / precision;
 			for (int i = 1; i < precision + 1; i++)
 			{
@@ -53,7 +54,7 @@ namespace XGF
 		}
 		int Circle::GetLayer(int layer[])
 		{
-			layer[1] = mPolygon->Count() - 1;
+			layer[1] = mPolygon->GetActualCount() - 1;
 			layer[0] = 1;
 			return 2;
 		}

@@ -1,6 +1,7 @@
 #include "..\..\Include\Caret.hpp"
 #include "../../Include/Context.hpp"
 #include "../../Include/ShaderManager.hpp"
+#include "../../Include/Renderer.hpp"
 
 namespace XGF
 {
@@ -17,9 +18,10 @@ namespace XGF
 	void Caret::Initialize()
 	{
 		mIsCaretShow = false;
-		mColorBatch.Initialize(Context::Current().QueryShaderManager().GetBasicShaders(false, false, true), 16, 16, TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-		mColorBatch.GetShaderStage()->SetBlendState(BlendState::AddOneOneAdd);
-		mColorBatch.GetShaderStage()->SetDepthStencilState(DepthStencilState::DepthDisable);
+		mShaderStage.Initialize(Context::Current().QueryShaderManager().GetBasicShaders(false, false, true));
+		mShaderStage.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+		mShaderStage.SetBlendState(BlendState::AddOneOneAdd);
+		mShaderStage.SetDepthStencilState(DepthStencilState::DepthDisable);
 		
 		mHide = false;
 		mHeight = 16;
@@ -30,7 +32,7 @@ namespace XGF
 
 	void Caret::Shutdown()
 	{
-		mColorBatch.Shutdown();
+		mShaderStage.Shutdown();
 	}
 
 	void Caret::Draw(const WVPMatrix & wvp)
@@ -39,10 +41,9 @@ namespace XGF
 		{
 			return;
 		}
-		mColorBatch.GetShaderStage()->SetVSConstantBuffer(0, &wvp);
-		mColorBatch.Begin();
-		mColorBatch.DrawPolygon(mLine.mPolygonPleIndex, mBbrg);
-		mColorBatch.End();
+		mShaderStage.SetVSConstantBuffer(0, &wvp);
+		Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(mBbrg, *mLine.mPolygonPleIndex.get(), mShaderStage));
+
 	}
 
 	void Caret::Tick(float time)

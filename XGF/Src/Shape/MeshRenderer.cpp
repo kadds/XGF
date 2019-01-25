@@ -6,6 +6,9 @@
 #include <algorithm>
 #include "../../Include/Material/LightMaterial.hpp"
 #include "../../Include/Light/Light.hpp"
+#include "../../Include/Renderer.hpp"
+#include "../../Include/Context.hpp"
+
 namespace XGF
 {
 	using XGF::Batch;
@@ -39,17 +42,17 @@ namespace XGF
 				mNullRendererGroup.push_back(mesh);
 				return;
 			}
-			auto ele = std::find_if(mRendererGroup.begin(), mRendererGroup.end(), [mesh](const std::pair<std::vector<Mesh *>, Batch *> & data)
+			auto ele = std::find_if(mRendererGroup.begin(), mRendererGroup.end(), [mesh](const std::pair<std::vector<Mesh *>, ShaderStage *> & data)
 			{
-				return data.second->GetShaderStage()->EqualsWithShaders(mesh->GetMaterial()->GetShaders());
+				return data.second->EqualsWithShaders(mesh->GetMaterial()->GetShaders());
 			});
 			if (ele == mRendererGroup.end())
 			{
-				vector<Mesh *> vec;
+				std::vector<Mesh *> vec;
 				vec.push_back(mesh);
-				Batch * batch = new Batch();
-				batch->Initialize(mesh->GetMaterial()->GetShaders(), 2048, 2048);
-				mRendererGroup.push_back(std::make_pair<>(vec, batch));
+				ShaderStage * stage = new ShaderStage();
+				stage->Initialize(mesh->GetMaterial()->GetShaders());
+				mRendererGroup.push_back(std::make_pair<>(vec, stage));
 			}
 			else
 			{
@@ -69,9 +72,9 @@ namespace XGF
 				}
 				return;
 			}
-			auto ele = std::find_if(mRendererGroup.begin(), mRendererGroup.end(), [mesh](const std::pair<std::vector<Mesh *>, Batch *> & data)
+			auto ele = std::find_if(mRendererGroup.begin(), mRendererGroup.end(), [mesh](const std::pair<std::vector<Mesh *>, ShaderStage *> & data)
 			{
-				return data.second->GetShaderStage()->EqualsWithShaders(mesh->GetMaterial()->GetShaders());
+				return data.second->EqualsWithShaders(mesh->GetMaterial()->GetShaders());
 			});
 			if (ele != mRendererGroup.end())
 			{
@@ -131,7 +134,7 @@ namespace XGF
 
 		void MeshRenderer::Begin(const WVPMatrix & wvp)
 		{
-			vector<Mesh *> moveElements;
+			std::vector<Mesh *> moveElements;
 			for (auto & it : mRendererGroup)
 			{
 				for(auto & ot : it.first)
@@ -157,17 +160,12 @@ namespace XGF
 			{
 				if (it.second == nullptr)
 					continue;
-				it.second->GetShaderStage()->SetVSConstantBuffer(0, &wvp);
-				it.second->Begin();
+				it.second->SetVSConstantBuffer(0, &wvp);
 			}
 		}
 
 		void MeshRenderer::End()
 		{
-			for (auto & it : mRendererGroup)
-			{
-				it.second->End();
-			}
 		}
 
 		void MeshRenderer::RefreshLightMesh()
@@ -211,30 +209,31 @@ namespace XGF
 			{
 				for (auto & element : it.first)
 				{
-					it.second->GetShaderStage()->SetRasterizerState(element->GetMaterial()->GetRasterizerState());
-					it.second->GetShaderStage()->SetDepthStencilState(element->GetMaterial()->GetDepthStencilState());
-					it.second->GetShaderStage()->SetBlendState(element->GetMaterial()->GetBlendState());
+					auto * stage = it.second;
+					stage->SetRasterizerState(element->GetMaterial()->GetRasterizerState());
+					stage->SetDepthStencilState(element->GetMaterial()->GetDepthStencilState());
+					stage->SetBlendState(element->GetMaterial()->GetBlendState());
 
 					auto r = element->GetMaterial()->GetPSBindingTextures();
 					for(unsigned i = 0; i < r.size(); i++)
 					{
-						it.second->GetShaderStage()->SetPSSRV(i, r[i]->GetRawTexture());
+						stage->SetPSTexture(i, r[i]);
 					}
 					r = element->GetMaterial()->GetVSBindingTextures();
 					for (unsigned i = 0; i < r.size(); i++)
 					{
-						it.second->GetShaderStage()->SetVSSRV(i, r[i]->GetRawTexture());
+						stage->SetVSTexture(i, r[i]);
 					}
 					auto cb = element->GetMaterial()->GetVSBindingConstantBuffers();
 					for(int i = 0; i < cb.size(); i++)
 					{
-						it.second->GetShaderStage()->SetVSConstantBuffer(i + 1, cb[i]);
+						stage->SetVSConstantBuffer(i + 1, cb[i]);
 					}
 					cb = element->GetMaterial()->GetPSBindingConstantBuffers();
 					int i = 0;
 					for (; i < cb.size(); i++)
 					{
-						it.second->GetShaderStage()->SetPSConstantBuffer(i, cb[i]);
+						stage->SetPSConstantBuffer(i, cb[i]);
 					}
 					if(element->GetMaterial()->CanLinkWithLight())
 					{
@@ -265,18 +264,17 @@ namespace XGF
 							}
 						};
 						if(usePosition)
-							it.second->GetShaderStage()->SetPSConstantBuffer(i++, &cameraPosition);
+							stage->SetPSConstantBuffer(i++, &cameraPosition);
 						//if(((LightMaterial *)(element->GetMaterial()))->ShouldWriteBufferLight())
-						it.second->GetShaderStage()->SetPSConstantBuffer(i, cpFunc);
+						stage->SetPSConstantBuffer(i, cpFunc);
 					}
 					
 					BindingBridge bbr = element->GetBindingBridge();
-					auto ppe = std::make_shared<PolygonPlePointBinder>(bbr.GetBinder(0)->Count());
+					auto ppe = std::make_shared<PolygonPlePointBinder>(bbr.GetBinder(0)->GetActualCount());
 					auto matrix = element->GetGeometry()->GetTransform().GetMatrix();
 					element->GetGeometry()->mPolygon->ExpandAllTo(*ppe.get(), Operator::Multiply(matrix));
 					bbr.SetBinder(ppe, 0);
-					it.second->DrawPolygon(element->GetGeometry()->mPolygonPleIndex, bbr);
-					it.second->Flush();
+					Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(bbr, *element->GetGeometry()->mPolygonPleIndex.get(), *stage));
 				}
 			}
 		}

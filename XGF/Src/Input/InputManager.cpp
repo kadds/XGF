@@ -206,6 +206,8 @@ namespace XGF
 
 	void InputManager::SetMouseMode(MouseMode mm)
 	{
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
+		auto w = gdi.GetWidth() / 2, h = gdi.GetHeight() / 2;
 		switch (mm)
 		{
 		case MouseMode::Default:
@@ -216,7 +218,7 @@ namespace XGF
 		case MouseMode::Center:
 			mCursor.Hide();
 			dinput.SetMoveable(false);
-			dinput.SetPosition(Batch::GetClientWidth() / 2, Batch::GetClientHeight() / 2);
+			dinput.SetPosition(w, h);
 			dinput.SetRelativeMode(true);
 			PostMessage(mHwnd, WM_X_SHOWORHIDECURSOR, TRUE, 0);
 			break;
@@ -228,10 +230,10 @@ namespace XGF
 			break;
 		case MouseMode::CustomCenter:
 			dinput.SetMoveable(true);
-			dinput.SetPosition(Batch::GetClientWidth() / 2, Batch::GetClientHeight() / 2);
+			dinput.SetPosition(w, h);
 			dinput.SetRelativeMode(true);
 			PostMessage(mHwnd, WM_X_SHOWORHIDECURSOR, FALSE, 0);
-			OnMouseMove(Batch::GetClientWidthD2(), Batch::GetClientHeightD2());
+			OnMouseMove(w, h);
 			mCursor.Show();
 			break;
 		default:

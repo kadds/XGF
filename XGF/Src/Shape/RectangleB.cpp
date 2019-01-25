@@ -29,11 +29,11 @@ namespace XGF
 				4,7,6,
 				4,6,5
 			};
-			for (int i = 0; i < mPolygonPleIndex->mCount; i++)
+			for (int i = 0; i < mPolygonPleIndex->GetActualCount(); i++)
 			{
-				mPolygonPleIndex->mIndex[i] = ide[i];
+				mPolygonPleIndex->Get(i) = ide[i];
 			}
-			for (int i = 0; i < mPolygon->Count(); i++) 
+			for (int i = 0; i < mPolygon->GetActualCount(); i++)
 			{
 				mPolygon->GetData(i) = Point(0.f, 0.f, 0.f);
 			}
@@ -73,7 +73,7 @@ namespace XGF
 		}
 		void RectangleB::GetInerBorderRectangle(Rectangle & rc)
 		{
-			for (int i = 0; i < rc.mPolygon->Count(); i++)
+			for (int i = 0; i < rc.mPolygon->GetActualCount(); i++)
 			{
 				rc.mPolygon->GetData(i) = mPolygon->GetData(4 + i);
 			}

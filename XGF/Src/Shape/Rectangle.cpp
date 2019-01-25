@@ -6,12 +6,12 @@ namespace XGF
 	{
 		Rectangle::Rectangle() :Shape2D(4, 6)
 		{
-			mPolygonPleIndex->mIndex[0] = 0;
-			mPolygonPleIndex->mIndex[1] = 3;
-			mPolygonPleIndex->mIndex[2] = 2;
-			mPolygonPleIndex->mIndex[3] = 2;
-			mPolygonPleIndex->mIndex[4] = 1;
-			mPolygonPleIndex->mIndex[5] = 0;
+			mPolygonPleIndex->Get(0) = 0;
+			mPolygonPleIndex->Get(1) = 3;
+			mPolygonPleIndex->Get(2) = 2;
+			mPolygonPleIndex->Get(3) = 2;
+			mPolygonPleIndex->Get(4) = 1;
+			mPolygonPleIndex->Get(5) = 0;
 		}
 
 
