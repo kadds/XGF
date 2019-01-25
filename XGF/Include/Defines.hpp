@@ -31,7 +31,7 @@ namespace XGF
 	{
 	public:
 		using SM::Rectangle::Rectangle;
-
+		Rectangle() = default;
 		static Rectangle Intersect(const Rectangle& ra, const Rectangle& rb)
 		{
 			return Rectangle(SM::Rectangle::Intersect(ra, rb));
@@ -47,7 +47,7 @@ namespace XGF
 	{
 	public:
 		using SM::Vector3::Vector3;
-
+		Point() = default;
 		Point(const Point&) = default;
 		Point& operator=(const Point&) = default;
 
@@ -65,7 +65,7 @@ namespace XGF
 	{
 	public:
 		using SM::Vector4::Vector4;
-
+		Point4() = default;
 		Point4(const Point & p) :SM::Vector4(p.x, p.y, p.z, 1.0) {  }
 		Point4(const Point4&) = default;
 		Point4& operator=(const Point4&) = default;
@@ -86,7 +86,7 @@ namespace XGF
 	{
 	public:
 		using SM::Vector2::Vector2;
-
+		Point2() = default;
 		Point2(const Point2&) = default;
 		Point2& operator=(const Point2&) = default;
 
@@ -105,16 +105,7 @@ namespace XGF
 	{
 	public:
 		using SM::Color::Color;
-		explicit Color(const DirectX::SimpleMath::Vector3& clr) : SM::Color(clr.x, clr.y, clr.z, 1.f) {}
-		
-		Color(const XMFLOAT4& c) { this->x = c.x; this->y = c.y; this->z = c.z; this->w = c.w; }
-		explicit Color(const DirectX::XMVECTORF32& F) { this->x = F.f[0]; this->y = F.f[1]; this->z = F.f[2]; this->w = F.f[3]; }
-
-		explicit Color(const DirectX::PackedVector::XMCOLOR& Packed);
-		// BGRA Direct3D 9 D3DCOLOR packed color
-
-		explicit Color(const DirectX::PackedVector::XMUBYTEN4& Packed);
-		// RGBA XNA Game Studio packed color
+		Color() = default;
 
 		Color(const Color&) = default;
 		Color& operator=(const Color&) = default;

@@ -170,7 +170,6 @@
     <ClInclude Include="Include\Asyn.hpp" />
     <ClInclude Include="Include\AsyncTask.hpp" />
     <ClInclude Include="Include\AxisRenderer.hpp" />
-    <ClInclude Include="Include\Batch.hpp" />
     <ClInclude Include="Include\Bresenham.hpp" />
     <ClInclude Include="Include\Buffer.hpp" />
     <ClInclude Include="Include\Button.hpp" />
@@ -258,7 +257,6 @@
     <ClCompile Include="Src\Animation\SceneAnimation.cpp" />
     <ClCompile Include="Src\Core\Actor.cpp" />
     <ClCompile Include="Src\Core\Asyn.cpp" />
-    <ClCompile Include="Src\Core\Batch.cpp" />
     <ClCompile Include="Src\Core\Buffer.cpp" />
     <ClCompile Include="Src\Core\Camera.cpp" />
     <ClCompile Include="Src\Core\Caret.cpp" />

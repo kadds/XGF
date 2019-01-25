@@ -75,9 +75,6 @@
     <ClInclude Include="Include\Asyn.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Batch.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Button.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -336,9 +333,6 @@
       <Filter>源文件\Core</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\Asyn.cpp">
-      <Filter>源文件\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Core\Batch.cpp">
       <Filter>源文件\Core</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\Camera.cpp">
