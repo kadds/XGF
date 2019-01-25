@@ -1,6 +1,5 @@
 #include "../../Include/Control.hpp"
 #include "../../Include/Container.hpp"
-#include "../../Include/Scene.hpp"
 #include "../../Include/XGFramework.hpp"
 namespace XGF
 {

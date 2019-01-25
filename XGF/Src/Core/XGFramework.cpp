@@ -238,6 +238,7 @@ namespace XGF
 	}
 	void XGFramework::_UpdateWithInterpolation(float percent)
 	{
+		if (percent > 1.f) percent = 1.f;
 		_Update(percent * mUpdateFixedTime);
 	}
 }

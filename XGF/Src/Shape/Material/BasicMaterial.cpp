@@ -1,5 +1,4 @@
 #include "..\..\..\Include\Material\BasicMaterial.hpp"
-#include "..\..\..\Include\Geometry\Geometry.hpp"
 #include "../../../Include/Context.hpp"
 #include "../../../Include/ShaderManager.hpp"
 

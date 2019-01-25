@@ -1,7 +1,5 @@
 #pragma once
 #include "Defines.hpp"
-#include <thread>
-#include <future>
 #include <functional>
 #include "Asyn.hpp"
 namespace XGF

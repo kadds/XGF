@@ -1,6 +1,4 @@
 #pragma once
-#include <unordered_map>
-
 namespace XGF
 {
 	class GDI;

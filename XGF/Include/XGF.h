@@ -6,7 +6,6 @@
 #include "GDI.hpp"
 #include "XGFramework.hpp"
 #include "Shader.hpp"
-#include "Batch.hpp"
 #include "Camera.hpp"
 #include "PerspectiveCamera.hpp"
 #include "OrthoCamera.hpp"

@@ -1,7 +1,7 @@
 #include "../../Include/DX8Input.hpp"
 #include "../../Include/Logger.hpp"
-#include "../../Include/Batch.hpp"
 #include "../../Include/Context.hpp"
+#include "../../Include/GDI.hpp"
 
 namespace XGF
 {

@@ -84,9 +84,6 @@
     <ClInclude Include="Include\ClickHelper.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Color.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Control.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -186,9 +183,6 @@
     <ClInclude Include="Include\Defines.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Include\RepeatAction.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Include\ShapeRenderer.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -214,9 +208,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\FPSCamera.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Buffer.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\Label.hpp">
@@ -272,9 +263,6 @@
     </ClInclude>
     <ClInclude Include="Include\Geometry\PlaneGeometry.hpp">
       <Filter>头文件\Geometry</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Destroyable.h">
-      <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\Logger.hpp">
       <Filter>头文件</Filter>
@@ -459,9 +447,6 @@
       <Filter>源文件\Animation</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\FPSCamera.cpp">
-      <Filter>源文件\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Core\Buffer.cpp">
       <Filter>源文件\Core</Filter>
     </ClCompile>
     <ClCompile Include="Src\Interpolator\Interpolator.cpp">

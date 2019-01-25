@@ -26,7 +26,7 @@ namespace XGF
 	{
 		LARGE_INTEGER currTime;
 		QueryPerformanceCounter(&currTime);
-		mTime.QuadPart = currTime.QuadPart - time / mSecondsPerCount;
+		mTime.QuadPart = currTime.QuadPart - static_cast<LONGLONG>(time / mSecondsPerCount);
 		return time;
 	}
 

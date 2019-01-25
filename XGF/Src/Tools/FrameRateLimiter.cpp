@@ -2,7 +2,7 @@
 
 namespace  XGF
 {
-	FrameRateLimiter::FrameRateLimiter(int frameRate): mCurrentFrame(0.f), mFrameRate(frameRate), mOverCost(0.f)
+	FrameRateLimiter::FrameRateLimiter(int frameRate): mCurrentFrame(0), mFrameRate(frameRate), mOverCost(0.f)
 	{
 		if (frameRate != 0)
 		{

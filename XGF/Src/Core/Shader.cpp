@@ -1,7 +1,6 @@
 #include "../../Include/Shader.hpp"
 #include "../../Include/GDI.hpp"
 #include "../../Include/Logger.hpp"
-#include "../../Include/Buffer.hpp"
 #include <numeric>
 #include "../../Include/Context.hpp"
 #include "../../Include/Texture.hpp"

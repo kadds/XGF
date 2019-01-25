@@ -171,13 +171,11 @@
     <ClInclude Include="Include\AsyncTask.hpp" />
     <ClInclude Include="Include\AxisRenderer.hpp" />
     <ClInclude Include="Include\Bresenham.hpp" />
-    <ClInclude Include="Include\Buffer.hpp" />
     <ClInclude Include="Include\Button.hpp" />
     <ClInclude Include="Include\Camera.hpp" />
     <ClInclude Include="Include\Caret.hpp" />
     <ClInclude Include="Include\Circle.hpp" />
     <ClInclude Include="Include\ClickHelper.hpp" />
-    <ClInclude Include="Include\Color.hpp" />
     <ClInclude Include="Include\Concurrentqueue.hpp" />
     <ClInclude Include="Include\Context.hpp" />
     <ClInclude Include="Include\Control.hpp" />
@@ -186,7 +184,6 @@
     <ClInclude Include="Include\DebugInscriber.hpp" />
     <ClInclude Include="Include\Defines.hpp" />
     <ClInclude Include="Include\DelayAction.hpp" />
-    <ClInclude Include="Include\Destroyable.h" />
     <ClInclude Include="Include\DX8Input.hpp" />
     <ClInclude Include="Include\dxerr.h" />
     <ClInclude Include="Include\EditText.hpp" />
@@ -226,7 +223,6 @@
     <ClInclude Include="Include\RectangleC.hpp" />
     <ClInclude Include="Include\Renderer.hpp" />
     <ClInclude Include="Include\RenderToTexture.hpp" />
-    <ClInclude Include="Include\RepeatAction.hpp" />
     <ClInclude Include="Include\ResourceManager.hpp" />
     <ClInclude Include="Include\Scene.hpp" />
     <ClInclude Include="Include\SceneAnimation.hpp" />
@@ -257,7 +253,6 @@
     <ClCompile Include="Src\Animation\SceneAnimation.cpp" />
     <ClCompile Include="Src\Core\Actor.cpp" />
     <ClCompile Include="Src\Core\Asyn.cpp" />
-    <ClCompile Include="Src\Core\Buffer.cpp" />
     <ClCompile Include="Src\Core\Camera.cpp" />
     <ClCompile Include="Src\Core\Caret.cpp" />
     <ClCompile Include="Src\Core\Container.cpp" />

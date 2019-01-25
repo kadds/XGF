@@ -2,7 +2,6 @@
 #include "Defines.hpp"
 #include "AsyncTask.hpp"
 #include <functional>
-#include <any>
 namespace XGF
 {
 	class Texture;

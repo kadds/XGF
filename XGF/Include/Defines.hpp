@@ -127,7 +127,7 @@ namespace XGF
 	public:
 		
 		using SM::Vector3::Vector3;
-
+		Color3() = default;
 		Color3(const Color3&) = default;
 		Color3& operator=(const Color3&) = default;
 

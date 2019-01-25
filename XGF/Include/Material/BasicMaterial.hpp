@@ -1,6 +1,6 @@
 #pragma once
+#include "./../Defines.hpp"
 #include "Material.hpp"
-#include "../Geometry/Geometry.hpp"
 namespace XGF::Shape
 {
 	/**

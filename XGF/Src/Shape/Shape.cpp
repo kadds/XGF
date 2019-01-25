@@ -1,5 +1,4 @@
 #include "../../Include/Shape.hpp"
-#include "../../Include/Batch.hpp"
 #include "../../Include/Polygon.hpp"
 
 namespace XGF

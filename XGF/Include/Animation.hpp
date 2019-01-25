@@ -1,7 +1,6 @@
 #pragma once
 #include "Defines.hpp"
 #include "Texture.hpp"
-using std::vector;
 namespace XGF
 {
 	struct AnimationStage

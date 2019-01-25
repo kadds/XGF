@@ -59,7 +59,7 @@ namespace XGF
 		void SetLogicalFrameRate(int rate);
 		struct AutoClose
 		{
-			bool operator()(XGFramework &)
+			bool operator()(XGFramework &) const
 			{
 				return true;
 			}

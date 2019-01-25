@@ -1,7 +1,6 @@
 #pragma once
+#include "./../Defines.hpp"
 #include "./../Shader.hpp"
-#include "./../Polygon.hpp"
-
 namespace XGF 
 {
 	namespace Shape

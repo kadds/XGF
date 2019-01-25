@@ -1,7 +1,8 @@
 #pragma once
 #include "Defines.hpp"
-#include "Batch.hpp"
 #include "Line.hpp"
+#include "Shader.hpp"
+
 namespace XGF
 {
 	class Context;

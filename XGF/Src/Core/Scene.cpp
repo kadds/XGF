@@ -1,8 +1,6 @@
 #include "../../Include/Scene.hpp"
-#include "../../Include/Batch.hpp"
 #include "../../Include/Container.hpp"
 #include "../../Include/XGFramework.hpp"
-#include "../../Include/GDI.hpp"
 #include "../../Include/EventDispatcher.hpp"
 namespace XGF
 {

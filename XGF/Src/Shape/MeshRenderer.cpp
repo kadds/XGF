@@ -1,8 +1,6 @@
 #include "..\..\Include\MeshRenderer.hpp"
 #include "../../Include/Shader.hpp"
 #include "../../Include/Mesh.hpp"
-#include "../../Include/Batch.hpp"
-#include "../../Include/Texture.hpp"
 #include <algorithm>
 #include "../../Include/Material/LightMaterial.hpp"
 #include "../../Include/Light/Light.hpp"
