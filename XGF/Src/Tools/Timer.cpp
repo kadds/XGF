@@ -114,6 +114,6 @@ namespace XGF
 
 	float Scheduler::GetDeltaTimeFromLastSchedule()
 	{
-		return mTimer.TickWithoutRecord();
+		return mTimer.Tick();
 	}
 }
