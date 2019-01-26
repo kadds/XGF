@@ -39,7 +39,7 @@ public:
 	GameScene() {};
 	virtual ~GameScene() {};
 	
-	void MyRender(WVPMatrix & wvp, bool end)
+	void MyRender()
 	{
 		auto & context = Context::Current();
 		mShapeRenderer.DrawCircle(240, 240, 40, GetPrecision(40, 5), 0.01f, Color(1.f, 1.f, 0.f, 1.f), Color(0.f, 1.f, 0.f, 1.f));
@@ -59,11 +59,7 @@ public:
 		mShapeRenderer.DrawPolygonList(*p2, 5, 0.1f, Color(0.0f, 0.1f, 0.6f, 1.0f));
 		mTextRenderer.DrawString(L"PolygonList", 40, 172);
 		mTextRenderer.DrawString(L"A RenderToTexture(RTT) Demo", 125, 35);
-		if (!end)
-		{
-			mShapeRenderer.Flush();
-			//mTextRenderer.Flush();
-		}
+		mTextRenderer.Flush();
 	};
 	virtual void OnCreate() override
 	{
@@ -80,15 +76,16 @@ public:
 		mTextureShaderStage.Initialize(context.QueryShaderManager().GetBasicShaders(false, true, false));
 		mTextureShaderStage.SetBlendState(BlendState::AddZeroOneAdd);
 		mTextureShaderStage.SetDepthStencilState(DepthStencilState::DepthDisable);
-		mRenderToTexture.Initialize(context.QueryGraphicsDeviceInterface().GetWidth(), context.QueryGraphicsDeviceInterface().GetHeight());
+		auto & gdi = context.QueryGraphicsDeviceInterface();
+		mRenderToTextureTarget.Initialize(gdi.GetWidth(), gdi.GetHeight(), DXGI_FORMAT_R8G8B8A8_UNORM, 0);
 
-		mRc.SetPositionAndSize(0, context.QueryGraphicsDeviceInterface().GetHeight() - 100.f, 130.f, 100.f);
+		mRc.SetPositionAndSize(0, gdi.GetHeight() - 100.f, 130.f, 100.f);
 		mRc.SetZ(0.001f);
 		mTime = 0.f;
 	};
 	virtual void OnDestroy() override
 	{
-		mRenderToTexture.Shutdown();
+		mRenderToTextureTarget.Shutdown();
 		mTextureShaderStage.Shutdown();
 		mTextRenderer.Shutdown();
 		mFont.Shutdown();
@@ -98,25 +95,25 @@ public:
 	virtual void Render() override
 	{
 		auto & context = Context::Current();
-
 		context.QueryRenderer().Clear(Color(0.5, 0.5, 0.5, 1));
 		WVPMatrix wvp;
 		mCamera.GetCameraMatrix(wvp);
 		mShapeRenderer.Begin(wvp);
 		mTextRenderer.Begin(wvp);
-		//RTT start
-		//mRenderToTexture.SetRenderTarget();
-		//mRenderToTexture.Clear(Color(0.1f, 0.1f, 0.1f, 1.f));
 
-		MyRender(wvp, false);
+		MyRender();
+		context.QueryRenderer().AppendAndSetRenderTarget(&mRenderToTextureTarget);
+		context.QueryRenderer().Clear(Color(0.5, 0.5, 0.5, 0));
 
+		MyRender();
+		context.QueryRenderer().SetDefaultRenderTarget();
 		//RTT end
 		//mRenderToTexture.SetDefaultRenderTarget();
 
 		//MyRender(wvp, true);
 		mShapeRenderer.End();
 
-		/*PolygonPleTextureBinder textureBinder(4);
+		PolygonPleTextureBinder textureBinder(4);
 		textureBinder.GetData(1).x = textureBinder.GetData(0).x = 0.f;
 		textureBinder.GetData(2).x = textureBinder.GetData(3).x = 1.f;
 		textureBinder.GetData(1).y = textureBinder.GetData(2).y = 1.f;
@@ -125,15 +122,15 @@ public:
 		BindingBridge bb;
 		bb.AddBinder(mRc.mPolygon);
 		bb.AddBinder(std::shared_ptr<PolygonPleTextureBinder>(&textureBinder, [](const PolygonPleTextureBinder *) {}));
-*/
+
 		auto debug = DebugInscriber::GetInstance();
 		std::wstring str = fmt::format(L"FPS:{0}\nFC:{1}ms", debug->GetAverageFPS(), debug->GetFrameCost());
 		mTextRenderer.DrawString(str.c_str(), 4, 4);
 		mTextRenderer.End();
 		mTextureShaderStage.SetVSConstantBuffer(0, &wvp);
 		mTextureShaderStage.SetPSConstantBuffer(0, Color(1.f, 1.f, 1.f, 1.f));
-		//mTextureShaderStage.SetPSTexture(0, mRenderToTexture);
-		//Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(bb, *mRc.mPolygonPleIndex.get(), mTextureShaderStage));
+		mTextureShaderStage.SetPSTexture(0, mRenderToTextureTarget.GetTexture());
+		Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(bb, *mRc.mPolygonPleIndex.get(), mTextureShaderStage));
 
 	};
 	virtual void Update(float deltaTime) override
@@ -158,15 +155,15 @@ public:
 	{
 		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
 		mCamera.UpdateProject(ClientX, ClientY);
-		mRenderToTexture.Shutdown();
-		mRenderToTexture.Initialize(gdi.GetWidth(), gdi.GetHeight());
+		mRenderToTextureTarget.Shutdown();
+		mRenderToTextureTarget.Initialize(gdi.GetWidth(), gdi.GetHeight(), DXGI_FORMAT_R8G8B8A8_UNORM, 0);
 		mRc.SetPositionAndSize(0.f, ClientY * 2 / 3.f, ClientX / 3.f, ClientY / 3.f);
 	};
 
 private:
 	ShapeRenderer mShapeRenderer;
 	OrthoCamera mCamera;
-	RenderToTexture mRenderToTexture;
+	RenderTarget mRenderToTextureTarget;
 	TextureResourceManager mTextureResourceManager;
 	Font mFont;
 	TextRenderer mTextRenderer;

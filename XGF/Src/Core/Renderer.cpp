@@ -123,9 +123,64 @@ namespace XGF
 		commands.push_back(cmd);
 	}
 
+	RenderTargetPass::~RenderTargetPass()
+	{
+		for (auto& renderQueue : mRenderQueues)
+		{
+			for (auto command : renderQueue.commands)
+			{
+				delete command;
+			}
+		}
+		mRenderQueues.clear();
+	}
+
+	RenderTargetPass& RenderResource::GetCurrentPass()
+	{
+		if (mPassUsedIndex < 0)
+		{
+			if(mPass.empty())
+			{
+				// 自动添加为默认Pass
+				mPassUsedIndex = 0;
+				mPass.push_back(&mDefaultPass);
+			}
+			else
+			{
+				mPassUsedIndex = 0;
+				XGF_Info(Render, "Pass has not been set, now set to the first pass");
+			}
+		}
+		return *mPass[mPassUsedIndex];
+	}
+
+	void RenderResource::NewFrame()
+	{
+		mVertices.insert(mVertices.end(), mVerticesUsed.begin(), mVerticesUsed.end());
+		mVerticesUsed.clear();
+
+		mIndices.insert(mIndices.end(), mIndicesUsed.begin(), mIndicesUsed.end());
+		mIndicesUsed.clear();
+
+		mConstantBuffer.insert(mConstantBuffer.end(), mConstantBufferUsed.begin(), mConstantBufferUsed.end());
+		mConstantBufferUsed.clear();
+
+		for (auto pass : mPass)
+		{
+			if(pass != &mDefaultPass)
+			{
+				delete pass;
+			}
+		}
+		mPass.clear();
+		mPassUsedIndex = -1;
+	}
+
 	void Renderer::Clear(const Color& color)
 	{
-		GetCurrentResource().mClearColor = color;
+		auto & pass = GetCurrentResource().GetCurrentPass();
+		pass.Clear(color);
+		pass.ClearDepthStencilBuffer();
 	}
 
 	void Renderer::Create()
@@ -137,13 +192,26 @@ namespace XGF
 		mTag = true;
 		GetCurrentRenderResource().SetRenderedFlag();
 		GetCurrentResource().SetRenderedFlag();
+		GetCurrentResource().mDefaultPass.mTarget = gdi.GetDisplayRenderTarget();
+		GetCurrentRenderResource().mDefaultPass.mTarget = gdi.GetDisplayRenderTarget();
+
 	}
 
 	void Renderer::Destroy()
 	{
 		for (auto & resource : mResource)
 		{
-			resource.mRenderQueues.clear();
+			for (auto pass : resource.mPass)
+			{
+				for (auto renderQueue : pass->mRenderQueues)
+				{
+					for (auto command : renderQueue.commands)
+					{
+						delete command;
+					}
+				}
+				pass->mRenderQueues.clear();
+			}
 			for (GpuBuffer & buffer : resource.mVertices)
 			{
 				buffer.buffer->Release();
@@ -174,23 +242,32 @@ namespace XGF
 		gdi.Destroy();
 	}
 
+	void Renderer::AppendAndSetRenderTarget(RenderTarget* target)
+	{
+		SetRenderTarget(AppendRenderTarget(target));
+	}
+
 	void Renderer::DrawCommands()
 	{
 		auto & context = Context::Current();
-		context.QueryGraphicsDeviceInterface().Clear(GetCurrentRenderResource().mClearColor);
-		for (auto & renderQueue : GetCurrentRenderResource().mRenderQueues)
+		for (auto pass : GetCurrentRenderResource().mPass)
 		{
-			renderQueue.Reorder();
-			for (auto & command : renderQueue.commands)
+			context.QueryGraphicsDeviceInterface().SetRenderTarget(pass->mTarget);
+			pass->mTarget->Clear(pass->mClearColor);
+			for (auto & renderQueue : pass->mRenderQueues)
 			{
-				command->Exec();
-				delete command;
+				renderQueue.Reorder();
+				for (auto & command : renderQueue.commands)
+				{
+					command->Exec();
+					delete command;
+				}
+				if (!renderQueue.commands.empty())
+				{
+					pass->mTarget->ClearDepthStencilBuffer();
+				}
+				renderQueue.commands.clear();
 			}
-			if(!renderQueue.commands.empty())
-			{
-				context.QueryGraphicsDeviceInterface().ClearDepthStencilBuffer();
-			}
-			renderQueue.commands.clear();
 		}
 		context.QueryGraphicsDeviceInterface().Present(false);
 	}
@@ -198,15 +275,7 @@ namespace XGF
 	void Renderer::ClearResource(int index)
 	{
 		auto & rrs = GetResource(index);
-		rrs.mVertices.insert(rrs.mVertices.end(), rrs.mVerticesUsed.begin(), rrs.mVerticesUsed.end());
-		rrs.mVerticesUsed.clear();
-
-		rrs.mIndices.insert(rrs.mIndices.end(), rrs.mIndicesUsed.begin(), rrs.mIndicesUsed.end());
-		rrs.mIndicesUsed.clear();
-
-		rrs.mConstantBuffer.insert(rrs.mConstantBuffer.end(), rrs.mConstantBufferUsed.begin(), rrs.mConstantBufferUsed.end());
-		rrs.mConstantBufferUsed.clear();
-
+		rrs.NewFrame();
 	}
 
 	RenderResource& Renderer::GetCurrentResource()
@@ -261,12 +330,14 @@ namespace XGF
 
 	RenderQueue& Renderer::GetRenderGroup(int index)
 	{
-		return GetCurrentResource().mRenderQueues[index];
+		auto & res = GetCurrentResource();
+		return GetCurrentResource().GetCurrentPass().mRenderQueues[index];
 	}
 
 	RenderQueue& Renderer::GetRenderGroup(RenderGroupType groupType)
 	{
-		return GetCurrentResource().mRenderQueues[(size_t)groupType];
+		auto & res = GetCurrentResource();
+		return res.GetCurrentPass().mRenderQueues[(size_t)groupType];
 	}
 
 	void Renderer::Loop()
@@ -310,13 +381,16 @@ namespace XGF
 		ClearResource(GetCurrentResourceIndex());
 		for (auto & resource : mResource)
 		{
-			for (auto & renderQueue : resource.mRenderQueues)
+			for (auto pass : resource.mPass)
 			{
-				for (auto * command : renderQueue.commands)
+				for (auto & renderQueue : pass->mRenderQueues)
 				{
-					delete command;
+					for (auto * command : renderQueue.commands)
+					{
+						delete command;
+					}
+					renderQueue.commands.clear();
 				}
-				renderQueue.commands.clear();
 			}
 		}
 		
@@ -412,5 +486,43 @@ namespace XGF
 	int Renderer::GetLimitFrameRate() const
 	{
 		return mFrameRateLimiter.GetStandFrameRate();
+	}
+
+	int Renderer::AppendRenderTarget(RenderTarget* target)
+	{
+		auto * targetR = new RenderTargetPass();
+		targetR->mTarget = target;
+		GetCurrentResource().mPass.push_back(targetR);
+		return GetCurrentResource().mPass.size() - 1;
+	}
+
+	int Renderer::AppendDefaultRenderTarget()
+	{
+		GetCurrentResource().mPass.push_back(&GetCurrentResource().mDefaultPass);
+		return GetCurrentResource().mPass.size() - 1;
+	}
+
+	void Renderer::AppendAndSetDefaultRenderTarget()
+	{
+		SetRenderTarget(AppendDefaultRenderTarget());
+	}
+
+	void Renderer::SetDefaultRenderTarget()
+	{
+		auto & r = GetCurrentResource();
+		for (auto i =  0 ; i < r.mPass.size(); i ++)
+		{
+			if(r.mPass[i] == &r.mDefaultPass)
+			{
+				SetRenderTarget(i);
+				return;
+			}
+		}
+		AppendAndSetDefaultRenderTarget();
+	}
+
+	void Renderer::SetRenderTarget(int index)
+	{
+		GetCurrentResource().mPassUsedIndex = index;
 	}
 }

@@ -7,7 +7,7 @@
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib,"d3dcompiler.lib")
 
-#include "RenderToTexture.hpp"
+#include "RenderTarget.hpp"
 #include <stack>
 
 namespace XGF
@@ -75,9 +75,6 @@ namespace XGF
 
 		void Create();
 		void Destroy();
-		void Clear(const float color[]);
-		void Clear(const Color & c);
-		void ClearDepthStencilBuffer();
 		void Present(bool isVsync);
 		void Initialize(HINSTANCE instance, HWND WndHwnd, HWND TopHwnd, UINT ClientWidth, UINT ClientHeight);
 		
@@ -102,10 +99,8 @@ namespace XGF
 		HWND GetHwnd();
 		HWND GetTopHwnd();
 		HINSTANCE GetInstance();
-		ID3D11DepthStencilView * GetDepthStencilView() { return mDepthStencilView; }
+		void SetRenderTarget(RenderTarget * target);
 		
-		void SetRenderTargetView();
-
 		bool IsFullScreen() { return mDisplayMode == DisplayMode::FullScreen; }
 		bool SetDisplayMode(DisplayMode dm, int left, int top, int cx, int cy, bool move, bool isClientSize = false);
 		DisplayMode GetDisplayMode() { return  mDisplayMode; }
@@ -117,22 +112,23 @@ namespace XGF
 		ID3D11SamplerState * GetRawSamplerState(SamplerState ss);
 		ID3D11DepthStencilState * GetRawDepthStencilState(DepthStencilState ds);
 		ID3D11RasterizerState * GetRasterizerState(RasterizerState rs);
-		void PushRTTLayer(RenderToTexture *rtt);
-		void PopRTTLayer();
-		void DrawRTT();
+
 		D3D_FEATURE_LEVEL CheckFeatureLevel();
 		void SetBlendState(BlendState bs);
 		void SetDepthStencilState(DepthStencilState ds);
 		void SetRasterizerState(RasterizerState rs);
+		RenderTarget * GetDisplayRenderTarget()
+		{
+			return &mDisplayRenderTarget;
+		}
 		void CreateSwapChain();
 		void ReCreateSwapChain();
-		void ReCreateRenderToTextures();
 		void Able4xMsaa();
 		void Disable4xMsaa();
-		bool IsEnable4xMsaa();
-		int Query4xMsaaQuality();
-		bool CanEnable4xMsaa();
-		bool IsDisplayMode(DisplayMode displayMode);
+		bool IsEnable4xMsaa() const;
+		int Query4xMsaaQuality() const;
+		bool CanEnable4xMsaa() const;
+		bool IsDisplayMode(DisplayMode displayMode) const;
 	protected:
 		IDXGIFactory2 * mFactory2 = nullptr;
 		IDXGIFactory1 * mFactory1 = nullptr;
@@ -142,11 +138,6 @@ namespace XGF
 
 		IDXGISwapChain1 * mSwapChain1 = nullptr;
 		IDXGISwapChain * mSwapChain = nullptr;
-
-		ID3D11RenderTargetView * mRenderTargetView;
-
-		ID3D11DepthStencilView * mDepthStencilView;
-		ID3D11Texture2D * mDepthStencilBuffer;
 
 		ID3D11BlendState * mBlendState[(int)BlendState::InvalidValue];
 
@@ -168,7 +159,8 @@ namespace XGF
 		UINT mWidth;
 		UINT mHeight;
 		HINSTANCE mInstance;
-		std::stack<RenderToTexture *> mRenderToTextures;
+
+		RenderTarget mDisplayRenderTarget;
 		DisplayMode mDisplayMode;
 		std::vector<std::pair<int, DXGI_MODE_DESC *>> mScreenMode;
 

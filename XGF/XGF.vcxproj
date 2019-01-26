@@ -222,7 +222,7 @@
     <ClInclude Include="Include\RectangleB.hpp" />
     <ClInclude Include="Include\RectangleC.hpp" />
     <ClInclude Include="Include\Renderer.hpp" />
-    <ClInclude Include="Include\RenderToTexture.hpp" />
+    <ClInclude Include="Include\RenderTarget.hpp" />
     <ClInclude Include="Include\ResourceManager.hpp" />
     <ClInclude Include="Include\Scene.hpp" />
     <ClInclude Include="Include\SceneAnimation.hpp" />
@@ -266,7 +266,7 @@
     <ClCompile Include="Src\Core\PerspectiveCamera.cpp" />
     <ClCompile Include="Src\Core\Polygon.cpp" />
     <ClCompile Include="Src\Core\Renderer.cpp" />
-    <ClCompile Include="Src\Core\RenderToTexture.cpp" />
+    <ClCompile Include="Src\Core\RenderTarget.cpp" />
     <ClCompile Include="Src\Core\ResourceManager.cpp" />
     <ClCompile Include="Src\Core\Scene.cpp" />
     <ClCompile Include="Src\Core\Shader.cpp" />

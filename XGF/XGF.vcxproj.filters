@@ -189,9 +189,6 @@
     <ClInclude Include="Include\Circle.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Include\RenderToTexture.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Include\GridRenderer.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -307,6 +304,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\Concurrentqueue.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\RenderTarget.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -428,9 +428,6 @@
     <ClCompile Include="Src\Shape\Circle.cpp">
       <Filter>源文件\Shape</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Core\RenderToTexture.cpp">
-      <Filter>源文件\Core</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Tools\GridRenderer.cpp">
       <Filter>源文件\Tools</Filter>
     </ClCompile>
@@ -547,6 +544,9 @@
     </ClCompile>
     <ClCompile Include="Src\Tools\FrameRateLimiter.cpp">
       <Filter>源文件\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\RenderTarget.cpp">
+      <Filter>源文件\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

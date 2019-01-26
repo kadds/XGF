@@ -16,7 +16,6 @@
 #include "ShapeRenderer.hpp"
 #include "ShaderManager.hpp"
 #include "ResourceManager.hpp"
-#include "RenderToTexture.hpp"
 #include "Context.hpp"
 #include "Renderer.hpp"
 //********************************

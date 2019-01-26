@@ -60,15 +60,35 @@ namespace XGF
 		Transparent,
 		Foreground,
 	};
+	struct RenderTargetPass
+	{
+		RenderTargetPass() : mRenderQueues(4), mIsClearTarget(false), mClearDepthStencilBuffer(false){  }
+		~RenderTargetPass();
+
+		void Clear(const Color& color)
+		{
+			mClearColor = color;
+		}
+		void ClearDepthStencilBuffer()
+		{
+			mClearDepthStencilBuffer = true;
+		}
+		Color mClearColor;
+		RenderTarget * mTarget;
+		bool mClearDepthStencilBuffer;
+		bool mIsClearTarget;
+		std::vector<RenderQueue> mRenderQueues;
+	};
 	struct RenderResource
 	{
-		Color mClearColor;
-		std::vector<RenderQueue> mRenderQueues;
 		std::list<GpuBuffer> mVertices, mIndices;
-
 		std::list<GpuBuffer> mVerticesUsed, mIndicesUsed;
-
 		std::list<GpuBuffer> mConstantBuffer, mConstantBufferUsed;
+		int mPassUsedIndex;
+		std::vector<RenderTargetPass *> mPass;
+		RenderTargetPass mDefaultPass;
+
+		RenderTargetPass& GetCurrentPass();
 		bool mRenderedFlag;
 		bool HasRenderedFlag() const
 		{
@@ -82,8 +102,11 @@ namespace XGF
 		{
 			mRenderedFlag = true;
 		}
-		RenderResource() : mRenderQueues(4), mRenderedFlag(false) {  }
+
+		void NewFrame();
+		RenderResource(): mRenderedFlag(false), mPassUsedIndex(-1){  }
 	};
+	
 	class Renderer
 	{
 	public:
@@ -105,6 +128,13 @@ namespace XGF
 
 		void SetLimitFrameRate(int frameRate);
 		int GetLimitFrameRate() const;
+
+		int AppendRenderTarget(RenderTarget* target);
+		int AppendDefaultRenderTarget();
+		void AppendAndSetDefaultRenderTarget();
+		void SetDefaultRenderTarget();
+		void SetRenderTarget(int index);
+		void AppendAndSetRenderTarget(RenderTarget* target);
 	private:
 		void DrawCommands();
 		void OnMessage(const Event & ev);

@@ -8,8 +8,8 @@ namespace XGF
 		mDisplayMode = DisplayMode::Windowed;
 		mDisplayFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-		XGF_Error_Check(Framework, CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**) (&mFactory1)), "CreateDXGIFactory Failed!");
-		XGF_Info_Check(Framework, mFactory1->QueryInterface(__uuidof(IDXGIFactory2), (void**) (&mFactory2)), "Find DXGIFactory2 Failed! Use DXGIFactory1 Now!");
+		XGF_Error_Check(Framework, CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)(&mFactory1)), "CreateDXGIFactory Failed!");
+		XGF_Info_Check(Framework, mFactory1->QueryInterface(__uuidof(IDXGIFactory2), (void**)(&mFactory2)), "Find DXGIFactory2 Failed! Use DXGIFactory1 Now!");
 
 		PutDebugString(mFactory1);
 		if (mFactory2)
@@ -29,10 +29,12 @@ namespace XGF
 				dxgi_adapter->GetDesc1(&dc);
 				XGF_Debug(Framework, "Adapter List", "Adpapter:", i, ",DeviceID:", dc.DeviceId, ",DedicatedSystemMemory:", (dc.DedicatedSystemMemory >> 20), "MB,DedicatedVideoMemory", (dc.DedicatedVideoMemory >> 20)
 					, "MB,SharedSystemMemory:", dc.SharedSystemMemory >> 20, "MB,AdapterLuid:", dc.AdapterLuid.LowPart, ",Revision:", dc.Revision, ",VendorId:", dc.VendorId
-					, ",SubSysId:", dc.SubSysId, ",Description:", Logger::WCharToChar((wchar_t *) dc.Description))
+					, ",SubSysId:", dc.SubSysId, ",Description:", Logger::WCharToChar((wchar_t *)dc.Description))
 
 
-;
+
+
+					;
 
 				mAdapters.push_back(dxgi_adapter);
 
@@ -78,9 +80,9 @@ namespace XGF
 		}
 		XGF_Warn_Check(Framework, mD3dDevice->CheckMultisampleQualityLevels(
 			mDisplayFormat, 4, &m4xMsaaQuality), "CheckMultisampleQualityLevels Warn");
-		
+
 #ifdef _DEBUG
-		char const *levelstr[] = {"11","10.1","10" };
+		char const *levelstr[] = { "11","10.1","10" };
 		for (size_t i = 0; i < sizeof(featureLevels) / sizeof(featureLevels[0]); i++)
 		{
 			if (curLevel == featureLevels[i])
@@ -95,16 +97,16 @@ namespace XGF
 		PutDebugString(mDeviceContext);
 		PutDebugString(mD3dDevice);
 		CreateSwapChain();
-		
-		
+
+
 		memset(mSamplerState, 0, sizeof(mSamplerState));
 		memset(mBlendState, 0, sizeof(mBlendState));
 		memset(mDepthStencilState, 0, sizeof(mDepthStencilState));
 		memset(mRasterizerState, 0, sizeof(mRasterizerState));
-		
+
 		SizeChanged(mWidth, mHeight);
 	}
-	
+
 	void GDI::SaveDisplayMode(int c, IDXGIOutput * pDXGIOutput)
 	{
 		UINT  num = 0;
@@ -118,10 +120,10 @@ namespace XGF
 	void GDI::Destroy()
 	{
 		mSwapChain->SetFullscreenState(false, nullptr);
-		
+		mDisplayRenderTarget.Shutdown();
 		for (int i = 0; i < (int)BlendState::InvalidValue; i++)
 		{
-			if(mBlendState[i] != nullptr)
+			if (mBlendState[i] != nullptr)
 				mBlendState[i]->Release();
 		}
 		for (int i = 0; i < (int)SamplerState::InvalidValue; i++)
@@ -141,16 +143,6 @@ namespace XGF
 				mRasterizerState[i]->Release();
 		}
 
-		if (mDepthStencilView)
-			mDepthStencilView->Release();
-		mDepthStencilView = nullptr;
-		if (mDepthStencilBuffer)
-			mDepthStencilBuffer->Release();
-		mDepthStencilBuffer = nullptr;
-		if (mRenderTargetView)
-			mRenderTargetView->Release();
-		mRenderTargetView = nullptr;
-		
 		for each (auto var in mAdapters)
 		{
 			var->Release();
@@ -186,42 +178,11 @@ namespace XGF
 
 	}
 
-	void GDI::Clear(const float color[])
-	{
-		mDeviceContext->ClearRenderTargetView(mRenderTargetView, color);
-		//清除深度缓冲.  
-		mDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-		//把ShaderView置空
-		//TODO:Bug:1000
-		ID3D11ShaderResourceView *const pSRV[1] = { nullptr };
-
-		mDeviceContext->PSSetShaderResources(0, 1, pSRV);
-	}
-	void GDI::Clear(const Color & c)
-	{
-		if (!mRenderToTextures.empty())
-		{
-			mRenderToTextures.top()->Clear(c);
-			return;
-		}
-		float color[4];
-		color[0] = c.x;
-		color[1] = c.y;
-		color[2] = c.z;
-		color[3] = c.w;
-		Clear(color);
-	}
-	void GDI::ClearDepthStencilBuffer()
-	{
-		mDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
-	}
-
 	void GDI::Present(bool isVsync)
 	{
 		if (!mIsStandby)
 		{
-			
+
 			HRESULT  hr;
 			if (mSwapChain1) {
 				DXGI_PRESENT_PARAMETERS dpp;
@@ -233,7 +194,7 @@ namespace XGF
 			else {
 				hr = mSwapChain->Present(isVsync, 0);
 			}
-			if(hr == DXGI_STATUS_OCCLUDED)
+			if (hr == DXGI_STATUS_OCCLUDED)
 			{
 				mIsStandby = true;
 				XGF_Debug(Framework, "ERROR IN Present! ", "DXGI_STATUS_OCCLUDED");
@@ -272,72 +233,21 @@ namespace XGF
 		if (ClientHeight < 1)
 			ClientHeight = 1;
 
-		if (mRenderTargetView)
-		{
-			mRenderTargetView->Release();
-			mRenderTargetView = 0;
-		}
-		if (mDepthStencilView) {
-			mDepthStencilView->Release();
-			mDepthStencilView = 0;
-		}
-
-		if (mDepthStencilBuffer)
-		{
-			mDepthStencilBuffer->Release();
-			mDepthStencilBuffer = 0;
-		}
+		mDisplayRenderTarget.Shutdown();
 		XGF_Error_Check(Framework, mSwapChain->ResizeBuffers(1, ClientWidth, ClientHeight, mDisplayFormat, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH), "ResizeBuffers Error");
 		PutDebugString(mSwapChain);
 		ID3D11Texture2D* backBufferPtr;
 		XGF_Error_Check(Framework, mSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBufferPtr), "GetSwapChainBuffer is Error");
 
-		XGF_Error_Check(Framework, mD3dDevice->CreateRenderTargetView(backBufferPtr, NULL, &mRenderTargetView), "CreateRenderTargetView is Error");
-
+		
+		mDisplayRenderTarget.Initialize(backBufferPtr);
 		backBufferPtr->Release();
 		backBufferPtr = 0;
-		PutDebugString(mRenderTargetView);
 
-		D3D11_TEXTURE2D_DESC depthBufferDesc;
-		D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
-
-		ZeroMemory(&depthBufferDesc, sizeof(depthBufferDesc));
-
-		depthBufferDesc.Width = ClientWidth;
-		depthBufferDesc.Height = ClientHeight;
-		depthBufferDesc.MipLevels = 1;  
-		depthBufferDesc.ArraySize = 1;  
-		depthBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-		if (mEnable4xMsaa && m4xMsaaQuality > 0)
-		{
-			depthBufferDesc.SampleDesc.Count = 4;
-			depthBufferDesc.SampleDesc.Quality = m4xMsaaQuality - 1;
-		}
-		else
-		{
-			depthBufferDesc.SampleDesc.Count = 1;
-			depthBufferDesc.SampleDesc.Quality = 0;
-		}
-		depthBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		depthBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-		depthBufferDesc.CPUAccessFlags = 0;
-		depthBufferDesc.MiscFlags = 0;
-		XGF_Error_Check(Framework, mD3dDevice->CreateTexture2D(&depthBufferDesc, NULL, &mDepthStencilBuffer), "CreatemDepthStencilBuffer Error");
-		PutDebugString(mDepthStencilBuffer);
-		// 初始化深度模版视图.
-		ZeroMemory(&depthStencilViewDesc, sizeof(depthStencilViewDesc));
-		depthStencilViewDesc.Format = depthBufferDesc.Format;
-		if(mEnable4xMsaa && m4xMsaaQuality > 0)
-			depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
-		else
-			depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 		
-		depthStencilViewDesc.Texture2D.MipSlice = 0;
-		XGF_Error_Check(Framework, mD3dDevice->CreateDepthStencilView(mDepthStencilBuffer,
-			&depthStencilViewDesc, &mDepthStencilView), "CreateDepthStencilView Error");
-
-		PutDebugString(mDepthStencilView);
-		mDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
+		// 初始化深度模版视图.
+		
+		mDeviceContext->OMSetRenderTargets(1, &mDisplayRenderTarget.GetRenderTargetView(), mDisplayRenderTarget.GetDepthStencilView());
 
 		D3D11_VIEWPORT vp;
 		vp.MinDepth = 0.f;
@@ -418,7 +328,7 @@ namespace XGF
 		ID3D11Buffer * buffer;
 		D3D11_BUFFER_DESC vertexDesc;
 		char * data = (char *)dataAddress;
-		if(!dataAddress)
+		if (!dataAddress)
 			data = new char[len];
 		ZeroMemory(&vertexDesc, sizeof(vertexDesc));
 		vertexDesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -430,7 +340,7 @@ namespace XGF
 		resourceData.pSysMem = data;
 		XGF_Error_Check(Render, mD3dDevice->CreateBuffer(&vertexDesc, &resourceData, &buffer), "CreateVertexBuffer Error");
 		PutDebugString((buffer));
-		if(!dataAddress)
+		if (!dataAddress)
 			delete[] data;
 		return GpuBuffer(buffer, len);
 	}
@@ -496,9 +406,9 @@ namespace XGF
 		return mInstance;
 	}
 
-	void GDI::SetRenderTargetView()
+	void GDI::SetRenderTarget(RenderTarget * target)
 	{
-		mDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
+		mDeviceContext->OMSetRenderTargets(1, &target->GetRenderTargetView(), target->GetDepthStencilView());
 	}
 
 	bool GDI::SetDisplayMode(DisplayMode dm, int left, int top, int cx, int cy, bool move, bool isClientSize)
@@ -567,7 +477,7 @@ namespace XGF
 	ID3D11ShaderResourceView * GDI::CreateRenderableTexture(unsigned width, unsigned height, DXGI_FORMAT format, char * ptrContent)
 	{
 		char * ptr = ptrContent;
-		if(!ptr)
+		if (!ptr)
 		{
 			ptr = new char[width * height];
 			memset(ptr, 0, width * height * sizeof(char));
@@ -604,7 +514,7 @@ namespace XGF
 		ID3D11ShaderResourceView * srv;
 		XGF_Error_Check(Application, GetDevice()->CreateShaderResourceView(texutre, &viewDesc, &srv), "Create font SRV failed");
 		PutDebugString(srv);
-		if(!ptrContent)
+		if (!ptrContent)
 		{
 			delete[] ptr;
 		}
@@ -678,12 +588,12 @@ namespace XGF
 			}
 			else
 				XGF_Warn(Framework, "BlendState is a invalid value!");
-			
+
 		}
-		
+
 		return mBlendState[(int)bs];
-		
-		
+
+
 	}
 
 	ID3D11SamplerState * GDI::GetRawSamplerState(SamplerState ss)
@@ -738,12 +648,12 @@ namespace XGF
 				XGF_Warn(Framework, "SamplerState is a invalid value!");
 		}
 		return mSamplerState[(int)ss];
-		
+
 	}
 
 	ID3D11DepthStencilState * GDI::GetRawDepthStencilState(DepthStencilState ds)
 	{
-		if (mDepthStencilState[(int)ds] == nullptr )
+		if (mDepthStencilState[(int)ds] == nullptr)
 		{
 			if (ds != DepthStencilState::InvalidValue)
 			{
@@ -771,7 +681,7 @@ namespace XGF
 					PutDebugString(mDepthStencilState[(int)ds]);
 					return mDepthStencilState[(int)ds];
 				}
-					
+
 				// 设置深度模版状态. 
 				if (ds == DepthStencilState::DepthDisable)
 				{
@@ -794,12 +704,12 @@ namespace XGF
 			else XGF_Warn(Framework, "DepthStencilState is a invalid value!");
 
 		}
-		return mDepthStencilState[(int) ds];
+		return mDepthStencilState[(int)ds];
 	}
 
 	ID3D11RasterizerState * GDI::GetRasterizerState(RasterizerState rs)
 	{
-		if (mRasterizerState[(int) rs] == nullptr)
+		if (mRasterizerState[(int)rs] == nullptr)
 		{
 			if (rs != RasterizerState::InvalidValue)
 			{
@@ -862,37 +772,6 @@ namespace XGF
 		return mRasterizerState[(int)rs];
 	}
 
-
-
-	void GDI::PushRTTLayer(RenderToTexture * rtt)
-	{
-		mRenderToTextures.push(rtt);
-	}
-
-	void GDI::PopRTTLayer()
-	{
-		mRenderToTextures.pop();
-	}
-
-	void GDI::DrawRTT()
-	{
-		if (!mRenderToTextures.empty())
-		{
-			ID3D11ShaderResourceView *const pSRV[1] = { nullptr };
-			//TODO:Bug:1000
-			mDeviceContext->PSSetShaderResources(0, 1, pSRV);
-			mRenderToTextures.top()->SetRenderTarget();
-		}
-		else
-		{
-			ID3D11ShaderResourceView *const pSRV[1] = { nullptr };
-			//TODO:Bug:1000
-			mDeviceContext->PSSetShaderResources(0, 1, pSRV);
-			SetRenderTargetView();
-		}
-
-	}
-
 	D3D_FEATURE_LEVEL GDI::CheckFeatureLevel()
 	{
 		return mFeatureLevel;
@@ -927,7 +806,7 @@ namespace XGF
 			sd.Format = mDisplayFormat;
 			sd.Stereo = FALSE;
 			sd.Scaling = DXGI_SCALING_STRETCH;
-			if(mEnable4xMsaa && m4xMsaaQuality > 0)
+			if (mEnable4xMsaa && m4xMsaaQuality > 0)
 			{
 				sd.SampleDesc.Count = 4;
 				sd.SampleDesc.Quality = m4xMsaaQuality - 1;
@@ -985,8 +864,8 @@ namespace XGF
 
 			XGF_Debug(Framework, "A swapChain is created from IDXGIFactory1");
 		}
-		
-		
+
+
 	}
 
 	void GDI::ReCreateSwapChain()
@@ -995,11 +874,11 @@ namespace XGF
 		IDXGIOutput * output;
 		mSwapChain->GetFullscreenState(&bl, &output);
 		mSwapChain->SetFullscreenState(false, nullptr);
-		if(mSwapChain1)
+		if (mSwapChain1)
 		{
 			mSwapChain1->Release();
 		}
-		if(mSwapChain)
+		if (mSwapChain)
 		{
 			mSwapChain->Release();
 		}
@@ -1008,32 +887,13 @@ namespace XGF
 		SetFullScreen(bl, 0);
 	}
 
-	void GDI::ReCreateRenderToTextures()
-	{
-		std::stack<RenderToTexture * > rts;
-		while(!mRenderToTextures.empty())
-		{
-			auto ts = mRenderToTextures.top();
-			mRenderToTextures.pop();
-			rts.push(ts);
-			ts->ReCreateTexture();
-		}
-
-		while (!rts.empty())
-		{
-			auto ts = rts.top();
-			rts.pop();
-			mRenderToTextures.push(ts);
-		}
-	}
 
 	void GDI::Able4xMsaa()
 	{
-		if(!mEnable4xMsaa)
+		if (!mEnable4xMsaa)
 		{
 			mEnable4xMsaa = true;
 			ReCreateSwapChain();
-			ReCreateRenderToTextures();
 		}
 	}
 
@@ -1043,26 +903,25 @@ namespace XGF
 		{
 			mEnable4xMsaa = false;
 			ReCreateSwapChain();
-			ReCreateRenderToTextures();
 		}
 	}
 
-	bool GDI::IsEnable4xMsaa()
+	bool GDI::IsEnable4xMsaa() const
 	{
 		return mEnable4xMsaa;
 	}
 
-	int GDI::Query4xMsaaQuality()
+	int GDI::Query4xMsaaQuality() const
 	{
 		return m4xMsaaQuality;
 	}
 
-	bool GDI::CanEnable4xMsaa()
+	bool GDI::CanEnable4xMsaa() const
 	{
 		return m4xMsaaQuality > 0;
 	}
 
-	bool GDI::IsDisplayMode(DisplayMode displayMode)
+	bool GDI::IsDisplayMode(DisplayMode displayMode) const
 	{
 		return mDisplayMode == displayMode;
 	}
