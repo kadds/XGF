@@ -247,6 +247,30 @@ namespace XGF
 		SetRenderTarget(AppendRenderTarget(target));
 	}
 
+	void Renderer::AppendBeforeDrawCallback(const std::string & name, RendererDrawCallback callback)
+	{
+		std::lock_guard<std::recursive_mutex> lock(mDrawMutex);
+		mBeforeDrawCallbackTemp.emplace_back(callback, name, true);
+	}
+
+	void Renderer::AppendAfterDrawCallback(const std::string & name, RendererDrawCallback callback)
+	{
+		std::lock_guard<std::recursive_mutex> lock(mDrawMutex);
+		mAfterDrawCallbackTemp.emplace_back(callback, name, true);
+	}
+
+	void Renderer::RemoveBeforeDrawCallback(const std::string & name)
+	{
+		std::lock_guard<std::recursive_mutex> lock(mDrawMutex);
+		mBeforeDrawCallbackTemp.emplace_back(nullptr, name, false);
+	}
+
+	void Renderer::RemoveAfterDrawCallback(const std::string & name)
+	{
+		std::lock_guard<std::recursive_mutex> lock(mDrawMutex);
+		mAfterDrawCallbackTemp.emplace_back(nullptr, name, false);
+	}
+
 	void Renderer::DrawCommands()
 	{
 		auto & context = Context::Current();
@@ -270,6 +294,66 @@ namespace XGF
 			}
 		}
 		context.QueryGraphicsDeviceInterface().Present(false);
+	}
+
+	void Renderer::BeforeDraw()
+	{
+		if(!mBeforeDrawCallbackTemp.empty())
+		{
+			std::lock_guard<std::recursive_mutex> lock(mDrawMutex);
+			for (auto & drawCallback : mBeforeDrawCallbackTemp)
+			{
+				if(std::get<bool>(drawCallback)) // append
+				{
+					mBeforeDrawCallback.emplace_back(std::get<RendererDrawCallback>(drawCallback), std::get<std::string>(drawCallback));
+				}
+				else // delete from vector
+				{
+					auto & name = std::get<std::string>(drawCallback);
+					
+					auto it = std::find_if(mBeforeDrawCallback.begin(), mBeforeDrawCallback.end(), [&name](std::pair<RendererDrawCallback, std::string> ele)
+					{
+						return ele.second == name;
+					});
+					if (it != mBeforeDrawCallback.end())
+						mBeforeDrawCallback.erase(it);
+				}
+			}
+		}
+		for(int i = 0; i < mBeforeDrawCallback.size(); i++)
+		{
+			mBeforeDrawCallback[i].first(this);
+		}
+	}
+
+	void Renderer::AfterDraw()
+	{
+		if (!mAfterDrawCallbackTemp.empty())
+		{
+			std::lock_guard<std::recursive_mutex> lock(mDrawMutex);
+			for (auto & drawCallback : mAfterDrawCallbackTemp)
+			{
+				if (std::get<bool>(drawCallback)) // append
+				{
+					mAfterDrawCallback.emplace_back(std::get<RendererDrawCallback>(drawCallback), std::get<std::string>(drawCallback));
+				}
+				else // delete from vector
+				{
+					auto & name = std::get<std::string>(drawCallback);
+
+					auto it = std::find_if(mAfterDrawCallback.begin(), mAfterDrawCallback.end(), [&name](std::pair<RendererDrawCallback, std::string> ele)
+					{
+						return ele.second == name;
+					});
+					if (it != mAfterDrawCallback.end())
+						mAfterDrawCallback.erase(it);
+				}
+			}
+		}
+		for (int i = 0; i < mAfterDrawCallback.size(); i++)
+		{
+			mAfterDrawCallback[i].first(this);
+		}
 	}
 
 	void Renderer::ClearResource(int index)
@@ -358,8 +442,10 @@ namespace XGF
 				auto & renderRes = GetCurrentResource();
 				if (!renderRes.HasRenderedFlag())
 				{
+					BeforeDraw();
 					DrawCommands();
 					renderRes.SetRenderedFlag();
+					AfterDraw();
 					const auto nextIndex = GetNextResourceIndex();
 					ClearResource(nextIndex);
 					SetCurrentResource(nextIndex);

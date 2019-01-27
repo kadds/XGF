@@ -79,7 +79,6 @@ public:
 		auto & gdi = context.QueryGraphicsDeviceInterface();
 		mRenderToTextureTarget.Initialize(gdi.GetWidth(), gdi.GetHeight(), DXGI_FORMAT_R8G8B8A8_UNORM, 0);
 
-		mRc.SetPositionAndSize(0, gdi.GetHeight() - 100.f, 130.f, 100.f);
 		mRc.SetZ(0.001f);
 		mTime = 0.f;
 	};
@@ -100,18 +99,13 @@ public:
 		mCamera.GetCameraMatrix(wvp);
 		mShapeRenderer.Begin(wvp);
 		mTextRenderer.Begin(wvp);
-
 		MyRender();
-		context.QueryRenderer().AppendAndSetRenderTarget(&mRenderToTextureTarget);
-		context.QueryRenderer().Clear(Color(0.5, 0.5, 0.5, 0));
 
+		context.QueryRenderer().AppendAndSetRenderTarget(&mRenderToTextureTarget);
+		context.QueryRenderer().Clear(Color(0.3f, 0.3f, 0.3f, 1));
 		MyRender();
 		context.QueryRenderer().SetDefaultRenderTarget();
-		//RTT end
-		//mRenderToTexture.SetDefaultRenderTarget();
-
-		//MyRender(wvp, true);
-		mShapeRenderer.End();
+		
 
 		PolygonPleTextureBinder textureBinder(4);
 		textureBinder.GetData(1).x = textureBinder.GetData(0).x = 0.f;
@@ -125,8 +119,11 @@ public:
 
 		auto debug = DebugInscriber::GetInstance();
 		std::wstring str = fmt::format(L"FPS:{0}\nFC:{1}ms", debug->GetAverageFPS(), debug->GetFrameCost());
-		mTextRenderer.DrawString(str.c_str(), 4, 4);
+		mTextRenderer.DrawString(str, 4, 4);
+
 		mTextRenderer.End();
+		mShapeRenderer.End();
+
 		mTextureShaderStage.SetVSConstantBuffer(0, &wvp);
 		mTextureShaderStage.SetPSConstantBuffer(0, Color(1.f, 1.f, 1.f, 1.f));
 		mTextureShaderStage.SetPSTexture(0, mRenderToTextureTarget.GetTexture());
@@ -151,13 +148,16 @@ public:
 		}
 		mCamera.Update();
 	};
-	virtual void OnSize(int ClientX, int ClientY) override
+	virtual void OnSize(int cx, int cy) override
 	{
-		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
-		mCamera.UpdateProject(ClientX, ClientY);
-		mRenderToTextureTarget.Shutdown();
-		mRenderToTextureTarget.Initialize(gdi.GetWidth(), gdi.GetHeight(), DXGI_FORMAT_R8G8B8A8_UNORM, 0);
-		mRc.SetPositionAndSize(0.f, ClientY * 2 / 3.f, ClientX / 3.f, ClientY / 3.f);
+		mCamera.UpdateProject(cx, cy);
+		Context::Current().QueryRenderer().AppendBeforeDrawCallback("beforeTextureTarget", [this, cx, cy](Renderer * renderer)
+		{
+			mRenderToTextureTarget.Shutdown();
+			mRenderToTextureTarget.Initialize(cx, cy, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+			renderer->RemoveBeforeDrawCallback("beforeTextureTarget");
+		});
+		mRc.SetPositionAndSize(0.f, cy * 2 / 3.f, cx / 3.f, cy / 3.f);
 	};
 
 private:
