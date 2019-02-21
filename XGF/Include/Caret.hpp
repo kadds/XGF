@@ -22,7 +22,8 @@ namespace XGF
 		void SetHeight(int height) { mHeight = height; };
 		void ResetTime();
 	private:
-		ShaderStage mShaderStage;
+		RenderState mRenderState;
+		RenderResource mRenderResource;
 		float mTime;
 		//这是间隔标志变量
 		bool mHide;
@@ -33,7 +34,7 @@ namespace XGF
 		Color mCaretColor;
 		int mHeight;
 
-		DISALLOW_COPY_AND_ASSIGN(Caret);
+		DisableCopyAndAssign(Caret);
 	};
 
 

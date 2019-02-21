@@ -1,8 +1,11 @@
 #include "../../Include/GDI.hpp"
 #include "../../Include/Logger.hpp"
 #include <DirectXMath.h>
+#include "../../Include/Context.hpp"
+
 namespace XGF
 {
+
 	void GDI::Create()
 	{
 		mDisplayMode = DisplayMode::Windowed;
@@ -30,6 +33,18 @@ namespace XGF
 				XGF_Debug(Framework, "Adapter List", "Adpapter:", i, ",DeviceID:", dc.DeviceId, ",DedicatedSystemMemory:", (dc.DedicatedSystemMemory >> 20), "MB,DedicatedVideoMemory", (dc.DedicatedVideoMemory >> 20)
 					, "MB,SharedSystemMemory:", dc.SharedSystemMemory >> 20, "MB,AdapterLuid:", dc.AdapterLuid.LowPart, ",Revision:", dc.Revision, ",VendorId:", dc.VendorId
 					, ",SubSysId:", dc.SubSysId, ",Description:", Logger::WCharToChar((wchar_t *)dc.Description))
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -98,12 +113,6 @@ namespace XGF
 		PutDebugString(mD3dDevice);
 		CreateSwapChain();
 
-
-		memset(mSamplerState, 0, sizeof(mSamplerState));
-		memset(mBlendState, 0, sizeof(mBlendState));
-		memset(mDepthStencilState, 0, sizeof(mDepthStencilState));
-		memset(mRasterizerState, 0, sizeof(mRasterizerState));
-
 		SizeChanged(mWidth, mHeight);
 	}
 
@@ -120,28 +129,31 @@ namespace XGF
 	void GDI::Destroy()
 	{
 		mSwapChain->SetFullscreenState(false, nullptr);
-		mDisplayRenderTarget.Shutdown();
-		for (int i = 0; i < (int)BlendState::InvalidValue; i++)
-		{
-			if (mBlendState[i] != nullptr)
-				mBlendState[i]->Release();
-		}
-		for (int i = 0; i < (int)SamplerState::InvalidValue; i++)
-		{
-			if (mSamplerState[i] != nullptr)
-				mSamplerState[i]->Release();
-		}
-		for (int i = 0; i < (int)DepthStencilState::InvalidValue; i++)
-		{
-			if (mDepthStencilState[i] != nullptr)
-				mDepthStencilState[i]->Release();
-		}
+		mDisplayFrameBuffer.Shutdown();
 
-		for (int i = 0; i < (int)RasterizerState::InvalidValue; i++)
+		for(auto & it : mRasterizerStates.GetMap())
 		{
-			if (mRasterizerState[i] != nullptr)
-				mRasterizerState[i]->Release();
+			it.second.GetPtr<ID3D11RasterizerState>()->Release();
 		}
+		mRasterizerStates.GetMap().clear();
+
+		for (auto & it : mDepthStencilStates.GetMap())
+		{
+			it.second.GetPtr<ID3D11DepthStencilState>()->Release();
+		}
+		mDepthStencilStates.GetMap().clear();
+
+		for (auto & it : mBlendStates.GetMap())
+		{
+			it.second.GetPtr<ID3D11BlendState>()->Release();
+		}
+		mBlendStates.GetMap().clear();
+
+		for (auto & it : mSamplerStates.GetMap())
+		{
+			it.second.GetPtr<ID3D11SamplerState>()->Release();
+		}
+		mSamplerStates.GetMap().clear();
 
 		for each (auto var in mAdapters)
 		{
@@ -233,30 +245,18 @@ namespace XGF
 		if (ClientHeight < 1)
 			ClientHeight = 1;
 
-		mDisplayRenderTarget.Shutdown();
+		mDisplayFrameBuffer.Shutdown();
 		XGF_Error_Check(Framework, mSwapChain->ResizeBuffers(1, ClientWidth, ClientHeight, mDisplayFormat, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH), "ResizeBuffers Error");
 		PutDebugString(mSwapChain);
 		ID3D11Texture2D* backBufferPtr;
 		XGF_Error_Check(Framework, mSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBufferPtr), "GetSwapChainBuffer is Error");
 
 		
-		mDisplayRenderTarget.Initialize(backBufferPtr);
+		mDisplayFrameBuffer.Initialize(backBufferPtr);
 		backBufferPtr->Release();
 		backBufferPtr = 0;
 
-		
-		// 初始化深度模版视图.
-		
-		mDeviceContext->OMSetRenderTargets(1, &mDisplayRenderTarget.GetRenderTargetView(), mDisplayRenderTarget.GetDepthStencilView());
-
-		D3D11_VIEWPORT vp;
-		vp.MinDepth = 0.f;
-		vp.MaxDepth = 1.f;
-		vp.TopLeftX = 0.f;
-		vp.TopLeftY = 0.f;
-		vp.Height = static_cast<FLOAT>(ClientHeight);
-		vp.Width = static_cast<FLOAT>(ClientWidth);
-		mDeviceContext->RSSetViewports(1, &vp);
+		mDisplayFrameBuffer.Bind();
 
 		mWidth = ClientWidth;
 		mHeight = ClientHeight;
@@ -406,11 +406,6 @@ namespace XGF
 		return mInstance;
 	}
 
-	void GDI::SetRenderTarget(RenderTarget * target)
-	{
-		mDeviceContext->OMSetRenderTargets(1, &target->GetRenderTargetView(), target->GetDepthStencilView());
-	}
-
 	bool GDI::SetDisplayMode(DisplayMode dm, int left, int top, int cx, int cy, bool move, bool isClientSize)
 	{
 		mLastMode = mDisplayMode;
@@ -544,232 +539,151 @@ namespace XGF
 			}
 		}
 	}
-
-	ID3D11BlendState * GDI::GetRawBlendState(BlendState bs)
+	void CopyBlendStateToDesc(D3D11_RENDER_TARGET_BLEND_DESC & desc, const BlendStateTarget & target)
 	{
-		if (mBlendState[(int)bs] == nullptr)
-		{
-			if (bs != BlendState::InvalidValue)
-			{
-				//创建Blend
-				D3D11_BLEND_DESC blendDesc;
-				ZeroMemory(&blendDesc, sizeof(blendDesc));
-				blendDesc.RenderTarget[0].BlendEnable = TRUE;
-				blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-				blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-				blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-				blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-				blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
-				blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-				blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-				blendDesc.AlphaToCoverageEnable = FALSE;
-				blendDesc.IndependentBlendEnable = FALSE;
-				if (bs == BlendState::NoneBlend)
-				{
-					blendDesc.RenderTarget[0].BlendEnable = FALSE;
-					mD3dDevice->CreateBlendState(&blendDesc, &mBlendState[(int)bs]);
-					PutDebugString(mBlendState[(int)bs]);
-					return mBlendState[(int)bs];
-				}
-				if (bs == BlendState::AddZeroOneAdd)
-				{
-					blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-					mD3dDevice->CreateBlendState(&blendDesc, &mBlendState[(int)bs]);
-					PutDebugString(mBlendState[(int)bs]);
-					return mBlendState[(int)bs];
-				}
-				if (bs == BlendState::AddOneOneAdd)
-				{
-					mD3dDevice->CreateBlendState(&blendDesc, &mBlendState[(int)bs]);
-					PutDebugString(mBlendState[(int)bs]);
-					return mBlendState[(int)bs];
-				}
-				XGF_Warn(Framework, "BlendState is incorrect");
-			}
-			else
-				XGF_Warn(Framework, "BlendState is a invalid value!");
-
-		}
-
-		return mBlendState[(int)bs];
-
-
+		desc.BlendEnable = target.GetBlendEnable();
+		desc.BlendOp = (D3D11_BLEND_OP) target.GetBlendOp();
+		desc.BlendOpAlpha = (D3D11_BLEND_OP)target.GetBlendOpAlpha();
+		desc.DestBlend = (D3D11_BLEND)target.GetDestBlend();
+		desc.DestBlendAlpha = (D3D11_BLEND)target.GetDestBlendAlpha();
+		desc.RenderTargetWriteMask = target.GetRenderTargetWriteMask();
+		desc.SrcBlend = (D3D11_BLEND)target.GetSrcBlend();
+		desc.SrcBlendAlpha = (D3D11_BLEND)target.GetSrcBlendAlpha();
 	}
 
-	ID3D11SamplerState * GDI::GetRawSamplerState(SamplerState ss)
+	RawBlendState GDI::CreateBlendState(const BlendState& bs)
 	{
-		if (mSamplerState[(int)ss] == nullptr)
+		D3D11_BLEND_DESC blendDesc;
+		blendDesc.AlphaToCoverageEnable = bs.GetAlphaToCoverageEnable();
+		blendDesc.IndependentBlendEnable = bs.GetIndependentBlendEnable();
+		CopyBlendStateToDesc(blendDesc.RenderTarget[0], bs.GetRenderTarget(0));
+		if(bs.GetIndependentBlendEnable())
 		{
-			if (ss != SamplerState::InvalidValue)
+			const int c = bs.GetRenderTargetCount();
+			for(int i = 1; i < c; i++)
 			{
-				D3D11_SAMPLER_DESC samplerDesc;
-				samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-				samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-				samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-				samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-				samplerDesc.MipLODBias = 0.0f;
-				samplerDesc.MaxAnisotropy = 1;
-				samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-				samplerDesc.BorderColor[0] = 0;
-				samplerDesc.BorderColor[1] = 0;
-				samplerDesc.BorderColor[2] = 0;
-				samplerDesc.BorderColor[3] = 0;
-				samplerDesc.MinLOD = 0;
-				samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-
-				if (ss == SamplerState::LineWrap)
-				{
-					mD3dDevice->CreateSamplerState(&samplerDesc, &mSamplerState[(int)ss]);
-					PutDebugString(mSamplerState[(int)ss]);
-					return mSamplerState[(int)ss];
-				}
-				if (ss == SamplerState::LineClamp)
-				{
-					samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-					samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-					samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-					mD3dDevice->CreateSamplerState(&samplerDesc, &mSamplerState[(int)ss]);
-					PutDebugString(mSamplerState[(int)ss]);
-					return mSamplerState[(int)ss];
-				}
-				if (ss == SamplerState::LineMirror)
-				{
-					samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR;
-					samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR;
-					samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR;
-					mD3dDevice->CreateSamplerState(&samplerDesc, &mSamplerState[(int)ss]);
-					PutDebugString(mSamplerState[(int)ss]);
-					return mSamplerState[(int)ss];
-				}
-				XGF_Warn(Framework, "SamplerState is incorrect");
-				return mSamplerState[0];
+				CopyBlendStateToDesc(blendDesc.RenderTarget[i], bs.GetRenderTarget(i));
 			}
-			else
-				XGF_Warn(Framework, "SamplerState is a invalid value!");
 		}
-		return mSamplerState[(int)ss];
-
+		ID3D11BlendState * state;
+		mD3dDevice->CreateBlendState(&blendDesc, &state);
+		PutDebugString(state);
+		return RawBlendState(state);
 	}
 
-	ID3D11DepthStencilState * GDI::GetRawDepthStencilState(DepthStencilState ds)
+	RawBlendState GDI::GetBlendState(const BlendState& bs)
 	{
-		if (mDepthStencilState[(int)ds] == nullptr)
+		auto s = mBlendStates.GetRawState(bs);
+		if (s.has_value())
 		{
-			if (ds != DepthStencilState::InvalidValue)
-			{
-				D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
-				ZeroMemory(&depthStencilDesc, sizeof(depthStencilDesc));
-				depthStencilDesc.DepthEnable = true;
-				depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;//D3D11_DEPTH_WRITE_MASK_ZERO禁止写深度缓冲 
-				depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
-				depthStencilDesc.StencilEnable = true;
-				depthStencilDesc.StencilReadMask = 0xFF;
-				depthStencilDesc.StencilWriteMask = 0xFF;
-				// 对于front face 像素使用的模版操作操作. 
-				depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-				depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-				depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_REPLACE;
-				depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-				// 对于back face像素使用的模版操作模式. 
-				depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-				depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-				depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_REPLACE;
-				depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-				if (ds == DepthStencilState::DepthEnable)
-				{
-					XGF_Error_Check(Framework, mD3dDevice->CreateDepthStencilState(&depthStencilDesc, &mDepthStencilState[(int)ds]), "CreateDepthStencilState Error");
-					PutDebugString(mDepthStencilState[(int)ds]);
-					return mDepthStencilState[(int)ds];
-				}
-
-				// 设置深度模版状态. 
-				if (ds == DepthStencilState::DepthDisable)
-				{
-					depthStencilDesc.DepthEnable = false;
-					XGF_Error_Check(Framework, mD3dDevice->CreateDepthStencilState(&depthStencilDesc, &mDepthStencilState[(int)ds]), "CreateDepthStencilState Error");
-					PutDebugString(mDepthStencilState[(int)ds]);
-					return mDepthStencilState[(int)ds];
-				}
-				if (ds == DepthStencilState::DepthEnableWithLessEqual)
-				{
-					depthStencilDesc.DepthEnable = true;
-					depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-					XGF_Error_Check(Framework, mD3dDevice->CreateDepthStencilState(&depthStencilDesc, &mDepthStencilState[(int)ds]), "CreateDepthStencilState Error");
-					PutDebugString(mDepthStencilState[(int)ds]);
-					return mDepthStencilState[(int)ds];
-				}
-				XGF_Warn(Framework, "DepthStencilState is incorrect");
-				return mDepthStencilState[0];
-			}
-			else XGF_Warn(Framework, "DepthStencilState is a invalid value!");
-
+			return s.value();
 		}
-		return mDepthStencilState[(int)ds];
+		auto rawBS = CreateBlendState(bs);
+		mBlendStates.SaveRawState(bs, rawBS);
+		return rawBS;
 	}
 
-	ID3D11RasterizerState * GDI::GetRasterizerState(RasterizerState rs)
+	RawDepthStencilState GDI::CreateDepthStencilState(const DepthStencilState& ds)
 	{
-		if (mRasterizerState[(int)rs] == nullptr)
+		D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
+		depthStencilDesc.DepthEnable = ds.GetDepthEnable();
+		depthStencilDesc.DepthWriteMask = (D3D11_DEPTH_WRITE_MASK) ds.GetDepthWriteMask();//D3D11_DEPTH_WRITE_MASK_ZERO禁止写深度缓冲 
+		depthStencilDesc.DepthFunc = (D3D11_COMPARISON_FUNC) ds.GetDepthFunc();
+		depthStencilDesc.StencilEnable = ds.GetStencilEnable();
+		depthStencilDesc.StencilReadMask = ds.GetStencilReadMask();
+		depthStencilDesc.StencilWriteMask = ds.GetStencilWriteMask();
+		// 对于front face 像素使用的模版操作操作. 
+		depthStencilDesc.FrontFace.StencilFailOp = (D3D11_STENCIL_OP)ds.GetFrontFaceStencilFailOp();
+		depthStencilDesc.FrontFace.StencilDepthFailOp = (D3D11_STENCIL_OP) ds.GetFrontFaceStencilDepthFailOp();
+		depthStencilDesc.FrontFace.StencilPassOp = (D3D11_STENCIL_OP)ds.GetFrontFaceStencilPassOp();
+		depthStencilDesc.FrontFace.StencilFunc = (D3D11_COMPARISON_FUNC) ds.GetFrontFaceStencilFunc();
+		// 对于back face像素使用的模版操作模式. 
+		depthStencilDesc.BackFace.StencilFailOp = (D3D11_STENCIL_OP)ds.GetBackFaceStencilFailOp();
+		depthStencilDesc.BackFace.StencilDepthFailOp = (D3D11_STENCIL_OP)ds.GetBackFaceStencilDepthFailOp();
+		depthStencilDesc.BackFace.StencilPassOp = (D3D11_STENCIL_OP)ds.GetBackFaceStencilPassOp();
+		depthStencilDesc.BackFace.StencilFunc = (D3D11_COMPARISON_FUNC)ds.GetBackFaceStencilFunc();
+		ID3D11DepthStencilState * state;
+		XGF_Error_Check(Framework, mD3dDevice->CreateDepthStencilState(&depthStencilDesc, &state), "CreateDepthStencilState Error");
+		PutDebugString(state);
+		return RawDepthStencilState(state);
+	}
+
+	RawDepthStencilState GDI::GetDepthStencilState(const DepthStencilState& ds)
+	{
+		auto s = mDepthStencilStates.GetRawState(ds);
+		if (s.has_value())
 		{
-			if (rs != RasterizerState::InvalidValue)
-			{
-				D3D11_RASTERIZER_DESC rasterDesc;
-
-				rasterDesc.AntialiasedLineEnable = false;
-				rasterDesc.CullMode = D3D11_CULL_BACK;
-				rasterDesc.DepthBias = 0;
-				rasterDesc.DepthBiasClamp = 0.0f;
-				rasterDesc.DepthClipEnable = true;
-				rasterDesc.FillMode = D3D11_FILL_SOLID;
-				rasterDesc.FrontCounterClockwise = false;
-				rasterDesc.MultisampleEnable = false;
-				rasterDesc.ScissorEnable = false;
-				rasterDesc.SlopeScaledDepthBias = 0.0f;
-				if (rs == RasterizerState::SolidAndCutBack)
-				{
-					XGF_Error_Check(Framework, mD3dDevice->CreateRasterizerState(&rasterDesc, &mRasterizerState[(int)rs]), "CreateRasterizerState Error");
-					return mRasterizerState[(int)rs];
-				}
-				if (rs == RasterizerState::SolidAndCutFront)
-				{
-					rasterDesc.CullMode = D3D11_CULL_FRONT;
-					XGF_Error_Check(Framework, mD3dDevice->CreateRasterizerState(&rasterDesc, &mRasterizerState[(int)rs]), "CreateRasterizerState Error");
-					return mRasterizerState[(int)rs];
-				}
-				if (rs == RasterizerState::SolidAndCutNone)
-				{
-					rasterDesc.CullMode = D3D11_CULL_NONE;
-					XGF_Error_Check(Framework, mD3dDevice->CreateRasterizerState(&rasterDesc, &mRasterizerState[(int)rs]), "CreateRasterizerState Error");
-					return mRasterizerState[(int)rs];
-				}
-				if (rs == RasterizerState::FrameAndCutBack)
-				{
-					rasterDesc.FillMode = D3D11_FILL_WIREFRAME;
-					XGF_Error_Check(Framework, mD3dDevice->CreateRasterizerState(&rasterDesc, &mRasterizerState[(int)rs]), "CreateRasterizerState Error");
-					return mRasterizerState[(int)rs];
-				}
-				if (rs == RasterizerState::FrameAndCutFront)
-				{
-					rasterDesc.FillMode = D3D11_FILL_WIREFRAME;
-					rasterDesc.CullMode = D3D11_CULL_FRONT;
-					XGF_Error_Check(Framework, mD3dDevice->CreateRasterizerState(&rasterDesc, &mRasterizerState[(int)rs]), "CreateRasterizerState Error");
-					return mRasterizerState[(int)rs];
-				}
-				if (rs == RasterizerState::FrameAndCutNone)
-				{
-					rasterDesc.FillMode = D3D11_FILL_WIREFRAME;
-					rasterDesc.CullMode = D3D11_CULL_NONE;
-					XGF_Error_Check(Framework, mD3dDevice->CreateRasterizerState(&rasterDesc, &mRasterizerState[(int)rs]), "CreateRasterizerState Error");
-					return mRasterizerState[(int)rs];
-				}
-				XGF_Warn(Framework, "RasterizerState is incorrect");
-				return mRasterizerState[0];
-
-			}
-			else XGF_Warn(Framework, "RasterizerState is a invalid value!");
-
+			return s.value();
 		}
-		return mRasterizerState[(int)rs];
+		auto rawDS = CreateDepthStencilState(ds);
+		mDepthStencilStates.SaveRawState(ds, rawDS);
+		return rawDS;
+	}
+
+	RawRasterizerState GDI::CreateRasterizerState(const RasterizerState& rs)
+	{
+		D3D11_RASTERIZER_DESC rasterDesc;
+
+		rasterDesc.AntialiasedLineEnable = rs.GetAntialiasedLineEnable();
+		rasterDesc.CullMode = (D3D11_CULL_MODE)rs.GetCullMode();
+		rasterDesc.DepthBias = rs.GetDepthBias();
+		rasterDesc.DepthBiasClamp = rs.GetDepthBiasClamp();
+		rasterDesc.DepthClipEnable = rs.GetDepthClipEnable();
+		rasterDesc.FillMode = (D3D11_FILL_MODE)rs.GetFillMode();
+		rasterDesc.FrontCounterClockwise = rs.GetFrontCounterClockwise();
+		rasterDesc.MultisampleEnable = rs.GetMultisampleEnable();
+		rasterDesc.ScissorEnable = rs.GetScissorEnable();
+		rasterDesc.SlopeScaledDepthBias = rs.GetSlopeScaledDepthBias();
+		ID3D11RasterizerState * state;
+		XGF_Error_Check(Framework, mD3dDevice->CreateRasterizerState(&rasterDesc, &state), "CreateRasterizerState Error");
+		PutDebugString(state);
+		return RawRasterizerState(state);
+	}
+
+	RawRasterizerState GDI::GetRasterizerState(const RasterizerState& rs)
+	{
+		auto s = mRasterizerStates.GetRawState(rs);
+		if (s.has_value())
+		{
+			return s.value();
+		}
+		auto rawRS = CreateRasterizerState(rs);
+		mRasterizerStates.SaveRawState(rs, rawRS);
+		return rawRS;
+	}
+
+	RawSamplerState GDI::CreateSamplerState(const SamplerState & s)
+	{
+		D3D11_SAMPLER_DESC samplerDesc;
+		samplerDesc.Filter = (D3D11_FILTER)s.GetFilter();
+		samplerDesc.AddressU = (D3D11_TEXTURE_ADDRESS_MODE)s.GetAddressU();
+		samplerDesc.AddressV = (D3D11_TEXTURE_ADDRESS_MODE)s.GetAddressV();
+		samplerDesc.AddressW = (D3D11_TEXTURE_ADDRESS_MODE)s.GetAddressW();
+		samplerDesc.MipLODBias = s.GetMipLODBias();
+		samplerDesc.MaxAnisotropy = s.GetMaxAnisotropy();
+		samplerDesc.ComparisonFunc = (D3D11_COMPARISON_FUNC)s.GetComparisonFunc();
+		samplerDesc.BorderColor[0] = s.GetBorderColor().x;
+		samplerDesc.BorderColor[1] = s.GetBorderColor().y;
+		samplerDesc.BorderColor[2] = s.GetBorderColor().z;
+		samplerDesc.BorderColor[3] = s.GetBorderColor().w;
+		samplerDesc.MinLOD = s.GetMinLOD();
+		samplerDesc.MaxLOD = s.GetMaxLOD();
+		ID3D11SamplerState* state;
+		GetDevice()->CreateSamplerState(&samplerDesc, &state);
+		PutDebugString(state);
+		return RawSamplerState(state);
+	}
+
+	RawSamplerState GDI::GetSamplerState(const SamplerState & ss)
+	{
+		auto s = mSamplerStates.GetRawState(ss);
+		if(s.has_value())
+		{
+			return s.value();
+		}
+		auto rawSS = CreateSamplerState(ss);
+		mSamplerStates.SaveRawState(ss, rawSS);
+		return rawSS;
 	}
 
 	D3D_FEATURE_LEVEL GDI::CheckFeatureLevel()
@@ -777,23 +691,20 @@ namespace XGF
 		return mFeatureLevel;
 	}
 
-	void GDI::SetBlendState(BlendState bb)
+	void GDI::SetBlendState(RawBlendState bb)
 	{
 		float factor[] = { 0,0,0,0,0,0 };
-		ID3D11BlendState *bs = GetRawBlendState(bb);
-		mDeviceContext->OMSetBlendState(bs, factor, 0xffffffff);
+		mDeviceContext->OMSetBlendState(bb.GetPtr<ID3D11BlendState>(), factor, 0xffffffff);
 	}
 
-	void GDI::SetDepthStencilState(DepthStencilState ds)
+	void GDI::SetDepthStencilState(RawDepthStencilState ds)
 	{
-		auto dds = GetRawDepthStencilState(ds);
-		mDeviceContext->OMSetDepthStencilState(dds, 0);
+		mDeviceContext->OMSetDepthStencilState(ds.GetPtr<ID3D11DepthStencilState>(), 0);
 	}
 
-	void GDI::SetRasterizerState(RasterizerState rs)
+	void GDI::SetRasterizerState(RawRasterizerState rs)
 	{
-		auto rss = GetRasterizerState(rs);
-		mDeviceContext->RSSetState(rss);
+		mDeviceContext->RSSetState(rs.GetPtr<ID3D11RasterizerState>());
 	}
 
 	void GDI::CreateSwapChain()

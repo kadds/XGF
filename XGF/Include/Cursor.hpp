@@ -27,7 +27,8 @@ namespace XGF
 		void Show();
 		void Tick(float time);
 		void Hide();
-		ShaderStage mShaderStage;
+		RenderState mRenderState;
+		std::unique_ptr<RenderResource> mRenderResource;
 		Position mPosition;
 		Position mPointDeviation;
 		Position mSize;
@@ -40,7 +41,7 @@ namespace XGF
 
 		Texture * mTexture;
 		Animation *mAnimation;
-		DISALLOW_COPY_AND_ASSIGN(Cursor);
+		DisableCopyAndAssign(Cursor)
 	};
 
 

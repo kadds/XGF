@@ -18,6 +18,7 @@
 #include "ResourceManager.hpp"
 #include "Context.hpp"
 #include "Renderer.hpp"
+#include "SystemShaders.hpp"
 //********************************
 
 //*********** UI *******************

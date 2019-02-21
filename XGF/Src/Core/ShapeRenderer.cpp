@@ -9,6 +9,7 @@
 #include "../../Include/Polygon.hpp"
 #include "../../Include/AxisRenderer.hpp"
 #include "../../Include/Renderer.hpp"
+#include "../../Include/SystemShaders.hpp"
 
 namespace XGF
 {
@@ -23,18 +24,18 @@ namespace XGF
 
 	void ShapeRenderer::Initialize(unsigned int MaxVetices, unsigned int MaxIndices)
 	{
-		mShaderStage.Initialize(Context::Current().QueryShaderManager().GetBasicShaders(false, false, true));
+		mRenderResource.ReCreate(SystemShaders::GetBasicShaders(SystemShaders::BasicShader_VertexColor));
 	}
 
 	void ShapeRenderer::Shutdown()
 	{
-		mShaderStage.Shutdown();
+		mRenderResource.Clear();
 	}
 
 	void ShapeRenderer::Begin(WVPMatrix & wvp)
 	{
-		mShaderStage.SetVSConstantBuffer(0, &wvp);
-		mShaderStage.SetPSConstantBuffer(0, Color(1.f, 1.f, 1.f, 1.f));
+		mRenderResource.SetConstantBuffer<VertexShader>(0, 0, wvp);
+		mRenderResource.SetConstantBuffer<PixelShader>(0, 0, Color(1.f, 1.f, 1.f, 1.f));
 	}
 
 	void ShapeRenderer::End()
@@ -54,9 +55,9 @@ namespace XGF
 		BindingBridge bb;
 		bb.AddBinder(rc.mPolygon);
 		bb.AddBinder(cb);
-		mShaderStage.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		mRenderState.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(
-			bb, *rc.mPolygonPleIndex.get(), mShaderStage));
+			bb, *rc.mPolygonPleIndex.get(), RenderStage(mRenderState, mRenderResource)));
 	}
 
 	void ShapeRenderer::DrawRectangleC(float x, float y, float w, float h, float z, const Color & bkcolor, float borderWidth, const Color & boderColor, const Color & boderOuterColor)
@@ -76,9 +77,9 @@ namespace XGF
 		BindingBridge bb;
 		bb.AddBinder(rc.mPolygon);
 		bb.AddBinder(cb);
-		mShaderStage.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		mRenderState.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(
-			bb, *rc.mPolygonPleIndex.get(), mShaderStage));
+			bb, *rc.mPolygonPleIndex.get(), RenderStage(mRenderState, mRenderResource)));
 	}
 
 	void ShapeRenderer::DrawCircle(float x, float y, float r, int precision, float z, const Color & color)
@@ -90,9 +91,9 @@ namespace XGF
 		BindingBridge bb;
 		bb.AddBinder(ce.mPolygon);
 		bb.AddBinder(cb);
-		mShaderStage.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		mRenderState.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(
-			bb, *ce.mPolygonPleIndex.get(), mShaderStage));
+			bb, *ce.mPolygonPleIndex.get(), RenderStage(mRenderState, mRenderResource)));
 	}
 
 	void ShapeRenderer::DrawCircle(float x, float y, float r, int precision, float z, const Color & color, const Color & centerColor)
@@ -109,9 +110,9 @@ namespace XGF
 		BindingBridge bb;
 		bb.AddBinder(ce.mPolygon);
 		bb.AddBinder(cb);
-		mShaderStage.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		mRenderState.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(
-			bb, *ce.mPolygonPleIndex.get(), mShaderStage));
+			bb, *ce.mPolygonPleIndex.get(), RenderStage(mRenderState, mRenderResource)));
 	}
 
 	void ShapeRenderer::DrawLine(float x, float y, float ex, float ey, float z, const Color & color)
@@ -123,9 +124,9 @@ namespace XGF
 		BindingBridge bb;
 		bb.AddBinder(line.mPolygon);
 		bb.AddBinder(cb);
-		mShaderStage.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+		mRenderState.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
 		Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(
-			bb, *line.mPolygonPleIndex.get(), mShaderStage));
+			bb, *line.mPolygonPleIndex.get(), RenderStage(mRenderState, mRenderResource)));
 	}
 	void ShapeRenderer::DrawLineList(const Position & points, int count, float z, const Color & color)
 	{
@@ -139,9 +140,9 @@ namespace XGF
 		BindingBridge bb;
 		bb.AddBinder(shape.mPolygon);
 		bb.AddBinder(cb);
-		mShaderStage.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+		mRenderState.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
 		Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(
-			bb, *shape.mPolygonPleIndex.get(), mShaderStage));
+			bb, *shape.mPolygonPleIndex.get(), RenderStage(mRenderState, mRenderResource)));
 	}
 	void ShapeRenderer::DrawTriangle(const Position & a, const Position & b, const Position & c, float z, const Color & ca, const Color & cb, const Color & cc)
 	{
@@ -155,9 +156,9 @@ namespace XGF
 		pp->GetData(1) = cb;
 		pp->GetData(2) = cc;
 
-		mShaderStage.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+		mRenderState.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 		Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(
-			bbr, *tr.mPolygonPleIndex.get(), mShaderStage));
+			bbr, *tr.mPolygonPleIndex.get(), RenderStage(mRenderState, mRenderResource)));
 	}
 	void ShapeRenderer::DrawTriangle(const Position & a, const Position & b, const Position & c, float z, const Color & cc)
 	{
@@ -175,8 +176,8 @@ namespace XGF
 		BindingBridge bb;
 		bb.AddBinder(shape.mPolygon);
 		bb.AddBinder(cb);
-		mShaderStage.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+		mRenderState.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 		Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(
-			bb, *shape.mPolygonPleIndex.get(), mShaderStage));
+			bb, *shape.mPolygonPleIndex.get(), RenderStage(mRenderState, mRenderResource)));
 	}
 };

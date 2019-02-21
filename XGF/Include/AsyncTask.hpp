@@ -36,7 +36,7 @@ namespace XGF
 		Asyn mThread;
 
 		Asyn *mainThread;
-		DISALLOW_COPY_AND_ASSIGN(AsyncTask);
+		DisableCopyAndAssign(AsyncTask);
 	};
 
 

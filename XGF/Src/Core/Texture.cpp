@@ -7,6 +7,8 @@
 #include <fstream>
 #include "../../Include/Context.hpp"
 #include "../../Include/Shader.hpp"
+#include "../../Include/ScreenGrab.h"
+#include <wincodec.h>
 
 namespace XGF
 {
@@ -16,27 +18,45 @@ namespace XGF
 
 	ID3D11ShaderResourceView* Texture::GetRawTexture() const
 	{
-		return mTextureResource.shaderResourceView;
-	}
-
-	ID3D11ShaderResourceView* const* Texture::GetRawTexturePtr() const
-	{
-		return &mTextureResource.shaderResourceView;
+		return mTextureResource.GetSRV();
 	}
 
 	ID3D11Texture2D* Texture::GetRawTexture2D() const
 	{
-		return mTextureResource.texture2d;
+		return mTextureResource.GetTexture2D();
 	}
 
 	unsigned Texture::GetWidth() const
 	{
-		return mTextureResource.width;
+		return mTextureResource.GetWidth();
 	}
 
 	unsigned Texture::GetHeight() const
 	{
-		return mTextureResource.height;
+		return mTextureResource.GetHeight();
+	}
+
+	bool Texture::SaveAs(ImageType type, const std::string& path)
+	{
+		if(type != ImageType::DDS)
+		{
+			auto hr = DirectX::SaveWICTextureToFile(Context::Current().QueryGraphicsDeviceInterface().GetDeviceContext(),
+				mTextureResource.GetTexture2D(), GUID_ContainerFormatPng, fmt::to_wstring(path).c_str());
+			XGF_Info_Check(Framework, hr, "Save texture to disk failed!");
+			if (FAILED(hr))
+				return false;
+			return true;
+		}
+		else
+		{
+			auto hr = DirectX::SaveDDSTextureToFile(Context::Current().QueryGraphicsDeviceInterface().GetDeviceContext(),
+				mTextureResource.GetTexture2D(), fmt::to_wstring(path).c_str());
+			XGF_Info_Check(Framework, hr, "Save texture to disk failed!");
+			if (FAILED(hr))
+				return false;
+			return true;
+		}
+		
 	}
 
 	Texture::~Texture()
@@ -153,4 +173,21 @@ namespace XGF
 		this->height = height;
 	}
 
+	void TextureResource::SetTexture2D(ID3D11Texture2D* t2d)
+	{
+		if(texture2d)
+		{
+			texture2d->Release();
+		}
+		texture2d = t2d;
+	}
+
+	void TextureResource::SetSRV(ID3D11ShaderResourceView* srv)
+	{
+		if(shaderResourceView)
+		{
+			shaderResourceView->Release();
+		}
+		shaderResourceView = srv;
+	}
 };

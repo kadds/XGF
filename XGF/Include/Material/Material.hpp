@@ -5,46 +5,29 @@ namespace XGF
 {
 	namespace Shape
 	{
-		class Geometry;
-
+		enum class MaterialType
+		{
+			BasicMaterial = 1u,
+			PhongMaterial,
+			LambertMaterial,
+		};
 		class Material
 		{
 		public:
-			Material();;
+			Material(MaterialType type);
 			virtual ~Material();
 
-			Shaders GetShaders();
-			RasterizerState GetRasterizerState();
-			DepthStencilState GetDepthStencilState();
-
-			BlendState GetBlendState();
-
-			void SetRasterizerState(RasterizerState rs);
-			void SetDepthStencilState(DepthStencilState ds);
-			void SetBlendState(BlendState bs);
-
-			
-
-			virtual std::vector<void*> GetVSBindingConstantBuffers();
-			virtual std::vector<Texture *> GetVSBindingTextures();
-			virtual std::vector<void*> GetPSBindingConstantBuffers();
-			virtual std::vector<Texture *> GetPSBindingTextures();
-
-			bool IsChangeShaders();
-			void RemoveChangeShadersFlag();
-
-			virtual  bool CanLinkWithLight()
+			bool IsLinkWithLight() const
 			{
-				return false;
+				return mLinkWithLight;
+			}
+			MaterialType GetMaterialType() const
+			{
+				return mMaterialType;
 			}
 		protected:
-			void SetShaders(Shaders shaders);
-		private:
-			RasterizerState mRasterizerState = RasterizerState::SolidAndCutBack;
-			DepthStencilState mDepthStencilState = DepthStencilState::DepthEnable;
-			BlendState mBlendState = BlendState::NoneBlend;
-			Shaders mShaders;
-			bool mIsChangeShaders;
+			bool mLinkWithLight;
+			MaterialType mMaterialType;
 		};
 	}
 }

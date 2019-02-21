@@ -3,6 +3,8 @@
 #include "Shader.hpp"
 #include "ResourceManager.hpp"
 #include <functional>
+#include "Logger.hpp"
+#include "Shadow.hpp"
 
 namespace XGF
 {
@@ -29,7 +31,7 @@ namespace XGF
 	public:
 		std::string name;
 		std::string definition;
-		CompileDefine(const std::string & n, const std::string & d = "") : name(n), definition(d) {  }
+		CompileDefine(std::string && n, std::string && d = "") : name(std::move(n)), definition(std::move(d)) {  }
 		bool operator ==(const CompileDefine& def) const;
 
 		size_t hash() const;
@@ -38,7 +40,7 @@ namespace XGF
 		{
 			CompileDefine * def;
 			CompileDefinePair(CompileDefine * ptr) : def(ptr) {	 }
-			const CompileDefinePair& operator=(std::string& str) const;
+			CompileDefinePair & operator=(std::string&& str);
 		};
 	};
 	class CompileDefines
@@ -47,7 +49,7 @@ namespace XGF
 		
 		std::unique_ptr<char*> GetDataPtr() const;
 
-		CompileDefine::CompileDefinePair operator[](const std::string& key);
+		CompileDefine::CompileDefinePair operator[](std::string&& key);
 
 		void Remove(const std::string& key);
 
@@ -128,8 +130,12 @@ namespace XGF
 			ID3DBlob* pBlob = nullptr;
 			std::string versionName = TShader::GetPrefixName() + config.version;
 			auto ptr = config.defines.GetDataPtr();
+			int flag = 0;
+#ifdef XGF_DEBUG_SHADER
+			flag |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif;
 			HRESULT hr = D3DCompile(fileData.GetPtr(), fileData.GetSize(), config.sourceName.c_str(),
-				(const D3D_SHADER_MACRO*)(ptr.get()), NULL, TShader::GetEntrypoint().c_str(), versionName.c_str(), 0, 0, &pBlob, &pErrorBlob);
+				(const D3D_SHADER_MACRO*)(ptr.get()), NULL, TShader::GetEntrypoint().c_str(), versionName.c_str(), flag, 0, &pBlob, &pErrorBlob);
 			if (FAILED(hr))
 				if (pErrorBlob == nullptr)
 					XGF_Error(IO, "Shader file not find ", config.sourceName);
@@ -178,11 +184,8 @@ namespace XGF
 		Shader* FindShader(const ShaderConfigurationWrapper& config);
 
 		FileData* SaveCache(const std::string& url, FileData fileData);
-		Shaders GetBasicShaders(bool hasNormal, bool hasTexture, bool hasVertexColor = false);
-		Shaders GetFontShaders(bool hasVertexColor = false);
-		Shaders GetPhongShaders(int numOfDir, int numOfPoint, int numOfSpot, bool texture, bool blinnPhong = false);
-		Shaders GetLambertShaders(int numOfDir, int numOfPoint, int numOfSpot, bool texture);;
 
+	public:
 		void ReleaseAll();
 
 		~ShaderManager();

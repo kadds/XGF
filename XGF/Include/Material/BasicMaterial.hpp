@@ -22,8 +22,6 @@ namespace XGF::Shape
 
 		bool DFlag();
 
-		virtual std::vector<void*> GetPSBindingConstantBuffers() override;
-		virtual std::vector<Texture *> GetPSBindingTextures() override;
 	private:
 		bool mDFlag;
 		Color mBasicColor;

@@ -44,7 +44,7 @@ namespace XGF
 		bool mIsExit;
 		std::mutex mutex;
 		std::condition_variable mcVariable;
-		DISALLOW_COPY_AND_ASSIGN(Asyn);
+		DisableCopyAndAssign(Asyn);
 	};
 
 

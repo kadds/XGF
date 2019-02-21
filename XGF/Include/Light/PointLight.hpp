@@ -3,7 +3,7 @@
 
 namespace XGF::Shape
 {
-	class PointLight : public Light
+	class PointLight : public CastShadowAbleLight
 	{
 	public:
 		PointLight(const Point& position, const Color& lightColor, float constant = 1.f, float linear = 0.1f,

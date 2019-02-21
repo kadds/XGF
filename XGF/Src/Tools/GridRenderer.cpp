@@ -2,6 +2,7 @@
 #include "../../Include/ShaderManager.hpp"
 #include "../../Include/Context.hpp"
 #include "../../Include/Renderer.hpp"
+#include "../../Include/SystemShaders.hpp"
 
 namespace XGF
 {
@@ -17,9 +18,9 @@ namespace XGF
 	void GridRenderer::Initialize(float width, float height, unsigned xcount, unsigned zcount, const Point & origin)
 	{
 		XGF_ASSERT(width > 0 && height > 0);
-		mShaderStage.Initialize(Context::Current().QueryShaderManager().GetBasicShaders(false, false ,true));
-		mShaderStage.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-		mShaderStage.SetDepthStencilState(DepthStencilState::DepthDisable);
+		mRenderResource.ReCreate(SystemShaders::GetBasicShaders(SystemShaders::BasicShader_VertexColor));
+		mRenderState.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+		mRenderState.GetDepthStencilState().SetDepthEnable(false);
 		mHeight = height;
 		mWidth = width;
 		mPolygon = std::make_shared<PolygonPlePointBinder>(xcount * 2 + zcount * 2 + 4);
@@ -72,13 +73,13 @@ namespace XGF
 
 	void GridRenderer::Shutdown()
 	{
-		mShaderStage.Shutdown();
+		mRenderResource.Clear();
 		//delete mMeshData;
 	}
 
 	void GridRenderer::Begin(const WVPMatrix & matrix)
 	{
-		mShaderStage.SetVSConstantBuffer(0, &matrix);
+		mRenderResource.SetConstantBuffer<VertexShader>(0, 0, matrix);
 	}
 
 	void GridRenderer::End()
@@ -88,7 +89,7 @@ namespace XGF
 
 	void GridRenderer::DrawGrid(Point & center)
 	{
-		Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(mBindingBridge, *mPolygonPleIndex.get(), mShaderStage));
+		Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(mBindingBridge, *mPolygonPleIndex.get(), RenderStage(mRenderState, mRenderResource)));
 	}
 
 	void GridRenderer::SetColor(SM::Color & cx, SM::Color & cz)

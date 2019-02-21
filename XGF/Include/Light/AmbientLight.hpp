@@ -10,7 +10,6 @@ namespace XGF::Shape
 
 		Color GetAmbientColor() const;
 
-		int CopyConstantBuffer(void* dest) override;
 	private:
 	};
 }

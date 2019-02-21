@@ -37,7 +37,8 @@ namespace XGF
 	private:
 		bool AddCharToBatch(int i, wchar_t ch, Shape::Rectangle * rc, const PosSize * ps, const SM::Matrix * matrix);
 		bool PenMoveCallBackFunction(int i, wchar_t ch, Position * p, int c, Position * v);
-		ShaderStage mShaderStage;
+		RenderState mRenderState;
+		RenderResource mRenderResource;
 		//Õ‚≤ø
 		Font *mFont;
 		TextLayoutShaper mLayoutShaper;

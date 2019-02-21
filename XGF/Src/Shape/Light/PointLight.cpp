@@ -3,13 +3,13 @@
 namespace XGF::Shape
 {
 	PointLight::PointLight(const Point& position, const Color& lightColor, float constant, float linear,
-	                       float quadratic): Light(position, lightColor, LightType::Point),
+	                       float quadratic): CastShadowAbleLight(position, lightColor, LightType::Point),
 	                                         mAttenuation(constant, linear, quadratic)
 	{
 	}
 
 	PointLight::
-	PointLight(const Point& position, const Color& lightColor, const Point& attenuation): Light(position, lightColor,
+	PointLight(const Point& position, const Color& lightColor, const Point& attenuation): CastShadowAbleLight(position, lightColor,
 	                                                                                            LightType::Point),
 	                                                                                      mAttenuation(attenuation)
 	{

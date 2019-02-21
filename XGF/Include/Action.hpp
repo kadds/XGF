@@ -10,7 +10,7 @@ namespace XGF
 	public:
 		Action();
 		virtual ~Action();
-		//锟斤拷锟斤拷True 锟斤拷锟窖撅拷锟斤拷锟斤拷Action
+
 		bool Tick(Point * out, float deltaTime);
 		static std::unique_ptr<Action> Make(const Point & to, float duration, bool isRelative,std::shared_ptr<Interpolator> interpolator)
 		{
@@ -30,8 +30,6 @@ namespace XGF
 		float mDuration;
 		float mTime;
 		bool mIsRelative;
-	private:
-		DISALLOW_COPY_AND_ASSIGN(Action);
 	};
 
 

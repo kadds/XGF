@@ -2,7 +2,26 @@
 #include "Defines.hpp"
 namespace XGF
 {
-	class RenderTarget;
+	struct CameraRectangle
+	{
+		float left;
+		float right;
+		float bottom;
+		float top;
+		float nearZ;
+		float farZ;
+		CameraRectangle(float left, float right, float bottom, float top, float nearZ, float farZ): left(left), right(right), bottom(bottom), top(top), nearZ(nearZ), farZ(farZ) {  }
+		CameraRectangle()
+		{
+			bottom = -10.f;
+			top = 10.f;
+			nearZ = 0.1f;
+			farZ = 10.f;
+			left = -10.f;
+			right = 10.f;
+		};
+	};
+
 	class Camera
 	{
 	public:

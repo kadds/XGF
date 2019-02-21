@@ -25,9 +25,11 @@ namespace XGF
 		//every frame call it after call Begin
 		void End();
 	private:
-		ShaderStage mShaderStage;
-		std::vector<std::unique_ptr<Shape::Line>> lines;
-		Color mColor[6];
+		RenderResource mRenderResource;
+		RenderState mRenderState;
+		std::shared_ptr<PolygonPlePointBinder> mPolygon;
+		std::shared_ptr<PolygonPleIndex> mPolygonPleIndex;
+		std::shared_ptr<PolygonPleColorBinder> mColor;
 	};
 
 

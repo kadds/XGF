@@ -1,9 +1,9 @@
 #include "..\..\Include\AxisRenderer.hpp"
 #include "..\..\Include\ShaderManager.hpp"
-#include <algorithm>
 #include "../../Include/Context.hpp"
 #include "../../Include/Renderer.hpp"
 #include "../../Include/Polygon.hpp"
+#include "../../Include/SystemShaders.hpp"
 
 namespace XGF
 {
@@ -18,19 +18,22 @@ namespace XGF
 
 	void AxisRenderer::Initialize(float len)
 	{
+		mColor = std::make_shared<PolygonPleColorBinder>(12);
+		mPolygon = std::make_shared<PolygonPlePointBinder>(12);
+		mPolygonPleIndex = std::make_shared<PolygonPleIndex>(12);
 		auto p = DirectX::XMMatrixIdentity();
-		
-		mShaderStage.Initialize(Context::Current().QueryShaderManager().GetBasicShaders(false, false, true));
-		mShaderStage.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-		mShaderStage.SetDepthStencilState(DepthStencilState::DepthEnable);
-		mShaderStage.SetBlendState(BlendState::NoneBlend);
+		mRenderResource.ReCreate(SystemShaders::GetBasicShaders(SystemShaders::BasicShader_VertexColor));
+		mRenderState.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+		mRenderState.GetBlendState().GetRenderTarget(0).SetBlendEnable(false);
 		SM::Color c = SM::Color(0.f, 0.f, 0.f, 1.f);
-		auto fun = [&](float x, float y, float z) {
-
-			auto line = std::make_unique<Shape::Line>();
-			line->SetPosition(Point(0.f, 0.f, 0.f));
-			line->SetEndPosition(Point(x, y, z));
-			lines.push_back(std::move(line));
+		for(int i = 0; i < 12; i++)
+			mPolygonPleIndex->Get(i) = i;
+		int index = 0;
+		auto temp = mPolygon;
+		auto fun = [&](float x, float y, float z)
+		{
+			temp->GetData(index++).Set(0.f, 0.f, 0.f);
+			temp->GetData(index++).Set(x, y, z);
 		};
 		fun(len, 0.f, 0.f);
 		fun(-len, 0.f, 0.f);
@@ -43,51 +46,52 @@ namespace XGF
 
 	void AxisRenderer::SetAxisXColor(Color color, Color colorb)
 	{
-		mColor[0] = color;
-		mColor[1] = colorb;
+		mColor->GetData(0) = color;
+		mColor->GetData(1) = color;
+
+		mColor->GetData(2) = colorb;
+		mColor->GetData(3) = colorb;
 	}
 
 	void AxisRenderer::SetAxisYColor(Color color, Color colorb)
 	{
-		mColor[2] = color;
-		mColor[3] = colorb;
+		mColor->GetData(4) = color;
+		mColor->GetData(5) = color;
+
+		mColor->GetData(6) = colorb;
+		mColor->GetData(7) = colorb;
 	}
 
 	void AxisRenderer::SetAxisZColor(Color color, Color colorb)
 	{
-		mColor[4] = color;
-		mColor[5] = colorb;
+		mColor->GetData(8) = color;
+		mColor->GetData(9) = color;
+
+		mColor->GetData(10) = colorb;
+		mColor->GetData(11) = colorb;
 	}
 
 	void AxisRenderer::DrawAxis()
 	{
 		BindingBridge bbr;
-		auto cbb = std::make_shared<PolygonPleConstantColorBinder>(2, SM::Color(0, 0, 0, 0));
-		bbr.AddPlaceHolder();
-		bbr.AddBinder(cbb);
+		bbr.AddBinder(mPolygon);
+		bbr.AddBinder(mColor);
 		int i = 0;
-		mShaderStage.SetPSConstantBuffer(0, Color(1.f, 1.f, 1.f, 1.f));
+		mRenderResource.SetConstantBuffer<PixelShader>(0, 0, Color(1.f, 1.f, 1.f, 1.f));
 		auto & renderer = Context::Current().QueryRenderer();
-		
-		std::for_each(lines.begin(), lines.end(), [this, &cbb, &i, &bbr, &renderer](std::unique_ptr<Shape::Line> &var) {
-			cbb->Set(0, mColor[i]);
+		renderer.Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(bbr, *mPolygonPleIndex.get(), RenderStage(mRenderState, mRenderResource)));
 
-			bbr.SetBinder(var->mPolygon, 0);
-			renderer.Commit(RenderGroupType::Normal, 
-				DefaultRenderCommand::MakeRenderCommand(bbr, *var->GetIndex().get(), mShaderStage));
-			i++;
-		});
 	}
 
 	void AxisRenderer::Shutdown()
 	{
-		lines.clear();
-		mShaderStage.Shutdown();
+		mPolygon.reset();
+		mPolygonPleIndex.reset();
 	}
 
 	void AxisRenderer::Begin(const WVPMatrix & matrix)
 	{
-		mShaderStage.SetVSConstantBuffer(0, &matrix);
+		mRenderResource.SetConstantBuffer<VertexShader>(0, 0, matrix);
 	}
 
 	void AxisRenderer::End()

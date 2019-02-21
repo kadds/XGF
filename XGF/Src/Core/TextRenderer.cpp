@@ -3,10 +3,10 @@
 #include "../../Include/Polygon.hpp"
 #include "../../Include/Rectangle.hpp"
 #include "../../Include/Font.hpp"
-#include "../../Include/Texture.hpp"
 #include "../../Include/ShaderManager.hpp"
 #include "../../Include/Context.hpp"
 #include "../../Include/Renderer.hpp"
+#include "../../Include/SystemShaders.hpp"
 
 namespace XGF
 {
@@ -38,10 +38,11 @@ namespace XGF
 			indexData->Get(i++) = 1;
 			indexData->Get(i++) = 0;
 		}
-		mShaderStage.Initialize(Context::Current().QueryShaderManager().GetFontShaders(true));
-		mShaderStage.SetBlendState(BlendState::AddZeroOneAdd);
+		mRenderResource.ReCreate(SystemShaders::GetFontShaders(true));
 		// 文字渲染采用不同的深度函数方法，在同深度的UI控件绘制中以写入缓冲区
-		mShaderStage.SetDepthStencilState(DepthStencilState::DepthEnableWithLessEqual);
+		mRenderState.GetDepthStencilState().SetDepthFunc(ComparisonFunc::LESS_EQUAL);
+		mRenderState.GetBlendState().GetRenderTarget(0).SetBlendEnable(true);
+		mRenderState.GetBlendState().GetRenderTarget(0).SetDestBlendAlpha(Blend::ONE);
 		bbridge.AddBinder(pointBinder);
 		bbridge.AddBinder(textureBinder);
 		bbridge.AddBinder(colorBinder);
@@ -110,9 +111,9 @@ namespace XGF
 
 	void TextRenderer::Begin(const WVPMatrix & matrix)
 	{
-		mShaderStage.SetVSConstantBuffer(0, &matrix);
-		mShaderStage.SetPSConstantBuffer(0, Color(1.f, 1.f, 1.f, 1.f));
-		mShaderStage.SetPSTexture(0, mFont->GetTexture());		
+		mRenderResource.SetConstantBuffer<VertexShader>(0, 0, matrix);
+		mRenderResource.SetConstantBuffer<PixelShader>(0, 0, Color(1.f, 1.f, 1.f, 1.f));
+		mRenderResource.SetTexture<PixelShader>(0, mFont->GetTexture());
 	}
 
 	void TextRenderer::End()
@@ -128,7 +129,7 @@ namespace XGF
 		colorBinder->SetActualCount(mCurrentPos * 4);
 		textureBinder->SetActualCount(mCurrentPos * 4);
 		Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(
-			bbridge, *indexData.get(), mShaderStage
+			bbridge, *indexData.get(), RenderStage(mRenderState, mRenderResource)
 		));
 		mCurrentPos = 0;
 	}

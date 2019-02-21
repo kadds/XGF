@@ -71,6 +71,7 @@ namespace XGF {
 	{
 		Event ev;
 		Timer timer;
+		float dt = 0;
 		while(mMessageQueue.try_dequeue(ev))
 		{
 			if (ev.GetEventGroup() == EventGroupType::System && ev.GetSystemEventId() == SystemEventId::Exit)
@@ -81,12 +82,14 @@ namespace XGF {
 			{
 				mHandleCallback(ev);
 			}
+			dt += timer.Tick();
+			if (dt > 0.001f)
+			{
+				break;
+				//XGF_Info(Framework, "Handle event time is too long ", time * 1000, "ms");
+			}
 		}
-		float time = timer.Tick();
-		if(time> 0.016f)
-		{
-			XGF_Info(Framework, "Handle event time is too long ", time * 1000 , "ms");
-		}
+		
 		return false;
 	}
 

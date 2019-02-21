@@ -28,14 +28,12 @@ namespace XGF::Shape
 		Color3 GetDiffuse() const;
 
 		void SetDiffuse(const Color3 & diffuse);
-		void CompileShader() override;
+		
 		void SetBasicTexture(Texture * texture);
-		void EndSetLights() override;
-		Texture* GetBasicTexture() const;
-		std::vector<Texture*> GetPSBindingTextures() override;
-		//std::vector<void*> GetVSBindingConstantBuffers() override;
-		std::vector<void*> GetPSBindingConstantBuffers() override;
 
+		Texture* GetBasicTexture() const;
+		
+		
 	private:
 		struct InnerData
 		{
@@ -49,7 +47,12 @@ namespace XGF::Shape
 			float mShininess;
 		} mInnerData;
 
-		
+
 		Texture * mBasicMap;
+	public:
+		const InnerData & GetStructData()
+		{
+			return mInnerData;
+		}
 	};
 }

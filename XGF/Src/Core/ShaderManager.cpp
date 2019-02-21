@@ -1,5 +1,6 @@
 #include "../../Include/ShaderManager.hpp"
 #include <fstream>
+#include "../../Include/Logger.hpp"
 
 namespace XGF
 {
@@ -41,9 +42,9 @@ namespace XGF
 		return h1 ^ (h2 << 1);
 	}
 
-	const CompileDefine::CompileDefinePair& CompileDefine::CompileDefinePair::operator=(std::string& str) const
+	CompileDefine::CompileDefinePair & CompileDefine::CompileDefinePair::operator=(std::string&& str)
 	{
-		def->definition = str;
+		def->definition = std::move(str);
 		return *this;
 	}
 
@@ -61,9 +62,9 @@ namespace XGF
 		return ptr;
 	}
 
-	CompileDefine::CompileDefinePair CompileDefines::operator[](const std::string& key)
+	CompileDefine::CompileDefinePair CompileDefines::operator[](std::string&& key)
 	{
-		defines.emplace_back(key);
+		defines.emplace_back(std::move(key));
 		return CompileDefine::CompileDefinePair(&defines.back());
 	}
 
@@ -191,70 +192,6 @@ namespace XGF
 		return &mDataCache[url];
 	}
 
-	Shaders ShaderManager::GetBasicShaders(bool hasNormal, bool hasTexture, bool hasVertexColor)
-	{
-		std::string base = "0";
-		ShaderConfiguration configuration;
-		if(hasNormal)
-			configuration.defines["USE_NORMAL"] = base;
-		if(hasTexture)
-			configuration.defines["USE_TEXTURE"] = base;
-		if(hasVertexColor)
-			configuration.defines["USE_COLOR"] = base;
-		configuration.version = "4_0";
-		auto vs = LoadShader<VertexShader>("BasicMaterial.hlsl", configuration);
-		auto ps = LoadShader<PixelShader>("BasicMaterial.hlsl", configuration);
-		return Shaders(vs, ps);
-	}
-
-	Shaders ShaderManager::GetFontShaders(bool hasVertexColor)
-	{
-		std::string base = "0";
-		ShaderConfiguration configuration;
-		if (hasVertexColor)
-			configuration.defines["USE_COLOR"] = base;
-		configuration.version = "4_0";
-		auto vs = LoadShader<VertexShader>("FontMaterial.hlsl", configuration);
-		auto ps = LoadShader<PixelShader>("FontMaterial.hlsl", configuration);
-		return Shaders(vs, ps);
-	}
-
-	Shaders ShaderManager::GetPhongShaders(int numOfDir, int numOfPoint, int numOfSpot, bool texture, bool blinnPhong)
-	{
-		std::string a = fmt::to_string(numOfDir);
-		std::string b = fmt::to_string(numOfPoint);
-		std::string c = fmt::to_string(numOfSpot);
-		std::string base = "0";
-		ShaderConfiguration configuration;
-		configuration.defines["N_OF_DIRECTIONALLIGHT"] = a;
-		configuration.defines["N_OF_POINTLIGHT"] = b;
-		configuration.defines["N_OF_SPOTLIGHT"] = c;
-		if(texture)
-			configuration.defines["TEXTURE"] = base;
-		if(!blinnPhong)
-			configuration.defines["LIGHT_PHONG"] = base;
-		configuration.version = "4_0";
-		auto vs = LoadShader<VertexShader>("PhongMaterial.hlsl", configuration);
-		auto ps = LoadShader<PixelShader>("PhongMaterial.hlsl", configuration);
-		return Shaders(vs, ps);
-	}
-	Shaders ShaderManager::GetLambertShaders(int numOfDir, int numOfPoint, int numOfSpot, bool texture)
-	{
-		std::string a = fmt::to_string(numOfDir);
-		std::string b = fmt::to_string(numOfPoint);
-		std::string c = fmt::to_string(numOfSpot);
-		std::string base = "0";
-		ShaderConfiguration configuration;
-		configuration.defines["N_OF_DIRECTIONALLIGHT"] = a;
-		configuration.defines["N_OF_POINTLIGHT"] = b;
-		configuration.defines["N_OF_SPOTLIGHT"] = c;
-		if (texture)
-			configuration.defines["TEXTURE"] = base;
-		configuration.version = "4_0";
-		auto vs = LoadShader<VertexShader>("LambertMaterial.hlsl", configuration);
-		auto ps = LoadShader<PixelShader>("LambertMaterial.hlsl", configuration);
-		return Shaders(vs, ps);
-	}
 	void ShaderManager::ReleaseAll()
 	{
 		for (auto& it : mMap)

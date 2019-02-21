@@ -2,6 +2,9 @@
 #include "Defines.hpp"
 #include "Shader.hpp"
 #include "FrameRateLimiter.hpp"
+#include <atomic>
+#include <mutex>
+#include "Context.hpp"
 
 
 namespace XGF
@@ -9,14 +12,15 @@ namespace XGF
 	class Event;
 	class PolygonPleIndex;
 	class BindingBridge;
+	class Renderer;
 
 	class RenderCommand
 	{
 	protected:
 		int mRenderOrder;
 	public:
-		RenderCommand():mRenderOrder(0) {  }
-		RenderCommand(int order): mRenderOrder(order) {  }
+		RenderCommand() :mRenderOrder(0) {  }
+		RenderCommand(int order) : mRenderOrder(order) {  }
 		virtual ~RenderCommand() {  }
 		virtual void Exec() = 0;
 		int GetRenderOrder() const
@@ -24,27 +28,6 @@ namespace XGF
 			return mRenderOrder;
 		}
 
-	};
-	class DefaultRenderCommand : public RenderCommand
-	{
-	private:
-		ShaderStage mShaderStage;
-		char * mVertices;
-		unsigned int mVertexCount;
-		Index * mIndices;
-		unsigned int mIndexCount;
-		unsigned mVertexSize;
-	public:
-		void BindVSConstantBuffer(unsigned index);
-		void BindPSConstantBuffer(unsigned index);
-		void BindGSConstantBuffer(unsigned index);
-		DefaultRenderCommand(char * vertices, unsigned int vertexCount, unsigned vertexSize,  Index * indices, unsigned int indexCount):
-		mVertices(vertices), mVertexCount(vertexCount), mVertexSize(vertexSize), mIndices(indices), mIndexCount(indexCount){  };
-		static DefaultRenderCommand* MakeRenderCommand(const BindingBridge& bbr, const PolygonPleIndex& index,
-		                                               const ShaderStage& shaderStage);
-
-		~DefaultRenderCommand();
-		virtual void Exec() override;
 	};
 	class RenderQueue
 	{
@@ -74,12 +57,12 @@ namespace XGF
 			mClearDepthStencilBuffer = true;
 		}
 		Color mClearColor;
-		RenderTarget * mTarget;
+		FrameBuffer * mTarget;
 		bool mClearDepthStencilBuffer;
 		bool mIsClearTarget;
 		std::vector<RenderQueue> mRenderQueues;
 	};
-	struct RenderResource
+	struct RendererFrameResource
 	{
 		std::list<GpuBuffer> mVertices, mIndices;
 		std::list<GpuBuffer> mVerticesUsed, mIndicesUsed;
@@ -104,14 +87,24 @@ namespace XGF
 		}
 
 		void NewFrame();
-		RenderResource(): mRenderedFlag(false), mPassUsedIndex(-1){  }
+		RendererFrameResource(): mRenderedFlag(false), mPassUsedIndex(-1){  }
 	};
-	class Renderer;
-	typedef std::function<void(Renderer *)> RendererDrawCallback;
+
+	typedef std::function<void(Renderer *)> RendererDrawCallbackFunc;
+
+	struct DrawCallback
+	{
+		int callCount;
+		RendererDrawCallbackFunc func;
+		std::string name;
+
+		DrawCallback(RendererDrawCallbackFunc func, const std::string & name, int callCount): callCount(callCount), func(func), name(name) {  }
+	};
 	class Renderer
 	{
 	public:
 		Renderer() = default;
+		void ClearDepthStencilBuffer();
 		void Clear(const Color& color);
 		void Create();
 		void Destroy();
@@ -130,17 +123,23 @@ namespace XGF
 		void SetLimitFrameRate(int frameRate);
 		int GetLimitFrameRate() const;
 
-		int AppendRenderTarget(RenderTarget* target);
-		int AppendDefaultRenderTarget();
-		void AppendAndSetDefaultRenderTarget();
-		void SetDefaultRenderTarget();
-		void SetRenderTarget(int index);
-		void AppendAndSetRenderTarget(RenderTarget* target);
+		int AppendFrameTarget(FrameBuffer* target);
+		int AppendDefaultFrameTarget();
+		void AppendAndSetDefaultFrameTarget();
+		void SetDefaultFrameTarget();
+		void SetFrameTarget(int index);
+		void SetFrameTarget(FrameBuffer* target);
+		void AppendAndSetFrameTarget(FrameBuffer* target);
+		FrameBuffer * GetCurrentFrameTarget();
 
-		void AppendBeforeDrawCallback(const std::string & name, RendererDrawCallback callback);
-		void AppendAfterDrawCallback(const std::string & name, RendererDrawCallback callback);
+		void AppendBeforeDrawCallback(const std::string & name, RendererDrawCallbackFunc callback);
+		void AppendAfterDrawCallback(const std::string & name, RendererDrawCallbackFunc callback);
 		void RemoveBeforeDrawCallback(const std::string & name);
 		void RemoveAfterDrawCallback(const std::string & name);
+
+		void AppendBeforeDrawCallbackOnce(RendererDrawCallbackFunc callback);
+		void AppendAfterDrawCallbackOnce(RendererDrawCallbackFunc callback);
+
 	private:
 		void DrawCommands();
 		void BeforeDraw();
@@ -148,26 +147,80 @@ namespace XGF
 		void OnMessage(const Event & ev);
 		void ClearResource(int index);
 		FrameRateLimiter mFrameRateLimiter;
-		RenderResource mResource[2];
+		RendererFrameResource mResource[2];
 		int mIndexOfResource;
 		std::atomic_bool mTag;
 
 		std::recursive_mutex mDrawMutex;
-		std::vector<std::pair<RendererDrawCallback, std::string>> mBeforeDrawCallback;
-		std::vector<std::tuple<RendererDrawCallback, std::string, bool>> mBeforeDrawCallbackTemp;
-		std::vector<std::pair<RendererDrawCallback, std::string>> mAfterDrawCallback;
-		std::vector<std::tuple<RendererDrawCallback, std::string, bool>> mAfterDrawCallbackTemp;
+		std::vector<DrawCallback> mBeforeDrawCallback;
+		std::vector<std::tuple<DrawCallback, bool>> mBeforeDrawCallbackTemp;
+		std::vector<DrawCallback> mAfterDrawCallback;
+		std::vector<std::tuple<DrawCallback, bool>> mAfterDrawCallbackTemp;
 
-		RenderResource& GetCurrentResource();
+		RendererFrameResource& GetCurrentResource();
 
 		int GetNextResourceIndex() const;
 
 		int GetCurrentResourceIndex() const;
 
-		RenderResource& GetResource(int index);
+		RendererFrameResource& GetResource(int index);
 
 		void SetCurrentResource(int index);
 
-		RenderResource& GetCurrentRenderResource();
+		RendererFrameResource& GetCurrentRenderResource();
 	};
+
+	
+	class DefaultRenderCommand : public RenderCommand
+	{
+	private:
+		RawRenderStage mRenderStage;
+		char * mVertices;
+		unsigned int mVertexCount;
+		Index * mIndices;
+		unsigned int mIndexCount;
+		unsigned mVertexSize;
+	private:
+		template<typename TShader>
+		void BindBuffer(GDI * gdi, unsigned index, GpuBuffer & buffer)
+		{
+			static_assert(false, "null shader type");
+		}
+		template<>
+		void BindBuffer<VertexShader>(GDI * gdi, unsigned index, GpuBuffer & buffer)
+		{
+			gdi->GetDeviceContext()->VSSetConstantBuffers(mRenderStage.GetShader<VertexShader>()->GetCBufferSlot(index), 1, &buffer.buffer);
+		}
+		template<>
+		void BindBuffer<PixelShader>(GDI * gdi, unsigned index, GpuBuffer & buffer)
+		{
+			gdi->GetDeviceContext()->PSSetConstantBuffers(mRenderStage.GetShader<PixelShader>()->GetCBufferSlot(index), 1, &buffer.buffer);
+		}
+		template<>
+		void BindBuffer<GeometryShader>(GDI * gdi, unsigned index, GpuBuffer & buffer)
+		{
+			gdi->GetDeviceContext()->GSSetConstantBuffers(mRenderStage.GetShader<GeometryShader>()->GetCBufferSlot(index), 1, &buffer.buffer);
+		}
+	public:
+		template<typename TShader>
+		void BindConstantBuffer(unsigned index)
+		{
+			auto & context = Context::Current();
+			auto & gdi = context.QueryGraphicsDeviceInterface();
+			auto & renderer = context.QueryRenderer();
+			auto & cb = mRenderStage.GetConstantBuffer<TShader>();
+			auto buffer = renderer.QueryUnusedGpuConstantBuffer(mRenderStage.GetShader<TShader>()->GetCBufferSize(index));
+			gdi.CopyToBuffer(buffer, cb[index].GetBufferPoint());
+			BindBuffer<TShader>(&gdi, index, buffer);
+		}
+
+		DefaultRenderCommand(char * vertices, unsigned int vertexCount, unsigned vertexSize, Index * indices, unsigned int indexCount, const RenderStage& renderStage) :
+			mVertices(vertices), mVertexCount(vertexCount), mVertexSize(vertexSize), mIndices(indices), mIndexCount(indexCount), mRenderStage(renderStage) {  };
+		static DefaultRenderCommand* MakeRenderCommand(const BindingBridge& bbr, const PolygonPleIndex& index,
+			const RenderStage& renderStage);
+
+		~DefaultRenderCommand();
+		virtual void Exec() override;
+	};
+
 }

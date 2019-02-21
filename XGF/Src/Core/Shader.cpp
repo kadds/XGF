@@ -476,7 +476,7 @@ namespace XGF {
 		if (shader != nullptr && shader->GetSamplerStateCount() > 0)
 		{
 			for (unsigned int i = 0; i < shader->GetSamplerStateCount(); i++)
-				ss.push_back(SamplerState::LineWrap);
+				ss.emplace_back();
 		}
 	};
 
@@ -502,40 +502,30 @@ namespace XGF {
 		return size;
 	}
 
-	bool ShaderStage::EqualsWithShaders(const Shaders & shaders)
+	RenderResource::RenderResource(Shaders shaders)
 	{
-		return shaders.vs == vs && shaders.ps == ps && shaders.gs == gs;
-	}
-	void ShaderStage::Initialize(VertexShader * vs, PixelShader * ps, GeometryShader * gs)
-	{
-		this->vs = vs;
-		this->gs = gs;
-		this->ps = ps;
-		mRasterizerState = RasterizerState::SolidAndCutBack;
-		mDepthStencilState = DepthStencilState::DepthEnable;
-		mBlendState = BlendState::NoneBlend;
-		mTopologyMode = TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-		InitializeConstantBuffer(vs, mVSCBuffer);
-		InitializeConstantBuffer(ps, mPSCBuffer);
-		InitializeConstantBuffer(gs, mGSCBuffer);
-
-		if (vs->GetTextureCount() > 0)
-			mVSTexture.resize(vs->GetTextureCount());
-		if (ps != nullptr && ps->GetTextureCount() > 0)
-			mPSTexture.resize(ps->GetTextureCount());
-		if (gs != nullptr && gs->GetTextureCount() > 0)
-			mGSTexture.resize(gs->GetTextureCount());
-		InitializeSampler(vs, mVSSamplerState);
-		InitializeSampler(ps, mPSSamplerState);
-		InitializeSampler(gs, mGSSamplerState);
+		ReCreate(shaders);
 	}
 
-	void ShaderStage::Initialize(Shaders shaders)
+	void RenderResource::ReCreate(Shaders shaders)
 	{
-		Initialize(shaders.vs, shaders.ps, shaders.gs);
+		mShaders = shaders;
+		InitializeConstantBuffer(mShaders.vs, mVSCBuffer);
+		InitializeConstantBuffer(mShaders.ps, mPSCBuffer);
+		InitializeConstantBuffer(mShaders.gs, mGSCBuffer);
+
+		if (mShaders.vs->GetTextureCount() > 0)
+			mVSTexture.resize(mShaders.vs->GetTextureCount());
+		if (mShaders.ps != nullptr && mShaders.ps->GetTextureCount() > 0)
+			mPSTexture.resize(mShaders.ps->GetTextureCount());
+		if (mShaders.gs != nullptr && mShaders.gs->GetTextureCount() > 0)
+			mGSTexture.resize(mShaders.gs->GetTextureCount());
+		InitializeSampler(mShaders.vs, mVSSamplerState);
+		InitializeSampler(mShaders.ps, mPSSamplerState);
+		InitializeSampler(mShaders.gs, mGSSamplerState);
 	}
 
-	void ShaderStage::Shutdown()
+	void RenderResource::Clear()
 	{
 		ShutdownConstantBuffer(mVSCBuffer);
 		ShutdownConstantBuffer(mPSCBuffer);
@@ -546,100 +536,59 @@ namespace XGF {
 		ShutdownSampler(mGSSamplerState);
 	}
 
-	void ShaderStage::SetTopologyMode(TopologyMode topologyMode)
+	RenderResource::~RenderResource()
 	{
-		mTopologyMode = topologyMode;
+		Clear();
 	}
 
-	void ShaderStage::SetBlendState(BlendState bs)
-	{
-		mBlendState = bs;
-	}
 
-	void ShaderStage::SetDepthStencilState(DepthStencilState ds)
+	void RenderResource::CopyToConstantBuffer(std::vector<StageConstantBuffer>& target, Shader* shader, unsigned index,
+	                                       int offset, std::pair<const void *, size_t> * ptr, size_t size)
 	{
-		mDepthStencilState = ds;
-	}
-
-	void ShaderStage::SetRasterizerState(RasterizerState rs)
-	{
-		mRasterizerState = rs;
-	}
-
-	BlendState ShaderStage::GetBlendState()
-	{
-		return mBlendState;
-	}
-
-	void ShaderStage::SetVSConstantBuffer(unsigned int index, const void * data)
-	{
-		if (index < vs->GetCBufferCount())
-			memcpy(mVSCBuffer[index].GetBufferPoint(), data, mVSCBuffer[index].GetSize());
-		else
-			XGF_Warn(Shader, "The index in the VS constant buffer is out of range");
-	}
-
-	void ShaderStage::SetGSConstantBuffer(unsigned int index, const void * data)
-	{
-		if (index < gs->GetCBufferCount())
-			memcpy(mGSCBuffer[index].GetBufferPoint(), data, mGSCBuffer[index].GetSize());
-		else
-			XGF_Warn(Shader, "The index in the GS constant buffer is out of range");
-	}
-
-	void ShaderStage::SetPSConstantBuffer(unsigned int index, const void * data)
-	{
-		if (index < ps->GetCBufferCount())
-			memcpy(mPSCBuffer[index].GetBufferPoint(), data, mPSCBuffer[index].GetSize());
-		else
-			XGF_Warn(Shader, "The index in the PS constant buffer is out of range");
-	}
-	void ShaderStage::SetPSConstantBuffer(unsigned int index, std::function<void(void *, int size)> func)
-	{
-		if (index < ps->GetCBufferCount())
+		if (index < shader->GetCBufferCount())
 		{
-			func(mPSCBuffer[index].GetBufferPoint(), mPSCBuffer[index].GetSize());
+			auto dst = target[index].GetBufferPoint();
+			size_t start = static_cast<size_t>(offset);
+			for (auto i = 0; i < size; i++)
+			{
+				auto & value = ptr[i];
+				memcpy((char *)dst + start, value.first, value.second);
+				start += value.second;
+			}
+			if(start > target[index].GetSize())
+			{
+				XGF_Warn(Shader, "The offset in the constant buffer is out of range.", "offset: ", offset);
+			}
 		}
 		else
-			XGF_Warn(Shader, "The index in the PS constant buffer is out of range");
+			XGF_Warn(Shader, "The index in the constant buffer is out of range.");
 	}
 
-
-	void ShaderStage::SetVSSamplerState(unsigned int index, SamplerState ss)
+	void RenderResource::CopyToConstantBuffer(std::vector<StageConstantBuffer>& target, Shader* shader, unsigned index,
+	                                       std::function<void(void*, size_t size)> func)
 	{
-		XGF_ASSERT(index < vs->mSamplerState.size());
-		mVSSamplerState[index] = ss;
+		if (index < shader->GetCBufferCount())
+		{
+			func(target[index].GetBufferPoint(), target[index].GetSize());
+		}
+		else
+			XGF_Warn(Shader, "The index in the constant buffer is out of range.");
 	}
 
-	void ShaderStage::SetPSSamplerState(unsigned int index, SamplerState ss)
+	void RenderResource::SetSamplerState(std::vector<SamplerState>& states, Shader* shader, unsigned index,
+	                                  SamplerState ss)
 	{
-		XGF_ASSERT(index < ps->mSamplerState.size());
-		mPSSamplerState[index] = ss;
+		XGF_ASSERT(index < shader->mSamplerState.size());
+		states[index] = ss;
 	}
 
-	void ShaderStage::SetGSSamplerState(unsigned int index, SamplerState ss)
+	void RenderResource::SetTexture(std::vector<Texture*>& textures, Shader * shader, unsigned index, Texture* texture)
 	{
-		XGF_ASSERT(index < gs->mSamplerState.size());
-		mGSSamplerState[index] = ss;
+		XGF_ASSERT(index < shader->mTexture2D.size());
+		textures[index] = texture;
 	}
 
-	void ShaderStage::SetVSTexture(unsigned int index, Texture * texture)
-	{
-		XGF_ASSERT(index < vs->mTexture2D.size());
-		mVSTexture[index] = texture;
-	}
-	void ShaderStage::SetPSTexture(unsigned int index, Texture * texture)
-	{
-		XGF_ASSERT(index < ps->mTexture2D.size());
-		mPSTexture[index] = texture;
-	}
-
-	void ShaderStage::SetGSTexture(unsigned int index, Texture * texture)
-	{
-		XGF_ASSERT(index < gs->mTexture2D.size());
-		mGSTexture[index] = texture;
-	}
-	void ShaderStage::BindStage()
+	void RawRenderStage::BindStage()
 	{
 		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
 
@@ -647,16 +596,22 @@ namespace XGF {
 		dev->VSSetShader(vs->mVertexShader, 0, 0);
 		if (ps != nullptr)
 			dev->PSSetShader(ps->mPixelShader, 0, 0);
+		else
+			dev->PSSetShader(0, 0, 0);
 		if (gs != nullptr)
 			dev->GSSetShader(gs->mGeometryShader, 0, 0);
+		else
+			dev->GSSetShader(0, 0, 0);
 		dev->IASetInputLayout(vs->mInputLayout);
 		dev->IASetPrimitiveTopology(mTopologyMode);
+		ID3D11ShaderResourceView * tex;
 		if (!mVSTexture.empty())
 			for (unsigned i = 0; i < vs->GetTextureCount(); i++)
 				if (mVSTexture[i] != nullptr)
 				{
 					mVSTexture[i]->UpdateTexture();
-					dev->VSSetShaderResources(vs->GetTextureSlot(i), 1, mVSTexture[i]->GetRawTexturePtr());
+					tex = mVSTexture[i]->GetRawTexture();
+					dev->VSSetShaderResources(vs->GetTextureSlot(i), 1, &tex);
 				}
 				else { XGF_Warn(Shader, "Invalid texture in vs"); }
 		if (!mPSTexture.empty())
@@ -664,7 +619,8 @@ namespace XGF {
 				if (mPSTexture[i] != nullptr)
 				{
 					mPSTexture[i]->UpdateTexture();
-					dev->PSSetShaderResources(ps->GetTextureSlot(i), 1, mPSTexture[i]->GetRawTexturePtr());
+					tex = mPSTexture[i]->GetRawTexture();
+					dev->PSSetShaderResources(ps->GetTextureSlot(i), 1, &tex);
 				}
 				else { XGF_Warn(Shader, "Invalid texture in ps"); }
 		if (!mGSTexture.empty())
@@ -672,7 +628,8 @@ namespace XGF {
 				if (mGSTexture[i] != nullptr)
 				{
 					mGSTexture[i]->UpdateTexture();
-					dev->GSSetShaderResources(gs->GetTextureSlot(i), 1, mGSTexture[i]->GetRawTexturePtr());
+					tex = mGSTexture[i]->GetRawTexture();
+					dev->GSSetShaderResources(gs->GetTextureSlot(i), 1, &tex);
 				}
 				else { XGF_Warn(Shader, "Invalid texture in gs"); }
 		gdi.SetBlendState(mBlendState);
@@ -681,32 +638,32 @@ namespace XGF {
 		if (!mVSSamplerState.empty())
 			for (unsigned i = 0; i < vs->GetSamplerStateCount(); i++)
 			{
-				sps = gdi.GetRawSamplerState(mVSSamplerState[i]);
+				sps = mVSSamplerState[i].GetPtr<ID3D11SamplerState>();
 				dev->VSSetSamplers(vs->GetSamplerStateSlot(i), 1, &sps);
 			}
 		if (!mPSSamplerState.empty())
 			for (unsigned i = 0; i < ps->GetSamplerStateCount(); i++)
 			{
-				sps = gdi.GetRawSamplerState(mPSSamplerState[i]);
+				sps = mPSSamplerState[i].GetPtr<ID3D11SamplerState>();
 				dev->PSSetSamplers(ps->GetSamplerStateSlot(i), 1, &sps);
 			}
 		if (!mGSSamplerState.empty())
 			for (unsigned i = 0; i < gs->GetSamplerStateCount(); i++)
 			{
-				sps = gdi.GetRawSamplerState(mGSSamplerState[i]);
+				sps = mGSSamplerState[i].GetPtr<ID3D11SamplerState>();
 				dev->GSSetSamplers(gs->GetSamplerStateSlot(i), 1, &sps);
 			}
 		gdi.SetDepthStencilState(mDepthStencilState);
 		gdi.SetRasterizerState(mRasterizerState);
 	}
 
-	void ShaderStage::UnBindStage()
+	void RawRenderStage::UnBindStage()
 	{
 		void* null = 0;
 		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
 
 		auto dev = gdi.GetDeviceContext();
-		dev->VSSetShader((ID3D11VertexShader *)null, 0, 0);
+		dev->VSSetShader(0, 0, 0);
 		if (!mVSTexture.empty())
 			for (unsigned i = 0; i < vs->GetTextureCount(); i++)
 				if (mVSTexture[i] != nullptr)
@@ -722,10 +679,45 @@ namespace XGF {
 					dev->GSSetShaderResources(gs->GetTextureSlot(i), 1, (ID3D11ShaderResourceView **)(&null));
 
 		if (ps != nullptr)
-			dev->PSSetShader((ID3D11PixelShader *)null, 0, 0);
+			dev->PSSetShader(0, 0, 0);
 		if (gs != nullptr)
-			dev->GSSetShader((ID3D11GeometryShader *)null, 0, 0);
+			dev->GSSetShader(0, 0, 0);
 
+	}
+
+	RawRenderStage::RawRenderStage(const RenderStage& ss): mVSSamplerState(ss.GetRenderResource()->GetSamplerState<VertexShader>().size())
+		,mPSSamplerState(ss.GetRenderResource()->GetSamplerState<PixelShader>().size())
+		, mGSSamplerState(ss.GetRenderResource()->GetSamplerState<GeometryShader>().size())
+		, mVSCBuffer(ss.GetRenderResource()->GetConstantBuffer<VertexShader>())
+		, mPSCBuffer(ss.GetRenderResource()->GetConstantBuffer<PixelShader>())
+		, mGSCBuffer(ss.GetRenderResource()->GetConstantBuffer<GeometryShader>())
+		, mVSTexture(ss.GetRenderResource()->GetTexture<VertexShader>())
+		, mPSTexture(ss.GetRenderResource()->GetTexture<PixelShader>())
+		, mGSTexture(ss.GetRenderResource()->GetTexture<GeometryShader>()), 
+		mTopologyMode(ss.GetRenderState()->GetTopologyMode())
+		, vs(ss.GetRenderResource()->GetShader<VertexShader>())
+		, ps(ss.GetRenderResource()->GetShader<PixelShader>())
+		, gs(ss.GetRenderResource()->GetShader<GeometryShader>())
+	{
+		auto& gdi = Context::Current().QueryGraphicsDeviceInterface();
+		mRasterizerState = gdi.GetRasterizerState(ss.GetRenderState()->GetRasterizerState());
+		mDepthStencilState = gdi.GetDepthStencilState(ss.GetRenderState()->GetDepthStencilState());
+		mBlendState = gdi.GetBlendState(ss.GetRenderState()->GetBlendState());
+		int i = 0;
+		for(auto & it : ss.GetRenderResource()->GetSamplerState<VertexShader>())
+		{
+			mVSSamplerState[i++] = gdi.GetSamplerState(it);
+		}
+		i = 0;
+		for (auto & it : ss.GetRenderResource()->GetSamplerState<PixelShader>())
+		{
+			mPSSamplerState[i++] = gdi.GetSamplerState(it);
+		}
+		i = 0;
+		for (auto & it : ss.GetRenderResource()->GetSamplerState<GeometryShader>())
+		{
+			mGSSamplerState[i++] = gdi.GetSamplerState(it);
+		}
 	}
 
 	//void ComputeGPU::Initialize(ComputeShader * cs, unsigned int buffersize)

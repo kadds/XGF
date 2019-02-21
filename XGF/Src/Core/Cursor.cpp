@@ -2,6 +2,7 @@
 #include "../../Include/ShaderManager.hpp"
 #include "../../Include/Context.hpp"
 #include "../../Include/Renderer.hpp"
+#include "../../Include/SystemShaders.hpp"
 
 namespace XGF
 {
@@ -15,9 +16,10 @@ namespace XGF
 
 	void Cursor::Initialize()
 	{
-		mShaderStage.Initialize(Context::Current().QueryShaderManager().GetBasicShaders(false, true, false));
-		mShaderStage.SetBlendState(BlendState::AddOneOneAdd);
-		mShaderStage.SetDepthStencilState(DepthStencilState::DepthDisable);
+		mRenderResource = std::make_unique<RenderResource>(SystemShaders::GetBasicShaders(SystemShaders::BasicShader_Texture));
+		mRenderState.GetDepthStencilState().SetDepthEnable(false);
+		mRenderState.GetBlendState().GetRenderTarget(0).SetBlendEnable(true);
+		mRenderState.GetBlendState().GetRenderTarget(0).SetDestBlendAlpha(Blend::ONE);
 		mBbrg.AddBinder(mRc.mPolygon);
 		mBbrg.AddBinder(mPtBinder);
 		mSize.x = 16;
@@ -27,16 +29,16 @@ namespace XGF
 
 	void Cursor::Shutdown()
 	{
-		mShaderStage.Shutdown();
+		mRenderResource.reset();
 	}
 
 	void Cursor::Draw(const WVPMatrix & wvp)
 	{
-		mShaderStage.SetPSConstantBuffer(0, Color(1.f, 1.f, 1.f, 1.f));
+		mRenderResource->SetConstantBuffer<PixelShader>(0, 0, Color(1.f, 1.f, 1.f, 1.f));
 		if (mUsedStaticTexture)
 		{
 			if (!mIsShow || mTexture == nullptr)  return;
-			mShaderStage.SetVSConstantBuffer(0, &wvp);
+			mRenderResource->SetConstantBuffer<VertexShader>(0, 0, wvp);
 			mRc.SetPositionAndSize(mPosition.x - mPointDeviation.x, mPosition.y - mPointDeviation.y, mSize.x, mSize.y);
 
 			mPtBinder->GetData(1).x = mPtBinder->GetData(0).x = 0.f;
@@ -45,8 +47,9 @@ namespace XGF
 			mPtBinder->GetData(3).y = mPtBinder->GetData(0).y = 0.f;
 
 			mRc.SetZ(0.1f);
-			mShaderStage.SetPSTexture(0, mTexture);
-			Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(mBbrg, *mRc.mPolygonPleIndex.get(), mShaderStage));
+			mRenderResource->SetTexture<PixelShader>(0, mTexture);
+			Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(mBbrg, *mRc.mPolygonPleIndex.get()
+			, RenderStage(mRenderState, mRenderResource.get())));
 		}
 		else
 		{
@@ -60,11 +63,12 @@ namespace XGF
 			mPtBinder->GetData(1).x = mPtBinder->GetData(2).x = x + w;
 			mPtBinder->GetData(2).y = mPtBinder->GetData(3).y = y + h;
 
-			mShaderStage.SetVSConstantBuffer(0, &wvp);
+			mRenderResource->SetConstantBuffer<VertexShader>(0, 0, wvp);
 			mRc.SetPositionAndSize(mPosition.x - mPointDeviation.x, mPosition.y - mPointDeviation.y, mSize.x, mSize.y);
 			mRc.SetZ(0.1f);
-			mShaderStage.SetPSTexture(0, mTexture);
-			Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(mBbrg, *mRc.mPolygonPleIndex.get(), mShaderStage));
+			mRenderResource->SetTexture<PixelShader>(0, mTexture);
+			Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(mBbrg, *mRc.mPolygonPleIndex.get()
+			, RenderStage(mRenderState, mRenderResource.get())));
 		}
 	}
 
@@ -83,7 +87,7 @@ namespace XGF
 	void Cursor::Tick(float time)
 	{
 		mPassTime += time;
-		if (!mUsedStaticTexture)
+		if (!mUsedStaticTexture && mTexture)
 		{
 			mAnimation->Tick(time);
 		}

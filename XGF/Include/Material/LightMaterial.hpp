@@ -3,39 +3,31 @@
 #include "Material.hpp"
 #include "./../Light/Light.hpp"
 #include "../ShaderManager.hpp"
+#include "../Shadow.hpp"
 
 namespace XGF::Shape
 {
-	class LightMaterial: public Material
+	class LightMaterial: public Material, public ReceiveShadowAble
 	{
 	public:
-		LightMaterial(){  }
-
-		virtual bool CanLinkWithLight() override;
-
+		LightMaterial(MaterialType type);
 		int GetLightGroup() const;
 
 		void SetLightGroup(int lightGroup);
 
-		std::vector<Light *>* GetLights();
-
-		void BeginSetLights();
-		void AddLight(Light* light);
-
-		void RemoveLight(Light* light);
-		virtual  void EndSetLights();
-
-		virtual  void CompileShader() = 0;
 		bool IsUseViewPosition() const
 		{
 			return mUseViewPosition;
 		}
 
-		bool ShouldWriteBufferLight() const;
+		virtual void OnReceiveShadowPropertyChanged() override;
+		ClassProperty(AmbientLightColor, Color)
+		ClassProperty(CastShadowLights, std::vector<CastShadowAbleLight *>)
+		ClassProperty(NoneCastShadowLights, std::vector<CastShadowAbleLight *>)
 	private:
 		int mLightGroup = 0;
 	protected:
-		std::vector<Light *> mLights[(int)LightType::InvalidValue];
+
 		bool mUseViewPosition;
 	};
 }

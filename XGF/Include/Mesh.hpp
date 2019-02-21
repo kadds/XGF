@@ -2,36 +2,75 @@
 #include "Defines.hpp"
 #include "Geometry/Geometry.hpp"
 #include "Material/Material.hpp"
+#include "Shadow.hpp"
 
 namespace XGF
 {
+	class Camera;
 	namespace Shape
 	{
-		class Mesh
+		class MeshRenderResourceCachePool;
+		class Mesh;
+		class Light;
+		
+		class MeshRenderPath
+		{
+		public:
+			MeshRenderPath(Mesh * mesh){};
+			virtual ~MeshRenderPath() {};
+
+			virtual void Draw(MeshRenderResourceCachePool & cachePool, Camera & camera, Mesh * mesh, std::vector<Light*>& lights) = 0;
+			virtual void Clear(Mesh* mesh, std::vector<Light*>& lights) = 0;
+			virtual void ReCreate(Mesh* mesh, std::vector<Light*>& lights) = 0;
+		protected:
+			bool AddShaders(int key, Shaders shaders);
+
+			Shaders FindShaders(int key);
+
+			void ClearShaders();
+
+		private:
+			std::vector<std::pair<int, Shaders>> mShaders;
+
+		};
+
+		class MeshForwardRenderPath : public MeshRenderPath
+		{
+		private:
+			void DrawBasicMaterial(MeshRenderResourceCachePool & cachePool, const WVPMatrix & wvp, Mesh * mesh);
+			void DrawPhongOrLambertMaterial(MeshRenderResourceCachePool& cachePool, const WVPMatrix& wvp, Mesh* mesh,
+			                       std::vector<Light*>& lights, Texture* textureMap,
+			                       std::function<size_t(void* ptr, size_t size)> structData,
+			                       std::function<size_t(void* ptr)> customData);
+
+			void DrawPhongMaterial(MeshRenderResourceCachePool & cachePool, const WVPMatrix & wvp, Mesh * mesh, std::vector<Light*>& lights, Point viewPosition);
+			void DrawLambertMaterial(MeshRenderResourceCachePool& cachePool, const WVPMatrix& wvp, Mesh* mesh, std::vector<Light*>& lights);
+		public:
+			void Draw(MeshRenderResourceCachePool& cachePool, Camera& camera, Mesh* mesh,
+				std::vector<Light*>& lights) override;
+
+			MeshForwardRenderPath(Mesh* mesh): MeshRenderPath(mesh)
+			{
+
+			}
+
+			virtual void Clear(Mesh* mesh, std::vector<Light*>& lights)
+			{
+				
+			}
+
+			virtual void ReCreate(Mesh* mesh, std::vector<Light*>& lights);
+		};
+
+		class Mesh : public CastShadowAble
 		{
 		public:
 			Mesh(std::unique_ptr<Geometry> geometry, std::unique_ptr<Material> material)
 				: mGeometry(std::move(geometry)), mMaterial(std::move(material))
 			{
-				if(!mMaterial->GetShaders().IsNullShaders())
-					GenerateBindingBridge(mMaterial->GetShaders().vs->HasSemanticNormal(),
-						mMaterial->GetShaders().vs->HasSemanticTexcoord(), false);
 			}
 			~Mesh() = default;
 
-			std::unique_ptr<Material> LockMaterial()
-			{
-				return std::move(mMaterial);
-			}
-
-			BindingBridge & GetBindingBridge()
-			{
-				return mBindingBridge;
-			}
-			void UnLockMaterial(std::unique_ptr<Material> m)
-			{
-				mMaterial = std::move(m);
-			}
 			Material * GetMaterial() const
 			{
 				return mMaterial.get();
@@ -53,24 +92,23 @@ namespace XGF
 			{
 				return mGeometry.get();
 			}
-			void GenerateBindingBridge(bool normal, bool uv, bool data)
+			MeshRenderPath * GetMeshRenderPath() const
 			{
-				if (mBindingBridge.Count() > 0)
-				{
-					mBindingBridge.Clear();
-				}
-				mBindingBridge.AddBinder(mGeometry->GetVertexBinders());
-				if(normal)
-					mBindingBridge.AddBinder(mGeometry->GetNormalBinders());
-				if(uv)
-					mBindingBridge.AddBinder(mGeometry->GetUVBinders());
-				if(data)
-					mBindingBridge.AddBinder(mGeometry->GetDataBinders());
+				return mRenderPath.get();
 			}
 		protected:
+			void SetMeshRenderPath(std::unique_ptr<MeshRenderPath> renderPath)
+			{
+				mRenderPath = std::move(renderPath);
+			}
+			template<typename RenderPath> friend class MeshRenderer;
 			std::unique_ptr<Geometry> mGeometry;
 			std::unique_ptr<Material> mMaterial;
-			BindingBridge mBindingBridge;
+			std::unique_ptr<MeshRenderPath> mRenderPath;
+			void OnCastShadowPropertyChanged() override
+			{
+				//mRenderPath->ReCreate(this);
+			};
 		};
 	}
 }

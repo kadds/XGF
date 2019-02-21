@@ -71,7 +71,7 @@ namespace XGF
 		bool mInvalid;
 		DWORD id;
 	private:
-		DISALLOW_COPY_AND_ASSIGN(DX8Input);
+		DisableCopyAndAssign(DX8Input);
 	};
 
 #define MOUSE_BUTTON_LEFT ( 1 << 0 )

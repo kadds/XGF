@@ -1,9 +1,10 @@
 #pragma once
 #include "Light.hpp"
+#include "../Camera.hpp"
 
 namespace XGF::Shape
 {
-	class SpotLight : public Light
+	class SpotLight : public CastShadowAbleLight
 	{
 	public:
 		SpotLight(const Point& position, const Point& direction, const Color& lightColor,
@@ -30,10 +31,17 @@ namespace XGF::Shape
 		Point GetAttenuation() const;
 
 		virtual int CopyConstantBuffer(void* dest) override;
+
+		virtual LightShadowMatrix GetLightMatrix() override;
+
+		void SetShadowArea(float fov, float xnear, float xfar);
+
 	private:
-		Point mDirection;
 		float mCutoffOuter;
 		float mCutoff;
 		Point mAttenuation;
+		float mNear;
+		float mFar;
+		float mFov;
 	};
 }

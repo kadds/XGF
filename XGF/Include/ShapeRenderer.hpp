@@ -27,7 +27,8 @@ namespace XGF
 		void DrawTriangle(const Position & a, const Position & b, const Position & c, float z, const Color & cc);
 		void DrawPolygonList(const Position &points, int count, float z, const Color & color);
 	private:
-		ShaderStage mShaderStage;
+		RenderState mRenderState;
+		RenderResource mRenderResource;
 	};
 
 

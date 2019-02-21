@@ -39,7 +39,9 @@ namespace XGF
 		void SetXColor(SM::Color & cx);
 		void SetZColor(SM::Color & cz);
 	private:
-		ShaderStage mShaderStage;
+		RenderState mRenderState;
+		RenderResource mRenderResource;
+
 		//MeshData * mMeshData;
 		float mWidth;
 		float mHeight;

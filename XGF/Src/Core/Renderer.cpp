@@ -3,63 +3,28 @@
 #include "../../Include/Polygon.hpp"
 #include "../../Include/Context.hpp"
 #include "../../Include/DebugInscriber.hpp"
+#include "../../Include/Logger.hpp"
 
 namespace XGF
 {
-
-	#pragma region Bind Constant Buffer
-	void DefaultRenderCommand::BindVSConstantBuffer(unsigned index)
-	{
-		auto & context = Context::Current();
-		auto & gdi = context.QueryGraphicsDeviceInterface();
-		auto & cb = mShaderStage.GetVSConstantBuffer();
-		auto buffer = context.QueryRenderer().QueryUnusedGpuConstantBuffer(mShaderStage.GetVSShader()->GetCBufferSize(index));
-		gdi.CopyToBuffer(buffer, cb[index].GetBufferPoint());
-		gdi.GetDeviceContext()->VSSetConstantBuffers(mShaderStage.GetVSShader()->GetCBufferSlot(index), 1, &buffer.buffer);
-
-	}
-
-	void DefaultRenderCommand::BindPSConstantBuffer(unsigned index)
- 	{
-		auto & context = Context::Current();
-		auto & gdi = context.QueryGraphicsDeviceInterface();
-		auto & cb = mShaderStage.GetPSConstantBuffer();
-		auto buffer = context.QueryRenderer().QueryUnusedGpuConstantBuffer(mShaderStage.GetPSShader()->GetCBufferSize(index));
-		gdi.CopyToBuffer(buffer, cb[index].GetBufferPoint());
-		gdi.GetDeviceContext()->PSSetConstantBuffers(mShaderStage.GetPSShader()->GetCBufferSlot(index), 1, &buffer.buffer);
-
-	}
-
-	void DefaultRenderCommand::BindGSConstantBuffer(unsigned index)
-	{
-		auto & context = Context::Current();
-		auto & gdi = context.QueryGraphicsDeviceInterface();
-		auto & cb = mShaderStage.GetGSConstantBuffer();
-		auto buffer = context.QueryRenderer().QueryUnusedGpuConstantBuffer(mShaderStage.GetGSShader()->GetCBufferSize(index));
-		gdi.CopyToBuffer(buffer, cb[index].GetBufferPoint());
-		gdi.GetDeviceContext()->VSSetConstantBuffers(mShaderStage.GetGSShader()->GetCBufferSlot(index), 1, &buffer.buffer);
-	}
-	#pragma endregion 
-
 	DefaultRenderCommand* DefaultRenderCommand::MakeRenderCommand(const BindingBridge& bbr,
 		const PolygonPleIndex& index,
-		const ShaderStage& shaderStage)
+		const RenderStage& renderStage)
 	{
-		const size_t memsize = bbr.GetAllPolygonPleMemSize();
+		const unsigned memsize = static_cast<unsigned>(bbr.GetAllPolygonPleMemSize());
 		char* vertices = new char[memsize];
 		std::vector<float> vertices1(memsize / sizeof(float));
 		auto indices = new Index[index.GetActualCount()];
-		auto cmd = new DefaultRenderCommand(vertices, bbr.GetBinder(0)->GetActualCount(), memsize, indices, index.GetActualCount());
+		auto cmd = new DefaultRenderCommand(vertices, bbr.GetBinder(0)->GetActualCount(), memsize, indices, index.GetActualCount(), renderStage);
 		unsigned int start = 0u;
-		unsigned int chunk = shaderStage.GetVSShader()->GetStrideAllSizeAtSlot(0);
-		const unsigned int * stride = shaderStage.GetVSShader()->GetStride();
+		unsigned int chunk = renderStage.GetRenderResource()->GetShader<VertexShader>()->GetStrideAllSizeAtSlot(0);
+		const unsigned int * stride = renderStage.GetRenderResource()->GetShader<VertexShader>()->GetStride();
  		for (int i = 0; i < bbr.Count(); i++)
 		{
 			bbr.GetBinder(i)->CopyTo(vertices + start, chunk);
 			bbr.GetBinder(i)->CopyTo((char*)( vertices1.data()) + start, chunk);
 			start += stride[i];
 		}
-		cmd->mShaderStage = shaderStage;
 		index.CopyTo(indices, 0);
 		return cmd;
 	}
@@ -77,20 +42,20 @@ namespace XGF
 		unsigned int offset[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT]{ 0 };
 
 		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
-		mShaderStage.BindStage();
-		if (!mShaderStage.GetVSConstantBuffer().empty())
-			for (int i = 0; i < mShaderStage.GetVSShader()->GetCBufferCount(); i++)
-				BindVSConstantBuffer(i);
-		if (!mShaderStage.GetPSConstantBuffer().empty())
-			for (int i = 0; i < mShaderStage.GetPSShader()->GetCBufferCount(); i++)
-				BindPSConstantBuffer(i);
-		if (!mShaderStage.GetGSConstantBuffer().empty())
-			for (int i = 0; i < mShaderStage.GetGSShader()->GetCBufferCount(); i++)
-				BindGSConstantBuffer(i);
+		mRenderStage.BindStage();
+		if (!mRenderStage.GetConstantBuffer<VertexShader>().empty())
+			for (int i = 0; i < mRenderStage.GetShader<VertexShader>()->GetCBufferCount(); i++)
+				BindConstantBuffer<VertexShader>(i);
+		if (!mRenderStage.GetConstantBuffer<PixelShader>().empty())
+			for (int i = 0; i < mRenderStage.GetShader<PixelShader>()->GetCBufferCount(); i++)
+				BindConstantBuffer<PixelShader>(i);
+		if (!mRenderStage.GetConstantBuffer<GeometryShader>().empty())
+			for (int i = 0; i < mRenderStage.GetShader<GeometryShader>()->GetCBufferCount(); i++)
+				BindConstantBuffer<GeometryShader>(i);
 
 
 		auto vertexBuffer = Context::Current().QueryRenderer().QueryUnusedGpuVertexBuffer(mVertexSize);
-		auto stride = mShaderStage.GetVSShader()->GetStrideAllSizeAtSlot(0);
+		auto stride = mRenderStage.GetShader<VertexShader>()->GetStrideAllSizeAtSlot(0);
 		gdi.GetDeviceContext()->IASetVertexBuffers(0, 1, &vertexBuffer.buffer, &stride, offset);
 		memcpy_s(gdi.Map(vertexBuffer), mVertexSize, mVertices, mVertexSize);
 		gdi.UnMap(vertexBuffer);
@@ -107,7 +72,7 @@ namespace XGF
 			gdi.GetDeviceContext()->Draw(mVertexCount, 0);
 		}
 
-		mShaderStage.UnBindStage();
+		mRenderStage.UnBindStage();
 	}
 
 	void RenderQueue::Reorder()
@@ -135,7 +100,7 @@ namespace XGF
 		mRenderQueues.clear();
 	}
 
-	RenderTargetPass& RenderResource::GetCurrentPass()
+	RenderTargetPass& RendererFrameResource::GetCurrentPass()
 	{
 		if (mPassUsedIndex < 0)
 		{
@@ -154,7 +119,7 @@ namespace XGF
 		return *mPass[mPassUsedIndex];
 	}
 
-	void RenderResource::NewFrame()
+	void RendererFrameResource::NewFrame()
 	{
 		mVertices.insert(mVertices.end(), mVerticesUsed.begin(), mVerticesUsed.end());
 		mVerticesUsed.clear();
@@ -175,7 +140,11 @@ namespace XGF
 		mPass.clear();
 		mPassUsedIndex = -1;
 	}
-
+	void Renderer::ClearDepthStencilBuffer()
+	{
+		auto & pass = GetCurrentResource().GetCurrentPass();
+		pass.ClearDepthStencilBuffer();
+	}
 	void Renderer::Clear(const Color& color)
 	{
 		auto & pass = GetCurrentResource().GetCurrentPass();
@@ -192,8 +161,8 @@ namespace XGF
 		mTag = true;
 		GetCurrentRenderResource().SetRenderedFlag();
 		GetCurrentResource().SetRenderedFlag();
-		GetCurrentResource().mDefaultPass.mTarget = gdi.GetDisplayRenderTarget();
-		GetCurrentRenderResource().mDefaultPass.mTarget = gdi.GetDisplayRenderTarget();
+		GetCurrentResource().mDefaultPass.mTarget = gdi.GetDisplayFrameBuffer();
+		GetCurrentRenderResource().mDefaultPass.mTarget = gdi.GetDisplayFrameBuffer();
 
 	}
 
@@ -242,33 +211,48 @@ namespace XGF
 		gdi.Destroy();
 	}
 
-	void Renderer::AppendAndSetRenderTarget(RenderTarget* target)
+	void Renderer::AppendAndSetFrameTarget(FrameBuffer* target)
 	{
-		SetRenderTarget(AppendRenderTarget(target));
+		SetFrameTarget(AppendFrameTarget(target));
 	}
 
-	void Renderer::AppendBeforeDrawCallback(const std::string & name, RendererDrawCallback callback)
+	FrameBuffer * Renderer::GetCurrentFrameTarget()
 	{
-		std::lock_guard<std::recursive_mutex> lock(mDrawMutex);
-		mBeforeDrawCallbackTemp.emplace_back(callback, name, true);
+		return GetCurrentResource().GetCurrentPass().mTarget;
 	}
 
-	void Renderer::AppendAfterDrawCallback(const std::string & name, RendererDrawCallback callback)
+	void Renderer::AppendBeforeDrawCallback(const std::string & name, RendererDrawCallbackFunc callback)
 	{
 		std::lock_guard<std::recursive_mutex> lock(mDrawMutex);
-		mAfterDrawCallbackTemp.emplace_back(callback, name, true);
+		mBeforeDrawCallbackTemp.emplace_back(DrawCallback(callback, name, -1), true);
+	}
+
+	void Renderer::AppendAfterDrawCallback(const std::string & name, RendererDrawCallbackFunc callback)
+	{
+		std::lock_guard<std::recursive_mutex> lock(mDrawMutex);
+		mAfterDrawCallbackTemp.emplace_back(DrawCallback(callback, name, -1), true);
 	}
 
 	void Renderer::RemoveBeforeDrawCallback(const std::string & name)
 	{
 		std::lock_guard<std::recursive_mutex> lock(mDrawMutex);
-		mBeforeDrawCallbackTemp.emplace_back(nullptr, name, false);
+		mBeforeDrawCallbackTemp.emplace_back(DrawCallback(nullptr, name, -1), false);
 	}
 
 	void Renderer::RemoveAfterDrawCallback(const std::string & name)
 	{
 		std::lock_guard<std::recursive_mutex> lock(mDrawMutex);
-		mAfterDrawCallbackTemp.emplace_back(nullptr, name, false);
+		mAfterDrawCallbackTemp.emplace_back(DrawCallback(nullptr, name, -1), false);
+	}
+
+	void Renderer::AppendBeforeDrawCallbackOnce(RendererDrawCallbackFunc callback)
+	{
+		mBeforeDrawCallbackTemp.emplace_back(DrawCallback(callback, "", 1), true);
+	}
+
+	void Renderer::AppendAfterDrawCallbackOnce(RendererDrawCallbackFunc callback)
+	{
+		mAfterDrawCallbackTemp.emplace_back(DrawCallback(callback, "", 1), true);
 	}
 
 	void Renderer::DrawCommands()
@@ -276,8 +260,12 @@ namespace XGF
 		auto & context = Context::Current();
 		for (auto pass : GetCurrentRenderResource().mPass)
 		{
-			context.QueryGraphicsDeviceInterface().SetRenderTarget(pass->mTarget);
+			pass->mTarget->Bind();
 			pass->mTarget->Clear(pass->mClearColor);
+			if(pass->mClearDepthStencilBuffer)
+			{
+				pass->mTarget->ClearDepthStencilBuffer();
+			}
 			for (auto & renderQueue : pass->mRenderQueues)
 			{
 				renderQueue.Reorder();
@@ -285,10 +273,6 @@ namespace XGF
 				{
 					command->Exec();
 					delete command;
-				}
-				if (!renderQueue.commands.empty())
-				{
-					pass->mTarget->ClearDepthStencilBuffer();
 				}
 				renderQueue.commands.clear();
 			}
@@ -305,24 +289,31 @@ namespace XGF
 			{
 				if(std::get<bool>(drawCallback)) // append
 				{
-					mBeforeDrawCallback.emplace_back(std::get<RendererDrawCallback>(drawCallback), std::get<std::string>(drawCallback));
+					mBeforeDrawCallback.emplace_back(std::get<DrawCallback>(drawCallback));
 				}
 				else // delete from vector
 				{
-					auto & name = std::get<std::string>(drawCallback);
+					auto & name = std::get<DrawCallback>(drawCallback).name;
 					
-					auto it = std::find_if(mBeforeDrawCallback.begin(), mBeforeDrawCallback.end(), [&name](std::pair<RendererDrawCallback, std::string> ele)
+					auto it = std::find_if(mBeforeDrawCallback.begin(), mBeforeDrawCallback.end(), [&name](const DrawCallback & callback)
 					{
-						return ele.second == name;
+						return callback.name == name;
 					});
 					if (it != mBeforeDrawCallback.end())
 						mBeforeDrawCallback.erase(it);
 				}
 			}
+			mBeforeDrawCallbackTemp.clear();
 		}
-		for(int i = 0; i < mBeforeDrawCallback.size(); i++)
+		for (auto it = mBeforeDrawCallback.begin(); it != mBeforeDrawCallback.end();)
 		{
-			mBeforeDrawCallback[i].first(this);
+			it->func(this);
+			if (it->callCount > 0)
+				it->callCount--;
+			if (it->callCount == 0)
+				it = mBeforeDrawCallback.erase(it);
+			else
+				++it;
 		}
 	}
 
@@ -335,24 +326,31 @@ namespace XGF
 			{
 				if (std::get<bool>(drawCallback)) // append
 				{
-					mAfterDrawCallback.emplace_back(std::get<RendererDrawCallback>(drawCallback), std::get<std::string>(drawCallback));
+					mAfterDrawCallback.emplace_back(std::get<DrawCallback>(drawCallback));
 				}
 				else // delete from vector
 				{
-					auto & name = std::get<std::string>(drawCallback);
+					auto & name = std::get<DrawCallback>(drawCallback).name;
 
-					auto it = std::find_if(mAfterDrawCallback.begin(), mAfterDrawCallback.end(), [&name](std::pair<RendererDrawCallback, std::string> ele)
+					auto it = std::find_if(mAfterDrawCallback.begin(), mAfterDrawCallback.end(), [&name](const DrawCallback & callback)
 					{
-						return ele.second == name;
+						return callback.name == name;
 					});
 					if (it != mAfterDrawCallback.end())
 						mAfterDrawCallback.erase(it);
 				}
 			}
+			mAfterDrawCallbackTemp.clear();
 		}
-		for (int i = 0; i < mAfterDrawCallback.size(); i++)
+		for (auto it = mAfterDrawCallback.begin(); it != mAfterDrawCallback.end();)
 		{
-			mAfterDrawCallback[i].first(this);
+			it->func(this);
+			if(it->callCount > 0)
+				it->callCount--;
+			if(it->callCount == 0)
+				it = mAfterDrawCallback.erase(it);
+			else
+				++it;
 		}
 	}
 
@@ -362,7 +360,7 @@ namespace XGF
 		rrs.NewFrame();
 	}
 
-	RenderResource& Renderer::GetCurrentResource()
+	RendererFrameResource& Renderer::GetCurrentResource()
 	{
 		return mResource[mIndexOfResource];
 	}
@@ -377,7 +375,7 @@ namespace XGF
 		return mIndexOfResource;
 	}
 
-	RenderResource& Renderer::GetResource(int index)
+	RendererFrameResource& Renderer::GetResource(int index)
 	{
 		return mResource[index];
 	}
@@ -387,7 +385,7 @@ namespace XGF
 		mIndexOfResource = index;
 	}
 
-	RenderResource& Renderer::GetCurrentRenderResource()
+	RendererFrameResource& Renderer::GetCurrentRenderResource()
 	{
 		return mResource[(mIndexOfResource + 1) % 2];
 	}
@@ -574,7 +572,7 @@ namespace XGF
 		return mFrameRateLimiter.GetStandFrameRate();
 	}
 
-	int Renderer::AppendRenderTarget(RenderTarget* target)
+	int Renderer::AppendFrameTarget(FrameBuffer * target)
 	{
 		auto * targetR = new RenderTargetPass();
 		targetR->mTarget = target;
@@ -582,33 +580,45 @@ namespace XGF
 		return GetCurrentResource().mPass.size() - 1;
 	}
 
-	int Renderer::AppendDefaultRenderTarget()
+	int Renderer::AppendDefaultFrameTarget()
 	{
 		GetCurrentResource().mPass.push_back(&GetCurrentResource().mDefaultPass);
 		return GetCurrentResource().mPass.size() - 1;
 	}
 
-	void Renderer::AppendAndSetDefaultRenderTarget()
+	void Renderer::AppendAndSetDefaultFrameTarget()
 	{
-		SetRenderTarget(AppendDefaultRenderTarget());
+		SetFrameTarget(AppendDefaultFrameTarget());
 	}
 
-	void Renderer::SetDefaultRenderTarget()
+	void Renderer::SetDefaultFrameTarget()
 	{
 		auto & r = GetCurrentResource();
 		for (auto i =  0 ; i < r.mPass.size(); i ++)
 		{
 			if(r.mPass[i] == &r.mDefaultPass)
 			{
-				SetRenderTarget(i);
+				SetFrameTarget(i);
 				return;
 			}
 		}
-		AppendAndSetDefaultRenderTarget();
+		AppendAndSetDefaultFrameTarget();
 	}
 
-	void Renderer::SetRenderTarget(int index)
+	void Renderer::SetFrameTarget(int index)
 	{
 		GetCurrentResource().mPassUsedIndex = index;
+	}
+	void Renderer::SetFrameTarget(FrameBuffer * target)
+	{
+		auto & r = GetCurrentResource();
+		for (auto i = 0; i < r.mPass.size(); i++)
+		{
+			if (r.mPass[i]->mTarget == target)
+			{
+				SetFrameTarget(i);
+				return;
+			}
+		}
 	}
 }

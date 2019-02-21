@@ -73,11 +73,11 @@ public:
 		mFont.Initialize(Tools::GetFontPath(L"msyh"), 16);
 		mTextRenderer.Initialize(&mFont, 240);
 		auto & context = Context::Current();
-		mTextureShaderStage.Initialize(context.QueryShaderManager().GetBasicShaders(false, true, false));
-		mTextureShaderStage.SetBlendState(BlendState::AddZeroOneAdd);
-		mTextureShaderStage.SetDepthStencilState(DepthStencilState::DepthDisable);
+		mRenderResource.ReCreate(SystemShaders::GetBasicShaders(SystemShaders::BasicShader_Texture));
+		mTextureRenderState.GetBlendState().GetRenderTarget(0).SetBlendEnable(true);
+		mTextureRenderState.GetDepthStencilState().SetDepthEnable(false);
 		auto & gdi = context.QueryGraphicsDeviceInterface();
-		mRenderToTextureTarget.Initialize(gdi.GetWidth(), gdi.GetHeight(), DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+		mRenderToTextureTarget.Initialize(gdi.GetWidth(), gdi.GetHeight(), DXGI_FORMAT_R8G8B8A8_UNORM, 0, 1);
 
 		mRc.SetZ(0.001f);
 		mTime = 0.f;
@@ -85,7 +85,7 @@ public:
 	virtual void OnDestroy() override
 	{
 		mRenderToTextureTarget.Shutdown();
-		mTextureShaderStage.Shutdown();
+		mRenderResource.Clear();
 		mTextRenderer.Shutdown();
 		mFont.Shutdown();
 		mShapeRenderer.Shutdown();
@@ -101,10 +101,10 @@ public:
 		mTextRenderer.Begin(wvp);
 		MyRender();
 
-		context.QueryRenderer().AppendAndSetRenderTarget(&mRenderToTextureTarget);
+		context.QueryRenderer().AppendAndSetFrameTarget(&mRenderToTextureTarget);
 		context.QueryRenderer().Clear(Color(0.3f, 0.3f, 0.3f, 1));
 		MyRender();
-		context.QueryRenderer().SetDefaultRenderTarget();
+		context.QueryRenderer().SetDefaultFrameTarget();
 		
 
 		PolygonPleTextureBinder textureBinder(4);
@@ -124,10 +124,12 @@ public:
 		mTextRenderer.End();
 		mShapeRenderer.End();
 
-		mTextureShaderStage.SetVSConstantBuffer(0, &wvp);
-		mTextureShaderStage.SetPSConstantBuffer(0, Color(1.f, 1.f, 1.f, 1.f));
-		mTextureShaderStage.SetPSTexture(0, mRenderToTextureTarget.GetTexture());
-		Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(bb, *mRc.mPolygonPleIndex.get(), mTextureShaderStage));
+		mRenderResource.SetConstantBuffer<VertexShader>(0, 0, wvp);
+		mRenderResource.SetConstantBuffer<PixelShader>(0, 0, Color(1.f, 1.f, 1.f, 1.f));
+		mRenderResource.SetTexture<PixelShader>(0, mRenderToTextureTarget.GetTexture(0));
+		if(mRenderToTextureTarget.GetTexture(0))
+			Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(bb, *mRc.mPolygonPleIndex.get(), 
+				RenderStage(mTextureRenderState, mRenderResource)));
 
 	};
 	virtual void Update(float deltaTime) override
@@ -151,24 +153,20 @@ public:
 	virtual void OnSize(int cx, int cy) override
 	{
 		mCamera.UpdateProject(cx, cy);
-		Context::Current().QueryRenderer().AppendBeforeDrawCallback("beforeTextureTarget", [this, cx, cy](Renderer * renderer)
-		{
-			mRenderToTextureTarget.Shutdown();
-			mRenderToTextureTarget.Initialize(cx, cy, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
-			renderer->RemoveBeforeDrawCallback("beforeTextureTarget");
-		});
+		
 		mRc.SetPositionAndSize(0.f, cy * 2 / 3.f, cx / 3.f, cy / 3.f);
 	};
 
 private:
 	ShapeRenderer mShapeRenderer;
 	OrthoCamera mCamera;
-	RenderTarget mRenderToTextureTarget;
+	FrameBuffer mRenderToTextureTarget;
 	TextureResourceManager mTextureResourceManager;
 	Font mFont;
 	TextRenderer mTextRenderer;
 
-	ShaderStage mTextureShaderStage;
+	RenderState mTextureRenderState;
+	RenderResource mRenderResource;
 
 	Shape::Rectangle mRc;
 

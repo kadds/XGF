@@ -306,7 +306,19 @@
     <ClInclude Include="Include\Concurrentqueue.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Include\RenderTarget.hpp">
+    <ClInclude Include="Include\ShadowGenerator.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\FrameBuffer.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Shadow.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\RenderPath.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SystemShaders.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -545,7 +557,13 @@
     <ClCompile Include="Src\Tools\FrameRateLimiter.cpp">
       <Filter>源文件\Tools</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Core\RenderTarget.cpp">
+    <ClCompile Include="Src\Shape\ShadowGenerator.cpp">
+      <Filter>源文件\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\FrameBuffer.cpp">
+      <Filter>源文件\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\SystemShaders.cpp">
       <Filter>源文件\Core</Filter>
     </ClCompile>
   </ItemGroup>
