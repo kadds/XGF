@@ -147,11 +147,7 @@ float calcShadow(SHADOW_PARAM_DECLARATION)
 	return 1.0;
 }
 #endif
-float SpotLighting(float3 lightDir, float3 plightDir, float2 cosCone)
-{
-	float cosDirection = dot(lightDir, plightDir);
-	return smoothstep(cosCone.x, cosCone.y, cosDirection);
-}
+
 float calcDiffuse(float3 normal, float3 lightDirection)
 {
 	float diff = max(dot(normal, lightDirection), 0.0);

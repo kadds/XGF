@@ -47,6 +47,7 @@ namespace XGF
 		bool mHideCursor;
 		HCURSOR mSysCursor;
 		int mExitFlag;
+		ClassProperty(SizeEventFlag, int)
 	private:
 		void RenderThreadStart(Context * context);
 		void GameThreadStart(Context * context, std::shared_ptr<Scene> scene);

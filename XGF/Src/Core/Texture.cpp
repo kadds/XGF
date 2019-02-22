@@ -38,25 +38,45 @@ namespace XGF
 
 	bool Texture::SaveAs(ImageType type, const std::string& path)
 	{
+		GUID format;
+		switch (type) {
+		case ImageType::DDS:
+			{
+				auto hr = DirectX::SaveDDSTextureToFile(Context::Current().QueryGraphicsDeviceInterface().GetDeviceContext(),
+					mTextureResource.GetTexture2D(), fmt::to_wstring(path).c_str());
+				XGF_Info_Check(Framework, hr, ". Save texture to disk failed");
+				if (FAILED(hr))
+					return false;
+				else
+				{
+					XGF_Info(Framework, "Save texture to disk successfully");
+					return true;
+				}
+			}
+			break;
+		case ImageType::PNG:
+			format = GUID_ContainerFormatPng;
+			break;
+		case ImageType::JPEG:
+			format = GUID_ContainerFormatJpeg;
+		case ImageType::BMP:
+			format = GUID_ContainerFormatBmp;
+			break;
+		default:;
+		}
 		if(type != ImageType::DDS)
 		{
 			auto hr = DirectX::SaveWICTextureToFile(Context::Current().QueryGraphicsDeviceInterface().GetDeviceContext(),
-				mTextureResource.GetTexture2D(), GUID_ContainerFormatPng, fmt::to_wstring(path).c_str());
-			XGF_Info_Check(Framework, hr, "Save texture to disk failed!");
+				mTextureResource.GetTexture2D(), format, fmt::to_wstring(path).c_str());
+			XGF_Info_Check(Framework, hr, ". Save texture to disk failed");
 			if (FAILED(hr))
 				return false;
-			return true;
+			else
+			{
+				XGF_Info(Framework, "Save texture to disk successfully");
+				return true;
+			}
 		}
-		else
-		{
-			auto hr = DirectX::SaveDDSTextureToFile(Context::Current().QueryGraphicsDeviceInterface().GetDeviceContext(),
-				mTextureResource.GetTexture2D(), fmt::to_wstring(path).c_str());
-			XGF_Info_Check(Framework, hr, "Save texture to disk failed!");
-			if (FAILED(hr))
-				return false;
-			return true;
-		}
-		
 	}
 
 	Texture::~Texture()

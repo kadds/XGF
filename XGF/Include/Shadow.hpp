@@ -7,6 +7,8 @@ namespace XGF::Shape
 	{
 		ClassPropertyWithInitAndChanged(CastShadow, bool, false, OnCastShadowPropertyChanged)
 		ClassPropertyWithInit(SlopeScaledDepthBias, float, 0.f)
+		ClassPropertyWithInit(DepthBias, int, 0)
+		ClassPropertyWithInit(DepthBiasClamp, float, 0.0f)
 	protected:
 		virtual void OnCastShadowPropertyChanged() = 0;
 	};

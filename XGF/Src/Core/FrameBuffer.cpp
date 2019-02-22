@@ -17,7 +17,7 @@ namespace XGF
 	FrameBuffer::~FrameBuffer()
 	{
 	}
-	void FrameBuffer::Initialize(int textureWidth, int textureHeight, DXGI_FORMAT format, int msaaQuality, int targetCount, bool depthStencilViewTexture)
+	void FrameBuffer::Initialize(int textureWidth, int textureHeight, DXGI_FORMAT format, DepthStencilFormat depthStencilFormat, int msaaQuality, int targetCount, bool depthStencilViewTexture)
 	{
 		mHeight = textureHeight;
 		mWidth = textureWidth;
@@ -59,11 +59,11 @@ namespace XGF
 			renderTarget->GetTextureResource().SetHeight(textureHeight);
 			Initialize(textureDesc, std::move(renderTarget), msaaQuality);
 		}
-		InitializeDepthView(textureDesc, textureDesc.SampleDesc.Quality, depthStencilViewTexture);
+		InitializeDepthView(textureDesc, depthStencilFormat, textureDesc.SampleDesc.Quality, depthStencilViewTexture);
 
 	}
 
-	void FrameBuffer::Initialize(ID3D11Texture2D* renderTargetTexture)
+	void FrameBuffer::Initialize(ID3D11Texture2D* renderTargetTexture, DepthStencilFormat depthStencilFormat)
 	{
 		D3D11_TEXTURE2D_DESC textureDesc;
 		renderTargetTexture->GetDesc(&textureDesc);
@@ -77,7 +77,7 @@ namespace XGF
 		renderTarget->GetTextureResource().SetWidth(mWidth);
 		renderTarget->GetTextureResource().SetHeight(mHeight);
 		Initialize(textureDesc, std::move(renderTarget), textureDesc.SampleDesc.Quality);
-		InitializeDepthView(textureDesc, textureDesc.SampleDesc.Quality, false);
+		InitializeDepthView(textureDesc, depthStencilFormat, textureDesc.SampleDesc.Quality, false);
 	}
 
 	ID3D11DepthStencilView*& FrameBuffer::GetDepthStencilView()
@@ -176,7 +176,7 @@ namespace XGF
 		return mDepthStencilTexture.get();
 	}
 
-	void FrameBuffer::InitializeDepthView(D3D11_TEXTURE2D_DESC& desc, int msaaQuality, bool depthStencilViewTexture)
+	void FrameBuffer::InitializeDepthView(D3D11_TEXTURE2D_DESC& desc, DepthStencilFormat depthFormat, int msaaQuality, bool depthStencilViewTexture)
 	{
 		auto& gdi = Context::Current().QueryGraphicsDeviceInterface();
 		D3D11_TEXTURE2D_DESC depthBufferDesc;
@@ -188,7 +188,12 @@ namespace XGF
 		depthBufferDesc.Height = desc.Height;
 		depthBufferDesc.MipLevels = 1;
 		depthBufferDesc.ArraySize = 1;
-		depthBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		switch (depthFormat) { 
+			case DepthStencilFormat::Depth16Float: depthBufferDesc.Format = DXGI_FORMAT_D16_UNORM; break;
+			case DepthStencilFormat::Depth32Float: depthBufferDesc.Format = DXGI_FORMAT_D32_FLOAT; break;
+			case DepthStencilFormat::Depth24FloatStencil8Uint: depthBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; break;
+		default: ;
+		}
 		if (msaaQuality > 0)
 		{
 			depthBufferDesc.SampleDesc.Count = 4;
@@ -203,7 +208,12 @@ namespace XGF
 		depthBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 		if (depthStencilViewTexture)
 		{
-			depthBufferDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
+			switch (depthFormat) {
+			case DepthStencilFormat::Depth16Float: depthBufferDesc.Format = DXGI_FORMAT_R16_TYPELESS; break;
+			case DepthStencilFormat::Depth32Float: depthBufferDesc.Format = DXGI_FORMAT_R32_TYPELESS; break;
+			case DepthStencilFormat::Depth24FloatStencil8Uint: depthBufferDesc.Format = DXGI_FORMAT_R24G8_TYPELESS; break;
+			default:;
+			}
 			depthBufferDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
 		}
 		depthBufferDesc.CPUAccessFlags = 0;
@@ -216,9 +226,15 @@ namespace XGF
 		mDepthStencilTexture->GetTextureResource().SetTexture2D(tex2d);
 		if (depthStencilViewTexture)
 		{
+			
 			D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
 			memset(&shaderResourceViewDesc, 0, sizeof(shaderResourceViewDesc));
-			shaderResourceViewDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+			switch (depthFormat) {
+			case DepthStencilFormat::Depth16Float: shaderResourceViewDesc.Format = DXGI_FORMAT_R16_UNORM; break;
+			case DepthStencilFormat::Depth32Float:shaderResourceViewDesc.Format = DXGI_FORMAT_R32_UINT; break;
+			case DepthStencilFormat::Depth24FloatStencil8Uint: shaderResourceViewDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS; break;
+			default:;
+			}
 			if (msaaQuality > 0)
 				shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS;
 			else
@@ -232,7 +248,12 @@ namespace XGF
 		}
 
 		memset(&depthStencilViewDesc, 0, sizeof(depthStencilViewDesc));
-		depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		switch (depthFormat) {
+		case DepthStencilFormat::Depth16Float: depthStencilViewDesc.Format = DXGI_FORMAT_D16_UNORM; break;
+		case DepthStencilFormat::Depth32Float:depthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT; break;
+		case DepthStencilFormat::Depth24FloatStencil8Uint: depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; break;
+		default:;
+		}
 		if (msaaQuality > 0)
 			depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
 		else

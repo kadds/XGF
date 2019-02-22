@@ -126,7 +126,7 @@ float calcShadow(SHADOW_PARAM_DECLARATION)
 	float2 shadowTex;
 	shadowTex.x = shadowPos.x * 0.5f + 0.5f;
 	shadowTex.y = shadowPos.y * -0.5f + 0.5f;
-	shadowPos.z = shadowPos.z * 0.5f + 0.5f;
+	// shadowPos.z = shadowPos.z * 0.5f + 0.5f;
 	if (saturate(shadowTex.x) == shadowTex.x && saturate(shadowTex.y) == shadowTex.y && saturate(shadowPos.z) == shadowPos.z)
 	{
 #ifdef HAS_PCF_SAMPLER
@@ -140,11 +140,6 @@ float calcShadow(SHADOW_PARAM_DECLARATION)
 	return 1.0;
 }
 #endif
-float SpotLighting(float3 lightDir, float3 plightDir, float2 cosCone)
-{
-	float cosDirection = dot(lightDir, plightDir);
-	return smoothstep(cosCone.x, cosCone.y, cosDirection);
-}
 float calcDiffuse(float3 normal, float3 lightDirection)
 {
 	float diff = max(dot(normal, lightDirection), 0.0);

@@ -83,9 +83,9 @@ namespace XGF
 			}
 			void ReBuild()
 			{
-				std::sort(mLights.begin(), mLights.end(), [](const Light * light1, const Light * light2)
+				std::stable_sort(mLights.begin(), mLights.end(), [](const Light * light1, const Light * light2)
 				{
-					return (int)light1->GetLightType() > (int)light2->GetLightType();
+					return (int)light1->GetLightType() < (int)light2->GetLightType();
 				});
 				for (auto renderMesh : mRenderMeshes)
 				{

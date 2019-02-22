@@ -18,8 +18,10 @@ namespace XGF
 	{
 	protected:
 		int mRenderOrder;
+		// Number.
+		unsigned int mRenderIndex;
 	public:
-		RenderCommand() :mRenderOrder(0) {  }
+		RenderCommand() :mRenderOrder(0){  }
 		RenderCommand(int order) : mRenderOrder(order) {  }
 		virtual ~RenderCommand() {  }
 		virtual void Exec() = 0;
@@ -27,7 +29,10 @@ namespace XGF
 		{
 			return mRenderOrder;
 		}
-
+		void SetRenderIndex (unsigned int index)
+		{
+			mRenderIndex = index;
+		}
 	};
 	class RenderQueue
 	{
@@ -70,7 +75,7 @@ namespace XGF
 		int mPassUsedIndex;
 		std::vector<RenderTargetPass *> mPass;
 		RenderTargetPass mDefaultPass;
-
+		unsigned int mRenderIndex;
 		RenderTargetPass& GetCurrentPass();
 		bool mRenderedFlag;
 		bool HasRenderedFlag() const
@@ -85,7 +90,10 @@ namespace XGF
 		{
 			mRenderedFlag = true;
 		}
-
+		bool HasCommands() const
+		{
+			return !mPass.empty();
+		}
 		void NewFrame();
 		RendererFrameResource(): mRenderedFlag(false), mPassUsedIndex(-1){  }
 	};
@@ -140,6 +148,10 @@ namespace XGF
 		void AppendBeforeDrawCallbackOnce(RendererDrawCallbackFunc callback);
 		void AppendAfterDrawCallbackOnce(RendererDrawCallbackFunc callback);
 
+		bool IsRenderStart() const;
+		bool IsRenderEnd() const;
+
+		void WaitFrame();
 	private:
 		void DrawCommands();
 		void BeforeDraw();
@@ -150,6 +162,9 @@ namespace XGF
 		RendererFrameResource mResource[2];
 		int mIndexOfResource;
 		std::atomic_bool mTag;
+		bool mLooping;
+		bool mLooped;
+		std::atomic_bool mDrawing;
 
 		std::recursive_mutex mDrawMutex;
 		std::vector<DrawCallback> mBeforeDrawCallback;

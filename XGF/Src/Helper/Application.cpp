@@ -10,7 +10,7 @@ namespace XGF
 {
 	std::unordered_map<HWND, Application*> WndAppMap;
 	LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-	Application::Application(): mExitFlag(0)
+	Application::Application(): mExitFlag(0), mSizeEventFlag(0)
 	{
 	}
 
@@ -225,10 +225,17 @@ namespace XGF
 			GetClientRect(hWnd, &rc);
 			if (app != nullptr && SIZE_MINIMIZED != wParam && SIZE_MAXHIDE != wParam)
 			{
-				XGF_Debug(Application, "WM_SIZE IN");
-				app->GetRenderThread().PostEvent(SystemEventId::Size, { static_cast<int>(rc.right - rc.left), static_cast<int>(rc.bottom - rc.top) });
-				app->GetGameThread().PostEvent(SystemEventId::Size, { static_cast<int>(rc.right - rc.left), static_cast<int>(rc.bottom - rc.top) });
-
+				auto flag = app->GetSizeEventFlag();
+				if(flag >= 1)
+				{
+					XGF_Debug(Application, "WM_SIZE IN");
+					app->GetRenderThread().PostEvent(SystemEventId::Size, { static_cast<int>(rc.right - rc.left), static_cast<int>(rc.bottom - rc.top) });
+					app->GetGameThread().PostEvent(SystemEventId::Size, { static_cast<int>(rc.right - rc.left), static_cast<int>(rc.bottom - rc.top) });
+				}
+				else
+				{
+					app->SetSizeEventFlag(flag + 1);
+				}
 			}
 		}
 		break;

@@ -67,7 +67,9 @@ namespace XGF
 		{
 			DDS,
 			PNG,
-			BMP
+			JPEG,
+			BMP,
+
 		};
 		bool SaveAs(ImageType type, const std::string& path);
 	private:

@@ -139,6 +139,7 @@ namespace XGF
 		}
 		mPass.clear();
 		mPassUsedIndex = -1;
+		mRenderIndex = 0;
 	}
 	void Renderer::ClearDepthStencilBuffer()
 	{
@@ -163,7 +164,9 @@ namespace XGF
 		GetCurrentResource().SetRenderedFlag();
 		GetCurrentResource().mDefaultPass.mTarget = gdi.GetDisplayFrameBuffer();
 		GetCurrentRenderResource().mDefaultPass.mTarget = gdi.GetDisplayFrameBuffer();
-
+		mLooping = false;
+		mLooped = false;
+		mDrawing = false;
 	}
 
 	void Renderer::Destroy()
@@ -247,12 +250,33 @@ namespace XGF
 
 	void Renderer::AppendBeforeDrawCallbackOnce(RendererDrawCallbackFunc callback)
 	{
+		std::lock_guard<std::recursive_mutex> lock(mDrawMutex);
 		mBeforeDrawCallbackTemp.emplace_back(DrawCallback(callback, "", 1), true);
 	}
 
 	void Renderer::AppendAfterDrawCallbackOnce(RendererDrawCallbackFunc callback)
 	{
+		std::lock_guard<std::recursive_mutex> lock(mDrawMutex);
 		mAfterDrawCallbackTemp.emplace_back(DrawCallback(callback, "", 1), true);
+	}
+
+	bool Renderer::IsRenderStart() const
+	{
+		return mLooping;
+	}
+
+	bool Renderer::IsRenderEnd() const
+	{
+		return mLooped;
+	}
+
+	void Renderer::WaitFrame()
+	{
+		while(!(!mDrawing && GetCurrentResource().HasRenderedFlag() && GetCurrentRenderResource().HasRenderedFlag()
+			&& !GetCurrentResource().HasCommands()))
+		{
+			
+		}
 	}
 
 	void Renderer::DrawCommands()
@@ -279,6 +303,7 @@ namespace XGF
 		}
 		context.QueryGraphicsDeviceInterface().Present(false);
 	}
+
 
 	void Renderer::BeforeDraw()
 	{
@@ -392,11 +417,13 @@ namespace XGF
 
 	void Renderer::Commit(RenderGroupType groupType, RenderCommand* cmd)
 	{
+		cmd->SetRenderIndex(GetCurrentResource().mRenderIndex++);
 		GetRenderGroup(groupType).Push(cmd);
 	}
 
 	void Renderer::Commit(int groupIndex, RenderCommand* cmd)
 	{
+		cmd->SetRenderIndex(GetCurrentResource().mRenderIndex++);
 		GetRenderGroup(groupIndex).Push(cmd);
 	}
 
@@ -426,9 +453,11 @@ namespace XGF
 	{
 		auto & context = Context::Current();
 		auto & thread = context.QueryRenderThread();
+		auto & gameThread = context.QueryGameThread();
 		mFrameRateLimiter.TickStand();
 		bool exit = false;
 		bool frameExit = false;
+		mLooping = true;
 		while (!exit)
 		{
 			if (thread.HandleMessage())
@@ -440,13 +469,15 @@ namespace XGF
 				auto & renderRes = GetCurrentResource();
 				if (!renderRes.HasRenderedFlag())
 				{
+					const auto nextIndex = GetNextResourceIndex();
+					SetCurrentResource(nextIndex);
+					mDrawing = true;
 					BeforeDraw();
 					DrawCommands();
 					renderRes.SetRenderedFlag();
+					ClearResource(GetNextResourceIndex());
 					AfterDraw();
-					const auto nextIndex = GetNextResourceIndex();
-					ClearResource(nextIndex);
-					SetCurrentResource(nextIndex);
+					mDrawing = false;
 					context.QueryGameThread().PostEvent(SystemEventId::LogicalFrame, {});
 					DebugInscriber_Begin(mFrameRateLimiter.Tick())
 					DebugInscriber_End();
@@ -477,7 +508,7 @@ namespace XGF
 				}
 			}
 		}
-		
+		mLooped = true;
 	}
 	void Renderer::OnMessage(const Event& ev)
 	{

@@ -67,6 +67,8 @@ public:
 		mDirectionalLight->SetShadowType(Shape::ShadowType::PCF);
 		mDirectionalLight->SetCastShadow(true);
 		mSpotLight->SetSlopeScaledDepthBias(1.5f);
+		mDirectionalLight->SetSlopeScaledDepthBias(1.0f);
+
 		mDirectionalLight->SetShadowArea(Point(-2, 4, -2), CameraRectangle(-15.f, 15.f, 15.f, -15.f, 1.f, 15.f));
 
 		mTextureResourceManager.LoadResource(res);
@@ -150,7 +152,7 @@ public:
 		mCamera3D.SetMaxDistance(100.f);
 		mCamera3D.LookAt(Point(3.f, 3.5f, 3.5f), Point(0, 0, 0), Point::Up);
 		mTrackballCameraController.SetAllSpeed(0.004f);
-		this->GetRootContainer().GetEventDispatcher().InsertAllEventListener(bind(&GameScene::OnMouse, this, placeholders::_1));
+		this->GetRootContainer().GetEventDispatcher().InsertAllEventListener(bind(&GameScene::OnEvent, this, placeholders::_1));
 
 		mRc.SetZ(0.1f);
 	};
@@ -220,11 +222,6 @@ public:
 		}
 		mCamera3D.Update();
 		mCamera2D.Update();
-		if(GetFramework().GetInputManager().IskeyDown(DIK_F11))
-			Context::Current().QueryRenderer().AppendAfterDrawCallbackOnce([this](Renderer * r)
-			{
-				mPointLight->GetShadowMapTexture()->SaveAs(Texture::ImageType::DDS,"msdn.dds");
-			});
 	};
 	virtual void OnSize(int cx, int cy) override
 	{
@@ -234,11 +231,34 @@ public:
 
 	};
 
-	void OnMouse(const Event & ev) 
+	void OnEvent(const Event & ev) 
 	{
 		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
-
-		mTrackballCameraController.HandleEvents(ev, gdi.GetWidth(), gdi.GetHeight());
+		if(ev.GetEventGroup() == EventGroupType::Mouse)
+			mTrackballCameraController.HandleEvents(ev, gdi.GetWidth(), gdi.GetHeight());
+		else if(ev.GetEventGroup() == EventGroupType::KeyBoard && ev.GetKeyBoardEventId() == KeyBoardEventId::KeyDown)
+		{
+			if(ev.GetData<int>(0) == DIK_F2)
+			{
+				mDirectionalLight->SetCastShadow(!mDirectionalLight->GetCastShadow());
+				mMeshRenderer.ReBuild();
+			}
+			if (ev.GetData<int>(0) == DIK_F3)
+			{
+				mSpotLight->SetCastShadow(!mSpotLight->GetCastShadow());
+				mMeshRenderer.ReBuild();
+			}
+			if (ev.GetData<int>(0) == DIK_F4)
+			{
+				mDirectionalLight->SetGroup(!mDirectionalLight->GetGroup());
+				mMeshRenderer.ReBuild();
+			}
+			if (ev.GetData<int>(0) == DIK_F5)
+			{
+				mSpotLight->SetGroup(!mSpotLight->GetGroup());
+				mMeshRenderer.ReBuild();
+			}
+		}
 	}
 
 private:

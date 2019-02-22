@@ -67,38 +67,23 @@ namespace XGF::Shape
 	void CastShadowAbleLight::ReCreateRenderResource()
 	{
 		auto & renderer = Context::Current().QueryRenderer();
+		if(!(!renderer.IsRenderStart() || renderer.IsRenderEnd()))
+		{
+			renderer.WaitFrame();
+		}
 		if (GetCastShadow())
 		{
 			if (mShadowGenerator)
-			{
-				renderer.AppendAfterDrawCallbackOnce([this](Renderer * r)
-				{
-					mShadowGenerator->Shutdown();
-					r->AppendBeforeDrawCallbackOnce([this](Renderer *)
-					{
-						mShadowGenerator->Initialize(mWidth, mHeight);
-					});
-				});
-			}
+				mShadowGenerator->Shutdown();
 			else
-			{
-				renderer.AppendBeforeDrawCallbackOnce([this](Renderer *)
-				{
-					mShadowGenerator = std::make_unique<ShadowMapGenerator>();
-					mShadowGenerator->Initialize(mWidth, mHeight);
-				});
-			}
+				mShadowGenerator = std::make_unique<ShadowMapGenerator>();
+			mShadowGenerator->Initialize(mWidth, mHeight);
 		}
 		else
 		{
-			if(mShadowGenerator)
-			{
-				renderer.AppendAfterDrawCallbackOnce([this](Renderer * r)
-				{
-					mShadowGenerator->Shutdown();
-					mShadowGenerator.reset();
-				});
-			}
+			if (mShadowGenerator)
+				mShadowGenerator->Shutdown();
+			mShadowGenerator.reset();
 		}
 	}
 

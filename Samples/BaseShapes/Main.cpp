@@ -77,8 +77,8 @@ public:
 		mTextureRenderState.GetBlendState().GetRenderTarget(0).SetBlendEnable(true);
 		mTextureRenderState.GetDepthStencilState().SetDepthEnable(false);
 		auto & gdi = context.QueryGraphicsDeviceInterface();
-		mRenderToTextureTarget.Initialize(gdi.GetWidth(), gdi.GetHeight(), DXGI_FORMAT_R8G8B8A8_UNORM, 0, 1);
-
+		mRenderToTextureTarget.Initialize(gdi.GetWidth(), gdi.GetHeight(), DXGI_FORMAT_R8G8B8A8_UNORM, DepthStencilFormat::Depth24FloatStencil8Uint, 0, 1);
+		
 		mRc.SetZ(0.001f);
 		mTime = 0.f;
 	};
@@ -153,6 +153,10 @@ public:
 	virtual void OnSize(int cx, int cy) override
 	{
 		mCamera.UpdateProject(cx, cy);
+		auto & renderer = Context::Current().QueryRenderer();
+		renderer.WaitFrame();
+		mRenderToTextureTarget.Shutdown();
+		mRenderToTextureTarget.Initialize(cx, cy, DXGI_FORMAT_R8G8B8A8_UNORM, DepthStencilFormat::Depth24FloatStencil8Uint, 0, 1);
 		
 		mRc.SetPositionAndSize(0.f, cy * 2 / 3.f, cx / 3.f, cy / 3.f);
 	};

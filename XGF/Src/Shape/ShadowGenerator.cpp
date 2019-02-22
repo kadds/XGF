@@ -14,13 +14,13 @@ namespace XGF::Shape
 
 	void ShadowMapGenerator::Initialize(int width, int height)
 	{
-		mFrameBuffer.Initialize(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 0, true);
+		mFrameBuffer.Initialize(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DepthStencilFormat::Depth24FloatStencil8Uint, 0, 0, true);
 	}
 
 	void ShadowMapGenerator::Config(int width, int height)
 	{
 		mFrameBuffer.Shutdown();
-		mFrameBuffer.Initialize(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 0, true);
+		mFrameBuffer.Initialize(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DepthStencilFormat::Depth24FloatStencil8Uint, 0, 0, true);
 	
 	}
 	Texture * ShadowMapGenerator::Generate(CastShadowAbleLight * light, const std::vector<Mesh*>& meshs, const LightShadowMatrix & wvp)
@@ -31,6 +31,8 @@ namespace XGF::Shape
 		renderer.AppendAndSetFrameTarget(&mFrameBuffer);
 		auto & raster = mRenderState.GetRasterizerState();
 		raster.SetSlopeScaledDepthBias(light->GetSlopeScaledDepthBias());
+		raster.SetDepthBias(light->GetDepthBias());
+		raster.SetDepthBiasClamp(light->GetDepthBiasClamp());
 		renderer.ClearDepthStencilBuffer();
 		mRenderResource.SetConstantBuffer<VertexShader>(0, 0, wvp);
 		mRenderState.GetDepthStencilState().SetDepthFunc(ComparisonFunc::LESS_EQUAL);

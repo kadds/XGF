@@ -252,7 +252,7 @@ namespace XGF
 		XGF_Error_Check(Framework, mSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBufferPtr), "GetSwapChainBuffer is Error");
 
 		
-		mDisplayFrameBuffer.Initialize(backBufferPtr);
+		mDisplayFrameBuffer.Initialize(backBufferPtr, DepthStencilFormat::Depth24FloatStencil8Uint);
 		backBufferPtr->Release();
 		backBufferPtr = 0;
 
