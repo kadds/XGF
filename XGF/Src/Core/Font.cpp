@@ -50,7 +50,7 @@ namespace XGF
 				FT_Set_Pixel_Sizes(pFTFace, fontSize, fontSize);
 				return true;
 			}
-			XGF_Error(Application, "File can't open!", name);
+			XGF_Error(Application, "File can't open!", Tools::WcharToChar(name.c_str(), name.length() + 1).c_str());
 			return false;
 		}
 	}
