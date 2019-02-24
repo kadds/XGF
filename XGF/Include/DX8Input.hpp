@@ -12,10 +12,6 @@
 #include "ClickHelper.hpp"
 namespace XGF
 {
-	/*
-	* 输入管理器 基类
-	*/
-
 	struct MouseState
 	{
 		int px;
@@ -35,7 +31,7 @@ namespace XGF
 		void Shutdown();
 		void OnActivate(bool isActivate);
 
-		// 开启新的线程，处理Input event
+		// Open a new thread and process the Input event
 		void DoEvent(Asyn * asyn);
 
 		void HandleInputMessage();

@@ -39,7 +39,7 @@ namespace XGF
 			indexData->Get(i++) = 0;
 		}
 		mRenderResource.ReCreate(SystemShaders::GetFontShaders(true));
-		// 文字渲染采用不同的深度函数方法，在同深度的UI控件绘制中以写入缓冲区
+		// Text rendering uses different depth function methods to write buffers in control drawing
 		mRenderState.GetDepthStencilState().SetDepthFunc(ComparisonFunc::LESS_EQUAL);
 		mRenderState.GetBlendState().GetRenderTarget(0).SetBlendEnable(true);
 		mRenderState.GetBlendState().GetRenderTarget(0).SetDestBlendAlpha(Blend::ONE);
@@ -72,7 +72,7 @@ namespace XGF
 
 	void TextRenderer::DrawString(const string & str, Color color, const Shape::Rectangle * ppe, const SM::Matrix * matrix)
 	{
-		int count = str.size();
+		int count = static_cast<int>(str.size());
 		int lastStart = 0;
 		int restCount;
 		while (count > 0)
@@ -87,7 +87,7 @@ namespace XGF
 	}
 	Position TextRenderer::DrawStringRtPosition(const string & str, Color color, const Shape::Rectangle * ppe, const SM::Matrix * matrix, int pos)
 	{
-		int count = str.size();
+		int count = static_cast<int>(str.size());
 		int lastStart = 0;
 		int restCount = mMaxBatchCount - mCurrentPos;
 		Position p;

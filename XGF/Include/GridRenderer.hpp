@@ -16,11 +16,7 @@ namespace XGF
 		virtual void SetPosition(const Point & p) {};
 		virtual bool IsInBBox(const Point & p, const SM::Vector4 * matrix) const { return false; };
 	};
-
-	/*
-	µØĞÎÍøÂçäÖÈ¾
-	I have not finished it!
-	*/
+	// TODO: unfinished
 	class GridRenderer
 	{
 	public:

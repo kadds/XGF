@@ -4,8 +4,7 @@
 namespace XGF
 {
 	/*
-	用Color渲染几何图形2d
-	Begin，Draw，End
+	Use Begin，Draw，End
 	*/
 	class ShapeRenderer
 	{

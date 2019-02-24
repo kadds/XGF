@@ -8,9 +8,7 @@ namespace XGF
 {
 	typedef std::function<void(void)> OnCreateListener;
 	typedef std::function<void(void)> OnDestroyListener;
-	/*
-	* container����
-	*/
+
 	class Scene;
 	class Actor;
 	class Container

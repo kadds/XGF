@@ -28,9 +28,9 @@ namespace XGF
 		float GetAverageCallBatch();
 		float GetCallBatchPerSecond() { return mCallBatchPerSecond; }
 		float GetCallBatchPerFrame() { return mCallBatchPerFrame; }
-		//获得在每mUpdateTime时间内平均fps
+
 		float GetAverageFPS();
-		//毫秒
+
 		float GetFrameCost();
 		float GetFPSPerSecond();
 		float GetVerticesRenderCountPerSecond() { return mRenderVerticesPerSecond; }

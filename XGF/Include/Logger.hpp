@@ -17,9 +17,8 @@
 #pragma warning(pop)
 #include <string>
 #include <codecvt>
-/*
-»’º«class
-*/
+
+
 namespace XGF {
 	namespace Logger
 	{

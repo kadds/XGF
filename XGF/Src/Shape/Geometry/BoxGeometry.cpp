@@ -10,7 +10,7 @@ namespace XGF::Shape
 		auto * point = mPolygon->GetData();
 		auto * normal = mPolygonPleNormal->GetData();
 
-		// 1 ∏∫z÷·
+		// 1 Negative z-axis
 		*(point++) = { hx, hy, -hz };
 		*(point++) = { hx, -hy, -hz };
 		*(point++) = { -hx, -hy, -hz };
@@ -19,7 +19,7 @@ namespace XGF::Shape
 		(normal++)->Set(0, 0, -1);
 		(normal++)->Set(0, 0, -1);
 		(normal++)->Set(0, 0, -1);
-		// 2 ∏∫y÷·
+		// 2 Negative y-axis
 		*(point++) = { hx, -hy, -hz };
 		*(point++) = { hx, -hy, hz };
 		*(point++) = { -hx, -hy, hz };
@@ -29,7 +29,7 @@ namespace XGF::Shape
 		(normal++)->Set(0, -1, 0);
 		(normal++)->Set(0, -1, 0);
 
-		// 3 ∏∫x÷·
+		// 3 Negative x-axis
 		*(point++) = { -hx, -hy, -hz };
 		*(point++) = { -hx, -hy, hz };
 		*(point++) = { -hx, hy, hz };
@@ -40,7 +40,7 @@ namespace XGF::Shape
 		(normal++)->Set(-1, 0, 0);
 
 
-		// 4 z÷·
+		// 4 Z axis
 		*(point++) = { hx, hy, hz };
 		*(point++) = { hx, -hy, hz };
 		*(point++) = { -hx, -hy, hz };
@@ -50,7 +50,7 @@ namespace XGF::Shape
 		(normal++)->Set(0, 0, 1);
 		(normal++)->Set(0, 0, 1);
 
-		// 5 y÷·
+		// 5 Y axis
 		*(point++) = { hx, hy, -hz };
 		*(point++) = { hx, hy, hz };
 		*(point++) = { -hx, hy, hz };
@@ -60,7 +60,7 @@ namespace XGF::Shape
 		(normal++)->Set(0, 1, 0);
 		(normal++)->Set(0, 1, 0);
 
-		// 6 x÷·
+		// 6 X axis
 		*(point++) = { hx, -hy, -hz };
 		*(point++) = { hx, -hy, hz };
 		*(point++) = { hx, hy, hz };

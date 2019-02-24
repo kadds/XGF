@@ -1,11 +1,13 @@
 #pragma once
 #include "./../Defines.hpp"
 #include "Material.hpp"
+
+namespace XGF {
+	class Texture;
+}
+
 namespace XGF::Shape
 {
-	/**
-	 * ²ÄÖÊÑÕÉ«ÎÆÀí
-	 */
 	class BasicMaterial : public Material
 	{
 	public:

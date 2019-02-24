@@ -44,13 +44,13 @@ namespace XGF
 		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
 		mRenderStage.BindStage();
 		if (!mRenderStage.GetConstantBuffer<VertexShader>().empty())
-			for (int i = 0; i < mRenderStage.GetShader<VertexShader>()->GetCBufferCount(); i++)
+			for (unsigned i = 0; i < mRenderStage.GetShader<VertexShader>()->GetCBufferCount(); i++)
 				BindConstantBuffer<VertexShader>(i);
 		if (!mRenderStage.GetConstantBuffer<PixelShader>().empty())
-			for (int i = 0; i < mRenderStage.GetShader<PixelShader>()->GetCBufferCount(); i++)
+			for (unsigned i = 0; i < mRenderStage.GetShader<PixelShader>()->GetCBufferCount(); i++)
 				BindConstantBuffer<PixelShader>(i);
 		if (!mRenderStage.GetConstantBuffer<GeometryShader>().empty())
-			for (int i = 0; i < mRenderStage.GetShader<GeometryShader>()->GetCBufferCount(); i++)
+			for (unsigned i = 0; i < mRenderStage.GetShader<GeometryShader>()->GetCBufferCount(); i++)
 				BindConstantBuffer<GeometryShader>(i);
 
 
@@ -106,7 +106,7 @@ namespace XGF
 		{
 			if(mPass.empty())
 			{
-				// 自动添加为默认Pass
+				// 鑷姩娣诲姞涓洪粯璁ass
 				mPassUsedIndex = 0;
 				mPass.push_back(&mDefaultPass);
 			}
@@ -608,13 +608,13 @@ namespace XGF
 		auto * targetR = new RenderTargetPass();
 		targetR->mTarget = target;
 		GetCurrentResource().mPass.push_back(targetR);
-		return GetCurrentResource().mPass.size() - 1;
+		return static_cast<int>(GetCurrentResource().mPass.size() - 1);
 	}
 
 	int Renderer::AppendDefaultFrameTarget()
 	{
 		GetCurrentResource().mPass.push_back(&GetCurrentResource().mDefaultPass);
-		return GetCurrentResource().mPass.size() - 1;
+		return static_cast<int>(GetCurrentResource().mPass.size() - 1);
 	}
 
 	void Renderer::AppendAndSetDefaultFrameTarget()

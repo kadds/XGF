@@ -1,5 +1,5 @@
 #pragma once
-//所有Initialize(初始化) 和 Shutdown (结束) 函数需手动调用
+// All Initialize and Shutdown functions need to be called manually
 
 
 //*********** Core ***************

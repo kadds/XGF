@@ -3,7 +3,6 @@
 #include "../../Include/GDI.hpp"
 #include "../../Include/DDSTextureLoader.h"
 #include "../../Include/WICTextureLoader.h"
-#include <algorithm>
 #include <fstream>
 #include "../../Include/Context.hpp"
 #include "../../Include/Shader.hpp"

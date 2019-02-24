@@ -6,9 +6,7 @@
 namespace XGF
 {
 	class GDI;
-	/*
-	  RenderTarget£¬äÖÈ¾Ä¿±ê
-	*/
+
 	enum class DepthStencilFormat
 	{
 		Depth16Float,

@@ -3,6 +3,7 @@
 #include "Texture.hpp"
 #include "FrameBuffer.hpp"
 #include "Mesh.hpp"
+#include "Shader.hpp"
 
 namespace XGF::Shape
 {

@@ -12,7 +12,7 @@ namespace XGF
 	};
 	class TextRenderer;
 	/*
-	具有接受输入Text 和渲染Text的类
+		InputAble && RenderAble
 	*/
 	class TextInputProcessor
 	{

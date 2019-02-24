@@ -48,12 +48,12 @@ namespace XGF
 				- c.x * b.y - a.x * c.y) / 2.0f);
 			return result;
 		}
-		// 判断2维点是否在图元内部
-		// 使用 PNPoly 算法
+		// Determine whether the 2-dimensional point is inside the primitive
+		// Use the PNPoly algorithm
 		bool pInPolygon(const std::shared_ptr<PolygonPlePointBinder> & ql, float x, float y)
 		{
 			auto point = ql->GetData();
-			// 生成最小包围盒
+			// Generate a minimum bounding box
 			Position minPosition = { point[0].x, point[0].y }, maxPosition = { point[0].x, point[0].y };
 			for (int i = 1; i < ql->GetActualCount(); i++)
 			{

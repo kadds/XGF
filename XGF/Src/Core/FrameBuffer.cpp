@@ -161,7 +161,7 @@ namespace XGF
 		{
 			*target2++ = renderTargetTexture.second;
 		}
-		gdi.GetDeviceContext()->OMSetRenderTargets(mRenderTarget.size(), targets, mDepthStencilView);
+		gdi.GetDeviceContext()->OMSetRenderTargets(static_cast<unsigned>(mRenderTarget.size()), targets, mDepthStencilView);
 		
 		gdi.GetDeviceContext()->RSSetViewports(1, &mViewport);
 	}

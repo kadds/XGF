@@ -6,6 +6,7 @@
 
 namespace XGF
 {
+	struct Shaders;
 	class Camera;
 	namespace Shape
 	{

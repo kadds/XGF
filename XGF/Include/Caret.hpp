@@ -25,7 +25,7 @@ namespace XGF
 		RenderState mRenderState;
 		RenderResource mRenderResource;
 		float mTime;
-		//这是间隔标志变量
+		// interval flag
 		bool mHide;
 		bool mIsCaretShow;
 		Shape::Line mLine;

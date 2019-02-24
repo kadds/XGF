@@ -10,7 +10,7 @@ namespace XGF
 	class Font;
 	class Batch;
 	/*
-	通用文本渲染
+	Universal text renderer
 	*/
 	class TextRenderer
 	{
@@ -22,14 +22,13 @@ namespace XGF
 		void DrawString(const string & str, float x, float y, float z = 0.01f);
 		void DrawString(const string & str, Color color, float x, float y, float z = 0.01f);
 		
-		//渲染字符串 颜色，渲染限定矩形，变换矩阵
 		void DrawString(const string & str, Color color, const Shape::Rectangle * ppe, const SM::Matrix * matrix);
 		Position DrawStringRtPosition(const string& str, Color color, const Shape::Rectangle* ppe,
 		                              const SM::Matrix* matrix,
 		                              int pos);
 		int GetFontSize();
 		TextLayoutShaper & GetLayoutShaper() { return mLayoutShaper; }
-		Font & GetFont() { return *mFont; };
+		Font & GetFont() const { return *mFont; };
 		void Begin(const WVPMatrix & matrix);
 		void End();
 		void Flush();
@@ -39,7 +38,7 @@ namespace XGF
 		bool PenMoveCallBackFunction(int i, wchar_t ch, Position * p, int c, Position * v);
 		RenderState mRenderState;
 		RenderResource mRenderResource;
-		//外部
+		
 		Font *mFont;
 		TextLayoutShaper mLayoutShaper;
 		BindingBridge bbridge;

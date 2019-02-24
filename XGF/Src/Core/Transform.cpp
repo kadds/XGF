@@ -21,7 +21,7 @@ namespace XGF
 	{
 		if (!mIsChange) return DirectX::XMLoadFloat4x4(&mMatrix);
 		Point4 f0(0, 0, 0, 0);
-		//3D æÿ’Ûº∆À„
+
 		auto matrix = DirectX::XMMatrixTransformation(
 			DirectX::XMLoadFloat3(&mScaleOrigin),
 			DirectX::XMLoadFloat4(&mScaleOriginRotation),

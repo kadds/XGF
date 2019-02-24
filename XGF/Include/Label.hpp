@@ -5,8 +5,7 @@
 namespace XGF
 {
 	/*
-	* 控件：标签
-	* 显示一段文本
+	Display text
 	*/
 	class Label :
 		public Control, public Shape::Rectangle

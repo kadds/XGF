@@ -2,7 +2,6 @@
 #include "./../Defines.hpp"
 #include "Material.hpp"
 #include "./../Light/Light.hpp"
-#include "../ShaderManager.hpp"
 #include "../Shadow.hpp"
 
 namespace XGF::Shape

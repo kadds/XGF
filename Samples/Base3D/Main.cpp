@@ -37,11 +37,11 @@ public:
 		auto res = std::vector<ResourceInfo>();
 		res.push_back(ResourceInfo(L"logo.png", L"logo"));
 
-		mDirectionalLight = make_unique<Shape::DirectionalLight>(Point(5, -5, 5), Color(0.4, 0.4, 0.85, 1));
-		mPointLight = make_unique<Shape::PointLight>(Point(-3,7, -4), Color(0.6, 0.6, 0.6, 1), Point(0.1, 0.001, 0.0000001));
-		mSpotLight = make_unique<Shape::SpotLight>(Point(4, 5, 1), Point(-1.8, -2.1, -0.3), Color(0.95, 0.65, 0.68, 1), 
-			Point(1, 0, 0), cos(DirectX::XM_PI / 4), cos(DirectX::XM_PI / 3));
-		mAmbientLight = make_unique<Shape::AmbientLight>(Color(0.1, 0.1, 0.1, 1));
+		mDirectionalLight = make_unique<Shape::DirectionalLight>(Point(5.f, -5.f, 5.f), Color(0.4f, 0.4f, 0.85f, 1.f));
+		mPointLight = make_unique<Shape::PointLight>(Point(-3.f, 7.f, -4.f), Color(0.6f, 0.6f, 0.6f, 1.f), Point(0.1f, 0.001f, 0.0000001f));
+		mSpotLight = make_unique<Shape::SpotLight>(Point(4.f, 5.f, 1.f), Point(-1.8f, -2.1f, -0.3f), Color(0.95f, 0.65f, 0.68f, 1.f), 
+			Point(1.f, 0.f, 0.f), cos(DirectX::XM_PI / 4.f), cos(DirectX::XM_PI / 3.f));
+		mAmbientLight = make_unique<Shape::AmbientLight>(Color(0.1f, 0.1f, 0.1f, 1.f));
 		mDirectionalLight->SetGroup(1);
 		mPointLight->SetGroup(1);
 		mSpotLight->SetGroup(1);
@@ -98,7 +98,7 @@ public:
 		
 		
 		planeMesh = make_unique<Shape::Mesh>(
-			make_unique<Shape::PlaneGeometry>(100, 100,  1, 1),
+			make_unique<Shape::PlaneGeometry>(100.f, 100.f,  1, 1),
 			make_unique<Shape::PhongMaterial>(Color3(.8f, .8f, .8f), nullptr, Color3(0.8, 0.8, 0.82))
 		);
 		planeMesh->GetMaterialAs<Shape::LightMaterial>()->SetLightGroup(1);
@@ -109,7 +109,7 @@ public:
 		for(int i = 0; i < sizeof(sphereMesh) / sizeof(sphereMesh[0]); i++)
 		{
 			sphereMesh[i] = make_unique<Shape::Mesh>(
-				make_unique<Shape::SphereGeometry>(1, 16, 16),
+				make_unique<Shape::SphereGeometry>(1.f, 16, 16),
 				make_unique<Shape::LambertMaterial>(randomColor(), rand(random) > 0 ? texture : nullptr,
 					 Color3(1, 1, 1))
 				);

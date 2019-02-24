@@ -19,8 +19,7 @@ namespace XGF
 		{
 			PutDebugString(mFactory2);
 		}
-		//枚举系统中的适配器
-		UINT adapter_no = 0;
+
 		IDXGIAdapter1* dxgi_adapter = nullptr;
 		DXGI_ADAPTER_DESC1 dc;
 		int i = 0;
@@ -559,8 +558,8 @@ namespace XGF
 		CopyBlendStateToDesc(blendDesc.RenderTarget[0], bs.GetRenderTarget(0));
 		if(bs.GetIndependentBlendEnable())
 		{
-			const int c = bs.GetRenderTargetCount();
-			for(int i = 1; i < c; i++)
+			const size_t c = bs.GetRenderTargetCount();
+			for(size_t i = 1; i < c; i++)
 			{
 				CopyBlendStateToDesc(blendDesc.RenderTarget[i], bs.GetRenderTarget(i));
 			}
@@ -587,17 +586,17 @@ namespace XGF
 	{
 		D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
 		depthStencilDesc.DepthEnable = ds.GetDepthEnable();
-		depthStencilDesc.DepthWriteMask = (D3D11_DEPTH_WRITE_MASK) ds.GetDepthWriteMask();//D3D11_DEPTH_WRITE_MASK_ZERO禁止写深度缓冲 
+		depthStencilDesc.DepthWriteMask = (D3D11_DEPTH_WRITE_MASK) ds.GetDepthWriteMask();
 		depthStencilDesc.DepthFunc = (D3D11_COMPARISON_FUNC) ds.GetDepthFunc();
 		depthStencilDesc.StencilEnable = ds.GetStencilEnable();
 		depthStencilDesc.StencilReadMask = ds.GetStencilReadMask();
 		depthStencilDesc.StencilWriteMask = ds.GetStencilWriteMask();
-		// 对于front face 像素使用的模版操作操作. 
+
 		depthStencilDesc.FrontFace.StencilFailOp = (D3D11_STENCIL_OP)ds.GetFrontFaceStencilFailOp();
 		depthStencilDesc.FrontFace.StencilDepthFailOp = (D3D11_STENCIL_OP) ds.GetFrontFaceStencilDepthFailOp();
 		depthStencilDesc.FrontFace.StencilPassOp = (D3D11_STENCIL_OP)ds.GetFrontFaceStencilPassOp();
 		depthStencilDesc.FrontFace.StencilFunc = (D3D11_COMPARISON_FUNC) ds.GetFrontFaceStencilFunc();
-		// 对于back face像素使用的模版操作模式. 
+
 		depthStencilDesc.BackFace.StencilFailOp = (D3D11_STENCIL_OP)ds.GetBackFaceStencilFailOp();
 		depthStencilDesc.BackFace.StencilDepthFailOp = (D3D11_STENCIL_OP)ds.GetBackFaceStencilDepthFailOp();
 		depthStencilDesc.BackFace.StencilPassOp = (D3D11_STENCIL_OP)ds.GetBackFaceStencilPassOp();
@@ -794,7 +793,7 @@ namespace XGF
 			mSwapChain->Release();
 		}
 		CreateSwapChain();
-		// TODO: 全屏相关逻辑
+		// TODO: Fullscreen logic
 		SetFullScreen(bl, 0);
 	}
 

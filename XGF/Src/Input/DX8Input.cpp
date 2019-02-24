@@ -23,7 +23,7 @@ namespace XGF
 		hInstance = hs;
 		mHwnd = hwnd;
 		XGF_Error_Check(Input, DirectInput8Create(hs, DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&mDxInput, nullptr),"DxInputCreate Failed");
-		//²éÑ¯
+		
 		//Check(dxInput->QueryInterface(IID_IDirectInputDevice2, (void **)&mDxInput));
 		XGF_Error_Check(Input, mDxInput->CreateDevice(GUID_SysMouse, &mMouse, nullptr),"DxInputCreateDevice Failed");
 		XGF_Error_Check(Input, mDxInput->CreateDevice(GUID_SysKeyboard, &mKeyBoard, nullptr), "DxInputCreateDevice Failed");

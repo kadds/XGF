@@ -5,8 +5,7 @@ namespace XGF
 {
 	class Container;
 	/*
-	演员类
-	Tip: 继承时请重写 Render ，GetShape 函数。参照Button，Label，EditText类
+	Tip: Rewrite the Render GetShape virtual functions when inheriting. Refer to Button, Label, EditText class
 	*/
 	class Actor
 	{
@@ -14,14 +13,14 @@ namespace XGF
 		Actor();
 		Actor(int id);
 		virtual ~Actor();
-		//框架调用
+
 		void _Render();
-		//框架调用
+
 		void _Update(float deltaTime);
 		virtual void Update(float deltaTime) {};
 		virtual void Render() = 0;
 
-		//返回 对this做static_cast<YouShapeClass>
+		// must be return static_cast<YouShapeClass>(this)
 		virtual Shape::Shape *GetShape() const = 0;
 		void SetParent(Container * container) { mParent = container; };
 

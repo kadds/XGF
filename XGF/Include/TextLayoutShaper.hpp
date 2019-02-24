@@ -10,7 +10,7 @@ namespace XGF
 	//return true break function;
 	typedef std::function<bool(int, wchar_t, Position * p)> PenMoveCallback;
 	/*
-	计算Layout Info
+		Compute layout info
 	*/
 	class TextLayoutShaper
 	{

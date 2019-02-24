@@ -71,7 +71,7 @@ namespace XGF {
 				mUAVInfo.push_back(uav);
 			}
 		}
-		// 按slot 排序
+		// sort by slot
 		std::sort(mCBufferInfo.begin(), mCBufferInfo.end(), [](const CBufferInfo & v1, const CBufferInfo & v2)
 		{
 			return v1.slot < v2.slot;
@@ -792,7 +792,7 @@ namespace XGF {
 	//	auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
 
 	//	gdi.GetDeviceContext()->Dispatch(32, 1, 1);
-	//	if (!asyn)//同步等待gpu运行结束
+	//	if (!asyn)//鍚屾绛夊緟gpu杩愯缁撴潫
 	//	{
 	//		D3D11_QUERY_DESC pQueryDesc;
 	//		pQueryDesc.Query = D3D11_QUERY_EVENT;

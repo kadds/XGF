@@ -17,7 +17,7 @@ namespace XGF
 			virtual bool IsInBoundBox(const Point & p, const SM::Matrix & matrix) override;
 
 			bool SubRectangle(Rectangle * pol, float x, float y, float width, float height) const;
-			virtual void SetPosition(const Point & p);
+			virtual void SetPosition(const Point & p) override;
 			virtual void GetPosition(Point & p) const override;
 		private:
 

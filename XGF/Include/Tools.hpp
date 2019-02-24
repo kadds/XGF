@@ -3,9 +3,7 @@
 #include <Windows.h>
 namespace XGF
 {
-	/*
-	简单的工具类
-	*/
+
 	namespace Tools
 	{
 		wchar_t * GetPathBy(const wchar_t *filename, wchar_t * buffer, int maxlen);

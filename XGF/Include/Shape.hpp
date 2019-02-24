@@ -12,9 +12,6 @@ namespace XGF
 	{
 		typedef int ShapeType;
 		
-		/**
-		* 定义了一些基本的可渲染图元
-		*/
 		class Shape
 		{
 		public:

@@ -7,6 +7,7 @@
 #include "../../Include/Material/PhongMaterial.hpp"
 #include "../../Include/Material/LambertMaterial.hpp"
 #include "../../Include/SystemShaders.hpp"
+#include "../../Include/Logger.hpp"
 
 namespace XGF::Shape
 {

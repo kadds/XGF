@@ -6,8 +6,8 @@
 namespace XGF
 {
 	/*
-	*高精度计时器
-	*游戏基本计时器
+	*High precision timer
+	*Game basic timer
 	*/
 	class Timer
 	{

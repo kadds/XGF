@@ -8,8 +8,7 @@ namespace XGF
 	typedef std::function<void(int code, std::any)> OnFinishTaskListener;
 	typedef std::function<void(int process, std::any)> OnReportTaskProcessListener;
 	/*
-	异步任务类
-	在TaskThread 结束前 务必调用一次Finish函数释放Task资源
+		Be sure to call the Finish function to release the Task resource before the TaskThread ends.
 	*/
 	class AsyncTask : public std::enable_shared_from_this<AsyncTask>
 	{

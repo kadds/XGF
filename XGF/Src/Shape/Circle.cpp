@@ -41,10 +41,10 @@ namespace XGF
 		{
 			float x = mPolygon->GetData(0).x;
 			float y = mPolygon->GetData(0).y;
-			
+
 				return (p.x - x)*(p.x - x) + (p.y - y)*(p.y - y) <= mRadius * mRadius;
 			
-				//return false;//ÍµÁË¸öÀÁ TODO::
+				//return false; TODO:: incorrect when matrix != Identity
 			
 
 		}

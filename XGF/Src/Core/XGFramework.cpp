@@ -84,7 +84,7 @@ namespace XGF
 						_UpdateWithInterpolation(mScheduler.GetDeltaTimeFromLastSchedule() / mUpdateFixedTime);
 					if (mScene != nullptr)
 					{
-						mScene->_Render();//无动画
+						mScene->_Render();
 					}
 					mInputManager.Draw();
 					auto & context = Context::Current();
@@ -209,7 +209,7 @@ namespace XGF
 
 	void XGFramework::Exit(int code)
 	{
-		// 设置退出码
+		// set exit code
 		PostMessage(Context::Current().QueryGraphicsDeviceInterface().GetTopHwnd(), WM_CLOSE, 1, code);
 		mThread->PostExitEvent();
 		Context::Current().QueryRenderThread().PostExitEvent();

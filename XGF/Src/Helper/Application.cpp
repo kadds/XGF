@@ -35,7 +35,7 @@ namespace XGF
 			return false;
 		}
 		mSysCursor = LoadCursor(NULL, IDC_ARROW);
-		//重设窗口客户区大小为传来的参数 大小
+		//Reset window client area size to the passed parameter size
 		RECT wndRc, clientRc;
 		GetWindowRect(mHwnd, &wndRc);
 		GetClientRect(mHwnd, &clientRc);
@@ -52,7 +52,7 @@ namespace XGF
 		ShaderManager shaderManager;
 		Context::Initialize();
 		Context & context = Context::MakeContext(&gdi, mFramework, &mGameThread, &mRenderThread, &renderer,&shaderManager);
-		//开启渲染线程==============================================
+		//Open render thread ==============================================
 		mRenderThread.DoAsyn(std::bind(&Application::RenderThreadStart, this, &context));
 		//======================================================
 		mGameThread.DoAsyn(std::bind(&Application::GameThreadStart, this, &context, std::move(firstScene)));
@@ -60,7 +60,7 @@ namespace XGF
 		MSG msg;
 		ShowWindow(mHwnd, SW_SHOW);
 		UpdateWindow(mHwnd);
-		// 主消息循环: 
+		// Main message loop 
 		while (GetMessage(&msg, nullptr, 0, 0))
 		{
 			if (!TranslateAccelerator(msg.hwnd, nullptr, &msg))
@@ -178,9 +178,7 @@ namespace XGF
 	{
 		exitCode = ec;
 	}
-	//  函数: WndProc(HWND, UINT, WPARAM, LPARAM)
-	//
-	//  目的:    处理主窗口的消息。
+
 	LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		Application * app;
@@ -194,7 +192,7 @@ namespace XGF
 		case WM_IME_NOTIFY:
 		case WM_CHAR:
 		case WM_KEYDOWN:
-			//把消息交给InputManage处理
+
 			app = WndAppMap.find(hWnd)->second;
 			if (app != nullptr)
 			{

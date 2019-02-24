@@ -233,7 +233,7 @@ namespace XGF
 			dinput.SetPosition(w, h);
 			dinput.SetRelativeMode(true);
 			PostMessage(mHwnd, WM_X_SHOWORHIDECURSOR, FALSE, 0);
-			OnMouseMove(w, h);
+			OnMouseMove(static_cast<float>(w), static_cast<float>(h));
 			mCursor.Show();
 			break;
 		default:
