@@ -1,4 +1,5 @@
 #pragma once
+#include "Defines.hpp"
 #include "Shape2D.hpp"
 namespace XGF
 {
@@ -8,7 +9,7 @@ namespace XGF
 			public Shape2D
 		{
 		public:
-			//precision：精度(三角形个数)
+			//precision锛歝ount of triangle
 			Circle(int precision);
 			~Circle();
 			void SetPositionAndRadius(float x, float y, float r);
@@ -23,8 +24,7 @@ namespace XGF
 	}
 	
 }
-//获取精度
-//参数一：半径大小
-//参数二：外径长
+
 #define GetPrecision(radius,arclen) (static_cast<float>(DirectX::XM_PI/arclen * radius))
 
+;

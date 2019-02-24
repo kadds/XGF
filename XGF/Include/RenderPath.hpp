@@ -1,4 +1,5 @@
 #pragma once
+#include "Defines.hpp"
 #include "Mesh.hpp"
 #include "Light/Light.hpp"
 #include "Camera.hpp"

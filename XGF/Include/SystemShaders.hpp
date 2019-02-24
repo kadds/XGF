@@ -1,4 +1,5 @@
 #pragma once
+#include "Defines.hpp"
 #include "Shader.hpp"
 #include "Shadow.hpp"
 

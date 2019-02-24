@@ -264,9 +264,6 @@
     <ClInclude Include="Include\Logger.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Geometry\SphereGeometry.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Material\PhongMaterial.hpp">
       <Filter>头文件\Material</Filter>
     </ClInclude>
@@ -320,6 +317,9 @@
     </ClInclude>
     <ClInclude Include="Include\SystemShaders.hpp">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Geometry\SphereGeometry.hpp">
+      <Filter>头文件\Geometry</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

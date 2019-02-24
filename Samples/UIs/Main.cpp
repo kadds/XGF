@@ -9,19 +9,7 @@ using namespace XGF;
 #include <stdlib.h>  
 #include <crtdbg.h>  
 #define new  new(_CLIENT_BLOCK, __FILE__, __LINE__)  
-#ifdef _DEBUG
-#ifdef _WIN64
-#pragma comment(lib,"./../../Bin/x64/Debug/XGF.lib")
-#else
-#pragma comment(lib,"./../../Bin/Debug/XGF.lib")
-#endif
-#else
-#ifdef _WIN64
-#pragma comment(lib,"./../../Bin/x64/Release/XGF.lib")
-#else
-#pragma comment(lib,"./../../Bin/Release/XGF.lib")
-#endif
-#endif
+
 int RunGame(HINSTANCE hInstance);
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,

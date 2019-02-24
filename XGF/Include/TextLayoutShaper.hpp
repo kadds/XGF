@@ -1,4 +1,5 @@
 #pragma once
+#include "Defines.hpp"
 #include "Font.hpp"
 #include "Rectangle.hpp"
 #include <algorithm>
@@ -9,7 +10,7 @@ namespace XGF
 	//return true break function;
 	typedef std::function<bool(int, wchar_t, Position * p)> PenMoveCallback;
 	/*
-	¼ÆËãLayout Info
+	è®¡ç®—Layout Info
 	*/
 	class TextLayoutShaper
 	{

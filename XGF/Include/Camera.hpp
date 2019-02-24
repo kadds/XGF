@@ -8,7 +8,7 @@ namespace XGF
 		float right;
 		float bottom;
 		float top;
-		float nearZ;
+		float nearZ; 
 		float farZ;
 		CameraRectangle(float left, float right, float bottom, float top, float nearZ, float farZ): left(left), right(right), bottom(bottom), top(top), nearZ(nearZ), farZ(farZ) {  }
 		CameraRectangle()
@@ -39,18 +39,17 @@ namespace XGF
 		void SetMaxDistance(float f) { mMaxDistance = f; }
 		void SetMinDistance(float f) { mMinDistance = f; }
 
-		//…Ë÷√…„œÒª˙Œª÷√
 		void SetPosition(const Point & pos);
-		Point GetPosition() { return mPos; };
+		Point GetPosition() const { return mPos; };
 
 		Point GetForward();
 		Point GetUp();
 		Point GetRight();
-		float GetAspectRatio()
+		float GetAspectRatio() const
 		{
 			return mAspectRatio;
 		};
-		SM::Quaternion GetRotation() 
+		SM::Quaternion GetRotation() const
 		{
 			return mRotation;
 		}

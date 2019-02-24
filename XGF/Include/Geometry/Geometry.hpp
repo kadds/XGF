@@ -1,4 +1,5 @@
 #pragma once
+#include "../Defines.hpp"
 #include "../Shape.hpp"
 #include <functional>
 namespace XGF

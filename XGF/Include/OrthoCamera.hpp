@@ -1,10 +1,8 @@
 #pragma once
+#include "Defines.hpp"
 #include "Camera.hpp"
 namespace XGF
 {
-	/*
-	正交投影摄像机
-	*/
 	class OrthoCamera :
 		public Camera
 	{

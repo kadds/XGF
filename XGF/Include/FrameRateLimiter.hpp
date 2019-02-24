@@ -1,4 +1,5 @@
 #pragma once
+#include "Defines.hpp"
 #include "Timer.hpp"
 
 namespace XGF

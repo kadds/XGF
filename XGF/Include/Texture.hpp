@@ -1,7 +1,7 @@
 #pragma once
+#include "Defines.hpp"
 #define NOMINMAX
 #include <d3d11_1.h>
-#include "Defines.hpp"
 namespace XGF
 {
 

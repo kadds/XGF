@@ -1,4 +1,5 @@
 #pragma once
+#include "Defines.hpp"
 #include "Shape2D.hpp"
 
 #define SHAPE_RECTANGLE 4

@@ -17,13 +17,12 @@ namespace XGF
 		{
 
 		}
-		void Triangle::SetThreePoint(Point & p1, Point & p2, Point & p3)
+		void Triangle::SetThreePoint(const Point & p1, const Point & p2, const Point & p3)
 		{
 			mPolygon->GetData(0) = p1;
 			mPolygon->GetData(1) = p2;
 			mPolygon->GetData(2) = p3;
-			//DirectX::XMLoadFloat3(&p1), DirectX::XMLoadFloat3(&p2), DirectX::XMLoadFloat3(&p3)\
-			//不做逆时针方向判断
+
 		}
 		void Triangle::SetPosition(const Point & p)
 		{

@@ -16,7 +16,7 @@ namespace XGF
 	{
 		if (mIsActionBegan )
 		{
-			for (auto & it = mAction.begin(); it != mAction.end();)
+			for (auto it = mAction.begin(); it != mAction.end();)
 			{
 				if (it->second->Tick(it->first, time))
 				{

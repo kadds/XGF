@@ -77,6 +77,7 @@ namespace XGF
 				return true;
 			}
 		}
+		return false;
 	}
 
 	Texture::~Texture()

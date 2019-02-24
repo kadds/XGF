@@ -1,4 +1,5 @@
 #pragma once
+#include "../Defines.hpp"
 #include "Light.hpp"
 
 namespace XGF::Shape

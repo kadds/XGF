@@ -1,10 +1,11 @@
 #pragma once
+#include "Defines.hpp"
 #include "Shader.hpp"
 namespace XGF
 {
 	/*
-	用Color渲染几何图形2d
-	Begin，Draw，End
+	鐢–olor娓叉煋鍑犱綍鍥惧舰2d
+	Begin锛孌raw锛孍nd
 	*/
 	class ShapeRenderer
 	{

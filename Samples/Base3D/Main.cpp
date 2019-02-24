@@ -7,19 +7,6 @@ using namespace XGF;
 #include <stdlib.h>  
 #include <crtdbg.h>  
 #define new  new(_CLIENT_BLOCK, __FILE__, __LINE__)  
-#ifdef _DEBUG
-#ifdef _WIN64
-#pragma comment(lib,"./../../Bin/x64/Debug/XGF.lib")
-#else
-#pragma comment(lib,"./../../Bin/Debug/XGF.lib")
-#endif
-#else
-#ifdef _WIN64
-#pragma comment(lib,"./../../Bin/x64/Release/XGF.lib")
-#else
-#pragma comment(lib,"./../../Bin/Release/XGF.lib")
-#endif
-#endif
 #include <random>
 using namespace std;
 

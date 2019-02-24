@@ -54,9 +54,9 @@ namespace XGF
 
 	void ClickHelper::OnClick(Control * source, const MousePoint & mp)
 	{
-		for each (auto var in mOnClickListener)
+		for (auto & it : mOnClickListener)
 		{
-			var(source, mp,0);
+			it(source, mp,0);
 		}
 	}
 

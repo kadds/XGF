@@ -1,4 +1,3 @@
-#include <utility>
 #include "..\..\Include\TextInputProcessor.hpp"
 #include "..\..\Include\TextRenderer.hpp"
 #include "../../Include/TextLayoutShaper.hpp"

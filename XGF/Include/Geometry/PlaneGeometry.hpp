@@ -1,4 +1,5 @@
 #pragma once
+#include "../Defines.hpp"
 #include "Geometry.hpp"
 #include "../Polygon.hpp"
 

@@ -135,15 +135,15 @@ namespace XGF
 		auto ret = std::find(std::begin(mInputs), std::end(mInputs), tei);
 		if (ret == std::end(mInputs))
 			mInputs.push_back(tei);
-		for each (auto var in mInputs)
+		for (auto & it : mInputs)
 		{
-			if (var != tei)
+			if (it != tei)
 			{
-				var->OnFocus(false);
+				it->OnFocus(false);
 			}
 			else
 			{
-				var->OnFocus(true);
+				it->OnFocus(true);
 			}
 		}
 		mFocus = tei;

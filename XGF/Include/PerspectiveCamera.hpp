@@ -1,10 +1,8 @@
 #pragma once
+#include "Defines.hpp"
 #include "Camera.hpp"
 namespace XGF
 {
-	/*
-	透视投影摄像机
-	*/
 	class PerspectiveCamera :
 		public Camera
 	{
@@ -13,11 +11,11 @@ namespace XGF
 
 		~PerspectiveCamera();
 		virtual void UpdateProject(int cx, int cy);
-		// 左右 
+		// Left Right
 		void Strafe(float units);
-		// 上下 
+		// Up Down
 		void Fly(float units);
-		// 前后
+		// Front Back
 		void Walk(float units);
 
 		void Yaw(float angle);
@@ -28,12 +26,12 @@ namespace XGF
 
 
 		void RotateY(float angle);
-		//平移
+		
 		void Translation(float x, float y, float z);
-		//设置视角大小 ：  弧度
+
 		void SetFovAngle(float va);
-		//获取视角大小 ：  弧度
-		float GetFovAngle() { return mFovAngle; }
+
+		float GetFovAngle() const { return mFovAngle; }
 		
 	protected:
 		float mFovAngle;

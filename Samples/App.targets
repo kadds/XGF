@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+ <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+ <PropertyGroup>
+    <IntDir>$(SolutionDir)Out\$(ProjectName)\$(Platform)$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)Bin\$(Platform)$(Configuration)\</OutDir>
+ </PropertyGroup> 
+  <Import Project=".\..\Props\Configuration.props.targets" />
+  <PropertyGroup>
+    <TargetPath>$(OutDir)$(ProjectName).exe</TargetPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+	<Link>
+      <AdditionalDependencies>$(SolutionDir)Bin\$(Platform)$(Configuration)\XGF.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+	<PostBuildEvent>
+      <Command>$(ProjectDir)..\copyResources.bat $(SolutionDir) $(OutDir)</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  
+</Project>

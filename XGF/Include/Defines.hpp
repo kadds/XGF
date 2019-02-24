@@ -206,17 +206,7 @@ private:\
 TypeName(const TypeName&) = delete; \
 TypeName & operator=(const TypeName&) = delete;
 
-#ifdef _DEBUG
-#define XGF_ASSERT(expression) (void)(                                                       \
-            (!!(expression)) ||                                                              \
-            (_wassert(_CRT_WIDE(#expression), _CRT_WIDE(__FILE__), (unsigned)(__LINE__)), 0) \
-        )
-#else
-#define XGF_ASSERT(expression) (void)(                                                       \
-            (!!(expression)) ||                                                              \
-            (assert(_CRT_WIDE(#expression)), 0) \
-        )
-#endif
+#define XGF_ASSERT(expression) assert(expression)
 
 #define BaseClassSettersAndGetters(name, type) \
 	public:\

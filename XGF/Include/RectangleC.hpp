@@ -1,11 +1,11 @@
 #pragma once
+#include "Defines.hpp"
 #include "Shape2D.hpp"
 #include "Rectangle.hpp"
 namespace XGF
 {
 	namespace Shape
 	{
-		//带边框的矩形
 		class RectangleC :
 			public Shape2D
 		{
@@ -19,7 +19,7 @@ namespace XGF
 			virtual bool IsInBoundBox(const Point & p, const SM::Matrix & matrix) override;
 			//always return 3
 			int GetBorderLayer(int layer[]);
-			//获取内矩形
+
 			void GetInerBorderRectangle(Rectangle & rc);
 		};
 	}

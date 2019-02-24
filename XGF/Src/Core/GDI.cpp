@@ -19,7 +19,7 @@ namespace XGF
 		{
 			PutDebugString(mFactory2);
 		}
-		//Ã¶¾ÙÏµÍ³ÖĞµÄÊÊÅäÆ÷
+		//æšä¸¾ç³»ç»Ÿä¸­çš„é€‚é…å™¨
 		UINT adapter_no = 0;
 		IDXGIAdapter1* dxgi_adapter = nullptr;
 		DXGI_ADAPTER_DESC1 dc;
@@ -155,17 +155,17 @@ namespace XGF
 		}
 		mSamplerStates.GetMap().clear();
 
-		for each (auto var in mAdapters)
+		for (auto & it : mAdapters)
 		{
-			var->Release();
+			it->Release();
 		}
-		for each (auto var in mOutputs)
+		for (auto & it : mOutputs)
 		{
-			var->Release();
+			it->Release();
 		}
-		for each (auto var in mScreenMode)
+		for (auto & it :  mScreenMode)
 		{
-			delete[] var.second;
+			delete[] it.second;
 		}
 
 		if (mSwapChain1)
@@ -587,17 +587,17 @@ namespace XGF
 	{
 		D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
 		depthStencilDesc.DepthEnable = ds.GetDepthEnable();
-		depthStencilDesc.DepthWriteMask = (D3D11_DEPTH_WRITE_MASK) ds.GetDepthWriteMask();//D3D11_DEPTH_WRITE_MASK_ZERO½ûÖ¹Ğ´Éî¶È»º³å 
+		depthStencilDesc.DepthWriteMask = (D3D11_DEPTH_WRITE_MASK) ds.GetDepthWriteMask();//D3D11_DEPTH_WRITE_MASK_ZEROç¦æ­¢å†™æ·±åº¦ç¼“å†² 
 		depthStencilDesc.DepthFunc = (D3D11_COMPARISON_FUNC) ds.GetDepthFunc();
 		depthStencilDesc.StencilEnable = ds.GetStencilEnable();
 		depthStencilDesc.StencilReadMask = ds.GetStencilReadMask();
 		depthStencilDesc.StencilWriteMask = ds.GetStencilWriteMask();
-		// ¶ÔÓÚfront face ÏñËØÊ¹ÓÃµÄÄ£°æ²Ù×÷²Ù×÷. 
+		// å¯¹äºfront face åƒç´ ä½¿ç”¨çš„æ¨¡ç‰ˆæ“ä½œæ“ä½œ. 
 		depthStencilDesc.FrontFace.StencilFailOp = (D3D11_STENCIL_OP)ds.GetFrontFaceStencilFailOp();
 		depthStencilDesc.FrontFace.StencilDepthFailOp = (D3D11_STENCIL_OP) ds.GetFrontFaceStencilDepthFailOp();
 		depthStencilDesc.FrontFace.StencilPassOp = (D3D11_STENCIL_OP)ds.GetFrontFaceStencilPassOp();
 		depthStencilDesc.FrontFace.StencilFunc = (D3D11_COMPARISON_FUNC) ds.GetFrontFaceStencilFunc();
-		// ¶ÔÓÚback faceÏñËØÊ¹ÓÃµÄÄ£°æ²Ù×÷Ä£Ê½. 
+		// å¯¹äºback faceåƒç´ ä½¿ç”¨çš„æ¨¡ç‰ˆæ“ä½œæ¨¡å¼. 
 		depthStencilDesc.BackFace.StencilFailOp = (D3D11_STENCIL_OP)ds.GetBackFaceStencilFailOp();
 		depthStencilDesc.BackFace.StencilDepthFailOp = (D3D11_STENCIL_OP)ds.GetBackFaceStencilDepthFailOp();
 		depthStencilDesc.BackFace.StencilPassOp = (D3D11_STENCIL_OP)ds.GetBackFaceStencilPassOp();
@@ -794,7 +794,7 @@ namespace XGF
 			mSwapChain->Release();
 		}
 		CreateSwapChain();
-		// TODO: È«ÆÁÏà¹ØÂß¼­
+		// TODO: å…¨å±ç›¸å…³é€»è¾‘
 		SetFullScreen(bl, 0);
 	}
 

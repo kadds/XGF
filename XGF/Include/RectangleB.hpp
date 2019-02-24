@@ -1,11 +1,11 @@
 #pragma once
+#include "Defines.hpp"
 #include "Shape2D.hpp"
 #include "Rectangle.hpp"
 namespace XGF
 {
 	namespace Shape
 	{
-		//双矩形，用于9path
 		class RectangleB :
 			public Shape2D
 		{
@@ -19,7 +19,6 @@ namespace XGF
 			virtual bool IsInBoundBox(const Point & p, const SM::Matrix & matrix) override;
 			//always return 2
 			int GetBorderLayer(int layer[]);
-			//获取内矩形
 			void GetInerBorderRectangle(Rectangle & rc);
 		};
 	}
