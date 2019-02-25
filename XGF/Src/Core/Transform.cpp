@@ -20,7 +20,6 @@ namespace XGF
 	SM::Matrix Transform::GetMatrix()
 	{
 		if (!mIsChange) return DirectX::XMLoadFloat4x4(&mMatrix);
-		Point4 f0(0, 0, 0, 0);
 
 		auto matrix = DirectX::XMMatrixTransformation(
 			DirectX::XMLoadFloat3(&mScaleOrigin),
@@ -38,18 +37,7 @@ namespace XGF
 	{
 		DirectX::XMStoreFloat4x4(&mMatrix ,matrix);
 	}
-	void Transform::AddScaleAction(std::unique_ptr<Action> action)
-	{
-		mActions.AddAction(mScale, std::move(action));
-	}
-	void Transform::AddRotationAction(std::unique_ptr<Action> action)
-	{
-		mActions.AddAction(mRotation, std::move(action));
-	}
-	void Transform::AddTranslationAction(std::unique_ptr<Action> action)
-	{
-		mActions.AddAction(mTranslation, std::move(action));
-	}
+
 	void Transform::SetChangeFlag()
 	{
 		mIsChange = true;
@@ -106,17 +94,21 @@ namespace XGF
 	{
 		return mRotation;
 	}
+	Point & Transform::GetTranslate()
+	{
+		return mTranslation;
+	}
+	Point & Transform::GetScale()
+	{
+		return mScale;
+	}
+	Point & Transform::GetRotation()
+	{
+		return mRotation;
+	}
 	void Transform::SetTranslation(const Point & translation) {
 		mTranslation = translation;
 		mIsChange = true;
-	}
-	void Transform::UpdateAction(float dt)
-	{
-		if (mActions.IsStart())
-		{
-			mActions.Update(dt);
-			mIsChange = true;
-		}
 	}
 	void Transform::TranslateToX(float d)
 	{

@@ -45,16 +45,31 @@ public:
 		GetRootContainer().AddChild(label);
 		label->SetTextRenderer(&mUITextRenderer);
 		label->GetClickHelper().AddOnClickListener([this](Control *label, const MousePoint & ms, int mouseButton) {
-			AsyncTask::NewTask(&GetFramework().GetThread(), [](std::shared_ptr<AsyncTask> asyn) {
+			
+			AsyncTask::NewTask(&Context::Current().QueryGameThread(), [](std::shared_ptr<AsyncTask> asyn) {
 				MessageBox(NULL, L"YOU CLICK Label!!", L"Exe", 0);
 				asyn->Finish(0, 0);
 			});
-			if(label->GetShape()->GetTransform().GetTranslateX() < 180)
-				label->GetShape()->GetTransform().AddTranslationAction(Action::Make(Point(200, 2, 0), 1.f, false, LinearInterpolator::GetInterpolator()));
-			else
-				label->GetShape()->GetTransform().AddTranslationAction(Action::Make(Point(50, 2, 0), 1.f, false, LinearInterpolator::GetInterpolator()));
+			auto dx = label->GetShape()->GetTransform().GetTranslateX();
+			auto action = std::make_unique<DataAction<Point>>(Point((dx >= 180 ? (50 - dx) : (200 - dx)), 0, 0), 1.f, LinearInterpolator::GetInterpolator());
+			action->SetTarget(&(label->GetShape()->GetTransform().GetTranslate()));
+			action->SetNotificationCallback(std::bind(&Transform::SetChangeFlag, &label->GetShape()->GetTransform()));
+			mActions.AddAction(std::move(action));
 		});
-		
+		auto setAction = [this] (Transform & transform)
+		{
+			auto callback = std::bind(&Transform::SetChangeFlag, &transform);
+			std::vector<std::unique_ptr<Action>> actions;
+			auto first = std::make_unique<DataAction<Point>>(Point(200, 0, 0), 1.4f, AccelerateDecelerateInterpolator::GetInterpolator(), &transform.GetTranslate(), callback);
+			auto second = std::make_unique<DataAction<Point>>(Point(-200, 0, 0), 1.4f, AccelerateDecelerateInterpolator::GetInterpolator(), &transform.GetTranslate(), callback);
+			actions.push_back(std::move(first));
+			actions.push_back(std::move(second));
+			auto seq = std::make_unique<SequenceAction>(std::move(actions));
+			auto repeat = std::make_unique<RepeatAction>(std::move(seq), -1);
+			
+
+			mActions.AddAction(std::move(repeat));
+		};
 		std::shared_ptr<Button> nextButton = std::make_shared<Button>(2, L"switch to next scene.");
 		mBtnGroup->AddChild(nextButton);
 		nextButton->SetPositionAndSize(0, 240, 80, 40);
@@ -64,7 +79,7 @@ public:
 			//this->GetFramework()->SwitchScene();
 		});
 		nextButton->SetTextRenderer(&mUITextRenderer);
-
+		
 		std::shared_ptr<Button> buttonux = std::make_shared<Button>(1, XGF::string(L"Switch Mode"));
 		mBtnGroup->AddChild(buttonux);
 
@@ -81,6 +96,7 @@ public:
 				gdi.SetDisplayMode(DisplayMode::FullScreen, 0, 0, 1920, 1080, true);
 		});
 		buttonux->SetTextRenderer(&mUITextRenderer);
+		setAction(mBtnGroup->GetTransform());
 
 		std::shared_ptr<EditText> edit1 = std::make_shared<EditText>(10);
 		std::shared_ptr<EditText> edit2 = std::make_shared<EditText>(11);
@@ -102,7 +118,7 @@ public:
 		auto res = std::vector<ResourceInfo>();
 		res.push_back(ResourceInfo(L"cursor.png", L"cursor"));
 
-		mTextureResourceManager.LoadResourceAsync(res, &GetFramework().GetThread(), [this](std::vector<ResourceInfo> ress, int success) {
+		mTextureResourceManager.LoadResourceAsync(res, &Context::Current().QueryGameThread(), [this](std::vector<ResourceInfo> ress, int success) {
 			if (success < 1) return;
 			auto cursor = mTextureResourceManager.GetResourceByAlias(L"cursor");
 
@@ -169,7 +185,7 @@ public:
 		mCamera2D.Update();
 		if(mDirection)
 		{
-			mBtnGroup->GetTransform().TranslateX(-deltaTime * 20);
+			//mBtnGroup->GetTransform().TranslateX(-deltaTime * 20);
 			if (mBtnGroup->GetTransform().GetTranslateX() < 50)
 			{
 				mDirection = false;
@@ -177,7 +193,7 @@ public:
 		}
 		else
 		{
-			mBtnGroup->GetTransform().TranslateX(deltaTime * 20);
+			//mBtnGroup->GetTransform().TranslateX(deltaTime * 20);
 			if (mBtnGroup->GetTransform().GetTranslateX() > 150)
 			{
 				mDirection = true;
@@ -186,6 +202,8 @@ public:
 		auto & ip = GetFramework().GetInputManager();
 		if (ip.IskeyDown(DIK_ESCAPE))
 			GetFramework().Exit(0);
+		mActions.Update(deltaTime);
+		
 	};
 	virtual void OnSize(int ClientX, int ClientY) override
 	{
@@ -206,6 +224,8 @@ private:
 	TextureResourceManager mTextureResourceManager;
 
 	bool mDirection = true;
+
+	Actions mActions;
 };
 
 

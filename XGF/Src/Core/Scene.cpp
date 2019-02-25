@@ -35,14 +35,6 @@ namespace XGF
 		mRootContainer._Render();
 	}
 
-	SceneAnimation * Scene::OnSwitchIn()
-	{
-		return nullptr;
-	}
-	SceneAnimation * Scene::OnSwitchOut()
-	{
-		return nullptr;
-	}
 
 	void Scene::_OnSize(const Event & ev)
 	{

@@ -2,44 +2,61 @@
 #include "../../Include/Action.hpp"
 namespace XGF
 {
-	Actions::Actions() :mIsActionBegan(false)
+	Actions::Actions() :mIsActionBegan(false), mIsPause(false)
 	{
 	}
 
 
 	Actions::~Actions()
 	{
-		//delete mAction;
+
 	}
 
 	void Actions::Update(float time)
 	{
-		if (mIsActionBegan )
+		if (mIsActionBegan & !mIsPause)
 		{
-			for (auto it = mAction.begin(); it != mAction.end();)
+			bool rt = false;
+			for(auto it = mActions.begin(); it != mActions.end();)
 			{
-				if (it->second->Tick(it->first, time))
+				if (!(*it)->Tick(time))
 				{
-					it = mAction.erase(it);
+					rt = true;
+					++it;
 				}
-				else ++it;
+				else
+				{
+					it = mActions.erase(it);
+				}
 			}
-			mIsActionBegan = !mAction.empty();
+			mIsActionBegan = rt;
 		}
-		
 	}
 
-	bool Actions::IsStart()
+	void Actions::Pause()
+	{
+		mIsPause = true;
+	}
+
+	void Actions::Resume()
+	{
+		mIsPause = false;
+	}
+
+	bool Actions::IsPause() const
+	{
+		return mIsPause;
+	}
+
+	bool Actions::IsStart() const
 	{
 		return mIsActionBegan;
 	}
 
-	void Actions::AddAction(Point & From, std::unique_ptr<Action> act)
+	void Actions::AddAction(std::unique_ptr<Action> act)
 	{
-		act->SetFrom(From);
-		mAction.push_back(std::make_pair(&From, std::move(act)));
 		mIsActionBegan = true;
+		mActions.push_back(std::move(act));
 	}
-
 }
 

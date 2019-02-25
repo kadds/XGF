@@ -37,7 +37,7 @@ public:
 		auto res = std::vector<ResourceInfo>();
 		res.push_back(ResourceInfo(L"logo.png", L"logo"));
 
-		mDirectionalLight = make_unique<Shape::DirectionalLight>(Point(5.f, -5.f, 5.f), Color(0.4f, 0.4f, 0.85f, 1.f));
+		mDirectionalLight = make_unique<Shape::DirectionalLight>(Point(5.f, -10.f, 5.f), Color(0.4f, 0.4f, 0.85f, 1.f));
 		mPointLight = make_unique<Shape::PointLight>(Point(-3.f, 7.f, -4.f), Color(0.6f, 0.6f, 0.6f, 1.f), Point(0.1f, 0.001f, 0.0000001f));
 		mSpotLight = make_unique<Shape::SpotLight>(Point(4.f, 5.f, 1.f), Point(-1.8f, -2.1f, -0.3f), Color(0.95f, 0.65f, 0.68f, 1.f), 
 			Point(1.f, 0.f, 0.f), cos(DirectX::XM_PI / 4.f), cos(DirectX::XM_PI / 3.f));
@@ -56,7 +56,28 @@ public:
 		mSpotLight->SetSlopeScaledDepthBias(1.5f);
 		mDirectionalLight->SetSlopeScaledDepthBias(1.0f);
 
-		mDirectionalLight->SetShadowArea(Point(-2, 4, -2), CameraRectangle(-15.f, 15.f, 15.f, -15.f, 1.f, 15.f));
+		mDirectionalLight->SetShadowArea(Point(0, 5, 0), CameraRectangle(-20.f, 20.f, 20.f, -20.f, 0.1f, 20.f));
+		auto setAction = [this] (Point & p)
+		{
+			std::vector<std::unique_ptr<Action>> actions;
+			auto action1 = std::make_unique<DataAction<Point>>(Point(0, 0, -10), 3.0f, LinearInterpolator::GetInterpolator(), &p);
+			actions.push_back(std::move(action1));
+
+			auto action2 = std::make_unique<DataAction<Point>>(Point(-10, 0, 0), 3.0f, LinearInterpolator::GetInterpolator(), &p);
+			actions.push_back(std::move(action2));
+
+			auto action3 = std::make_unique<DataAction<Point>>(Point(0, 0, 10), 3.0f, LinearInterpolator::GetInterpolator(), &p);
+			actions.push_back(std::move(action3));
+
+			auto action4 = std::make_unique<DataAction<Point>>(Point(10, 0, 0), 3.0f, LinearInterpolator::GetInterpolator(), &p);
+			actions.push_back(std::move(action4));
+
+			auto comp = std::make_unique<SequenceAction>(std::move(actions));
+			auto repeat = std::make_unique<RepeatAction>(std::move(comp), -1);
+			mActions.AddAction(std::move(repeat));
+		};
+		setAction(mDirectionalLight->GetDirection());
+		
 
 		mTextureResourceManager.LoadResource(res);
 		texture = mTextureResourceManager.GetResourceByAlias(L"logo");
@@ -214,6 +235,7 @@ public:
 		}
 		mCamera3D.Update();
 		mCamera2D.Update();
+		mActions.Update(deltaTime);
 	};
 	virtual void OnSize(int cx, int cy) override
 	{
@@ -274,6 +296,8 @@ private:
 	std::unique_ptr<Shape::AmbientLight> mAmbientLight;
 
 	Shape::Rectangle mRc;
+
+	Actions mActions;
 };
 
 

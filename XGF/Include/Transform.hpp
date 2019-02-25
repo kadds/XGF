@@ -4,9 +4,7 @@
 #include "Actions.hpp"
 namespace XGF
 {
-	/*
-	* ת��
-	*/
+
 	class Transform
 	{
 	private:
@@ -17,8 +15,6 @@ namespace XGF
 		Point mRotation;
 		Point mScale;
 		Point mTranslation;
-	private:
-		Actions mActions;
 	public:
 		Transform();
 		void SetRotationAngle(const Point & angle);
@@ -29,14 +25,14 @@ namespace XGF
 		const Point & GetScale() const;
 		const Point & GetRotation() const;
 
-		void UpdateAction(float dt);
+		Point & GetTranslate();
+		Point & GetScale();
+		Point & GetRotation();
+
 		void SetScaleOrigin(Point &p) { mScaleOrigin = p; }
 		void SetRotationOrigin(Point &p) { mRotationOrigin = p; }
 		SM::Matrix GetMatrix();
 		void SetMatrix(SM::Matrix matrix);
-		void AddScaleAction(std::unique_ptr<Action> action);
-		void AddRotationAction(std::unique_ptr<Action> action);
-		void AddTranslationAction(std::unique_ptr<Action> action);
 
 		void TranslateToX(float d);
 		void TranslateX(float d);

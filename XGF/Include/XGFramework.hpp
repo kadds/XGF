@@ -37,7 +37,6 @@ namespace XGF
 
 		void OpenVSync();
 		void CloseVSync();
-		Asyn & GetThread() const;
 
 		void Exit(int code);
 

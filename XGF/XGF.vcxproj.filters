@@ -159,9 +159,6 @@
     <ClInclude Include="Include\Interpolator\Interpolator.hpp">
       <Filter>头文件\Interpolator</Filter>
     </ClInclude>
-    <ClInclude Include="Include\DelayAction.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Include\InputManager.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -199,9 +196,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\TextLayoutShaper.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\SceneAnimation.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Include\FPSCamera.hpp">
@@ -451,9 +445,6 @@
     </ClCompile>
     <ClCompile Include="Src\Core\TextLayoutShaper.cpp">
       <Filter>源文件\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Animation\SceneAnimation.cpp">
-      <Filter>源文件\Animation</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\FPSCamera.cpp">
       <Filter>源文件\Core</Filter>

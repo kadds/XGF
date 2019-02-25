@@ -15,7 +15,6 @@ namespace XGF{
 
 	void Actor::_Update(float deltaTime)
 	{
-		GetShape()->GetTransform().UpdateAction(deltaTime);
 		Update(deltaTime);
 	}
 

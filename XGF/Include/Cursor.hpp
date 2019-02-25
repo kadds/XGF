@@ -3,7 +3,6 @@
 #include "Shader.hpp"
 #include "Rectangle.hpp"
 #include "Texture.hpp"
-#include "Animation.hpp"
 #include "Polygon.hpp"
 
 namespace XGF
@@ -18,7 +17,6 @@ namespace XGF
 		void Shutdown();
 		
 		void SetStaticTexture(Texture * texture);
-		void SetAnimation(Animation * mm);
 		void SetPointDeviation(Position & p) { mPointDeviation = p; };
 		
 	private:
@@ -40,7 +38,6 @@ namespace XGF
 		std::shared_ptr<PolygonPleTextureBinder> mPtBinder;
 
 		Texture * mTexture;
-		Animation *mAnimation;
 		DisableCopyAndAssign(Cursor)
 	};
 

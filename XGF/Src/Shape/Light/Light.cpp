@@ -92,7 +92,11 @@ namespace XGF::Shape
 		mTransform.SetRotationAngle(direction);
 	}
 
-	Point Light::GetDirection() const
+	const Point& Light::GetDirection() const
+	{
+		return mTransform.GetRotation();
+	}
+	Point & Light::GetDirection()
 	{
 		return mTransform.GetRotation();
 	}

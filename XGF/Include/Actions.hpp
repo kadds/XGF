@@ -10,12 +10,15 @@ namespace XGF
 		~Actions();
 
 		void Update(float time);
-
-		bool IsStart();
-		void AddAction(Point & From, std::unique_ptr<Action> act);
+		void Pause();
+		void Resume();
+		bool IsPause() const;
+		bool IsStart() const;
+		void AddAction(std::unique_ptr<Action> act);
 	private:
 		bool mIsActionBegan;
-		std::vector<std::pair<Point *, std::unique_ptr<Action>>> mAction;
+		bool mIsPause;
+		std::vector<std::unique_ptr<Action>> mActions;
 
 	};
 

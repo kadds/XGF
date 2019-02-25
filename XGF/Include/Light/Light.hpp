@@ -24,7 +24,8 @@ namespace XGF::Shape
 		LightType GetLightType() const;
 
 		void SetDirection(const Point& direction);
-		Point GetDirection() const; 
+		const Point& GetDirection() const;
+		Point& GetDirection();
 	protected:
 		inline static const Point DefaultDirection = Point(1, 1, 1);
 		Transform mTransform;

@@ -6,7 +6,7 @@
 
 namespace XGF
 {
-	Cursor::Cursor() :mPtBinder(std::make_shared<PolygonPleTextureBinder>(4)), mIsShow(false), mUsedStaticTexture(true), mAnimation(0), mPointDeviation(0.f, 0.f), mPassTime(0.f), mTexture(nullptr)
+	Cursor::Cursor() :mPtBinder(std::make_shared<PolygonPleTextureBinder>(4)), mIsShow(false), mUsedStaticTexture(true), mPointDeviation(0.f, 0.f), mPassTime(0.f), mTexture(nullptr)
 	{
 	}
 
@@ -56,8 +56,7 @@ namespace XGF
 			if (!mIsShow)  return;
 			BindingBridge bbr;
 			bbr.AddBinder(mPtBinder);
-			float x, y, w, h;
-			mAnimation->GetPositionInTexture(x, y, w, h);
+			float x = 0, y = 0, w = 1, h = 1;
 			mPtBinder->GetData(0).x = mPtBinder->GetData(3).x = x;
 			mPtBinder->GetData(0).y = mPtBinder->GetData(1).y = y;
 			mPtBinder->GetData(1).x = mPtBinder->GetData(2).x = x + w;
@@ -89,7 +88,6 @@ namespace XGF
 		mPassTime += time;
 		if (!mUsedStaticTexture && mTexture)
 		{
-			mAnimation->Tick(time);
 		}
 	}
 
@@ -99,11 +97,6 @@ namespace XGF
 		mUsedStaticTexture = texture != nullptr;
 	}
 
-	void Cursor::SetAnimation(Animation * mm)
-	{
-		mAnimation = mm;
-		mUsedStaticTexture = false;
-	}
 
 	void Cursor::Hide() {
 		mIsShow = false;

@@ -1,6 +1,5 @@
 #pragma once
 #include "Defines.hpp"
-#include "SceneAnimation.hpp"
 #include "Container.hpp"
 namespace XGF
 {
@@ -19,8 +18,6 @@ namespace XGF
 		virtual void Render() = 0;
 		void _Update(float deltaTime);
 		virtual void Update(float deltaTime) = 0;
-		virtual SceneAnimation * OnSwitchIn();
-		virtual SceneAnimation * OnSwitchOut();
 
 		void _OnSize(const Event & ev);
 		virtual void OnSize(int ClientX, int ClientY) = 0;
