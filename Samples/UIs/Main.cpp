@@ -125,9 +125,10 @@ public:
 	};
 	virtual void Render() override
 	{
-		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
-
-		Context::Current().QueryRenderer().Clear(Color(0.5, 0.5, 0.5, 1));
+		auto & context = Context::Current();
+		auto & gdi = context.QueryGraphicsDeviceInterface();
+		context.QueryRenderer().PushDefaultFrameTarget();
+		context.QueryRenderer().Clear(Color(0.5, 0.5, 0.5, 1));
 		WVPMatrix wvp2D;
 		mCamera2D.GetCameraMatrix(wvp2D);
 

@@ -24,7 +24,7 @@ namespace XGF
 		RenderCommand() :mRenderOrder(0){  }
 		RenderCommand(int order) : mRenderOrder(order) {  }
 		virtual ~RenderCommand() {  }
-		virtual void Exec() = 0;
+		virtual void Exec(GDI & gdi, FrameBuffer & frameBuffer) = 0;
 		int GetRenderOrder() const
 		{
 			return mRenderOrder;
@@ -41,43 +41,44 @@ namespace XGF
 		std::deque<RenderCommand*> commands;
 		void Push(RenderCommand* cmd);
 	};
-	enum class RenderGroupType
+	typedef unsigned RenderGroupRawType;
+	enum class RenderGroupType : RenderGroupRawType
 	{
 		Background,
 		Normal,
 		Transparent,
 		Foreground,
 	};
+	
 	struct RenderTargetPass
 	{
-		RenderTargetPass() : mRenderQueues(4), mIsClearTarget(false), mClearDepthStencilBuffer(false){  }
-		~RenderTargetPass();
+		RenderTargetPass(FrameBuffer * target) : mRenderQueues(4), mTarget(target){  }
+		~RenderTargetPass() = default;
+		void Clear();
 
-		void Clear(const Color& color)
-		{
-			mClearColor = color;
-		}
-		void ClearDepthStencilBuffer()
-		{
-			mClearDepthStencilBuffer = true;
-		}
-		Color mClearColor;
 		FrameBuffer * mTarget;
-		bool mClearDepthStencilBuffer;
-		bool mIsClearTarget;
+
 		std::vector<RenderQueue> mRenderQueues;
 	};
-	struct RendererFrameResource
+	class RendererFrameResource
 	{
+	private:
 		std::list<GpuBuffer> mVertices, mIndices;
 		std::list<GpuBuffer> mVerticesUsed, mIndicesUsed;
 		std::list<GpuBuffer> mConstantBuffer, mConstantBufferUsed;
-		int mPassUsedIndex;
-		std::vector<RenderTargetPass *> mPass;
-		RenderTargetPass mDefaultPass;
+		std::vector<RenderTargetPass> mPass;
+		std::stack<unsigned> mPassStack;
 		unsigned int mRenderIndex;
-		RenderTargetPass& GetCurrentPass();
 		bool mRenderedFlag;
+
+	public:
+		unsigned int NextRenderIndex();
+		std::vector<RenderTargetPass>& GetAllPasses();
+		RenderTargetPass& GetCurrentPass();
+		void Push(FrameBuffer* frameBuffer);
+
+		FrameBuffer* Pop();
+
 		bool HasRenderedFlag() const
 		{
 			return mRenderedFlag;
@@ -95,7 +96,11 @@ namespace XGF
 			return !mPass.empty();
 		}
 		void NewFrame();
-		RendererFrameResource(): mRenderedFlag(false), mPassUsedIndex(-1){  }
+		void ClearAll();
+		GpuBuffer QueryUnusedGpuIndexBuffer(unsigned count);
+		GpuBuffer QueryUnusedGpuVertexBuffer(unsigned size);
+		GpuBuffer QueryUnusedGpuConstantBuffer(unsigned size);
+		RendererFrameResource(): mRenderedFlag(false){  }
 	};
 
 	typedef std::function<void(Renderer *)> RendererDrawCallbackFunc;
@@ -112,33 +117,36 @@ namespace XGF
 	{
 	public:
 		Renderer() = default;
-		void ClearDepthStencilBuffer();
-		void Clear(const Color& color);
+		void ClearDepthStencilBuffer(RenderGroupType groupType = RenderGroupType::Normal);
+		void Clear(const Color& color, RenderGroupType groupType = RenderGroupType::Normal);
+		void ClearColor(const Color& color, RenderGroupType groupType = RenderGroupType::Normal);
+
+		void ClearDepthStencilBuffer(RenderGroupRawType groupType);
+		void Clear(const Color& color, RenderGroupRawType groupType);
+		void ClearColor(const Color& color, RenderGroupRawType groupType);
+
 		void Create();
 		void Destroy();
 
 		void Commit(RenderGroupType groupType, RenderCommand* cmd);
 
-		void Commit(int groupIndex, RenderCommand* cmd);
-		bool IsPresentAllResource();
-		RenderQueue& GetRenderGroup(int index);
+		void Commit(RenderGroupRawType groupIndex, RenderCommand* cmd);
+
+		RenderQueue& GetRenderGroup(RenderGroupRawType index);
 		RenderQueue& GetRenderGroup(RenderGroupType groupType);
 		void Loop();
-		GpuBuffer QueryUnusedGpuIndexBuffer(unsigned count);
-		GpuBuffer QueryUnusedGpuVertexBuffer(unsigned size);
-		GpuBuffer QueryUnusedGpuConstantBuffer(unsigned size);
 
 		void SetLimitFrameRate(int frameRate);
 		int GetLimitFrameRate() const;
 
-		int AppendFrameTarget(FrameBuffer* target);
-		int AppendDefaultFrameTarget();
-		void AppendAndSetDefaultFrameTarget();
-		void SetDefaultFrameTarget();
-		void SetFrameTarget(int index);
-		void SetFrameTarget(FrameBuffer* target);
-		void AppendAndSetFrameTarget(FrameBuffer* target);
 		FrameBuffer * GetCurrentFrameTarget();
+
+		void PushFrameTarget(FrameBuffer * target);
+		void PushDefaultFrameTarget();
+		FrameBuffer * PopFrameTarget();
+
+		// pop and set a new frame target at last
+		FrameBuffer * PopNewFrameTarget();
 
 		void AppendBeforeDrawCallback(const std::string & name, RendererDrawCallbackFunc callback);
 		void AppendAfterDrawCallback(const std::string & name, RendererDrawCallbackFunc callback);
@@ -152,6 +160,8 @@ namespace XGF
 		bool IsRenderEnd() const;
 
 		void WaitFrame();
+
+		RendererFrameResource& GetCurrentRenderResource();
 	private:
 		void DrawCommands();
 		void BeforeDraw();
@@ -161,7 +171,6 @@ namespace XGF
 		FrameRateLimiter mFrameRateLimiter;
 		RendererFrameResource mResource[2];
 		int mIndexOfResource;
-		std::atomic_bool mTag;
 		bool mLooping;
 		bool mLooped;
 		std::atomic_bool mDrawing;
@@ -182,10 +191,53 @@ namespace XGF
 
 		void SetCurrentResource(int index);
 
-		RendererFrameResource& GetCurrentRenderResource();
+		
 	};
 
-	
+	class ClearRenderCommand : public RenderCommand
+	{
+	private:
+		Color mClearColor;
+		bool mClearTarget;
+		bool mClearDepth;
+	public:
+		void Exec(GDI & gdi, FrameBuffer & frameBuffer) override;
+		ClearRenderCommand(const Color & clearColor, bool clearTarget, bool clearDepth): mClearColor(clearColor), mClearTarget(clearTarget), mClearDepth(clearDepth) {  }
+		static ClearRenderCommand * MakeRenderCommand(const Color & clearColor, bool clearDepth);
+		static ClearRenderCommand * MakeRenderCommand(bool clearDepth);
+	};
+
+	class SubRenderCommand final : public RenderCommand
+	{
+	private:
+		std::vector<RenderCommand *> mCommands;
+
+	public:
+		SubRenderCommand(std::vector<RenderCommand *> && commands): mCommands(std::move(commands)) {  }
+		~SubRenderCommand();
+		void Exec(GDI& gdi, FrameBuffer& frameBuffer) override;
+		template<typename Head, typename...TArgs>
+		static void UnpackCommands(RenderCommand ** commandPtr, Head&& head, TArgs&&...args)
+		{
+			*commandPtr = head;
+			UnpackCommands(++commandPtr, std::forward<TArgs>(args));
+		}
+		template<typename Head>
+		static void UnpackCommands(RenderCommand ** commandPtr, Head&& head)
+		{
+			*commandPtr = head;
+		}
+		template<typename ...TArgs>
+		static SubRenderCommand * MakeRenderCommand(TArgs&&...args)
+		{
+			std::vector<RenderCommand *> commands(sizeof...(args));
+			UnpackCommands(&commands[0], std::forward<TArgs>(args));
+			return new SubRenderCommand(std::move(commands));
+		}
+
+		static SubRenderCommand* MakeRenderCommand(std::vector<RenderCommand *>&& commands);
+	};
+
 	class DefaultRenderCommand : public RenderCommand
 	{
 	private:
@@ -224,7 +276,7 @@ namespace XGF
 			auto & gdi = context.QueryGraphicsDeviceInterface();
 			auto & renderer = context.QueryRenderer();
 			auto & cb = mRenderStage.GetConstantBuffer<TShader>();
-			auto buffer = renderer.QueryUnusedGpuConstantBuffer(mRenderStage.GetShader<TShader>()->GetCBufferSize(index));
+			auto buffer = renderer.GetCurrentRenderResource().QueryUnusedGpuConstantBuffer(mRenderStage.GetShader<TShader>()->GetCBufferSize(index));
 			gdi.CopyToBuffer(buffer, cb[index].GetBufferPoint());
 			BindBuffer<TShader>(&gdi, index, buffer);
 		}
@@ -235,7 +287,7 @@ namespace XGF
 			const RenderStage& renderStage);
 
 		~DefaultRenderCommand();
-		virtual void Exec() override;
+		virtual void Exec(GDI & gdi, FrameBuffer & frameBuffer) override;
 	};
 
 }

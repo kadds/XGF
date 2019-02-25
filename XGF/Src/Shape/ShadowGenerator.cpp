@@ -27,8 +27,7 @@ namespace XGF::Shape
 	{
 		BindingBridge bbr;
 		auto & renderer = Context::Current().QueryRenderer();
-		auto * renderTarget = renderer.GetCurrentFrameTarget();
-		renderer.AppendAndSetFrameTarget(&mFrameBuffer);
+		renderer.PushFrameTarget(&mFrameBuffer);
 		auto & raster = mRenderState.GetRasterizerState();
 		raster.SetSlopeScaledDepthBias(light->GetSlopeScaledDepthBias());
 		raster.SetDepthBias(light->GetDepthBias());
@@ -46,7 +45,7 @@ namespace XGF::Shape
 			bbr.AddBinder(ppe);
 			renderer.Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(bbr, *mesh->GetGeometry()->GetIndex().get(), RenderStage(mRenderState, mRenderResource)));
 		}
-		renderer.SetFrameTarget(renderTarget);
+		renderer.PopNewFrameTarget();
 		return mFrameBuffer.GetDepthStencilTexture();
 	}
 

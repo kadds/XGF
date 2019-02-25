@@ -16,14 +16,13 @@ namespace XGF
 		for (;;)
 		{
 			mScheduler.DoSchedule();
-			if (mThread->HandleMessage()) return;
+			if (context.QueryGameThread().HandleMessage()) return;
 		}
 	}
 	void XGFramework::_OnCreate()
 	{
 		CoInitializeEx(nullptr, COINITBASE_MULTITHREADED);
 		auto & context = Context::Current();
-		mThread = &context.QueryGameThread();
 		context.QueryGameThread().SetCallBackFunc(std::bind(&EventDispatcher::Dispatch, &mFrameWorkEventDispatcher, std::placeholders::_1));
 		mFrameWorkEventDispatcher.InsertAllEventListener(std::bind(&XGFramework::_OnMessage, this, std::placeholders::_1));
 		mInputManager.Initialize();
@@ -138,7 +137,7 @@ namespace XGF
 	
 	void XGFramework::SwitchScene(std::shared_ptr<Scene> scene)
 	{
-		mThread->PostEvent(SystemEventId::SwitchScene, { scene });
+		Context::Current().QueryGameThread().PostEvent(SystemEventId::SwitchScene, { scene });
 	}
 
 	void XGFramework::AddScene(std::shared_ptr<Scene> scene)
@@ -201,22 +200,16 @@ namespace XGF
 		mIsVSync = false;
 	}
 
-
-	Asyn &XGFramework::GetThread() const
-	{
-		return *mThread;
-	}
-
 	void XGFramework::Exit(int code)
 	{
 		// set exit code
 		PostMessage(Context::Current().QueryGraphicsDeviceInterface().GetTopHwnd(), WM_CLOSE, 1, code);
-		mThread->PostExitEvent();
+		Context::Current().QueryGameThread().PostExitEvent();
 		Context::Current().QueryRenderThread().PostExitEvent();
 	}
 
 
-	XGFramework::XGFramework() : mThread(nullptr), mIsVSync(false),
+	XGFramework::XGFramework() : mIsVSync(false),
 	                             mOnCloseListener(nullptr),
 	                             mOnInputListener(nullptr), mInfoFrameCost(1.f / 30)
 	{

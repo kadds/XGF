@@ -67,7 +67,6 @@ namespace XGF
 		Scheduler mScheduler;
 		InputManager mInputManager;
 
-		Asyn * mThread;
 		bool mIsVSync;
 		std::function<bool(XGFramework &)> mOnCloseListener;
 		std::function<bool(XGFramework &, const Event &ev)> mOnInputListener;

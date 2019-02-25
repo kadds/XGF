@@ -37,11 +37,10 @@ namespace XGF
 	}
 
 
-	void DefaultRenderCommand::Exec()
+	void DefaultRenderCommand::Exec(GDI & gdi, FrameBuffer & frameBuffer)
 	{
 		unsigned int offset[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT]{ 0 };
 
-		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
 		mRenderStage.BindStage();
 		if (!mRenderStage.GetConstantBuffer<VertexShader>().empty())
 			for (unsigned i = 0; i < mRenderStage.GetShader<VertexShader>()->GetCBufferCount(); i++)
@@ -54,14 +53,14 @@ namespace XGF
 				BindConstantBuffer<GeometryShader>(i);
 
 
-		auto vertexBuffer = Context::Current().QueryRenderer().QueryUnusedGpuVertexBuffer(mVertexSize);
+		auto vertexBuffer = Context::Current().QueryRenderer().GetCurrentRenderResource().QueryUnusedGpuVertexBuffer(mVertexSize);
 		auto stride = mRenderStage.GetShader<VertexShader>()->GetStrideAllSizeAtSlot(0);
 		gdi.GetDeviceContext()->IASetVertexBuffers(0, 1, &vertexBuffer.buffer, &stride, offset);
 		memcpy_s(gdi.Map(vertexBuffer), mVertexSize, mVertices, mVertexSize);
 		gdi.UnMap(vertexBuffer);
 		if (mIndexCount > 0)
 		{
-			auto indexBuffer = Context::Current().QueryRenderer().QueryUnusedGpuIndexBuffer(mIndexCount);
+			auto indexBuffer = Context::Current().QueryRenderer().GetCurrentRenderResource().QueryUnusedGpuIndexBuffer(mIndexCount);
 			gdi.GetDeviceContext()->IASetIndexBuffer(indexBuffer.buffer, DXGI_FORMAT_R32_UINT, 0);
 			memcpy_s(gdi.Map(indexBuffer), sizeof(Index) * mIndexCount, mIndices, sizeof(Index) * mIndexCount);
 			gdi.UnMap(indexBuffer);
@@ -88,7 +87,7 @@ namespace XGF
 		commands.push_back(cmd);
 	}
 
-	RenderTargetPass::~RenderTargetPass()
+	void RenderTargetPass::Clear()
 	{
 		for (auto& renderQueue : mRenderQueues)
 		{
@@ -100,23 +99,34 @@ namespace XGF
 		mRenderQueues.clear();
 	}
 
+
+	unsigned RendererFrameResource::NextRenderIndex()
+	{
+		return mRenderIndex++;
+	}
+
+	std::vector<RenderTargetPass>& RendererFrameResource::GetAllPasses()
+	{
+		return mPass;
+	}
+
 	RenderTargetPass& RendererFrameResource::GetCurrentPass()
 	{
-		if (mPassUsedIndex < 0)
-		{
-			if(mPass.empty())
-			{
-				// 自动添加为默认Pass
-				mPassUsedIndex = 0;
-				mPass.push_back(&mDefaultPass);
-			}
-			else
-			{
-				mPassUsedIndex = 0;
-				XGF_Info(Render, "Pass has not been set, now set to the first pass");
-			}
-		}
-		return *mPass[mPassUsedIndex];
+		XGF_ASSERT(!mPassStack.empty());
+		return mPass[mPassStack.top()];
+	}
+
+	void RendererFrameResource::Push(FrameBuffer* frameBuffer)
+	{
+		mPass.emplace_back(frameBuffer);
+		mPassStack.push(mPass.size() - 1);
+	}
+
+	FrameBuffer* RendererFrameResource::Pop()
+	{
+		auto & r = mPass[mPassStack.top()];
+		mPassStack.pop();
+		return r.mTarget;
 	}
 
 	void RendererFrameResource::NewFrame()
@@ -129,28 +139,79 @@ namespace XGF
 
 		mConstantBuffer.insert(mConstantBuffer.end(), mConstantBufferUsed.begin(), mConstantBufferUsed.end());
 		mConstantBufferUsed.clear();
-
-		for (auto pass : mPass)
+		for(auto & it : mPass)
 		{
-			if(pass != &mDefaultPass)
-			{
-				delete pass;
-			}
+			it.Clear();
 		}
 		mPass.clear();
-		mPassUsedIndex = -1;
+		
+		while (mPassStack.empty())
+			mPassStack.pop();
+		
 		mRenderIndex = 0;
 	}
-	void Renderer::ClearDepthStencilBuffer()
+
+	void RendererFrameResource::ClearAll()
 	{
-		auto & pass = GetCurrentResource().GetCurrentPass();
-		pass.ClearDepthStencilBuffer();
+		for (auto & pass : mPass)
+		{
+			pass.Clear();
+		}
+		mPass.clear();
+		for (GpuBuffer & buffer : mVertices)
+		{
+			buffer.buffer->Release();
+		}
+		for (GpuBuffer & buffer : mVerticesUsed)
+		{
+			buffer.buffer->Release();
+		}
+		for (GpuBuffer& buffer : mIndices)
+		{
+			buffer.buffer->Release();
+		}
+		for (GpuBuffer& buffer : mIndicesUsed)
+		{
+			buffer.buffer->Release();
+		}
+		for (GpuBuffer & buffer : mConstantBuffer)
+		{
+			buffer.buffer->Release();
+		}
+		for (GpuBuffer & buffer : mConstantBufferUsed)
+		{
+			buffer.buffer->Release();
+		}
 	}
-	void Renderer::Clear(const Color& color)
+
+	void Renderer::ClearDepthStencilBuffer(RenderGroupType groupType)
 	{
-		auto & pass = GetCurrentResource().GetCurrentPass();
-		pass.Clear(color);
-		pass.ClearDepthStencilBuffer();
+		Commit(groupType, ClearRenderCommand::MakeRenderCommand(true));
+	}
+
+	void Renderer::Clear(const Color& color, RenderGroupType groupType)
+	{
+		Commit(groupType, ClearRenderCommand::MakeRenderCommand(color, true));
+	}
+
+	void Renderer::ClearColor(const Color& color, RenderGroupType groupType)
+	{
+		Commit(groupType, ClearRenderCommand::MakeRenderCommand(color));
+	}
+
+	void Renderer::ClearDepthStencilBuffer(RenderGroupRawType groupType)
+	{
+		Commit(groupType, ClearRenderCommand::MakeRenderCommand(true));
+	}
+
+	void Renderer::Clear(const Color& color, RenderGroupRawType groupType)
+	{
+		Commit(groupType, ClearRenderCommand::MakeRenderCommand(color, true));
+	}
+
+	void Renderer::ClearColor(const Color& color, RenderGroupRawType groupType)
+	{
+		Commit(groupType, ClearRenderCommand::MakeRenderCommand(color, true));
 	}
 
 	void Renderer::Create()
@@ -159,11 +220,8 @@ namespace XGF
 		gdi.Create();
 		Context::Current().QueryRenderThread().SetCallBackFunc(std::bind(&Renderer::OnMessage, this, std::placeholders::_1));
 		mIndexOfResource = 0;
-		mTag = true;
 		GetCurrentRenderResource().SetRenderedFlag();
 		GetCurrentResource().SetRenderedFlag();
-		GetCurrentResource().mDefaultPass.mTarget = gdi.GetDisplayFrameBuffer();
-		GetCurrentRenderResource().mDefaultPass.mTarget = gdi.GetDisplayFrameBuffer();
 		mLooping = false;
 		mLooped = false;
 		mDrawing = false;
@@ -173,55 +231,42 @@ namespace XGF
 	{
 		for (auto & resource : mResource)
 		{
-			for (auto pass : resource.mPass)
-			{
-				for (auto renderQueue : pass->mRenderQueues)
-				{
-					for (auto command : renderQueue.commands)
-					{
-						delete command;
-					}
-				}
-				pass->mRenderQueues.clear();
-			}
-			for (GpuBuffer & buffer : resource.mVertices)
-			{
-				buffer.buffer->Release();
-			}
-			for (GpuBuffer & buffer : resource.mVerticesUsed)
-			{
-				buffer.buffer->Release();
-			}
-			for (GpuBuffer& buffer : resource.mIndices)
-			{
-				buffer.buffer->Release();
-			}
-			for (GpuBuffer& buffer : resource.mIndicesUsed)
-			{
-				buffer.buffer->Release();
-			}
-			for (GpuBuffer & buffer : resource.mConstantBuffer)
-			{
-				buffer.buffer->Release();
-			}
-			for (GpuBuffer & buffer : resource.mConstantBufferUsed)
-			{
-				buffer.buffer->Release();
-			}
+			resource.ClearAll();
 		}
 
 		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
 		gdi.Destroy();
 	}
 
-	void Renderer::AppendAndSetFrameTarget(FrameBuffer* target)
-	{
-		SetFrameTarget(AppendFrameTarget(target));
-	}
 
 	FrameBuffer * Renderer::GetCurrentFrameTarget()
 	{
 		return GetCurrentResource().GetCurrentPass().mTarget;
+	}
+
+	void Renderer::PushFrameTarget(FrameBuffer* target)
+	{
+		GetCurrentResource().Push(target);
+	}
+
+	void Renderer::PushDefaultFrameTarget()
+	{
+		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
+		GetCurrentResource().Push(gdi.GetDisplayFrameBuffer());
+	}
+
+	FrameBuffer* Renderer::PopFrameTarget()
+	{
+		auto * fb = GetCurrentResource().Pop();
+		return fb;
+	}
+
+	FrameBuffer* Renderer::PopNewFrameTarget()
+	{
+		auto * fb = GetCurrentResource().Pop();
+		auto * newFrame = GetCurrentResource().Pop();
+		PushFrameTarget(newFrame);
+		return fb;
 	}
 
 	void Renderer::AppendBeforeDrawCallback(const std::string & name, RendererDrawCallbackFunc callback)
@@ -282,26 +327,25 @@ namespace XGF
 	void Renderer::DrawCommands()
 	{
 		auto & context = Context::Current();
-		for (auto pass : GetCurrentRenderResource().mPass)
+		auto & gdi = context.QueryGraphicsDeviceInterface();
+		for (auto & pass : GetCurrentRenderResource().GetAllPasses())
 		{
-			pass->mTarget->Bind();
-			pass->mTarget->Clear(pass->mClearColor);
-			if(pass->mClearDepthStencilBuffer)
-			{
-				pass->mTarget->ClearDepthStencilBuffer();
-			}
-			for (auto & renderQueue : pass->mRenderQueues)
+			bool binded = false;
+			for (auto & renderQueue : pass.mRenderQueues)
 			{
 				renderQueue.Reorder();
+				if(!binded && !renderQueue.commands.empty())
+				{
+					pass.mTarget->Bind();
+					binded = true;
+				}
 				for (auto & command : renderQueue.commands)
 				{
-					command->Exec();
-					delete command;
+					command->Exec(gdi, *pass.mTarget);
 				}
-				renderQueue.commands.clear();
 			}
 		}
-		context.QueryGraphicsDeviceInterface().Present(false);
+		gdi.Present(false);
 	}
 
 
@@ -417,30 +461,20 @@ namespace XGF
 
 	void Renderer::Commit(RenderGroupType groupType, RenderCommand* cmd)
 	{
-		cmd->SetRenderIndex(GetCurrentResource().mRenderIndex++);
+		cmd->SetRenderIndex(GetCurrentResource().NextRenderIndex());
 		GetRenderGroup(groupType).Push(cmd);
 	}
 
-	void Renderer::Commit(int groupIndex, RenderCommand* cmd)
+	void Renderer::Commit(RenderGroupRawType groupIndex, RenderCommand* cmd)
 	{
-		cmd->SetRenderIndex(GetCurrentResource().mRenderIndex++);
+		cmd->SetRenderIndex(GetCurrentResource().NextRenderIndex());
 		GetRenderGroup(groupIndex).Push(cmd);
 	}
 
-	bool Renderer::IsPresentAllResource()
-	{
-		if(mTag && GetCurrentRenderResource().HasRenderedFlag())
-		{
-			mTag = false;
-			return true;
-		}
-		return false;
-	}
-
-	RenderQueue& Renderer::GetRenderGroup(int index)
+	RenderQueue& Renderer::GetRenderGroup(RenderGroupRawType index)
 	{
 		auto & res = GetCurrentResource();
-		return GetCurrentResource().GetCurrentPass().mRenderQueues[index];
+		return res.GetCurrentPass().mRenderQueues[index];
 	}
 
 	RenderQueue& Renderer::GetRenderGroup(RenderGroupType groupType)
@@ -496,16 +530,9 @@ namespace XGF
 		ClearResource(GetCurrentResourceIndex());
 		for (auto & resource : mResource)
 		{
-			for (auto pass : resource.mPass)
+			for (auto & pass : resource.GetAllPasses())
 			{
-				for (auto & renderQueue : pass->mRenderQueues)
-				{
-					for (auto * command : renderQueue.commands)
-					{
-						delete command;
-					}
-					renderQueue.commands.clear();
-				}
+				pass.Clear();
 			}
 		}
 		mLooped = true;
@@ -533,10 +560,10 @@ namespace XGF
 		}
 	}
     #pragma region cache gpu constant buffer
-	GpuBuffer Renderer::QueryUnusedGpuIndexBuffer(unsigned count)
+	GpuBuffer RendererFrameResource::QueryUnusedGpuIndexBuffer(unsigned count)
 	{
-		auto & idx = GetCurrentRenderResource().mIndices;
-		auto & idxused = GetCurrentRenderResource().mIndicesUsed;
+		auto & idx = mVertices;
+		auto & idxused = mVerticesUsed;
 		for (auto it = idx.begin(); it != idx.end(); ++it)
 		{
 			if (it->size == count)
@@ -553,10 +580,10 @@ namespace XGF
 		return p;
 	}
 
-	GpuBuffer Renderer::QueryUnusedGpuVertexBuffer(unsigned size)
+	GpuBuffer RendererFrameResource::QueryUnusedGpuVertexBuffer(unsigned size)
 	{
-		auto & vet = GetCurrentRenderResource().mVertices;
-		auto & vetused = GetCurrentRenderResource().mVerticesUsed;
+		auto & vet = mVertices;
+		auto & vetused = mVerticesUsed;
 		for (auto it = vet.begin(); it != vet.end(); ++it)
 		{
 			if (it->size == size)
@@ -572,10 +599,10 @@ namespace XGF
 		return p;
 	}
 
-	GpuBuffer Renderer::QueryUnusedGpuConstantBuffer(unsigned size)
+	GpuBuffer RendererFrameResource::QueryUnusedGpuConstantBuffer(unsigned size)
 	{
-		auto & cb = GetCurrentRenderResource().mConstantBuffer;
-		auto & cbused = GetCurrentRenderResource().mConstantBufferUsed;
+		auto & cb = mConstantBuffer;
+		auto & cbused = mConstantBufferUsed;
 		for (auto it = cb.begin(); it != cb.end(); ++it)
 		{
 			if (it->size == size)
@@ -603,53 +630,45 @@ namespace XGF
 		return mFrameRateLimiter.GetStandFrameRate();
 	}
 
-	int Renderer::AppendFrameTarget(FrameBuffer * target)
+	void ClearRenderCommand::Exec(GDI & gdi, FrameBuffer & frameBuffer)
 	{
-		auto * targetR = new RenderTargetPass();
-		targetR->mTarget = target;
-		GetCurrentResource().mPass.push_back(targetR);
-		return static_cast<int>(GetCurrentResource().mPass.size() - 1);
-	}
-
-	int Renderer::AppendDefaultFrameTarget()
-	{
-		GetCurrentResource().mPass.push_back(&GetCurrentResource().mDefaultPass);
-		return static_cast<int>(GetCurrentResource().mPass.size() - 1);
-	}
-
-	void Renderer::AppendAndSetDefaultFrameTarget()
-	{
-		SetFrameTarget(AppendDefaultFrameTarget());
-	}
-
-	void Renderer::SetDefaultFrameTarget()
-	{
-		auto & r = GetCurrentResource();
-		for (auto i =  0 ; i < r.mPass.size(); i ++)
+		if(mClearTarget)
 		{
-			if(r.mPass[i] == &r.mDefaultPass)
-			{
-				SetFrameTarget(i);
-				return;
-			}
+			frameBuffer.Clear(mClearColor);
 		}
-		AppendAndSetDefaultFrameTarget();
+		if(mClearDepth)
+		{
+			frameBuffer.ClearDepthStencilBuffer();
+		}
 	}
 
-	void Renderer::SetFrameTarget(int index)
+	ClearRenderCommand * ClearRenderCommand::MakeRenderCommand(const Color & clearColor, bool clearDepth)
 	{
-		GetCurrentResource().mPassUsedIndex = index;
+		return new ClearRenderCommand(clearColor, true, clearDepth);
 	}
-	void Renderer::SetFrameTarget(FrameBuffer * target)
+	ClearRenderCommand * ClearRenderCommand::MakeRenderCommand(bool clearDepth)
 	{
-		auto & r = GetCurrentResource();
-		for (auto i = 0; i < r.mPass.size(); i++)
+		return new ClearRenderCommand(Color(0.f, 0.f, 0.f, 0.f), false, clearDepth);
+	}
+
+	SubRenderCommand::~SubRenderCommand()
+	{
+		for (auto it : mCommands)
 		{
-			if (r.mPass[i]->mTarget == target)
-			{
-				SetFrameTarget(i);
-				return;
-			}
+			delete it;
 		}
+	}
+
+	void SubRenderCommand::Exec(GDI& gdi, FrameBuffer& frameBuffer)
+	{
+		for(auto it : mCommands)
+		{
+			it->Exec(gdi, frameBuffer);
+		}
+	}
+
+	SubRenderCommand* SubRenderCommand::MakeRenderCommand(std::vector<RenderCommand*>&& commands)
+	{
+		return new SubRenderCommand(std::move(commands));
 	}
 }

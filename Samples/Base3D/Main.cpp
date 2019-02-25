@@ -99,7 +99,7 @@ public:
 		
 		planeMesh = make_unique<Shape::Mesh>(
 			make_unique<Shape::PlaneGeometry>(100.f, 100.f,  1, 1),
-			make_unique<Shape::PhongMaterial>(Color3(.8f, .8f, .8f), nullptr, Color3(0.8, 0.8, 0.82))
+			make_unique<Shape::PhongMaterial>(Color3(.8f, .8f, .8f), nullptr, Color3(0.8f, 0.8f, 0.82f))
 		);
 		planeMesh->GetMaterialAs<Shape::LightMaterial>()->SetLightGroup(1);
 		planeMesh->GetGeometry()->GetTransform().TranslateToY(-0.51f);
@@ -167,15 +167,20 @@ public:
 	};
 	virtual void Render() override
 	{
+		auto & context = Context::Current();
+		context.QueryRenderer().PushDefaultFrameTarget();
+		context.QueryRenderer().Clear(Color(0.7, 0.7, 0.7, 1));
+
 		WVPMatrix wvp2d, wvp3d;
 		mCamera2D.GetCameraMatrix(wvp2d);
 		mCamera3D.GetCameraMatrix(wvp3d);
+		
 		mMeshRenderer.Begin(mCamera3D);
 
 		mMeshRenderer.Draw();
 		mMeshRenderer.End();
-		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
-		Context::Current().QueryRenderer().Clear(Color(0.7, 0.7, 0.7, 1));
+		
+		
 		PolygonPleTextureBinder textureBinder(4);
 		textureBinder.GetData(1).x = textureBinder.GetData(0).x = 0.f;
 		textureBinder.GetData(2).x = textureBinder.GetData(3).x = 1.f;

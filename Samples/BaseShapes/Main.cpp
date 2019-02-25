@@ -82,6 +82,7 @@ public:
 	virtual void Render() override
 	{
 		auto & context = Context::Current();
+		context.QueryRenderer().PushDefaultFrameTarget();
 		context.QueryRenderer().Clear(Color(0.5, 0.5, 0.5, 1));
 		WVPMatrix wvp;
 		mCamera.GetCameraMatrix(wvp);
@@ -89,10 +90,10 @@ public:
 		mTextRenderer.Begin(wvp);
 		MyRender();
 
-		context.QueryRenderer().AppendAndSetFrameTarget(&mRenderToTextureTarget);
+		context.QueryRenderer().PushFrameTarget(&mRenderToTextureTarget);
 		context.QueryRenderer().Clear(Color(0.3f, 0.3f, 0.3f, 1));
 		MyRender();
-		context.QueryRenderer().SetDefaultFrameTarget();
+		context.QueryRenderer().PopFrameTarget();
 		
 
 		PolygonPleTextureBinder textureBinder(4);
