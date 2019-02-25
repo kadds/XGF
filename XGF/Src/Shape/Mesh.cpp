@@ -77,6 +77,9 @@ namespace XGF::Shape
 		Color ambient(0, 0, 0, 0);
 		auto & blend = renderState.GetBlendState().GetRenderTarget(0);
 		auto & depth = renderState.GetDepthStencilState();
+		std::vector<RenderCommand *> commands;
+		const auto matrix = mesh->GetGeometry()->GetTransform().GetMatrix();
+		auto normalMatrix = XMMatrixRotationRollPitchYawFromVector(mesh->GetGeometry()->GetTransform().GetRotation());
 		for (auto light : lights)
 		{
 			if (!(light->GetGroup() & group)) continue;
@@ -85,7 +88,7 @@ namespace XGF::Shape
 				ambient += light->GetLightColor();
 				continue;
 			}
-			auto castLight = (CastShadowAbleLight *)light;
+			auto castLight = static_cast<CastShadowAbleLight *>(light);
 			auto & renderResource = cachePool.GetRenderResource(FindShaders(i));
 			if (i == 0) // base pass
 			{
@@ -107,16 +110,20 @@ namespace XGF::Shape
 			}
 			else // add pass
 			{
-				blend.SetBlendEnable(true);
-				blend.SetSrcBlend(Blend::ONE);
-				blend.SetDestBlend(Blend::ONE);
-				blend.SetDestBlendAlpha(Blend::ONE);
-				blend.SetSrcBlendAlpha(Blend::ZERO);
-				blend.SetBlendOpAlpha(BlendOp::ADD);
-				blend.SetBlendOp(BlendOp::ADD);
-				depth.SetDepthEnable(true);
-				depth.SetDepthFunc(ComparisonFunc::LESS_EQUAL);
-				depth.SetDepthWriteMask(false);
+				if(i == 1) // set at first time
+				{
+					blend.SetBlendEnable(true);
+					blend.SetSrcBlend(Blend::ONE);
+					blend.SetDestBlend(Blend::ONE);
+					blend.SetDestBlendAlpha(Blend::ONE);
+					blend.SetSrcBlendAlpha(Blend::ZERO);
+					blend.SetBlendOpAlpha(BlendOp::ADD);
+					blend.SetBlendOp(BlendOp::ADD);
+					depth.SetDepthEnable(true);
+					depth.SetDepthFunc(ComparisonFunc::LESS_EQUAL);
+					depth.SetDepthWriteMask(false);
+				}
+				
 				renderResource.SetConstantBuffer<PixelShader>(1, [&customData, castLight](void * ptr, size_t size)
 				{
 					char * p = (char *)ptr;
@@ -138,7 +145,7 @@ namespace XGF::Shape
 			if (castLight->GetCastShadow() && material->GetReceiveShadow())
 			{
 				// has shadow
-				renderResource.SetConstantBuffer<VertexShader>(0, 0, wvp, castLight->GetLightMatrix());
+				renderResource.SetConstantBuffer<VertexShader>(0, 0, wvp, normalMatrix, castLight->GetLightMatrix());
 				renderResource.SetTexture<PixelShader>(indexOfTextureAtPixel, castLight->GetShadowMapTexture());
 				auto & samplerState = renderResource.GetSamplerState<PixelShader>()[indexOfTextureAtPixel];
 				switch (castLight->GetShadowType())
@@ -159,48 +166,53 @@ namespace XGF::Shape
 			}
 			else
 			{
-				renderResource.SetConstantBuffer<VertexShader>(0, 0, wvp);
+				renderResource.SetConstantBuffer<VertexShader>(0, 0, wvp, normalMatrix);
 			}
-			bbr.Clear();
-			auto vertices = std::make_shared<PolygonPlePointBinder>(mesh->GetGeometry()->mPolygon->GetActualCount());
-			auto matrix = mesh->GetGeometry()->GetTransform().GetMatrix();
-			mesh->GetGeometry()->mPolygon->ExpandAllTo(*vertices.get(), Operator::Multiply(matrix));
-			bbr.AddBinder(vertices);
-			bbr.AddBinder(mesh->GetGeometry()->GetNormalBinders());
-			if (textureMap != nullptr)
+			
+			if(i == 0)
 			{
-				bbr.AddBinder(mesh->GetGeometry()->GetUVBinders());
-				renderResource.SetTexture<PixelShader>(0, textureMap);
+				auto vertices = std::make_shared<PolygonPlePointBinder>(mesh->GetGeometry()->mPolygon->GetActualCount());
+				
+				mesh->GetGeometry()->mPolygon->ExpandAllTo(*vertices.get(), Operator::Multiply(matrix));
+				bbr.AddBinder(vertices);
+				bbr.AddBinder(mesh->GetGeometry()->GetNormalBinder());
+				if (textureMap != nullptr)
+				{
+					bbr.AddBinder(mesh->GetGeometry()->GetUVBinder());
+				}
 			}
-
 			renderResource.SetConstantBuffer<PixelShader>(0, structData);
-
-			blend.SetBlendEnable(true);
-			blend.SetBlendOp(BlendOp::ADD);
-			blend.SetBlendOpAlpha(BlendOp::ADD);
-			Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(bbr, *mesh->GetGeometry()->mPolygonPleIndex.get(),
+			commands.push_back(DefaultRenderCommand::MakeRenderCommand(bbr, *mesh->GetGeometry()->mPolygonPleIndex.get(),
 				RenderStage(renderState, renderResource)));
+			
 			i++;
 		}
 		if (i == 0) // no cast shadowable light. We just need a base pass
 		{
 			bbr.Clear();
 			auto vertices = std::make_shared<PolygonPlePointBinder>(mesh->GetGeometry()->mPolygon->GetActualCount());
-			auto matrix = mesh->GetGeometry()->GetTransform().GetMatrix();
 			mesh->GetGeometry()->mPolygon->ExpandAllTo(*vertices.get(), Operator::Multiply(matrix));
 			bbr.AddBinder(vertices);
+			auto & renderResource = cachePool.GetRenderResource(FindShaders(i));
+			if (textureMap != nullptr)
+			{
+				bbr.AddBinder(mesh->GetGeometry()->GetUVBinder());
+				renderResource.SetTexture<PixelShader>(0, textureMap);
+			}
 
-			bbr.AddBinder(mesh->GetGeometry()->GetUVBinders());
 			blend.SetBlendEnable(false);
 			depth.SetDepthEnable(true);
 			depth.SetDepthFunc(ComparisonFunc::LESS_EQUAL);
 			depth.SetDepthWriteMask(true);
-
-			auto & renderResource = cachePool.GetRenderResource(FindShaders(i));
+			
 			renderResource.SetConstantBuffer<PixelShader>(0, structData);
 			renderResource.SetConstantBuffer<PixelShader>(1, 0, ambient);
 			Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(bbr, *mesh->GetGeometry()->mPolygonPleIndex.get(),
 				RenderStage(renderState, renderResource)));
+		}
+		else
+		{
+			Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, SubRenderCommand::MakeRenderCommand(std::move(commands)));
 		}
 	}
 	void MeshForwardRenderPath::DrawPhongMaterial(MeshRenderResourceCachePool& cachePool, const WVPMatrix& wvp, Mesh* mesh, std::vector<Light*>& lights, Point viewPosition)

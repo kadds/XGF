@@ -58,6 +58,9 @@ cbuffer CBMatrix:register(b0)
 	row_major float4x4 cbWrold;
 	row_major float4x4 cbView;
 	row_major float4x4 cbProj;
+#ifdef HasLight
+	row_major float4x4 cbNormalMatrix;
+#endif
 #ifdef SHADOWMAP_TEXTURE
 	row_major float4x4 cbShadowViewProj;
 #endif
@@ -243,7 +246,7 @@ VertexOut VS(VertexIn data)
 	vout.Pos = mul(vout.Pos, cbView);
 	vout.Pos = mul(vout.Pos, cbProj);
 #ifdef HasLight
-	vout.Normal = mul( float4(data.Normal, 1.0), cbWrold).xyz;
+	vout.Normal = mul( float4(data.Normal, 1.0), cbNormalMatrix).xyz;
 #endif
 
 #ifdef SHADOWMAP_TEXTURE

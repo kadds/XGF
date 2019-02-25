@@ -30,9 +30,9 @@ namespace XGF
 		public:
 			Geometry(unsigned int vertexCount, unsigned int indexCount);
 			virtual ~Geometry();
-			std::vector<std::shared_ptr<PolygonPleBinder>> GetVertexBinders();
-			std::vector<std::shared_ptr<PolygonPleBinder>> GetUVBinders();
-			std::vector<std::shared_ptr<PolygonPleBinder>> GetNormalBinders();
+			std::shared_ptr<PolygonPleBinder> GetVertexBinder();
+			std::shared_ptr<PolygonPleBinder> GetUVBinder();
+			std::shared_ptr<PolygonPleBinder> GetNormalBinder();
 			std::vector<std::shared_ptr<PolygonPleBinder>> GetDataBinders();
 		public:
 			std::shared_ptr<PolygonPleNormalBinder> mPolygonPleNormal;

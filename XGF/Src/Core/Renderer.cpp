@@ -13,7 +13,6 @@ namespace XGF
 	{
 		const unsigned memsize = static_cast<unsigned>(bbr.GetAllPolygonPleMemSize());
 		char* vertices = new char[memsize];
-		std::vector<float> vertices1(memsize / sizeof(float));
 		auto indices = new Index[index.GetActualCount()];
 		auto cmd = new DefaultRenderCommand(vertices, bbr.GetBinder(0)->GetActualCount(), memsize, indices, index.GetActualCount(), renderStage);
 		unsigned int start = 0u;
@@ -22,7 +21,6 @@ namespace XGF
  		for (int i = 0; i < bbr.Count(); i++)
 		{
 			bbr.GetBinder(i)->CopyTo(vertices + start, chunk);
-			bbr.GetBinder(i)->CopyTo((char*)( vertices1.data()) + start, chunk);
 			start += stride[i];
 		}
 		index.CopyTo(indices, 0);
@@ -119,7 +117,7 @@ namespace XGF
 	void RendererFrameResource::Push(FrameBuffer* frameBuffer)
 	{
 		mPass.emplace_back(frameBuffer);
-		mPassStack.push(mPass.size() - 1);
+		mPassStack.push(static_cast<unsigned>(mPass.size()) - 1);
 	}
 
 	FrameBuffer* RendererFrameResource::Pop()

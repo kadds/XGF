@@ -39,7 +39,7 @@ namespace XGF::Shape
 		{
 			if (!mesh->GetCastShadow()) continue;
 			bbr.Clear();
-			auto ppe = std::make_shared<PolygonPlePointBinder>(mesh->GetGeometry()->GetVertexBinders()[0]->GetActualCount());
+			auto ppe = std::make_shared<PolygonPlePointBinder>(mesh->GetGeometry()->GetVertexBinder()->GetActualCount());
 			auto matrix = mesh->GetGeometry()->GetTransform().GetMatrix();
 			mesh->GetGeometry()->mPolygon->ExpandAllTo(*ppe.get(), Operator::Multiply(matrix));
 			bbr.AddBinder(ppe);

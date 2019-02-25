@@ -383,8 +383,8 @@ namespace XGF
 		};
 		struct Multiply
 		{
-			DirectX::XMMATRIX matrix;
-			Multiply(DirectX::CXMMATRIX m) : matrix(m) {  }
+			const DirectX::XMMATRIX & matrix;
+			Multiply(DirectX::FXMMATRIX m) : matrix(m) {  }
 			void operator ()(const Point & vec, Point & out) const
 			{
 				DirectX::XMStoreFloat3(&out, DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat3(&vec), matrix));
