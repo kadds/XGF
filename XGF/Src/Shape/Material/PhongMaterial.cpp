@@ -1,5 +1,4 @@
 #include "..\..\..\Include\Material\PhongMaterial.hpp"
-#include "../../../Include/Context.hpp"
 
 namespace XGF::Shape
 {

@@ -1,5 +1,4 @@
 #include "..\..\..\Include\Material\LambertMaterial.hpp"
-#include "../../../Include/Context.hpp"
 
 namespace XGF::Shape
 {

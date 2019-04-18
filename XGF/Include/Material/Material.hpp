@@ -10,6 +10,7 @@ namespace XGF
 			BasicMaterial = 1u,
 			PhongMaterial,
 			LambertMaterial,
+			PhysicsMaterial,
 		};
 		class Material
 		{

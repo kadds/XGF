@@ -73,6 +73,7 @@
     <ClInclude Include="Include\Material\Material.hpp" />
     <ClInclude Include="Include\Material\PhongMaterial.hpp" />
     <ClInclude Include="Include\Material\LightMaterial.hpp" />
+    <ClInclude Include="Include\Material\PhysicsMaterial.hpp" />
     <ClInclude Include="Include\Mesh.hpp" />
     <ClInclude Include="Include\MeshRenderer.hpp" />
     <ClInclude Include="Include\OrthoCamera.hpp" />
@@ -163,6 +164,7 @@
     <ClCompile Include="Src\Shape\Material\Material.cpp" />
     <ClCompile Include="Src\Shape\Material\PhongMaterial.cpp" />
     <ClCompile Include="Src\Shape\Material\LightMaterial.cpp" />
+    <ClCompile Include="Src\Shape\Material\PhysicsMaterial.cpp" />
     <ClCompile Include="Src\Shape\Mesh.cpp" />
     <ClCompile Include="Src\Shape\MeshRenderer.cpp" />
     <ClCompile Include="Src\Shape\Rectangle.cpp" />

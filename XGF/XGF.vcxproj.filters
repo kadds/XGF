@@ -315,6 +315,9 @@
     <ClInclude Include="Include\Geometry\SphereGeometry.hpp">
       <Filter>头文件\Geometry</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Material\PhysicsMaterial.hpp">
+      <Filter>头文件\Material</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\UI\Button.cpp">
@@ -556,6 +559,9 @@
     </ClCompile>
     <ClCompile Include="Src\Core\SystemShaders.cpp">
       <Filter>源文件\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Shape\Material\PhysicsMaterial.cpp">
+      <Filter>源文件\Shape\Material</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

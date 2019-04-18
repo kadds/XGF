@@ -1,5 +1,4 @@
 #include "..\..\..\Include\Material\BasicMaterial.hpp"
-#include "../../../Include/ShaderManager.hpp"
 
 namespace XGF::Shape
 {
