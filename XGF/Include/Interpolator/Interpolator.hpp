@@ -1,6 +1,5 @@
 #pragma once
 #include "../Defines.hpp"
-#define _USE_MATH_DEFINES
 #include <math.h>
 #include <mutex>
 namespace XGF
@@ -51,7 +50,7 @@ static std::shared_ptr<interpolator> GetInterpolator(float ffactor)\
 	public:
 		virtual float Calculate(float timeRatio) const override
 		{
-			return  (float)(cos((timeRatio + 1) * M_PI) / 2.0f) + 0.5f;
+			return  (float)(cos((timeRatio + 1) * DirectX::XM_PI) / 2.0f) + 0.5f;
 		}
 		InterpolatorSingleton(AccelerateDecelerateInterpolator)
 	};
@@ -127,7 +126,7 @@ static std::shared_ptr<interpolator> GetInterpolator(float ffactor)\
 	public:
 		virtual float Calculate(float timeRatio) const
 		{
-			return sin(factor * static_cast<float>(M_PI) * timeRatio);
+			return sin(factor * static_cast<float>(DirectX::XM_PI) * timeRatio);
 		}
 		InterpolatorSingletonWithOneFactor(CycleInterpolator)
 	};
@@ -173,7 +172,7 @@ static std::shared_ptr<interpolator> GetInterpolator(float ffactor)\
 	public:
 		virtual float Calculate(float timeRatio) const
 		{
-			return static_cast<float>(pow(2, -10.f * timeRatio) * sin((timeRatio - factor / 4.0f) * (2.0f * static_cast<float>(M_PI)) / factor) + 1.0f);
+			return static_cast<float>(pow(2, -10.f * timeRatio) * sin((timeRatio - factor / 4.0f) * (2.0f * static_cast<float>(DirectX::XM_PI)) / factor) + 1.0f);
 		}
 		InterpolatorSingletonWithOneFactor(SpringInterpolator)
 	};

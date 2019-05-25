@@ -4,22 +4,18 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{5ADBF000-9964-45D7-8C5E-63F3275453D9}</ProjectGuid>
     <RootNamespace>UIs</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
-  
   <PropertyGroup Label="Macros">
-	<XGFRoot>$(SolutionDir)</XGFRoot>
-	<ConfigurationType>Application</ConfigurationType>
-	<CharacterSet>Unicode</CharacterSet>
-	<PlatformToolset>v141</PlatformToolset>
+    <XGFRoot>$(SolutionDir)</XGFRoot>
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
-   
   <Import Project=".\..\App.targets" />
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" /> 
-  
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-
 </Project>

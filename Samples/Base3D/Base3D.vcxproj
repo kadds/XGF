@@ -4,23 +4,19 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{661ADEDD-1DAF-4DFD-9151-B1AC17C65FDA}</ProjectGuid>
     <RootNamespace>Base3D</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
-  
   <PropertyGroup Label="Macros">
     <XGFRoot>$(SolutionDir)</XGFRoot>
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
-  
   <Import Project=".\..\App.targets" />
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" /> 
-  
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ItemGroup>
     <ClCompile Include="Main.cpp">
     </ClCompile>
   </ItemGroup>
-  
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
