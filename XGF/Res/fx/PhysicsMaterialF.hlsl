@@ -3,6 +3,8 @@ Texture2D gShaderTexture;
 SamplerState gSampleType;
 #endif
 
+#define PI 3.14159265359f
+
 #ifdef SHADOWMAP_TEXTURE
 #define SHADOW_PARAM_WITH_DATA_P ,data.ShadowPos
 #define SHADOW_PARAM_P ,ShadowPos
@@ -70,9 +72,11 @@ cbuffer CBObject:register(b0)
 {
 	float3 cbColor;
 	float3 cbEmissive;
-	float3 cbDiffuse;
-	float3 cbSpecular;
-	float cbShininess;
+	float _placement;
+	float cbRoughness;
+	float cbMetalness;
+	float cbAlbedo;
+	float cbFresnel;
 };
 struct DirectionalLight
 {
@@ -150,36 +154,67 @@ float calcShadow(SHADOW_PARAM_DECLARATION)
 	return 1.0;
 }
 #endif
+float specular_Trowbridge_Reitz_D(float3 normal, float3 lightDirection, float3 viewDirection)
+{
+	float3 halfVec = normalize(lightDirection + viewDirection);
+	float roughness = cbRoughness * cbRoughness;
+	float d = roughness / (PI * pow(pow(dot(normal, halfVec), 2) * (roughness - 1) + 1, 2));
+	return d;
+}
+float specular_Direct_G(float3 normal, float3 lightDirection, float3 viewDirection)
+{
+	float roughness = cbRoughness * cbRoughness;
+	float nl = dot(normal, lightDirection);
+	float nv = dot(normal, viewDirection);
+	float k = pow(cbRoughness + 1, 2) / 8;
+	float g = nl * nv / (lerp(nl, 1, k) * lerp(nv, 1, k));
+	return g;
+}
+float specular_IBL_G(float3 normal, float3 lightDirection, float3 viewDirection)
+{
+	float roughness = cbRoughness * cbRoughness;
+	float nl = dot(normal, lightDirection);
+	float nv = dot(normal, viewDirection);
+	float k = roughness / 2;
+	float g = nl * nv / (lerp(nl, 1, k) * lerp(nv, 1, k));
+	return g;
+}
+
+float specular_F(float3 normal, float3 viewDirection)
+{
+	float F0 = cbFresnel;
+	float f = pow(1 - (dot(normal, viewDirection)), 5) * (1 - F0) + F0;
+	return f;
+}
 
 float calcDiffuse(float3 normal, float3 lightDirection)
 {
 	float diff = max(dot(normal, lightDirection), 0.0);
-	return diff;
+	return diff / PI;
 }
-float calcSpecular(float3 normal, float3 lightDirection, float3 viewDirection)
+float calcSpecular(float3 normal, float3 lightDirection, float3 viewDirection, float3 color)
 {
-	float spec = 0;
-#ifdef LIGHT_PHONG
-	float3 refVec = reflect(-lightDirection, normal);
-	spec = pow(max(dot(refVec, viewDirection), 0), cbShininess);
+	return specular_F(normal, viewDirection) 
+#ifndef IBL
+		* specular_Direct_G(normal, lightDirection, viewDirection)
 #else
-	float3 halfVec = normalize(lightDirection + viewDirection);
-	spec = pow(max(dot(normal, halfVec), 0), cbShininess);
+		* specular_IBL_G(normal, lightDirection, viewDirection)
 #endif
-	return spec;
+		* specular_Trowbridge_Reitz_D(normal, lightDirection, viewDirection)
+		/ (4 * dot(normal, viewDirection) * dot(normal, lightDirection));
 }
 float3 calc(float3 color, float3 normal, float3 viewDirection, float3 lightDirection, float fact 
 SHADOW_PARAM_DECLARATION_P
 )
 {
 	float diff = calcDiffuse(normal, lightDirection);
-	float3 diffuse = diff * color * cbDiffuse;
+	float3 diffuse = diff * color * cbAlbedo;
 	float spec = 0;
 	if(diff > 0)
 	{
-		spec = calcSpecular(normal, lightDirection, viewDirection);
+		spec = calcSpecular(normal, lightDirection, viewDirection, color) * (1 - cbAlbedo);
 	}
-	float3 specular = spec * color * cbSpecular;
+	float3 specular = spec * color;
 	return (diffuse + specular) * fact CALC_SHADOW;
 }
 float3 calcPointLight(PointLight light, float3 normal, float3 viewDirection, float3 pos

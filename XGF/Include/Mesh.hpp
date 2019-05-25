@@ -46,6 +46,7 @@ namespace XGF
 
 			void DrawPhongMaterial(MeshRenderResourceCachePool & cachePool, const WVPMatrix & wvp, Mesh * mesh, std::vector<Light*>& lights, Point viewPosition);
 			void DrawLambertMaterial(MeshRenderResourceCachePool& cachePool, const WVPMatrix& wvp, Mesh* mesh, std::vector<Light*>& lights);
+			void DrawPhysicsMaterial(MeshRenderResourceCachePool& cachePool, const WVPMatrix& wvp, Mesh* mesh, std::vector<Light*>& lights, Point viewPosition);
 		public:
 			void Draw(MeshRenderResourceCachePool& cachePool, Camera& camera, Mesh* mesh,
 				std::vector<Light*>& lights) override;

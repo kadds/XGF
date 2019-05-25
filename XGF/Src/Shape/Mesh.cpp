@@ -6,6 +6,7 @@
 #include "../../Include/Camera.hpp"
 #include "../../Include/Material/PhongMaterial.hpp"
 #include "../../Include/Material/LambertMaterial.hpp"
+#include "../../Include/Material/PhysicsMaterial.hpp"
 #include "../../Include/SystemShaders.hpp"
 #include "../../Include/Logger.hpp"
 
@@ -246,6 +247,23 @@ namespace XGF::Shape
 		}, [](void *ptr) { return 0; });
 	}
 
+	void MeshForwardRenderPath::DrawPhysicsMaterial(MeshRenderResourceCachePool& cachePool, const WVPMatrix& wvp, Mesh* mesh, std::vector<Light*>& lights, Point viewPosition)
+	{
+		auto material = static_cast<PhysicsMaterial*>(mesh->GetMaterial());
+		DrawPhongOrLambertMaterial(cachePool, wvp, mesh, lights, material->GetBasicTexture(), [material](void* ptr, size_t size)
+			{
+				auto size2 = sizeof(material->GetStructData());
+				memcpy(ptr, &material->GetStructData(), size2);
+				if (size2 != size)
+					XGF_Warn(Render, "Size of constant buffer is incorrect");
+				return size2;
+			}, [&viewPosition](void* ptr)
+			{
+				*((Point4*)(ptr)) = viewPosition;
+				return sizeof(Point4);
+			});
+	}
+
 	void MeshForwardRenderPath::Draw(MeshRenderResourceCachePool& cachePool, Camera& camera, Mesh* mesh,
 	                                 std::vector<Light*>& lights)
 	{
@@ -263,6 +281,9 @@ namespace XGF::Shape
 			break;
 		case MaterialType::LambertMaterial: 
 			DrawLambertMaterial(cachePool, wvp, mesh, lights);
+			break;
+		case MaterialType::PhysicsMaterial:
+			DrawPhysicsMaterial(cachePool, wvp, mesh, lights, viewPosition);
 			break;
 		default: ;
 		}
@@ -383,6 +404,56 @@ namespace XGF::Shape
 						AddShaders(i++, SystemShaders::GetForwardBaseLambertShaders(shaderType, lightType, shadowType));
 					else
 						AddShaders(i++, SystemShaders::GetForwardAddLambertShaders(shaderType, lightType, shadowType));
+				}
+			}
+			break;
+		}
+		case MaterialType::PhysicsMaterial:
+		{
+			auto physicsMaterial = (PhysicsMaterial*)material;
+			auto group = physicsMaterial->GetLightGroup();
+			int i = 0;
+			for (auto light : lights)
+			{
+				if (!(light->GetGroup() & group)) continue;;
+				if (light->GetLightType() != LightType::Ambient)
+				{
+					SystemShaders::ForwardShaderLightType lightType;
+					switch (light->GetLightType())
+					{
+					case LightType::Directional:
+						lightType = SystemShaders::ForwardShaderLightType::Directional;
+						break;
+					case LightType::Point:
+						lightType = SystemShaders::ForwardShaderLightType::Point;
+						break;
+					case LightType::Spot:
+						lightType = SystemShaders::ForwardShaderLightType::Spot;
+						break;
+					default: lightType = SystemShaders::ForwardShaderLightType::None;
+					}
+					int shaderType = SystemShaders::PhysicsForwardShader_Nothing;
+
+					if (physicsMaterial->GetBasicTexture() != nullptr)
+						shaderType = SystemShaders::PhysicsForwardShader_Texture;
+					SystemShaders::ForwardShaderShadowType shadowType = SystemShaders::ForwardShaderShadowType::None;
+					if (((CastShadowAbleLight*)light)->GetCastShadow() && physicsMaterial->GetReceiveShadow())
+					{
+						auto type = ((CastShadowAbleLight*)light)->GetShadowType();
+						switch (type) {
+						case ShadowType::Default:
+							shadowType = SystemShaders::ForwardShaderShadowType::DEF;
+							break;
+						case ShadowType::PCF:
+							shadowType = SystemShaders::ForwardShaderShadowType::PCF;
+							break;
+						default:;
+						}
+					}
+					if (i == 0)
+						AddShaders(i++, SystemShaders::GetForwardBasePhysicsShaders(shaderType, lightType, shadowType));
+					else
+						AddShaders(i++, SystemShaders::GetForwardAddPhysicsShaders(shaderType, lightType, shadowType));
 				}
 			}
 			break;

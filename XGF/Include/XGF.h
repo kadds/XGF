@@ -60,6 +60,7 @@
 #include "Material\BasicMaterial.hpp"
 #include "Material/PhongMaterial.hpp"
 #include "Material/LambertMaterial.hpp"
+#include "Material/PhysicsMaterial.hpp"
 #include "Light/AmbientLight.hpp"
 #include "Light/DirectionalLight.hpp"
 #include "Light/PointLight.hpp"

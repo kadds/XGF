@@ -109,6 +109,7 @@ public:
 			boxMesh[i] = make_unique<Shape::Mesh>(
 				make_unique<Shape::BoxGeometry>(1.f, 1.f, 1.f),
 				make_unique<Shape::PhongMaterial>(randomColor(), rand(random) > 0 ? texture : nullptr, Color3(1, 1, 1))
+				//make_unique<Shape::PhysicsMaterial>(randomColor(), Color3(0, 0, 0), 0.5f, 0.3f, 0.2f, 0.2f,  rand(random) > 0 ? texture : nullptr)
 				);
 			boxMesh[i]->GetMaterialAs<Shape::LightMaterial>()->SetLightGroup(1);
 			boxMesh[i]->GetGeometry()->GetTransform().SetTranslation(Point(rand(random), 0, rand(random)));
@@ -131,8 +132,7 @@ public:
 		{
 			sphereMesh[i] = make_unique<Shape::Mesh>(
 				make_unique<Shape::SphereGeometry>(1.f, 16, 16),
-				make_unique<Shape::LambertMaterial>(randomColor(), rand(random) > 0 ? texture : nullptr,
-					 Color3(1, 1, 1))
+				make_unique<Shape::LambertMaterial>(randomColor(), rand(random) > 0 ? texture : nullptr, Color3(1, 1, 1))
 				);
 			sphereMesh[i]->GetGeometry()->GetTransform().SetTranslation(Point(rand(random), 0.51f, rand(random)));
 

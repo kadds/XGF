@@ -26,6 +26,12 @@ namespace XGF
 			LambertForwardShader_Nothing = 0,
 			LambertForwardShader_Texture = 1,
 		};
+		enum PhysicsForwardShaderType
+		{
+			PhysicsForwardShader_Nothing = 0,
+			PhysicsForwardShader_Texture = 1,
+			PhysicsForwardShader_GType_IBL = 2,
+		};
 		enum class ForwardShaderLightType
 		{
 			None,
@@ -52,6 +58,9 @@ namespace XGF
 
 		static Shaders GetForwardAddPhongShaders(int shaderType, ForwardShaderLightType lightType, ForwardShaderShadowType shadowType);
 
+		static Shaders GetForwardBasePhysicsShaders(int shaderType, ForwardShaderLightType lightType, ForwardShaderShadowType shadowType);
+
+		static Shaders GetForwardAddPhysicsShaders(int shaderType, ForwardShaderLightType lightType, ForwardShaderShadowType shadowType);
 
 		static Shaders GetForwardBaseLambertShaders(int shaderType, ForwardShaderLightType lightType, ForwardShaderShadowType shadowType);
 		static Shaders GetForwardAddLambertShaders(int shaderType, ForwardShaderLightType lightType, ForwardShaderShadowType shadowType);
