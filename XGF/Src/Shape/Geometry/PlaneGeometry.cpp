@@ -4,7 +4,9 @@ namespace XGF::Shape
 {
 	void PlaneGeometry::Init()
 	{
-		mPolygonPleNormal = std::make_shared<PolygonPleNormalBinder>(mPolygon->GetActualCount());
+		mPolygon->SetFullActualCount();
+		mPolygonPleNormal = std::make_shared<PolygonPleNormalBinder>(mPolygon->GetCapacity());
+		mPolygonPleNormal->SetFullActualCount();
 		float width = mWidth, height = mHeight;
 		int widthSegments = mWidthSegments, heightSegments = mHeightSegments;
 		XGF_ASSERT(widthSegments > 0 && heightSegments > 0);
@@ -19,6 +21,8 @@ namespace XGF::Shape
 		auto normal = Point(0, 1, 0);
 		auto* vec = mPolygon->GetData();
 		auto* inc = &mPolygonPleIndex->Get(0);
+		mPolygonPleIndex->SetFullActualCount();
+
 		auto* fc = mPolygonPleNormal->GetData();
 		auto gs = heightSegments + 1;
 		auto ms = widthSegments + 1;

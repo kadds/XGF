@@ -21,6 +21,9 @@ namespace XGF
 		mColor = std::make_shared<PolygonPleColorBinder>(12);
 		mPolygon = std::make_shared<PolygonPlePointBinder>(12);
 		mPolygonPleIndex = std::make_shared<PolygonPleIndex>(12);
+		mPolygon->SetFullActualCount();
+		mColor->SetFullActualCount();
+		mPolygonPleIndex->SetFullActualCount();
 		auto p = DirectX::XMMatrixIdentity();
 		mRenderResource.ReCreate(SystemShaders::GetBasicShaders(SystemShaders::BasicShader_VertexColor));
 		mRenderState.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);

@@ -64,6 +64,7 @@ namespace XGF
 
 		static Shaders GetForwardBaseLambertShaders(int shaderType, ForwardShaderLightType lightType, ForwardShaderShadowType shadowType);
 		static Shaders GetForwardAddLambertShaders(int shaderType, ForwardShaderLightType lightType, ForwardShaderShadowType shadowType);
+		static Shaders GetImguiShaders();
 
 		static Shaders GetShadowMapShaders();
 		

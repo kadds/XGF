@@ -33,7 +33,7 @@ namespace XGF
 		mBuffer = std::unique_ptr<char[]>(new char[mBufferWidth*mBufferHeight]);
 		memset(mBuffer.get(), 0, sizeof(char)*mBufferWidth*mBufferHeight);
 		error = FT_New_Face(pFTLib, Tools::WcharToChar(name.c_str(), name.length() + 1).c_str(), 0, &pFTFace);
-		mTexture = std::make_unique<DynamicTexture>(mBufferWidth, mBufferHeight, DXGI_FORMAT_A8_UNORM, mBuffer.get());
+		mTexture = std::make_unique<DynamicTexture>(mBufferWidth, mBufferHeight, DXGI_FORMAT_A8_UNORM, mBuffer.get(), mBufferWidth, 0);
 		if (!error)
 		{
 			FT_Select_Charmap(pFTFace, FT_ENCODING_UNICODE);
@@ -59,6 +59,7 @@ namespace XGF
 	{
 		auto e = Tools::LoadFromFile(name);
 		mFileBuffer = std::move(e.first);
+		mFileSize = e.second;
 		return e.second;
 	}
 
@@ -141,6 +142,21 @@ namespace XGF
 	Texture* Font::GetTexture()
 	{
 		return mTexture.get();
+	}
+
+	const void* Font::GetFontRawData() const
+	{
+		return mFileBuffer.get();
+	}
+
+	size_t Font::GetFontRawDataSize() const
+	{
+		return mFileSize;
+	}
+
+	const std::string& Font::GetFontName() const
+	{
+		return mName;
 	}
 
 	void Font::CloseFileBuffer()

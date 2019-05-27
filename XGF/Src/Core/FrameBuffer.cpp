@@ -7,10 +7,6 @@ namespace XGF
 {
 	FrameBuffer::FrameBuffer() : mDepthStencilTexture(nullptr), mDepthStencilView(nullptr)
 	{
-		mViewport.MinDepth = 0.f;
-		mViewport.MaxDepth = 1.f;
-		mViewport.TopLeftX = 0.f;
-		mViewport.TopLeftY = 0.f;
 	}
 
 
@@ -21,8 +17,6 @@ namespace XGF
 	{
 		mHeight = textureHeight;
 		mWidth = textureWidth;
-		mViewport.Height = static_cast<float>(mHeight);
-		mViewport.Width = static_cast<float>(mWidth);
 		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
 		
 		D3D11_TEXTURE2D_DESC textureDesc;
@@ -69,8 +63,6 @@ namespace XGF
 		renderTargetTexture->GetDesc(&textureDesc);
 		mHeight = textureDesc.Height;
 		mWidth = textureDesc.Width;
-		mViewport.Height = static_cast<float>(textureDesc.Height);
-		mViewport.Width = static_cast<float>(textureDesc.Width);
 		renderTargetTexture->AddRef();
 		auto renderTarget = std::make_unique<Texture>();
 		renderTarget->GetTextureResource().SetTexture2D(renderTargetTexture);
@@ -163,7 +155,6 @@ namespace XGF
 		}
 		gdi.GetDeviceContext()->OMSetRenderTargets(static_cast<unsigned>(mRenderTarget.size()), targets, mDepthStencilView);
 		
-		gdi.GetDeviceContext()->RSSetViewports(1, &mViewport);
 	}
 
 	Texture* FrameBuffer::GetTexture(int index) const
@@ -174,6 +165,16 @@ namespace XGF
 	Texture* FrameBuffer::GetDepthStencilTexture() const
 	{
 		return mDepthStencilTexture.get();
+	}
+
+	int FrameBuffer::GetWidth() const
+	{
+		return mWidth;
+	}
+
+	int FrameBuffer::GetHeight() const
+	{
+		return mHeight;
 	}
 
 	void FrameBuffer::InitializeDepthView(D3D11_TEXTURE2D_DESC& desc, DepthStencilFormat depthFormat, int msaaQuality, bool depthStencilViewTexture)

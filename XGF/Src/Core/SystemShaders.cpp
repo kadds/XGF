@@ -180,6 +180,16 @@ namespace XGF
 		return GetForwardLambertShaders(false, shaderType, lightType, shadowType);
 	}
 
+	Shaders SystemShaders::GetImguiShaders()
+	{
+		auto& sm = Context::Current().QueryShaderManager();
+		ShaderConfiguration configuration;
+		configuration.version = "4_0";
+		auto vs = sm.LoadShader<VertexShader>("Imgui.hlsl", configuration);
+		auto ps = sm.LoadShader<PixelShader>("Imgui.hlsl", configuration);
+		return Shaders(vs, ps);
+	}
+
 	Shaders SystemShaders::GetShadowMapShaders()
 	{
 		auto & sm = Context::Current().QueryShaderManager();

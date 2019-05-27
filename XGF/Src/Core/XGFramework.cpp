@@ -29,6 +29,7 @@ namespace XGF
 		context.QueryGameThread().PostEvent(SystemEventId::LogicalFrame, {});
 		mUpdateFixedTime = 0.0166666666f;
 		mScheduler.AddSchedule(ScheduleInfo(mUpdateFixedTime, std::bind(&XGFramework::_Update, this, std::placeholders::_1), "Update"));
+		mLastRenderTimePointTimer.TickWithoutRecord();
 	}
 
 	void XGFramework::_OnDestroy()
@@ -83,10 +84,10 @@ namespace XGF
 						_UpdateWithInterpolation(mScheduler.GetDeltaTimeFromLastSchedule() / mUpdateFixedTime);
 					if (mScene != nullptr)
 					{
+						mLastRenderInterval = mLastRenderTimePointTimer.Tick();
 						mScene->_Render();
 					}
-					mInputManager.Draw();
-					auto & context = Context::Current();
+					auto& context = Context::Current();
 					context.QueryRenderThread().PostEvent(SystemEventId::RenderFrame, {});
 				}
 				break;
@@ -103,12 +104,6 @@ namespace XGF
 
 	void XGFramework::_OnMouseMessage(const Event & ev)
 	{
-		if(ev.GetMouseEventId() == MouseEventId::MouseMove)
-			mInputManager.OnMouseMove(static_cast<float>(ev.GetData<int>(0)), static_cast<float>(ev.GetData<int>(1)));
-		if (ev.GetMouseEventId() == MouseEventId::MouseDown)
-		{
-			mInputManager.SetFocus(nullptr);
-		}
 		if (mOnInputListener != nullptr)
 			mOnInputListener(*this, ev);
 	}
@@ -130,7 +125,6 @@ namespace XGF
 		scene->_OnCreate(this);
 		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
 		scene->OnSize(gdi.GetWidth(), gdi.GetHeight());
-		bool k = false;
 		mScene->_OnDestroy();
 		mScene = scene;
 	}
@@ -143,6 +137,8 @@ namespace XGF
 	void XGFramework::AddScene(std::shared_ptr<Scene> scene)
 	{
 		scene->_OnCreate(this);
+		auto& gdi = Context::Current().QueryGraphicsDeviceInterface();
+		scene->OnSize(gdi.GetWidth(), gdi.GetHeight());
 		mScene = scene;
 	}
 	void XGFramework::RenderScene()
@@ -150,12 +146,12 @@ namespace XGF
 		mScene->_Render();
 	}
 
-	LRESULT XGFramework::OnInputMessage(UINT msg, WPARAM wParam, LPARAM lParam)
+	LRESULT XGFramework::OnInputMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
-		return mInputManager.ProcessInputMessage(msg, wParam, lParam);
+		return mInputManager.ProcessInputMessage(hWnd, msg, wParam, lParam);
 	}
 
-	InputManager& XGFramework::GetInputManager()
+	Input::InputManager& XGFramework::GetInputManager()
 	{
 		return mInputManager;
 	}
@@ -188,6 +184,11 @@ namespace XGF
 	void XGFramework::SetInfoFrameCost(float frameCost)
 	{
 		mInfoFrameCost = frameCost;
+	}
+
+	float XGFramework::GetTimeIntervalFromLastRender() const
+	{
+		return mLastRenderInterval;
 	}
 
 	void XGFramework::OpenVSync()
@@ -225,7 +226,7 @@ namespace XGF
 		{
 			XGF_Info(Framework, "logical frame delta time: ", deltaTime * 1000, "ms");
 		}
-		mInputManager.Tick(deltaTime);
+		GetInputManager().Tick(deltaTime);
 		if (mScene != nullptr)
 			mScene->_Update(deltaTime);
 	}

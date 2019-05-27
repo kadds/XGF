@@ -18,9 +18,10 @@ namespace XGF
 	public:
 		TextureResource();
 		~TextureResource();
+
 		bool Load(void * mem, size_t size);
 		bool Load(std::wstring fullPath);
-		void Create(unsigned width, unsigned height, TextureFormat format, char * ptr = nullptr);
+		void Create(unsigned width, unsigned height, TextureFormat format, char* ptr, int pitch, int slicePitch = 0);
 		void SetTexture2D(ID3D11Texture2D * t2d);
 		void SetSRV(ID3D11ShaderResourceView * srv);
 		unsigned GetHeight() const
@@ -55,7 +56,6 @@ namespace XGF
 		friend class Renderer;
 		Texture();
 		virtual ~Texture();
-
 		TextureResource& GetTextureResource();
 		ID3D11ShaderResourceView* GetRawTexture() const;
 		ID3D11Texture2D * GetRawTexture2D() const;
@@ -73,15 +73,14 @@ namespace XGF
 		};
 		bool SaveAs(ImageType type, const std::string& path);
 	private:
-		
 		TextureResource mTextureResource;
 	};
 	class DynamicTexture: public Texture
 	{
 	public:
-		friend class Renderer;
-		DynamicTexture(unsigned width, unsigned height, TextureFormat format, char * ptr);
-		
+		friend class Renderer;		
+		DynamicTexture(unsigned width, unsigned height, TextureFormat format, char* ptr, int pitch, int slicePitch);
+
 		void UpdateDirtyRectangle(const Rectangle& rect);
 		void ClearDirtyRectangle();
 		const Rectangle& GetDirtyRectangle() const;

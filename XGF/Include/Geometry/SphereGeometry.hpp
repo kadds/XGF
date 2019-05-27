@@ -31,7 +31,7 @@ namespace XGF
 			template<typename GeometryMapping = SphereGeometryMapping>
 			void GenerateMapping()
 			{
-				mPolygonPleUvs = std::make_shared<PolygonPleTextureBinder>(mPolygon->GetActualCount());
+				mPolygonPleUvs = std::make_shared<PolygonPleTextureBinder>(mPolygon->GetCapacity());
 				GeometryMapping mapping(this);
 
 				for (int i = 0; i <= mHeightSegments; i++)
@@ -43,6 +43,7 @@ namespace XGF
 						mPolygonPleUvs->GetData(i * (mWidthSegments + 1) + j) = mapping(w, h);
 					}
 				}
+				mPolygonPleUvs->SetFullActualCount();
 
 			};
 			~SphereGeometry() = default;

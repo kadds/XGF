@@ -175,6 +175,7 @@ namespace XGF
 				}
 				auto uShader = mCompiler.Compile<TShader>(*fileData, config);
 				shader = uShader.get();
+				shader->SetName(url);
 				mMap.emplace(cfg, std::move(uShader));
 			}
 			return shader;

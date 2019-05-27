@@ -33,9 +33,12 @@ namespace XGF
 		bool Initialize(const std::wstring & name, int fontSize);
 		void Shutdown();
 		PosSize* GetCharGlyph(wchar_t ch);
-		int GetFontSize() { return mFontSize; }
+		int GetFontSize() const { return mFontSize; }
 		int ResizeFontSize(wchar_t ch, wchar_t lastch);
 		Texture* GetTexture();
+		const void* GetFontRawData() const;
+		size_t GetFontRawDataSize() const;
+		const std::string & GetFontName() const;
 	protected:
 		FT_Library    pFTLib;
 		FT_Face        pFTFace;
@@ -45,6 +48,7 @@ namespace XGF
 		float       mAddance;
 		float           mToplineHeigh;
 		std::unique_ptr<char> mFileBuffer;
+		size_t mFileSize;
 	private:
 		long ReadFileToBuffer(const std::wstring & name);
 		void CloseFileBuffer();
@@ -53,6 +57,7 @@ namespace XGF
 		unsigned            mBufferHeight;
 		std::unique_ptr<DynamicTexture> mTexture;
 		std::unique_ptr<char[]> mBuffer;
+		std::string mName;
 	};
 
 

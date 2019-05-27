@@ -65,7 +65,6 @@ namespace XGF
 
 	void EditText::OnRemoveFromContainer()
 	{
-		mParent->GetScene().GetFramework().GetInputManager().ClearFocus(&mTextInputProcessor);
 		Control::OnRemoveFromContainer();
 	}
 
@@ -75,24 +74,12 @@ namespace XGF
 
 	void EditText::OnMouseMove(const Event & ev)
 	{
-		if (!mParent->GetScene().GetFramework().GetInputManager().IsFocus(&mTextInputProcessor))
-		{
-			if(this->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f), GetMixMatrix()))
-				mNowState = ControlState::hover;
-			else
-				mNowState = ControlState::normal;
-		}
-		else
-		{
-			mNowState = ControlState::active;
-		}
 	}
 
 	void EditText::OnMouseDown(const Event & ev)
 	{
 		if (this->IsInBoundBox(Point((float)ev.GetDataInt(0), (float)ev.GetDataInt(1), 0.f), GetMixMatrix()))
 		{
-			mParent->GetScene().GetFramework().GetInputManager().SetFocus(&mTextInputProcessor);
 			mNowState = ControlState::active;
 		}
 	}

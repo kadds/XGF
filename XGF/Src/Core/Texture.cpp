@@ -88,9 +88,10 @@ namespace XGF
 		return mTextureResource;
 	}
 
-	DynamicTexture::DynamicTexture(unsigned width, unsigned height, TextureFormat format, char * ptr): mPtr(ptr)
+
+	DynamicTexture::DynamicTexture(unsigned width, unsigned height, TextureFormat format, char * ptr, int pitch, int slicePitch): mPtr(ptr)
 	{
-		GetTextureResource().Create(width, height, format, ptr);
+		GetTextureResource().Create(width, height, format, ptr, pitch, slicePitch);
 	}
 
 	void DynamicTexture::UpdateDirtyRectangle(const Rectangle & rect)
@@ -181,10 +182,10 @@ namespace XGF
 		return false;
 	}
 
-	void TextureResource::Create(unsigned width, unsigned height, TextureFormat format, char* ptr)
+	void TextureResource::Create(unsigned width, unsigned height, TextureFormat format, char* ptr, int pitch, int slicePitch)
 	{
 		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
-		auto srv = gdi.CreateRenderableTexture(width, height, format, ptr);
+		auto srv = gdi.CreateRenderableTexture(width, height, format, ptr, pitch, slicePitch);
 		ID3D11Resource * resource;
 		srv->GetResource(&resource);
 		shaderResourceView = srv;

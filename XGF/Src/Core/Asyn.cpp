@@ -64,6 +64,7 @@ namespace XGF {
 	void Asyn::DoAsyn(std::function<void(Asyn * asyn)> fun)
 	{
 		mThread = std::make_unique<std::thread>(fun, this);
+		mId = mThread->get_id();
 		mThread->detach();
 	}
 
@@ -97,5 +98,9 @@ namespace XGF {
 	{
 		auto d = std::chrono::microseconds(microseconds);
 		std::this_thread::sleep_for(d);
+	}
+	std::thread::id Asyn::GetThreadId() const
+	{
+		return mId;
 	}
 }

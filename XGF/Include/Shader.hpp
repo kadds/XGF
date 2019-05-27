@@ -49,6 +49,8 @@ namespace XGF
 		unsigned int GetSamplerStateSlot(unsigned int index);
 		unsigned int GetTextureCount();
 		unsigned int GetTextureSlot(unsigned int index);
+		std::string GetName() const;
+		void SetName(const std::string& name);
 	protected:
 		friend class ComputeGPU;
 		friend class RenderResource;
@@ -56,7 +58,8 @@ namespace XGF
 		std::vector<UAVInfo> mUAVInfo;
 		std::vector<TextureInfo> mTexture2D;
 		std::vector<SamplerInfo> mSamplerState;
-
+	private:
+		std::string mName;
 		DisableCopyAndAssign(Shader)
 	};
 	class PixelShader : public Shader
@@ -233,6 +236,8 @@ namespace XGF
 		ClassProperty(DepthStencilState, DepthStencilState)
 		ClassProperty(BlendState, BlendState)
 		ClassProperty(RasterizerState, RasterizerState)
+		ClassProperty(ScissorRects, std::vector<Rect>)
+		ClassProperty(ViewPorts, std::vector<ViewPort>)
 	};
 
 	class RenderResource
@@ -427,6 +432,8 @@ namespace XGF
 		std::vector<StageConstantBuffer> mVSCBuffer, mPSCBuffer, mGSCBuffer;
 		std::vector<Texture *> mVSTexture, mPSTexture, mGSTexture;
 		TopologyMode mTopologyMode;
+		std::vector<Rect> mScissorRects;
+		std::vector<ViewPort> mViewPorts;
 		RawRenderStage(const RenderStage& ss);
 
 		void BindStage();

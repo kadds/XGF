@@ -7,7 +7,9 @@ namespace XGF
 	{
 		void SphereGeometry::Init()
 		{
-			mPolygonPleNormal = std::make_shared<PolygonPleNormalBinder>(mPolygon->GetActualCount());
+			mPolygon->SetFullActualCount();
+			mPolygonPleNormal = std::make_shared<PolygonPleNormalBinder>(mPolygon->GetCapacity());
+			mPolygonPleNormal->SetFullActualCount();
 			auto* normal = mPolygonPleNormal->GetData();
 			const float dw = 1.f / mWidthSegments;
 			const float dh = 1.f / mHeightSegments;
@@ -64,7 +66,7 @@ namespace XGF
 					}
 				}
 			}
-			mPolygonPleIndex->ShrinkTo(cIndex);
+			mPolygonPleIndex->SetActualCount(cIndex);
 		}
 	}
 }

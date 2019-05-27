@@ -1,5 +1,6 @@
 #define _XGF_DEBUG_ALLOC
 #include "../../XGF/Include/XGF.h"
+#include "./../../XGF/Extra/imgui/imgui_impl.hpp"
 #include <fmt/format.h>
 #include <memory>
 using namespace std;
@@ -29,90 +30,10 @@ public:
 	virtual ~GameScene() {};
 	virtual void OnCreate() override
 	{
-		mBtnGroup = make_unique<Container>();
-		auto fname = Tools::GetFontPath(L"msyh");
-		mFont.Initialize(fname, 16);
-		mFont_s.Initialize(fname, 12);
-		mFont_b.Initialize(fname, 20);
-		mUITextRenderer.Initialize(&mFont, 1000);
-		mTextRenderer_s.Initialize(&mFont_s, 500);
-		mTextRenderer_b.Initialize(&mFont_b, 200);
-		auto & framework = GetFramework();
-		GetRootContainer().AddChild(mBtnGroup);
-		std::shared_ptr<Label> label = std::make_shared<Label>(0, L"Direct3D11");
-		label->SetPositionAndSize(200, 200, 100, 20);
-		label->SetZ(0.4f);
-		GetRootContainer().AddChild(label);
-		label->SetTextRenderer(&mUITextRenderer);
-		label->GetClickHelper().AddOnClickListener([this](Control *label, const MousePoint & ms, int mouseButton) {
-			
-			AsyncTask::NewTask(&Context::Current().QueryGameThread(), [](std::shared_ptr<AsyncTask> asyn) {
-				MessageBox(NULL, L"YOU CLICK Label!!", L"Exe", 0);
-				asyn->Finish(0, 0);
-			});
-			auto dx = label->GetShape()->GetTransform().GetTranslateX();
-			auto action = std::make_unique<DataAction<Point>>(Point((dx >= 180 ? (50 - dx) : (200 - dx)), 0, 0), 1.f, LinearInterpolator::GetInterpolator());
-			action->SetTarget(&(label->GetShape()->GetTransform().GetTranslate()));
-			action->SetNotificationCallback(std::bind(&Transform::SetChangeFlag, &label->GetShape()->GetTransform()));
-			mActions.AddAction(std::move(action));
-		});
-		auto setAction = [this] (Transform & transform)
-		{
-			auto callback = std::bind(&Transform::SetChangeFlag, &transform);
-			std::vector<std::unique_ptr<Action>> actions;
-			auto first = std::make_unique<DataAction<Point>>(Point(200, 0, 0), 1.4f, AccelerateDecelerateInterpolator::GetInterpolator(), &transform.GetTranslate(), callback);
-			auto second = std::make_unique<DataAction<Point>>(Point(-200, 0, 0), 1.4f, AccelerateDecelerateInterpolator::GetInterpolator(), &transform.GetTranslate(), callback);
-			actions.push_back(std::move(first));
-			actions.push_back(std::move(second));
-			auto seq = std::make_unique<SequenceAction>(std::move(actions));
-			auto repeat = std::make_unique<RepeatAction>(std::move(seq), -1);
-			
-
-			mActions.AddAction(std::move(repeat));
-		};
-		std::shared_ptr<Button> nextButton = std::make_shared<Button>(2, L"switch to next scene.");
-		mBtnGroup->AddChild(nextButton);
-		nextButton->SetPositionAndSize(0, 240, 80, 40);
-		nextButton->SetZ(0.06f);
-		nextButton->SetBorderSize(1.f);
-		nextButton->GetClickHelper().AddOnClickListener([this](auto, const MousePoint & ms, int mouseButton) {
-			//this->GetFramework()->SwitchScene();
-		});
-		nextButton->SetTextRenderer(&mUITextRenderer);
-		
-		std::shared_ptr<Button> buttonux = std::make_shared<Button>(1, XGF::string(L"Switch Mode"));
-		mBtnGroup->AddChild(buttonux);
-
-		buttonux->SetPositionAndSize(10, 100, 60, 40);
-		buttonux->SetBorderSize(2);
-		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
-		buttonux->SetZ(0.07f);
-		buttonux->GetClickHelper().AddOnClickListener([this, &gdi](auto, const MousePoint & ms, int mouseButton) {
-			if (gdi.GetDisplayMode() == DisplayMode::Borderless)
-				gdi.SetDisplayMode(DisplayMode::Windowed, 0, 0, 600, 400, false);
-			else if (gdi.GetDisplayMode() == DisplayMode::FullScreen)
-				gdi.SetDisplayMode(DisplayMode::Borderless, 0, 0, 1920, 1080, true);
-			else
-				gdi.SetDisplayMode(DisplayMode::FullScreen, 0, 0, 1920, 1080, true);
-		});
-		buttonux->SetTextRenderer(&mUITextRenderer);
-		setAction(mBtnGroup->GetTransform());
-
-		std::shared_ptr<EditText> edit1 = std::make_shared<EditText>(10);
-		std::shared_ptr<EditText> edit2 = std::make_shared<EditText>(11);
-
-		edit1->SetPositionAndSize(300, 20, 200, 40);
-		edit1->SetBorderSize(1);
-		edit1->SetZ(0.08f);
-
-		edit2->SetPositionAndSize(140, 20, 120, 40);
-		edit2->SetBorderSize(2);
-		edit2->SetZ(0.08f);
-
-		GetRootContainer().AddChild(edit1);
-		GetRootContainer().AddChild(edit2);
-		edit1->SetTextRenderer(&mUITextRenderer);
-		edit2->SetTextRenderer(&mUITextRenderer);
+		imgui.Initialize();
+		auto& context = Context::Current();
+		mFont.Initialize(Tools::GetFontPath(L"msyh"), 16);
+		//context.QueryFramework().GetInputManager().SwitchToDInput();
 
 		//resource loading
 		auto res = std::vector<ResourceInfo>();
@@ -121,22 +42,15 @@ public:
 		mTextureResourceManager.LoadResourceAsync(res, &Context::Current().QueryGameThread(), [this](std::vector<ResourceInfo> ress, int success) {
 			if (success < 1) return;
 			auto cursor = mTextureResourceManager.GetResourceByAlias(L"cursor");
-
-			GetFramework().GetInputManager().GetCursor().SetStaticTexture(cursor);
-			GetFramework().GetInputManager().SetMouseMode(MouseMode::Custom);
 		});
-		mBtnGroup->GetTransform().TranslateToX(100);
+		
+		this->GetRootContainer().GetEventDispatcher().InsertAllEventListener(bind(&UI::Imgui::OnInputEvent, &imgui, placeholders::_1));
+
 	};
 	virtual void OnDestroy() override
 	{
-		mTextRenderer_s.Shutdown();
-		mUITextRenderer.Shutdown();
-		mTextRenderer_b.Shutdown();
-
+		imgui.Shutdown();
 		mFont.Shutdown();
-		mFont_s.Shutdown();
-		mFont_b.Shutdown();
-
 		mTextureResourceManager.ReleaseAllResource();
 	};
 	virtual void Render() override
@@ -145,87 +59,45 @@ public:
 		auto & gdi = context.QueryGraphicsDeviceInterface();
 		context.QueryRenderer().PushDefaultFrameTarget();
 		context.QueryRenderer().Clear(Color(0.5, 0.5, 0.5, 1));
-		WVPMatrix wvp2D;
-		mCamera2D.GetCameraMatrix(wvp2D);
-
+		imgui.Begin();
+		ImGui::ShowDemoWindow();
 		auto debug = DebugInscriber::GetInstance();
-		mTextRenderer_s.Begin(wvp2D);
 		auto height = gdi.GetHeight();
-		std::wstring costStr = fmt::format(L"IndicesRenderCountPerFrame:{0}", debug->GetIndicesRenderCountPerFrame());
+		std::string costStr = fmt::format("IndicesRenderCountPerFrame:{0}\n", debug->GetIndicesRenderCountPerFrame());
 		auto & framework = GetFramework();
-		mTextRenderer_s.DrawString(costStr, 2.f, static_cast<float>(height - 80));
-		costStr = fmt::format(L"IndicesRenderCountPerSecond:{0}", debug->GetIndicesRenderCountPerSecond());
-		mTextRenderer_s.DrawString(costStr, 300.f, static_cast<float>(height - 80));
-		costStr = fmt::format(L"VerticesRenderCountPerFrame:{0}", debug->GetVerticesRenderCountPerFrame());
-		mTextRenderer_s.DrawString(costStr, 2.f, static_cast<float>(height - 60));
-		costStr = fmt::format(L"VerticesRenderCountPerSecond:{0}", debug->GetVerticesRenderCountPerSecond());
-		mTextRenderer_s.DrawString(costStr, 300.f, static_cast<float>(height - 60));
-		costStr = fmt::format(L"CallBatchPerFrame:{0}", debug->GetCallBatchPerFrame());
-		mTextRenderer_s.DrawString(costStr, 2.f, static_cast<float>(height  - 40));
-		costStr = fmt::format(L"CallBatchPerSecond:{0}", debug->GetCallBatchPerSecond());
-		mTextRenderer_s.DrawString(costStr, 300.f, static_cast<float>(height - 40));
-		costStr = fmt::format(L"PolygonRenderCountPerSecond:{0}", debug->GetPolygonRenderCountPerSecond());
-		mTextRenderer_s.DrawString(costStr, 300.f, static_cast<float>(height - 20));
-		costStr = fmt::format(L"PolygonRenderCountPerFrame:{0}", debug->GetPolygonRenderCountPerFrame());
-		mTextRenderer_s.DrawString(costStr, 2.f, static_cast<float>(height - 20));
+		costStr += fmt::format("IndicesRenderCountPerSecond:{0}\n", debug->GetIndicesRenderCountPerSecond());
+		costStr += fmt::format("VerticesRenderCountPerFrame:{0}\n", debug->GetVerticesRenderCountPerFrame());
+		costStr += fmt::format("VerticesRenderCountPerSecond:{0}\n", debug->GetVerticesRenderCountPerSecond());
+		costStr += fmt::format("CallBatchPerFrame:{0}\n", debug->GetCallBatchPerFrame());
+		costStr += fmt::format("CallBatchPerSecond:{0}\n", debug->GetCallBatchPerSecond());
+		costStr += fmt::format("PolygonRenderCountPerSecond:{0}\n", debug->GetPolygonRenderCountPerSecond());
+		costStr += fmt::format("PolygonRenderCountPerFrame:{0}\n", debug->GetPolygonRenderCountPerFrame());
 
-		mTextRenderer_s.End();
 
-		mTextRenderer_b.Begin(wvp2D);
-
-		std::wstring fps_str = fmt::format(L"FPS:{0}\nFC:{1}ms", debug->GetAverageFPS(), debug->GetFrameCost());
-		mTextRenderer_b.DrawString(fps_str, Color(0.2f, 0.2f, 0.8f, 1.0f), 4, 4);
-		mTextRenderer_b.End();
-		mUITextRenderer.Begin(wvp2D);
-		RenderUI(wvp2D);
-		mUITextRenderer.End();
+		std::string fps_str = fmt::format("FPS:{0}\nFC:{1}ms", debug->GetAverageFPS(), debug->GetFrameCost());
+		
+		ImGui::Begin("info window");
+		ImGui::Text(fps_str.c_str());
+		ImGui::Text(costStr.c_str());
+		ImGui::End();
+		imgui.End();
 	};
 	virtual void Update(float deltaTime) override
 	{
-		mCamera2D.Update();
-		if(mDirection)
-		{
-			//mBtnGroup->GetTransform().TranslateX(-deltaTime * 20);
-			if (mBtnGroup->GetTransform().GetTranslateX() < 50)
-			{
-				mDirection = false;
-			}
-		}
-		else
-		{
-			//mBtnGroup->GetTransform().TranslateX(deltaTime * 20);
-			if (mBtnGroup->GetTransform().GetTranslateX() > 150)
-			{
-				mDirection = true;
-			}
-		}
 		auto & ip = GetFramework().GetInputManager();
-		if (ip.IskeyDown(DIK_ESCAPE))
+		if (ip.IskeyDown(Input::KeyBoardKey::Escape))
 			GetFramework().Exit(0);
-		mActions.Update(deltaTime);
-		
 	};
-	virtual void OnSize(int ClientX, int ClientY) override
+	virtual void OnSize(int cx, int cy) override
 	{
-		mCamera2D.UpdateProject(ClientX, ClientY);
+		Context::Current().QueryRenderer().WaitFrame();
+		imgui.Resize(cx, cy);
 	};
 
 private:
-	OrthoCamera mCamera2D;
-
-	Font mFont;
-	TextRenderer mUITextRenderer;
-	Font mFont_s;
-	TextRenderer mTextRenderer_s;
-	Font mFont_b;
-	TextRenderer mTextRenderer_b;
-	shared_ptr<Container> mBtnGroup;
-
 	TextureResourceManager mTextureResourceManager;
-
-	bool mDirection = true;
-
-	Actions mActions;
+	Font mFont;
+	UI::Imgui imgui;
 };
 
 

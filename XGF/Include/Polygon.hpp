@@ -41,32 +41,21 @@ namespace XGF
 	class PolygonPleBinder
 	{
 	public:
-		PolygonPleBinder() = default;
+		PolygonPleBinder(int capacity);
 		virtual ~PolygonPleBinder() = default;
 
 		virtual void CopyTo(void * Des, unsigned int chunk) const = 0;
-		int GetActualCount() const
-		{
-			return mCount;
-		}
-		void SetActualCount(int c)
-		{
-			mCount = c;
-		}
+		void SetActualCount(int c);
+		int GetActualCount() const;
+		int GetCapacity() const;
 		virtual int SizeOf() const  = 0;
+		void SetFullActualCount();
+
 	protected:
-		
-		void SetMemCount(int c)
-		{
-			mMemCount = c;
-		}
-		int GetMemCount() const
-		{
-			return mMemCount;
-		}
+		void SetCapacity(int capacity);
 	private:
 		int mCount;
-		int mMemCount;
+		int mCapacity;
 	};
 
 	template<typename Vector>
@@ -85,7 +74,7 @@ namespace XGF
 		}
 		Vector & GetData(int n)
 		{ 
-			XGF_ASSERT(n >= 0 && n < GetMemCount());
+			XGF_ASSERT(n >= 0 && n < GetCapacity());
 
 			return mData[n];
 		}
@@ -93,26 +82,25 @@ namespace XGF
 		{
 			return sizeof(Vector);
 		}
-		PolygonPleDataBinder(int count)
+		PolygonPleDataBinder(int count): PolygonPleBinder(count)
 		{
-			SetMemCount(count);
-			SetActualCount(count);
+			static_assert(BindingResourceTypeTraits<Vector>::IsBindingType(), "Vector type must be Point Point2 Point4 Color");
+			SetActualCount(0);
 			mData = std::make_unique<Vector[]>(count);
 		}
 		~PolygonPleDataBinder()
 		{
 		}
 
-		PolygonPleDataBinder(const PolygonPleDataBinder & pcb)
+		PolygonPleDataBinder(const PolygonPleDataBinder & pcb) : PolygonPleBinder(pcb.GetCapacity())
 		{
 			mData = std::move(pcb.mData);
-			SetMemCount(pcb.GetMemCount());
 			SetActualCount(pcb.GetActualCount());
 		}
 		PolygonPleDataBinder & operator =(const PolygonPleDataBinder & pcb)
 		{
 			mData = std::move(pcb.mData);
-			SetMemCount(pcb.GetMemCount());
+			SetCapacity(pcb.GetCapacity());
 			SetActualCount(pcb.GetActualCount());
 			return *this;
 		}
@@ -131,7 +119,7 @@ namespace XGF
 			if (&rx == this)
 				return true;
 			if (rx.GetActualCount() != GetActualCount()) return false;
-			if (rx.GetMemCount() != GetMemCount()) return false;
+			if (rx.GetCapacity() != GetCapacity()) return false;
 			for (int i = 0; i < GetActualCount(); i++)
 			{
 				if (mData[i] != rx.mData[i])
@@ -147,6 +135,8 @@ namespace XGF
 		}
 		virtual void ExpandAllTo(PolygonPleDataBinder& pdb, std::function<void(const Vector & src, Vector & dsc)> func)
 		{
+			XGF_ASSERT(pdb.GetCapacity() >= GetActualCount());
+			pdb.SetActualCount(GetActualCount());
 			for (int i = 0; i < GetActualCount(); i++) {
 				func(GetData(i), pdb.GetData(i));
 			}
@@ -160,10 +150,9 @@ namespace XGF
 		int mDataCount;
 		std::vector<int> tgLayer;
 	public:
-		PolygonPleConstantDataBinder(int count, const Vector & v): tgLayer(1)
+		PolygonPleConstantDataBinder(int count, const Vector & v): tgLayer(1), PolygonPleDataBinder<Vector>(count)
 		{
 			this->SetActualCount(count);
-			this->SetMemCount(count);
 			this->mData = std::make_unique<Vector[]>(1);
 			mDataCount = 1;
 			tgLayer[0] = count;
@@ -187,11 +176,10 @@ namespace XGF
 		 * \param count
 		 * \param data
 		 */
-		PolygonPleConstantDataBinder(int count, std::vector<std::pair<int, Vector>> data):tgLayer(data.size())
+		PolygonPleConstantDataBinder(int count, std::vector<std::pair<int, Vector>> data):tgLayer(data.size()), PolygonPleDataBinder<Vector>(count)
 		{
 			XGF_ASSERT(data.size() != 0);
 			this->SetActualCount(count);
-			this->SetMemCount(count);
 			this->mData = std::make_unique<Vector[]>(data.size());
 			mDataCount = static_cast<int>(data.size());
 			int i = 0;
@@ -204,13 +192,12 @@ namespace XGF
 			tgLayer[i] = this->GetActualCount();
 			//XGF_ASSERT(tgLayer.back() == this->Count());
 		}
-		PolygonPleConstantDataBinder(int count, int packedCount) :tgLayer(count / packedCount)
+		PolygonPleConstantDataBinder(int count, int packedCount) :tgLayer(count / packedCount), PolygonPleDataBinder<Vector>(count)
 		{
 			XGF_ASSERT(packedCount > 0);
 			XGF_ASSERT(count % packedCount == 0);
 			auto layerCount = count / packedCount;
 			this->SetActualCount(count);
-			this->SetMemCount(count);
 			this->mData = std::make_unique<Vector[]>(layerCount);
 			mDataCount = layerCount;
 			int i = 0;
@@ -220,7 +207,7 @@ namespace XGF
 				tgLayer[i] = packedCount * i;
 				this->mData[i + 1] = Vector();
 			}
-			tgLayer[i] = this->GetMemCount();
+			tgLayer[i] = this->GetCapacity();
 		}
 		virtual void CopyTo(void * Des, unsigned int chunk) const
 		{
@@ -246,10 +233,9 @@ namespace XGF
 	private:
 		std::function<void(int index, Vector* desc)> func;
 	public:
-		PolygonPleFunctionalDataBinder(int count, std::function<void(int index, Vector* desc)> func)
+		PolygonPleFunctionalDataBinder(int count, std::function<void(int index, Vector* desc)> func): PolygonPleDataBinder<Vector>(count)
 		{
 			this->SetActualCount(count);
-			this->SetMemCount(count);
 			this->func = func;
 			this->mData = nullptr;
 		}
@@ -271,12 +257,11 @@ namespace XGF
 	private:
 		Index *mIndex;
 		int mCount;
-		int mMemCount;
+		int mCapacity;
 	public:
 		PolygonPleIndex(int n);
 		~PolygonPleIndex();
 		PolygonPleIndex(const PolygonPleIndex& tb);
-		void ShrinkTo(int count);
 		void CopyTo(void * Des, int offset) const;
 		bool operator ==(const PolygonPleIndex &rx) const {
 			if (&rx == this)
@@ -291,8 +276,10 @@ namespace XGF
 		}
 		void SetActualCount(int count);
 		int GetActualCount() const;
+		int GetCapacity() const;
 		Index Get(int n) const;
 		Index& Get(int n);
+		void SetFullActualCount();
 	};
 
 

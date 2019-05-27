@@ -9,6 +9,8 @@ namespace XGF
 		{
 			mPolygonPleIndex->Get(0) = 0;
 			mPolygonPleIndex->Get(1) = 1;
+			mPolygon->SetFullActualCount();
+			mPolygonPleIndex->SetFullActualCount();
 		}
 
 

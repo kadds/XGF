@@ -9,7 +9,6 @@ namespace XGF
 {
 	class Scene;
 	class Context;
-
 	class XGFramework
 	{
 	public:
@@ -43,9 +42,9 @@ namespace XGF
 		void SwitchScene(std::shared_ptr<Scene> scene);
 		void AddScene(std::shared_ptr<Scene> scene);
 		void RenderScene();
-		LRESULT OnInputMessage(UINT msg, WPARAM wParam, LPARAM lParam);
+		LRESULT OnInputMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-		InputManager& GetInputManager();
+		Input::InputManager& GetInputManager();
 
 		void SetOnCloseListener(std::function<bool(XGFramework&)> f);
 		void SetOnInputListener(std::function<bool(XGFramework&, const Event& ev)> f);;
@@ -60,11 +59,13 @@ namespace XGF
 		};
 
 		void SetInfoFrameCost(float frameCost);
+
+		float GetTimeIntervalFromLastRender() const;
 	protected:
 		std::shared_ptr<Scene> mScene;
 		void ISwitchScene(std::shared_ptr<Scene> scene);
 		Scheduler mScheduler;
-		InputManager mInputManager;
+		Input::InputManager mInputManager;
 
 		bool mIsVSync;
 		std::function<bool(XGFramework &)> mOnCloseListener;
@@ -75,6 +76,9 @@ namespace XGF
 
 		EventDispatcher mFrameWorkEventDispatcher;
 		float mInfoFrameCost;
+
+		Timer mLastRenderTimePointTimer;
+		float mLastRenderInterval;
 	};
 
 };

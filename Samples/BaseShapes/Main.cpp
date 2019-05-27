@@ -54,8 +54,7 @@ public:
 		auto res = std::vector<ResourceInfo>();
 		res.push_back(ResourceInfo(L"cursor.png", L"cursor"));
 		mTextureResourceManager.LoadResource(res);
-		GetFramework().GetInputManager().GetCursor().SetStaticTexture(mTextureResourceManager.GetResourceByAlias(L"cursor"));
-		GetFramework().GetInputManager().SetMouseMode(MouseMode::Custom);
+
 
 		mShapeRenderer.Initialize();
 		mFont.Initialize(Tools::GetFontPath(L"msyh"), 16);
@@ -101,6 +100,7 @@ public:
 		textureBinder.GetData(2).x = textureBinder.GetData(3).x = 1.f;
 		textureBinder.GetData(1).y = textureBinder.GetData(2).y = 1.f;
 		textureBinder.GetData(3).y = textureBinder.GetData(0).y = 0.f;
+		textureBinder.SetFullActualCount();
 
 		BindingBridge bb;
 		bb.AddBinder(mRc.mPolygon);
@@ -124,7 +124,7 @@ public:
 	virtual void Update(float deltaTime) override
 	{
 		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
-		if (GetFramework().GetInputManager().IskeyDown(DIK_F11) && mTime >= 0.3f)
+		if (GetFramework().GetInputManager().IskeyDown(Input::KeyBoardKey::F11) && mTime >= 0.3f)
 		{
 			if (!gdi.IsDisplayMode(DisplayMode::Borderless))
 				gdi.SetDisplayMode(DisplayMode::Borderless, 0, 0, 1920, 1080, true, true);
@@ -146,7 +146,6 @@ public:
 		renderer.WaitFrame();
 		mRenderToTextureTarget.Shutdown();
 		mRenderToTextureTarget.Initialize(cx, cy, DXGI_FORMAT_R8G8B8A8_UNORM, DepthStencilFormat::Depth24FloatStencil8Uint, 0, 1);
-		
 		mRc.SetPositionAndSize(0.f, cy * 2 / 3.f, cx / 3.f, cy / 3.f);
 	};
 

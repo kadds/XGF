@@ -11,27 +11,26 @@ namespace XGF
 		const PolygonPleIndex& index,
 		const RenderStage& renderStage)
 	{
-		const unsigned memsize = static_cast<unsigned>(bbr.GetAllPolygonPleMemSize());
-		char* vertices = new char[memsize];
-		auto indices = new Index[index.GetActualCount()];
-		auto cmd = new DefaultRenderCommand(vertices, bbr.GetBinder(0)->GetActualCount(), memsize, indices, index.GetActualCount(), renderStage);
-		unsigned int start = 0u;
-		unsigned int chunk = renderStage.GetRenderResource()->GetShader<VertexShader>()->GetStrideAllSizeAtSlot(0);
-		const unsigned int * stride = renderStage.GetRenderResource()->GetShader<VertexShader>()->GetStride();
- 		for (int i = 0; i < bbr.Count(); i++)
-		{
-			bbr.GetBinder(i)->CopyTo(vertices + start, chunk);
-			start += stride[i];
-		}
-		index.CopyTo(indices, 0);
-		return cmd;
+		return MakeRenderCommand(bbr, index, renderStage, 0, 0, index.GetActualCount() > 0 ? index.GetActualCount() : bbr.GetBinder(0)->GetActualCount());
 	}
 
-	DefaultRenderCommand::~DefaultRenderCommand()
+	DefaultRenderCommand* DefaultRenderCommand::MakeRenderCommand(const BindingBridge& bbr, const PolygonPleIndex& index, const RenderStage& renderStage, unsigned indexStart, unsigned vertexStart, unsigned drawCount)
 	{
-		delete[] mVertices;
-		if(mIndexCount > 0)
-			delete[] mIndices;
+		const unsigned memsize = static_cast<unsigned>(bbr.GetAllPolygonPleMemSize());
+		std::shared_ptr<char[]> vertices = std::shared_ptr<char[]>(new char[memsize]);
+		std::shared_ptr<Index[]> indices = std::shared_ptr<Index[]>(new Index[index.GetActualCount()]);
+
+		auto cmd = new DefaultRenderCommand(vertices, bbr.GetBinder(0)->GetActualCount(), memsize, vertexStart, indices, index.GetActualCount(), indexStart, renderStage, drawCount);
+		unsigned int start = 0u;
+		unsigned int chunk = renderStage.GetRenderResource()->GetShader<VertexShader>()->GetStrideAllSizeAtSlot(0);
+		const unsigned int* stride = renderStage.GetRenderResource()->GetShader<VertexShader>()->GetStride();
+		for (int i = 0; i < bbr.Count(); i++)
+		{
+			bbr.GetBinder(i)->CopyTo(vertices.get() + start, chunk);
+			start += stride[i];
+		}
+		index.CopyTo(indices.get(), 0);
+		return cmd;
 	}
 
 
@@ -54,19 +53,19 @@ namespace XGF
 		auto vertexBuffer = Context::Current().QueryRenderer().GetCurrentRenderResource().QueryUnusedGpuVertexBuffer(mVertexSize);
 		auto stride = mRenderStage.GetShader<VertexShader>()->GetStrideAllSizeAtSlot(0);
 		gdi.GetDeviceContext()->IASetVertexBuffers(0, 1, &vertexBuffer.buffer, &stride, offset);
-		memcpy_s(gdi.Map(vertexBuffer), mVertexSize, mVertices, mVertexSize);
+		memcpy_s(gdi.Map(vertexBuffer), mVertexSize, mVertices.get(), mVertexSize);
 		gdi.UnMap(vertexBuffer);
 		if (mIndexCount > 0)
 		{
 			auto indexBuffer = Context::Current().QueryRenderer().GetCurrentRenderResource().QueryUnusedGpuIndexBuffer(mIndexCount);
 			gdi.GetDeviceContext()->IASetIndexBuffer(indexBuffer.buffer, DXGI_FORMAT_R32_UINT, 0);
-			memcpy_s(gdi.Map(indexBuffer), sizeof(Index) * mIndexCount, mIndices, sizeof(Index) * mIndexCount);
+			memcpy_s(gdi.Map(indexBuffer), sizeof(Index) * mIndexCount, mIndices.get(), sizeof(Index) * mIndexCount);
 			gdi.UnMap(indexBuffer);
-			gdi.GetDeviceContext()->DrawIndexed(mIndexCount, 0, 0);
+			gdi.GetDeviceContext()->DrawIndexed(mDrawCount, mIndexStart, mVertexStart);
 		}
 		else
 		{
-			gdi.GetDeviceContext()->Draw(mVertexCount, 0);
+			gdi.GetDeviceContext()->Draw(mDrawCount, mVertexStart);
 		}
 
 		mRenderStage.UnBindStage();
@@ -542,7 +541,7 @@ namespace XGF
 			auto & context = Context::Current();
 			switch (ev.GetSystemEventId()) {
 				case SystemEventId::Size:
-					context.QueryGraphicsDeviceInterface().SizeChanged(ev.GetDataInt(0), ev.GetDataInt(1));
+					context.QueryGraphicsDeviceInterface().OnReSize(ev.GetDataInt(0), ev.GetDataInt(1));
 				break; 
 				case SystemEventId::Activate:
 					context.QueryGraphicsDeviceInterface().CheckFullScreenForce(ev.GetData<bool>(0));
@@ -560,8 +559,8 @@ namespace XGF
     #pragma region cache gpu constant buffer
 	GpuBuffer RendererFrameResource::QueryUnusedGpuIndexBuffer(unsigned count)
 	{
-		auto & idx = mVertices;
-		auto & idxused = mVerticesUsed;
+		auto & idx = mIndices;
+		auto & idxused = mIndicesUsed;
 		for (auto it = idx.begin(); it != idx.end(); ++it)
 		{
 			if (it->size == count)
@@ -668,5 +667,58 @@ namespace XGF
 	SubRenderCommand* SubRenderCommand::MakeRenderCommand(std::vector<RenderCommand*>&& commands)
 	{
 		return new SubRenderCommand(std::move(commands));
+	}
+
+	void BufferSharedRenderCommand::NewId(BufferSharedKey key)
+	{
+		auto it = map.find(key);
+		if (it == map.end())
+		{
+			auto& bbr = key.bbr;
+			auto& index = key.index;
+			auto& vs = key.vs;
+			const unsigned memsize = static_cast<unsigned>(bbr.GetAllPolygonPleMemSize());
+			std::shared_ptr<char[]> vertices = std::shared_ptr<char[]>(new char[memsize]);
+			std::shared_ptr<Index[]> indices = std::shared_ptr<Index[]>(new Index[index.GetActualCount()]);
+
+			unsigned int start = 0u;
+			unsigned int chunk = vs.GetStrideAllSizeAtSlot(0);
+			const unsigned int* stride = vs.GetStride();
+			for (int i = 0; i < bbr.Count(); i++)
+			{
+				bbr.GetBinder(i)->CopyTo(vertices.get() + start, chunk);
+				start += stride[i];
+			}
+			index.CopyTo(indices.get(), 0);
+
+			map.emplace(key, BufferSharedData(vertices, indices));
+		}
+
+	}
+	BufferSharedData BufferSharedRenderCommand::Get(BufferSharedKey key)
+	{
+		auto it = map.find(key);
+		if (it == map.end())
+		{
+			XGF_Error(Render, "Null BufferShadredData. Please call StartBaseRenderCommand before MakeRenderCommand");
+		}
+		return it->second;
+	}
+	std::unordered_map<BufferSharedKey, BufferSharedData, BufferSharedKeyHash> BufferSharedRenderCommand::map;
+
+	void BufferSharedRenderCommand::ClearAllData()
+	{
+		map.clear();
+	}
+	void BufferSharedRenderCommand::StartBaseRenderCommand(const BindingBridge& bbr, const PolygonPleIndex& index, const VertexShader & vs)
+	{
+		NewId(BufferSharedKey(bbr, index, vs));
+	}
+	BufferSharedRenderCommand* BufferSharedRenderCommand::MakeRenderCommand(const BindingBridge& bbr, const PolygonPleIndex& index, const RenderStage& renderStage, unsigned indexStart, unsigned vertexStart, unsigned drawCount)
+	{
+		auto data = Get(BufferSharedKey(bbr, index, *renderStage.GetRenderResource()->GetShader<VertexShader>()));
+		const unsigned memsize = static_cast<unsigned>(bbr.GetAllPolygonPleMemSize());
+		auto * cmd = new BufferSharedRenderCommand(data.mVertices, bbr.GetBinder(0)->GetActualCount(), memsize, vertexStart, data.mIndices, index.GetActualCount(), indexStart, renderStage, drawCount);
+		return cmd;
 	}
 }

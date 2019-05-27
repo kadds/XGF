@@ -13,6 +13,32 @@
 
 namespace XGF
 {
+	struct ViewPort 
+	{
+		float left;
+		float top;
+		float width;
+		float height;
+		float minDepth;
+		float maxDepth;
+		ViewPort(float left, float top, float width, float height, float minDepth = 0.0f, float maxDepth = 1.0f)
+			: left(left), top(top), width(width), height(height), minDepth(minDepth), maxDepth(maxDepth)
+		{
+		}
+		ViewPort() {}
+	};
+	struct Rect
+	{
+		long left;
+		long top;
+		long right;
+		long bottom;
+		bool operator == (const Rect& rc) const
+		{
+			return rc.left == left && rc.right == right && rc.top == top && rc.bottom == bottom;
+		}
+	};
+
 	class VPtrPlaceholder
 	{
 	public:
@@ -51,7 +77,7 @@ namespace XGF
 		GREATER = 5,
 		NOT_EQUAL = 6,
 		GREATER_EQUAL = 7,
-		ALWAYS = 8
+		ALWAYS = 8,
 	};
 	enum class Filter
 	{
@@ -192,7 +218,7 @@ namespace XGF
 		ClassPropertyWithInit(DepthEnable, bool, true)
 		ClassPropertyWithInit(DepthFunc, ComparisonFunc, ComparisonFunc::LESS)
 		ClassPropertyWithInit(DepthWriteMask, bool, true)
-		ClassPropertyWithInit(StencilEnable, bool, true)
+		ClassPropertyWithInit(StencilEnable, bool, false)
 		ClassPropertyWithInit(StencilReadMask, unsigned __int8, 0xFF)
 		ClassPropertyWithInit(StencilWriteMask, unsigned __int8, 0xFF)
 
@@ -353,8 +379,6 @@ namespace XGF
 		void Destroy();
 		void Present(bool isVsync);
 		void Initialize(HINSTANCE instance, HWND WndHwnd, HWND TopHwnd, UINT ClientWidth, UINT ClientHeight);
-		
-		void SizeChanged(UINT ClientWidth, UINT ClientHeight);
 
 		void ResizeTarget(UINT x, UINT y);
 		void SetFullScreen(bool isFullscreen, int pos);
@@ -378,8 +402,8 @@ namespace XGF
 		
 		bool IsFullScreen() { return mDisplayMode == DisplayMode::FullScreen; }
 		bool SetDisplayMode(DisplayMode dm, int left, int top, int cx, int cy, bool move, bool isClientSize = false);
+		ID3D11ShaderResourceView* CreateRenderableTexture(unsigned width, unsigned height, DXGI_FORMAT format, char* ptrContent, int pitch, int slicePitch);
 		DisplayMode GetDisplayMode() { return  mDisplayMode; }
-		ID3D11ShaderResourceView * CreateRenderableTexture(unsigned width, unsigned height, DXGI_FORMAT format, char * ptrContent = nullptr);
 
 		int GetFullScreenDisplayModes(DXGI_MODE_DESC ** c) { *c = mScreenMode[0].second; return mScreenMode[0].first; }
 		void CheckFullScreenForce(bool isforce);
@@ -411,7 +435,13 @@ namespace XGF
 		int Query4xMsaaQuality() const;
 		bool CanEnable4xMsaa() const;
 		bool IsDisplayMode(DisplayMode displayMode) const;
+		void SetViewPorts(const std::vector<ViewPort> & viewports);
+		void SetScissorRectangle(const std::vector<Rect> & rects);
+
+		void OnReSize(UINT cx, UINT cy);
 	protected:
+		void SetFullViewPort(int cx = -1, int cy = -1);
+
 		IDXGIFactory2 * mFactory2 = nullptr;
 		IDXGIFactory1 * mFactory1 = nullptr;
 
@@ -439,6 +469,9 @@ namespace XGF
 		CacheState<BlendState, RawBlendState> mBlendStates;
 
 		FrameBuffer mDisplayFrameBuffer;
+		std::vector<ViewPort> mViewports;
+		std::vector<Rect> mScissorRects;
+
 		DisplayMode mDisplayMode;
 		std::vector<std::pair<int, DXGI_MODE_DESC *>> mScreenMode;
 

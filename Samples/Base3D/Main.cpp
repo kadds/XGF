@@ -1,5 +1,6 @@
 #define _XGF_DEBUG_ALLOC
 #include "./../../XGF/Include/XGF.h"
+#include "./../../XGF/Extra/imgui/imgui_impl.hpp"
 #include <fmt/format.h>
 using namespace XGF;
 #include <iomanip>
@@ -30,10 +31,16 @@ public:
 	
 	virtual void OnCreate() override
 	{
-		auto & context = Context::Current();
-		Context::Current().QueryRenderer().SetLimitFrameRate(180);
-		Context::Current().QueryFramework().SetLogicalFrameRate(15);
-		Context::Current().QueryFramework().SetInfoFrameCost(1.f / 10);
+		auto& context = Context::Current();
+		auto& gdi = context.QueryGraphicsDeviceInterface();
+
+		context.QueryFramework().GetInputManager().SwitchToDInput();
+		imgui.Initialize();
+		this->GetRootContainer().GetEventDispatcher().InsertAllEventListener(bind(&UI::Imgui::OnInputEvent, &imgui, placeholders::_1));
+
+		context.QueryRenderer().SetLimitFrameRate(180);
+		context.QueryFramework().SetLogicalFrameRate(15);
+		context.QueryFramework().SetInfoFrameCost(1.f / 10);
 		auto res = std::vector<ResourceInfo>();
 		res.push_back(ResourceInfo(L"logo.png", L"logo"));
 
@@ -166,6 +173,7 @@ public:
 	};
 	virtual void OnDestroy() override
 	{
+		imgui.Shutdown();
 		mAxisRenderer.Shutdown();
 		mMeshRenderer.Shutdown();
 		mTextRenderer.Shutdown();
@@ -189,9 +197,10 @@ public:
 	virtual void Render() override
 	{
 		auto & context = Context::Current();
+		
 		context.QueryRenderer().PushDefaultFrameTarget();
 		context.QueryRenderer().Clear(Color(0.7, 0.7, 0.7, 1));
-
+		
 		WVPMatrix wvp2d, wvp3d;
 		mCamera2D.GetCameraMatrix(wvp2d);
 		mCamera3D.GetCameraMatrix(wvp3d);
@@ -200,18 +209,7 @@ public:
 
 		mMeshRenderer.Draw();
 		mMeshRenderer.End();
-		
-		
-		PolygonPleTextureBinder textureBinder(4);
-		textureBinder.GetData(1).x = textureBinder.GetData(0).x = 0.f;
-		textureBinder.GetData(2).x = textureBinder.GetData(3).x = 1.f;
-		textureBinder.GetData(1).y = textureBinder.GetData(2).y = 1.f;
-		textureBinder.GetData(3).y = textureBinder.GetData(0).y = 0.f;
 
-		BindingBridge bb;
-		bb.AddBinder(mRc.mPolygon);
-		bb.AddBinder(std::shared_ptr<PolygonPleTextureBinder>(&textureBinder, [](const PolygonPleTextureBinder *) {}));
-		
 		mAxisRenderer.Begin(wvp3d);
 		mAxisRenderer.DrawAxis();
 		mAxisRenderer.End();
@@ -221,18 +219,17 @@ public:
 		std::wstring s = fmt::format(L"FPS:{0}\nFC:{1}ms", debug->GetAverageFPS(), debug->GetFrameCost());
 		mTextRenderer.DrawString(s, 4, 4);
 		mTextRenderer.End();
+		imgui.Begin();
+		{
+			ImGui::Begin("Info");
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			ImGui::End();
+		}
+		imgui.End();
 
 	};
 	virtual void Update(float deltaTime) override
 	{
-		if (GetFramework().GetInputManager().IskeyDown(DIK_A))
-		{
-			mCamera3D.LookAt(Point(5.f, 5.f, 5.f), Point(0, 0, 0), Point::Up);
-		}
-		if (GetFramework().GetInputManager().IskeyDown(DIK_S))
-		{
-			mCamera3D.LookTo(Point(5.f, 5.f, 5.f), Point(-1, 1, -1), Point::Up);
-		}
 		mCamera3D.Update();
 		mCamera2D.Update();
 		mActions.Update(deltaTime);
@@ -242,7 +239,8 @@ public:
 		mCamera3D.UpdateProject(cx, cy);
 		mCamera2D.UpdateProject(cx, cy);
 		mRc.SetPositionAndSize(0, 0, cx / 4.f, cy / 4.f);
-
+		Context::Current().QueryRenderer().WaitFrame();
+		imgui.Resize(cx, cy);
 	};
 
 	void OnEvent(const Event & ev) 
@@ -252,25 +250,29 @@ public:
 			mTrackballCameraController.HandleEvents(ev, gdi.GetWidth(), gdi.GetHeight());
 		else if(ev.GetEventGroup() == EventGroupType::KeyBoard && ev.GetKeyBoardEventId() == KeyBoardEventId::KeyDown)
 		{
-			if(ev.GetData<int>(0) == DIK_F2)
+			if(ev.GetData<Input::KeyBoardKey>(0) == Input::KeyBoardKey::F2)
 			{
 				mDirectionalLight->SetCastShadow(!mDirectionalLight->GetCastShadow());
 				mMeshRenderer.ReBuild();
 			}
-			if (ev.GetData<int>(0) == DIK_F3)
+			if (ev.GetData<Input::KeyBoardKey>(0) == Input::KeyBoardKey::F3)
 			{
 				mSpotLight->SetCastShadow(!mSpotLight->GetCastShadow());
 				mMeshRenderer.ReBuild();
 			}
-			if (ev.GetData<int>(0) == DIK_F4)
+			if (ev.GetData<Input::KeyBoardKey>(0) == Input::KeyBoardKey::F4)
 			{
 				mDirectionalLight->SetGroup(!mDirectionalLight->GetGroup());
 				mMeshRenderer.ReBuild();
 			}
-			if (ev.GetData<int>(0) == DIK_F5)
+			if (ev.GetData<Input::KeyBoardKey>(0) == Input::KeyBoardKey::F5)
 			{
 				mSpotLight->SetGroup(!mSpotLight->GetGroup());
 				mMeshRenderer.ReBuild();
+			}
+			if (ev.GetData<Input::KeyBoardKey>(0) == Input::KeyBoardKey::RightCommand)
+			{
+				mCamera3D.LookAt(Point(5.f, 5.f, 5.f), Point(0, 0, 0), Point::Up);
 			}
 		}
 	}
@@ -298,6 +300,8 @@ private:
 	Shape::Rectangle mRc;
 
 	Actions mActions;
+
+	UI::Imgui imgui;
 };
 
 

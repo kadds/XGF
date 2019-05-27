@@ -3,7 +3,7 @@
 #include "../../Include/Context.hpp"
 #include "../../Include/GDI.hpp"
 
-namespace XGF
+namespace XGF::Input
 {
 	DX8Input::DX8Input()
 	{
@@ -20,8 +20,7 @@ namespace XGF
 		auto hs = context.QueryGraphicsDeviceInterface().GetInstance();
 		XGF_ASSERT(hwnd != NULL);
 		XGF_ASSERT(hs != NULL);
-		hInstance = hs;
-		mHwnd = hwnd;
+
 		XGF_Error_Check(Input, DirectInput8Create(hs, DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&mDxInput, nullptr),"DxInputCreate Failed");
 		
 		//Check(dxInput->QueryInterface(IID_IDirectInputDevice2, (void **)&mDxInput));
@@ -53,29 +52,30 @@ namespace XGF
 		//propertys.dwData = DIPROPAXISMODE_ABS;
 		//Check(mMouse->SetProperty(DIPROP_AXISMODE, &propertys.diph));
 		POINT p;
-		p.x = mouseState.px;
-		p.y = mouseState.py;
 		GetCursorPos(&p);
-		ScreenToClient(mHwnd, &p);
-		mouseState.px = p.x;
-		mouseState.py = p.y;
-		mouseState.pz = 0;
-		mouseState.dowm = 0;
+		ScreenToClient(hwnd, &p);
+		mMouseContent.SetPosX(p.x);
+		mMouseContent.SetPosY(p.y);
+		mMouseContent.SetDeltaX(0);
+		mMouseContent.SetDeltaY(0);
+
 		RECT rc;
 		GetClientRect(hwnd, &rc);
 		width = rc.right - rc.left;
 		height = rc.bottom - rc.top;
-		memset(keys, 0, sizeof(keys));
-		mMoveable = true;
-		mInvalid = false;
+
+
 		XGF_Debug(Input, "d8input subsystem initialized");
+		DoEvent();
 		return true;
 	}
 
 	void DX8Input::Shutdown()
 	{
 		XGF_Debug(Input, "d8input subsystem shutdown");
-		PostThreadMessage(id, WM_QUIT, 0, 0);
+		auto id = mInputThread.GetThreadId();
+		DWORD ids = *((DWORD*)(&id));
+		PostThreadMessage(ids, WM_QUIT, 0, 0);
 		if (mDxInput)
 		{
 			if (mKeyBoard)
@@ -109,14 +109,15 @@ namespace XGF
 		}
 	}
 
-	void DX8Input::DoEvent(Asyn * asyn)
+	void DX8Input::DoEvent()
 	{
-		mInputThread.DoAsyn([=](Asyn * as) {
+		Context& context = Context::Current();
+		mInputThread.DoAsyn([&context, this](Asyn * asyn) {
+			Context::JoinContext(context);
 			Tools::SetCurrentThreadName("DX8Input Thread");
 			MSG msg{};
 			HANDLE had[2];
 
-			id = GetCurrentThreadId();
 			had[0] = CreateEvent(nullptr, FALSE, FALSE, FALSE);
 			had[1] = CreateEvent(nullptr, FALSE, FALSE, FALSE);
 			mMouse->SetEventNotification(had[0]);
@@ -140,7 +141,7 @@ namespace XGF
 						dwElements = 64;
 						mMouse->GetDeviceData(sizeof(DIDEVICEOBJECTDATA), didod, &dwElements, 0);
 					}
-					HandleMouseEvent(didod, dwElements, asyn);
+					HandleMouseEvent(didod, dwElements);
 					break;
 				case WAIT_OBJECT_0 + 1:
 					mKeyBoard->Acquire();
@@ -153,7 +154,7 @@ namespace XGF
 						dwElements = 128;
 						mKeyBoard->GetDeviceData(sizeof(DIDEVICEOBJECTDATA), didod, &dwElements, 0);
 					}
-					HandleKeyBoardEvent(didod, dwElements, asyn);
+					HandleKeyBoardEvent(didod, dwElements);
 					break;
 				case WAIT_OBJECT_0 + 2:
 					while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -174,153 +175,115 @@ namespace XGF
 	}
 	void DX8Input::SetExclusiveMode(bool Exclusive)
 	{
+		auto hwnd = Context::Current().QueryGraphicsDeviceInterface().GetTopHwnd();
+
 		HRESULT hr;
 		if (Exclusive)
-			hr = mMouse->SetCooperativeLevel(mHwnd,
+			hr = mMouse->SetCooperativeLevel(hwnd,
 				DISCL_EXCLUSIVE);
 		else
-			hr = mMouse->SetCooperativeLevel(mHwnd,
+			hr = mMouse->SetCooperativeLevel(hwnd,
 				DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
 		if (hr != S_OK)
 			XGF_Warn(Input, "DXinput SetExclusiveMode Failed");
 	}
-	void DX8Input::SetRelativeMode(bool Relative)
-	{
-		mRelativeMode = Relative;
-		if (Relative) {
-			if (!(mouseState.dowm & MOUSE_POSITION_RELATIVEMODE))
-				mouseState.dowm |= MOUSE_POSITION_RELATIVEMODE;
-			mouseState.px = mouseState.py = mouseState.pz = 0;
-		}
-		else
-		{
-			if (mouseState.dowm & MOUSE_POSITION_RELATIVEMODE)
-				mouseState.dowm |= MOUSE_POSITION_RELATIVEMODE;
-		}
 
-	}
 
-	bool DX8Input::IsPress(Key key)
+	const MouseContent& DX8Input::GetMouseContent()
 	{
-		return keys[key];
+		return mMouseContent;
 	}
-	bool DX8Input::GetAbsolutePos()
+	const KeyboardContent& DX8Input::GetKeyboardContent()
 	{
-		POINT p;
-		GetCursorPos(&p);
-		ScreenToClient(mHwnd, &p);
-		mouseState.px = p.x;
-		mouseState.py = p.y;
-		return true;
+		return mKeyboardContent;
 	}
-
 #pragma warning(push)
 #pragma warning(disable:4644)
-	void DX8Input::HandleMouseEvent(DIDEVICEOBJECTDATA * didod, int len, Asyn * asyn)
+	void DX8Input::HandleMouseEvent(DIDEVICEOBJECTDATA * didod, int len)
 	{
-		bool isDown;
-		if (!mMoveable || mInvalid) {
+		auto& gameThread = Context::Current().QueryGameThread();
+
+		if (mInvalid) {
 			return;
 		}
-		if (mRelativeMode)
-		{
-			auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
-			POINT p;
-			p.x = static_cast<LONG>(gdi.GetWidth() / 2);
-			p.y = static_cast<LONG>(gdi.GetHeight() / 2);
-			ClientToScreen(mHwnd, &p);
-			SetCursorPos(p.x, p.y);
-		}
+		auto& gdi = Context::Current().QueryGraphicsDeviceInterface();
+		MouseContent content;
+		std::bitset<10> hasset;
 		for (int i = 0; i < len; i++)
 		{
 			switch (didod[i].dwOfs)
 			{
 			case DIMOFS_X:
-				if (mRelativeMode)
-					mouseState.px = didod[i].dwData;
-				else
-				{
-					if (!GetAbsolutePos())
-						break;
-				}
-				asyn->PostEvent(MouseEventId::MouseMove, { mouseState.px, mouseState.py, mouseState.dowm });
+				content.SetDeltaX(didod[i].dwData);
+				hasset.set(0);
 				break;
 			case DIMOFS_Y:
-				if (mRelativeMode)
-					mouseState.py = didod[i].dwData;
-				else
-				{
-					if(!GetAbsolutePos())
-						break;
-				}
-				asyn->PostEvent(MouseEventId::MouseMove, { mouseState.px, mouseState.py, mouseState.dowm });
+				hasset.set(0);
+				content.SetDeltaY(didod[i].dwData);
 				break;
 			case DIMOFS_Z:
-				mouseState.pz = didod[i].dwData;
-				asyn->PostEvent(MouseEventId::MouseWheel, { mouseState.pz});
+				hasset.set(1);
+				content.SetScroll(didod[i].dwData);
 				break;
 			case DIMOFS_BUTTON0:
-				isDown = static_cast<bool>(didod[i].dwData & 0x80);
-				mouseState.dowms[0] = isDown;
-				if (isDown)
-				{
-					mouseState.dowm |= MOUSE_BUTTON_LEFT;
-					asyn->PostEvent(MouseEventId::MouseDown, { mouseState.px, mouseState.py, MOUSE_BUTTON_LEFT });
-				}
-				else
-				{
-					mouseState.dowm ^= MOUSE_BUTTON_LEFT;
-					asyn->PostEvent(MouseEventId::MouseUp, {mouseState.px, mouseState.py, MOUSE_BUTTON_LEFT});
-				}
-				break;
 			case DIMOFS_BUTTON1:
-				isDown = static_cast<bool>(didod[i].dwData & 0x80);
-				mouseState.dowms[1] = isDown;
-				if (isDown)
-				{
-					mouseState.dowm |= MOUSE_BUTTON_RIGHT;
-					asyn->PostEvent(MouseEventId::MouseDown, { mouseState.px, mouseState.py, MOUSE_BUTTON_RIGHT });
-				}
-				else
-				{
-					mouseState.dowm ^= MOUSE_BUTTON_RIGHT;
-					asyn->PostEvent(MouseEventId::MouseUp, { mouseState.px, mouseState.py, MOUSE_BUTTON_RIGHT });
-				}
-				break;
 			case DIMOFS_BUTTON2:
-
-				isDown = static_cast<bool>(didod[i].dwData & 0x80);
-				mouseState.dowms[2] = isDown;
-				if (isDown)
-				{
-					mouseState.dowm |= MOUSE_BUTTON_MIDDLE;
-					asyn->PostEvent(MouseEventId::MouseDown, { mouseState.px, mouseState.py, MOUSE_BUTTON_MIDDLE });
-				}
-				else
-				{
-					mouseState.dowm ^= MOUSE_BUTTON_MIDDLE;
-					asyn->PostEvent(MouseEventId::MouseUp, { mouseState.px, mouseState.py, MOUSE_BUTTON_MIDDLE });
-				}
+			case DIMOFS_BUTTON3:
+			case DIMOFS_BUTTON4:
+			case DIMOFS_BUTTON5:
+			case DIMOFS_BUTTON6:
+			case DIMOFS_BUTTON7:
+				hasset.set((int)(didod[i].dwOfs - DIMOFS_BUTTON0 + 2));
+				content.Set(MouseKey(didod[i].dwOfs - DIMOFS_BUTTON0), (bool)(didod[i].dwData & 0x80));
 				break;
 			default:
 				break;
 			}
 		}
+		if (hasset.test(0)) // move
+		{
+			auto hwnd = Context::Current().QueryGraphicsDeviceInterface().GetTopHwnd();
+			POINT p;
+			GetCursorPos(&p);
+			ScreenToClient(hwnd, &p);
+			mMouseContent.SetPosX(p.x);
+			mMouseContent.SetPosY(p.y);
+			mMouseContent.SetDeltaX(content.GetDeltaX());
+			mMouseContent.SetDeltaY(content.GetDeltaY());
+			gameThread.PostEvent(MouseEventId::MouseMove, { mMouseContent.GetPosX(), mMouseContent.GetPosY(), mMouseContent.GetDeltaX(), mMouseContent.GetDeltaY() });
+		}
+		if (hasset.test(1)) //scroll
+		{
+			mMouseContent.SetScroll(content.GetScroll());
+			gameThread.PostEvent(MouseEventId::MouseWheel, { mMouseContent.GetScroll() });
+		}
+		for (int i = 2; i < 10; i++)
+		{
+			if (hasset.test(i))
+			{
+				bool down = content.Get((MouseKey)(i - 2));
+				gameThread.PostEvent(down ? MouseEventId::MouseDown : MouseEventId::MouseUp
+					, { (MouseKey)(i - 2) });
+			}
+		}
 	}
 #pragma warning(pop)
-	void DX8Input::HandleKeyBoardEvent(DIDEVICEOBJECTDATA * didod, int len, Asyn * asyn)
+	void DX8Input::HandleKeyBoardEvent(DIDEVICEOBJECTDATA * didod, int len)
 	{
+		auto& gameThread = Context::Current().QueryGameThread();
+
 		for (int i = 0; i< len; i++)
 		{
+			KeyBoardKey keyCode = GetKeyFromDIK((unsigned char)didod[i].dwOfs);
 			if (didod[i].dwData & 0x80)
 			{
-				keys[didod[i].dwOfs] = true;
-				asyn->PostEvent(KeyBoardEventId::KeyDown, { (int)didod[i].dwOfs });
+				mKeyboardContent.Set(keyCode, true);
+				gameThread.PostEvent(KeyBoardEventId::KeyDown, { keyCode });
 			}
 			else
 			{
-				keys[didod[i].dwOfs] = false;
-				asyn->PostEvent(KeyBoardEventId::KeyUp, { (int)(didod[i].dwOfs) });
+				mKeyboardContent.Set(keyCode, false);
+				gameThread.PostEvent(KeyBoardEventId::KeyUp, { keyCode });
 			}
 		}
 	}
@@ -328,6 +291,4 @@ namespace XGF
 	{
 		mInputThread.HandleMessage();
 	}
-
-
 }

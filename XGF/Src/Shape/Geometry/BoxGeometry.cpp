@@ -4,7 +4,9 @@ namespace XGF::Shape
 {
 	void BoxGeometry::Init(float x, float y, float z)
 	{
-		mPolygonPleNormal = std::make_shared<PolygonPleNormalBinder>(mPolygon->GetActualCount());
+		mPolygon->SetFullActualCount();
+		mPolygonPleNormal = std::make_shared<PolygonPleNormalBinder>(mPolygon->GetCapacity());
+		mPolygonPleNormal->SetFullActualCount();
 
 		float hx = x / 2.f, hy = y / 2.f, hz = z / 2.f;
 		auto * point = mPolygon->GetData();
@@ -85,6 +87,7 @@ namespace XGF::Shape
 		};
 
 		memcpy_s(&mPolygonPleIndex->Get(0), sizeof(ix), ix, sizeof(ix));
+		mPolygonPleIndex->SetFullActualCount();
 	}
 }
 

@@ -112,7 +112,7 @@ namespace XGF
 		PutDebugString(mD3dDevice);
 		CreateSwapChain();
 
-		SizeChanged(mWidth, mHeight);
+		OnReSize(mWidth, mHeight);
 	}
 
 	void GDI::SaveDisplayMode(int c, IDXGIOutput * pDXGIOutput)
@@ -234,18 +234,18 @@ namespace XGF
 		mHeight = ClientHeight;
 	}
 
-	void GDI::SizeChanged(UINT ClientWidth, UINT ClientHeight)
+	void GDI::OnReSize(UINT cx, UINT cy)
 	{
 		if (!mSwapChain1 && !mSwapChain)
 			return;
-		XGF_Debug(Framework, "SIZE Changed:", ClientWidth, ",", ClientHeight);
-		if (ClientWidth < 1)
-			ClientWidth = 1;
-		if (ClientHeight < 1)
-			ClientHeight = 1;
+		XGF_Debug(Framework, "SIZE Changed:", cx, ",", cy);
+		if (cx < 1)
+			cx = 1;
+		if (cy < 1)
+			cy = 1;
 
 		mDisplayFrameBuffer.Shutdown();
-		XGF_Error_Check(Framework, mSwapChain->ResizeBuffers(1, ClientWidth, ClientHeight, mDisplayFormat, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH), "ResizeBuffers Error");
+		XGF_Error_Check(Framework, mSwapChain->ResizeBuffers(1, cx, cy, mDisplayFormat, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH), "ResizeBuffers Error");
 		PutDebugString(mSwapChain);
 		ID3D11Texture2D* backBufferPtr;
 		XGF_Error_Check(Framework, mSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBufferPtr), "GetSwapChainBuffer is Error");
@@ -257,8 +257,8 @@ namespace XGF
 
 		mDisplayFrameBuffer.Bind();
 
-		mWidth = ClientWidth;
-		mHeight = ClientHeight;
+		mWidth = cx;
+		mHeight = cy;
 	}
 
 	void GDI::ResizeTarget(UINT x, UINT y)
@@ -326,6 +326,9 @@ namespace XGF
 	{
 		ID3D11Buffer * buffer;
 		D3D11_BUFFER_DESC vertexDesc;
+		if (len == 0) {
+			XGF_Error(Render, "content len is zero");
+		}
 		char * data = (char *)dataAddress;
 		if (!dataAddress)
 			data = new char[len];
@@ -468,7 +471,7 @@ namespace XGF
 		return true;
 	}
 
-	ID3D11ShaderResourceView * GDI::CreateRenderableTexture(unsigned width, unsigned height, DXGI_FORMAT format, char * ptrContent)
+	ID3D11ShaderResourceView * GDI::CreateRenderableTexture(unsigned width, unsigned height, DXGI_FORMAT format, char * ptrContent, int pitch, int slicePitch)
 	{
 		char * ptr = ptrContent;
 		if (!ptr)
@@ -479,8 +482,8 @@ namespace XGF
 		ID3D11Texture2D * texutre;
 		D3D11_SUBRESOURCE_DATA __subData;
 		__subData.pSysMem = ptr;
-		__subData.SysMemPitch = width;
-		__subData.SysMemSlicePitch = width * height;
+		__subData.SysMemPitch = pitch;
+		__subData.SysMemSlicePitch = slicePitch;
 		D3D11_TEXTURE2D_DESC  texture2d;
 
 		texture2d.Width = width;
@@ -834,6 +837,36 @@ namespace XGF
 	bool GDI::IsDisplayMode(DisplayMode displayMode) const
 	{
 		return mDisplayMode == displayMode;
+	}
+	void GDI::SetViewPorts(const std::vector<ViewPort>& viewports)
+	{
+		if (viewports.empty())
+		{
+			SetFullViewPort();
+		}
+		else
+		{
+			mViewports = viewports;
+			mDeviceContext->RSSetViewports((UINT)viewports.size(), (const D3D11_VIEWPORT*)viewports.data());
+		}
+	}
+	void GDI::SetFullViewPort(int cx, int cy)
+	{
+		if (cx <= -1)
+			cx = GetWidth();
+		if (cy <= -1)
+			cy = GetHeight();
+		mViewports = std::vector<ViewPort>(1);
+		mViewports[0] = { 0.f, 0.f, (float)cx, (float)cy, 0.f, 1.f };;
+		mDeviceContext->RSSetViewports((UINT)mViewports.size(), (const D3D11_VIEWPORT*)mViewports.data());
+	}
+	void GDI::SetScissorRectangle(const std::vector<Rect> & rects)
+	{
+		if (mScissorRects != rects)
+		{
+			mDeviceContext->RSSetScissorRects(rects.size(), (const D3D11_RECT *) rects.data());
+			mScissorRects = rects;
+		}
 	}
 }
 

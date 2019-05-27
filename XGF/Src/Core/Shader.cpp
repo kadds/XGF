@@ -124,6 +124,16 @@ namespace XGF {
 		return mTexture2D[index].slot;
 	}
 
+	std::string Shader::GetName() const
+	{
+		return mName;
+	}
+
+	void Shader::SetName(const std::string& name)
+	{
+		mName = name;
+	}
+
 	const std::string ComputeShader::mEntrypoint = "VS";
 	const std::string ComputeShader::mPerfixName = "vs_";
 
@@ -655,6 +665,8 @@ namespace XGF {
 			}
 		gdi.SetDepthStencilState(mDepthStencilState);
 		gdi.SetRasterizerState(mRasterizerState);
+		gdi.SetScissorRectangle(mScissorRects);
+		gdi.SetViewPorts(mViewPorts);
 	}
 
 	void RawRenderStage::UnBindStage()
@@ -685,19 +697,21 @@ namespace XGF {
 
 	}
 
-	RawRenderStage::RawRenderStage(const RenderStage& ss): mVSSamplerState(ss.GetRenderResource()->GetSamplerState<VertexShader>().size())
-		,mPSSamplerState(ss.GetRenderResource()->GetSamplerState<PixelShader>().size())
+	RawRenderStage::RawRenderStage(const RenderStage& ss) : mVSSamplerState(ss.GetRenderResource()->GetSamplerState<VertexShader>().size())
+		, mPSSamplerState(ss.GetRenderResource()->GetSamplerState<PixelShader>().size())
 		, mGSSamplerState(ss.GetRenderResource()->GetSamplerState<GeometryShader>().size())
 		, mVSCBuffer(ss.GetRenderResource()->GetConstantBuffer<VertexShader>())
 		, mPSCBuffer(ss.GetRenderResource()->GetConstantBuffer<PixelShader>())
 		, mGSCBuffer(ss.GetRenderResource()->GetConstantBuffer<GeometryShader>())
 		, mVSTexture(ss.GetRenderResource()->GetTexture<VertexShader>())
 		, mPSTexture(ss.GetRenderResource()->GetTexture<PixelShader>())
-		, mGSTexture(ss.GetRenderResource()->GetTexture<GeometryShader>()), 
+		, mGSTexture(ss.GetRenderResource()->GetTexture<GeometryShader>()),
 		mTopologyMode(ss.GetRenderState()->GetTopologyMode())
 		, vs(ss.GetRenderResource()->GetShader<VertexShader>())
 		, ps(ss.GetRenderResource()->GetShader<PixelShader>())
 		, gs(ss.GetRenderResource()->GetShader<GeometryShader>())
+		, mScissorRects(ss.GetRenderState()->GetScissorRects())
+		, mViewPorts(ss.GetRenderState()->GetViewPorts())
 	{
 		auto& gdi = Context::Current().QueryGraphicsDeviceInterface();
 		mRasterizerState = gdi.GetRasterizerState(ss.GetRenderState()->GetRasterizerState());

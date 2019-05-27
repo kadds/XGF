@@ -1,5 +1,9 @@
 #include "./../../Include/TrackballCameraController.hpp"
 #include "./../../Include/PerspectiveCamera.hpp"
+#include "./../../Include/InputDefinitions.hpp"
+#include "./../../Include/Context.hpp"
+#include "./../../Include/InputManager.hpp"
+#include "./../../Include/XGFramework.hpp"
 
 namespace XGF
 {
@@ -10,12 +14,14 @@ namespace XGF
 	void TrackballCameraController::HandleEvents(const Event & ev, int cx, int cy)
 	{
 		if (ev.mEventType != EventGroupType::Mouse) return;
+		auto& inputManager = Context::Current().QueryFramework().GetInputManager();
+		Input::MouseKey pressKey;
 		switch (ev.GetMouseEventId())
 		{
 			case MouseEventId::MouseMove:
 				if (!mIsDown) break;
 				{
-					Position cp{ static_cast<float>(ev.GetDataInt(0)), static_cast<float>(ev.GetDataInt(1)) };
+					Position cp{ static_cast<float>(ev.GetDataMousePosition(0)), static_cast<float>(ev.GetDataMousePosition(1)) };
 					float dx = mLastPosition.x - cp.x;
 					float dy = mLastPosition.y - cp.y;
 					mLastPosition = cp;
@@ -33,12 +39,13 @@ namespace XGF
 			case MouseEventId::MouseDown:
 				if (mIsDown) break;
 				mIsDown = true;
-				mLastPosition = { static_cast<float>(ev.GetDataInt(0)), static_cast<float>(ev.GetDataInt(1)) };
-				if (ev.GetDataInt(2) & 1)
+				mLastPosition = { (float) inputManager.GetMouseContent().GetPosX(), (float) inputManager.GetMouseContent().GetPosY() };
+				pressKey = ev.GetData<Input::MouseKey>(0);
+				if (pressKey == Input::MouseKey::Left)
 				{
 					mOperatorType = OperatorType::Rotate;
 				}
-				else if (ev.GetDataInt(2) & 2)
+				else if (pressKey == Input::MouseKey::Right)
 				{
 					mOperatorType = OperatorType::Move;
 				}
@@ -48,7 +55,7 @@ namespace XGF
 				}
 				break;
 			case MouseEventId::MouseWheel:
-				this->Zoom(ev.GetData<int>(0) * mZoomSpeed, 0);
+				this->Zoom(ev.GetDataMousePosition(0) * mZoomSpeed, 0);
 				break;
 			default:
 				break;

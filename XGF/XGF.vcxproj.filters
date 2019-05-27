@@ -58,6 +58,18 @@
     <Filter Include="头文件\Light">
       <UniqueIdentifier>{4db70718-d768-4f2e-99cc-b06d5fb8a800}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\Extra">
+      <UniqueIdentifier>{b2eeb39b-58bd-4548-81e0-a7dd078e1517}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Extra\Imgui">
+      <UniqueIdentifier>{0be51738-bf33-420a-bfd9-24bdf4cf5466}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Extra">
+      <UniqueIdentifier>{18bba98a-9666-4dd1-887e-d2a545e1c567}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Extra\Imgui">
+      <UniqueIdentifier>{ab4bd09f-28ec-4e6f-912e-3d3f68a4c578}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Action.hpp">
@@ -189,9 +201,6 @@
     <ClInclude Include="Include\GridRenderer.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Caret.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Cursor.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -318,6 +327,39 @@
     <ClInclude Include="Include\Material\PhysicsMaterial.hpp">
       <Filter>头文件\Material</Filter>
     </ClInclude>
+    <ClInclude Include="Extra\imgui\imconfig.h">
+      <Filter>头文件\Extra\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Extra\imgui\imgui.h">
+      <Filter>头文件\Extra\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Extra\imgui\imgui_internal.h">
+      <Filter>头文件\Extra\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Extra\imgui\imgui_impl.hpp">
+      <Filter>头文件\Extra\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Extra\imgui\imstb_rectpack.h">
+      <Filter>头文件\Extra\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Extra\imgui\imstb_textedit.h">
+      <Filter>头文件\Extra\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Extra\imgui\imstb_truetype.h">
+      <Filter>头文件\Extra\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Xinput.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Config.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\RawInput.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\InputDefinitions.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\UI\Button.cpp">
@@ -440,9 +482,6 @@
     <ClCompile Include="Src\Tools\GridRenderer.cpp">
       <Filter>源文件\Tools</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Core\Caret.cpp">
-      <Filter>源文件\Core</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Core\Cursor.cpp">
       <Filter>源文件\Core</Filter>
     </ClCompile>
@@ -562,6 +601,30 @@
     </ClCompile>
     <ClCompile Include="Src\Shape\Material\PhysicsMaterial.cpp">
       <Filter>源文件\Shape\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="Extra\imgui\imgui.cpp">
+      <Filter>源文件\Extra\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Extra\imgui\imgui_demo.cpp">
+      <Filter>源文件\Extra\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Extra\imgui\imgui_draw.cpp">
+      <Filter>源文件\Extra\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Extra\imgui\imgui_widgets.cpp">
+      <Filter>源文件\Extra\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Extra\imgui\imgui_impl.cpp">
+      <Filter>源文件\Extra\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Input\XInput.cpp">
+      <Filter>源文件\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Input\RawInput.cpp">
+      <Filter>源文件\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Input\InputDefinitions.cpp">
+      <Filter>源文件\Input</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

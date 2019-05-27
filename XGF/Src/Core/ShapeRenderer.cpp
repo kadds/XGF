@@ -52,6 +52,7 @@ namespace XGF
 		rc.SetPositionAndSize(x, y, w, h);
 		rc.SetZ(z);
 		auto cb = std::make_shared<PolygonPleConstantColorBinder>(rc.mPolygon->GetActualCount(), color);
+		cb->SetFullActualCount();
 		BindingBridge bb;
 		bb.AddBinder(rc.mPolygon);
 		bb.AddBinder(cb);
@@ -73,7 +74,7 @@ namespace XGF
 			std::make_pair(8, bkcolor)
 		};
 		auto cb = std::make_shared<PolygonPleConstantColorBinder>(rc.mPolygon->GetActualCount(), vec);
-
+		cb->SetFullActualCount();
 		BindingBridge bb;
 		bb.AddBinder(rc.mPolygon);
 		bb.AddBinder(cb);
@@ -88,6 +89,7 @@ namespace XGF
 		ce.SetPositionAndRadius(x, y, r);
 		ce.SetZ(z);
 		auto cb = std::make_shared<PolygonPleConstantColorBinder>(ce.mPolygon->GetActualCount(), color);
+		cb->SetFullActualCount();
 		BindingBridge bb;
 		bb.AddBinder(ce.mPolygon);
 		bb.AddBinder(cb);
@@ -107,6 +109,7 @@ namespace XGF
 			std::make_pair(1, color),
 		};
 		auto cb = std::make_shared<PolygonPleConstantColorBinder>(ce.mPolygon->GetActualCount(), vec);
+		cb->SetFullActualCount();
 		BindingBridge bb;
 		bb.AddBinder(ce.mPolygon);
 		bb.AddBinder(cb);
@@ -121,6 +124,7 @@ namespace XGF
 		line.SetPosition(Point(x, y, z));
 		line.SetEndPosition(Point(ex, ey, z));
 		auto cb = std::make_shared<PolygonPleConstantColorBinder>(2, color);
+		cb->SetFullActualCount();
 		BindingBridge bb;
 		bb.AddBinder(line.mPolygon);
 		bb.AddBinder(cb);
@@ -137,9 +141,13 @@ namespace XGF
 			shape.mPolygonPleIndex->Get(i) = i;
 		}
 		auto cb = std::make_shared<PolygonPleConstantColorBinder>(count, color);
+		cb->SetFullActualCount();
 		BindingBridge bb;
 		bb.AddBinder(shape.mPolygon);
 		bb.AddBinder(cb);
+		shape.mPolygon->SetActualCount(count);
+		cb->SetActualCount(count);
+		shape.mPolygonPleIndex->SetActualCount(count);
 		mRenderState.SetTopologyMode(TopologyMode::D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
 		Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(
 			bb, *shape.mPolygonPleIndex.get(), RenderStage(mRenderState, mRenderResource)));
@@ -149,6 +157,7 @@ namespace XGF
 		Shape::Triangle tr;
 		tr.SetThreePoint(Point(a.x, a.y, z), Point(b.x, b.y, z), Point(c.x, c.y, z));
 		auto pp = std::make_shared<PolygonPleColorBinder>(3);
+		pp->SetFullActualCount();
 		BindingBridge bbr;
 		bbr.AddBinder(tr.mPolygon);
 		bbr.AddBinder(pp);
@@ -173,6 +182,9 @@ namespace XGF
 			shape.mPolygonPleIndex->Get(i) = i;
 		}
 		auto cb = std::make_shared<PolygonPleConstantColorBinder>(count, color);
+		cb->SetFullActualCount();
+		shape.mPolygon->SetFullActualCount();
+		shape.mPolygonPleIndex->SetFullActualCount();
 		BindingBridge bb;
 		bb.AddBinder(shape.mPolygon);
 		bb.AddBinder(cb);

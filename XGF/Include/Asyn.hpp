@@ -36,6 +36,8 @@ namespace XGF
 		void SetCallBackFunc(std::function<void(const Event& ev)> callback) { mHandleCallback = callback; }
 		bool HandleMessage();
 		void Sleep(unsigned long long microseconds);
+
+		std::thread::id GetThreadId() const;
 	private:
 		void PostEvent(EventIdType id, EventGroupType evGroup, std::initializer_list<EventDataType> init);
 		std::unique_ptr<std::thread> mThread;
@@ -44,6 +46,7 @@ namespace XGF
 		bool mIsExit;
 		std::mutex mutex;
 		std::condition_variable mcVariable;
+		std::thread::id mId;
 		DisableCopyAndAssign(Asyn);
 	};
 

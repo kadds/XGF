@@ -31,7 +31,7 @@ namespace XGF
 			template<typename GeometryMapping = BoxMapping>
 			void GenerateMapping()
 			{
-				mPolygonPleUvs = std::make_shared<PolygonPleTextureBinder>(mPolygon->GetActualCount());
+				mPolygonPleUvs = std::make_shared<PolygonPleTextureBinder>(mPolygon->GetCapacity());
 
 				GeometryMapping mapping(this);
 				auto tb = std::make_shared<PolygonPleTextureBinder>(6);
@@ -44,6 +44,7 @@ namespace XGF
 					data[j * 4 + 2] = mapping(j, 1, 1);
 					data[j * 4 + 3] = mapping(j, 0, 1);
 				}
+				mPolygonPleUvs->SetFullActualCount();
 
 			};
 		protected:

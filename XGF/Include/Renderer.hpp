@@ -5,7 +5,7 @@
 #include <atomic>
 #include <mutex>
 #include "Context.hpp"
-
+#include <unordered_map>
 
 namespace XGF
 {
@@ -242,11 +242,16 @@ namespace XGF
 	{
 	private:
 		RawRenderStage mRenderStage;
-		char * mVertices;
+		std::shared_ptr<char[]> mVertices;
 		unsigned int mVertexCount;
-		Index * mIndices;
+		unsigned int mVertexStart;
+
+		std::shared_ptr<Index[]> mIndices;
 		unsigned int mIndexCount;
+		unsigned int mIndexStart;
 		unsigned mVertexSize;
+
+		unsigned mDrawCount;
 	private:
 		template<typename TShader>
 		void BindBuffer(GDI * gdi, unsigned index, GpuBuffer & buffer)
@@ -281,13 +286,62 @@ namespace XGF
 			BindBuffer<TShader>(&gdi, index, buffer);
 		}
 
-		DefaultRenderCommand(char * vertices, unsigned int vertexCount, unsigned vertexSize, Index * indices, unsigned int indexCount, const RenderStage& renderStage) :
-			mVertices(vertices), mVertexCount(vertexCount), mVertexSize(vertexSize), mIndices(indices), mIndexCount(indexCount), mRenderStage(renderStage) {  };
+		DefaultRenderCommand(std::shared_ptr<char[]> vertices, unsigned int vertexCount, unsigned vertexSize, unsigned vertexStart, std::shared_ptr<Index[]> indices, unsigned int indexCount, unsigned indexStart, const RenderStage& renderStage, unsigned drawCount) :
+			mVertices(vertices), mVertexCount(vertexCount), mVertexSize(vertexSize), mIndices(indices), mIndexCount(indexCount), mRenderStage(renderStage), mIndexStart(indexStart), mVertexStart(vertexStart), mDrawCount(drawCount){  };
 		static DefaultRenderCommand* MakeRenderCommand(const BindingBridge& bbr, const PolygonPleIndex& index,
 			const RenderStage& renderStage);
+		static DefaultRenderCommand* MakeRenderCommand(const BindingBridge& bbr, const PolygonPleIndex& index,
+			const RenderStage& renderStage, unsigned indexStart, unsigned vertexStart, unsigned drawCount);
 
-		~DefaultRenderCommand();
 		virtual void Exec(GDI & gdi, FrameBuffer & frameBuffer) override;
 	};
+	struct BufferSharedData
+	{
+		std::shared_ptr<char[]> mVertices;
+		std::shared_ptr<Index[]> mIndices;
+		BufferSharedData(std::shared_ptr<char[]> vertices, std::shared_ptr<Index[]> indices): mVertices(vertices), mIndices(indices)
+		{
+		}
+	};
+	struct BufferSharedKey
+	{
+		const BindingBridge& bbr;
+		const PolygonPleIndex& index;
+		const VertexShader& vs;
+		bool operator==(const BufferSharedKey& c) const
+		{
+			return &bbr == &c.bbr && &index == &c.index && &vs == &c.vs;
+		}
+		BufferSharedKey(const BindingBridge& bbr, const PolygonPleIndex& index, const VertexShader& vs) : bbr(bbr), index(index), vs(vs)
+		{
+		}
+	};
+	struct BufferSharedKeyHash
+	{
+		typedef BufferSharedKey argument_type;
+		typedef std::size_t result_type;
+		result_type operator()(argument_type const& s) const
+		{
+			const std::hash<size_t> intHash;
+			result_type hash = intHash((size_t)&s.bbr) ^ (intHash((size_t)&s.index) << 1);
+			return hash;
+		}
+	};
+	class BufferSharedRenderCommand : public DefaultRenderCommand
+	{
+	private:
+		static std::unordered_map<BufferSharedKey, BufferSharedData, BufferSharedKeyHash> map;
+		static void NewId(BufferSharedKey key);
+		static BufferSharedData Get(BufferSharedKey key);
+		static void ClearAllData();
+		friend class Renderer;
+	public:
+		
+		BufferSharedRenderCommand(std::shared_ptr<char[]> vertices, unsigned int vertexCount, unsigned vertexSize, unsigned vertexStart, std::shared_ptr<Index[]> indices, unsigned int indexCount, unsigned indexStart, const RenderStage& renderStage, unsigned drawCount)
+			: DefaultRenderCommand (vertices, vertexCount, vertexSize, vertexStart, indices, indexCount, indexStart, renderStage, drawCount) {  };
+		static void StartBaseRenderCommand(const BindingBridge& bbr, const PolygonPleIndex& index, const VertexShader & vs);
+		static BufferSharedRenderCommand* MakeRenderCommand(const BindingBridge& bbr, const PolygonPleIndex& index, const RenderStage& renderStage, unsigned indexStart, unsigned vertexStart, unsigned drawCount);
 
+		~BufferSharedRenderCommand() {};
+	};
 }

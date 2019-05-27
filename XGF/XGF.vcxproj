@@ -23,6 +23,13 @@
     <TargetPath>$(OutDir)$(ProjectName).lib</TargetPath>
   </PropertyGroup>
   <ItemGroup>
+    <ClInclude Include="Extra\imgui\imconfig.h" />
+    <ClInclude Include="Extra\imgui\imgui.h" />
+    <ClInclude Include="Extra\imgui\imgui_impl.hpp" />
+    <ClInclude Include="Extra\imgui\imgui_internal.h" />
+    <ClInclude Include="Extra\imgui\imstb_rectpack.h" />
+    <ClInclude Include="Extra\imgui\imstb_textedit.h" />
+    <ClInclude Include="Extra\imgui\imstb_truetype.h" />
     <ClInclude Include="Include\Action.hpp" />
     <ClInclude Include="Include\Actions.hpp" />
     <ClInclude Include="Include\Actor.hpp" />
@@ -34,10 +41,10 @@
     <ClInclude Include="Include\Bresenham.hpp" />
     <ClInclude Include="Include\Button.hpp" />
     <ClInclude Include="Include\Camera.hpp" />
-    <ClInclude Include="Include\Caret.hpp" />
     <ClInclude Include="Include\Circle.hpp" />
     <ClInclude Include="Include\ClickHelper.hpp" />
     <ClInclude Include="Include\Concurrentqueue.hpp" />
+    <ClInclude Include="Include\Config.hpp" />
     <ClInclude Include="Include\Context.hpp" />
     <ClInclude Include="Include\Control.hpp" />
     <ClInclude Include="Include\Cursor.hpp" />
@@ -58,6 +65,7 @@
     <ClInclude Include="Include\Geometry\PlaneGeometry.hpp" />
     <ClInclude Include="Include\Geometry\SphereGeometry.hpp" />
     <ClInclude Include="Include\GridRenderer.hpp" />
+    <ClInclude Include="Include\InputDefinitions.hpp" />
     <ClInclude Include="Include\InputManager.hpp" />
     <ClInclude Include="Include\Interpolator\Interpolator.hpp" />
     <ClInclude Include="Include\Label.hpp" />
@@ -79,6 +87,7 @@
     <ClInclude Include="Include\OrthoCamera.hpp" />
     <ClInclude Include="Include\PerspectiveCamera.hpp" />
     <ClInclude Include="Include\Polygon.hpp" />
+    <ClInclude Include="Include\RawInput.hpp" />
     <ClInclude Include="Include\Rectangle.hpp" />
     <ClInclude Include="Include\RectangleB.hpp" />
     <ClInclude Include="Include\RectangleC.hpp" />
@@ -109,15 +118,20 @@
     <ClInclude Include="Include\WICTextureLoader.h" />
     <ClInclude Include="Include\XGF.h" />
     <ClInclude Include="Include\XGFramework.hpp" />
+    <ClInclude Include="Include\Xinput.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Extra\imgui\imgui.cpp" />
+    <ClCompile Include="Extra\imgui\imgui_demo.cpp" />
+    <ClCompile Include="Extra\imgui\imgui_draw.cpp" />
+    <ClCompile Include="Extra\imgui\imgui_impl.cpp" />
+    <ClCompile Include="Extra\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Src\Animation\Action.cpp" />
     <ClCompile Include="Src\Animation\Actions.cpp" />
     <ClCompile Include="Src\Animation\Animation.cpp" />
     <ClCompile Include="Src\Core\Actor.cpp" />
     <ClCompile Include="Src\Core\Asyn.cpp" />
     <ClCompile Include="Src\Core\Camera.cpp" />
-    <ClCompile Include="Src\Core\Caret.cpp" />
     <ClCompile Include="Src\Core\Container.cpp" />
     <ClCompile Include="Src\Core\Context.cpp" />
     <ClCompile Include="Src\Core\Cursor.cpp" />
@@ -145,8 +159,11 @@
     <ClCompile Include="Src\Helper\ClickHelper.cpp" />
     <ClCompile Include="Src\Helper\TrackballCameraController.cpp" />
     <ClCompile Include="Src\Input\DX8Input.cpp" />
+    <ClCompile Include="Src\Input\InputDefinitions.cpp" />
     <ClCompile Include="Src\Input\InputManager.cpp" />
+    <ClCompile Include="Src\Input\RawInput.cpp" />
     <ClCompile Include="Src\Input\TextInputProcessor.cpp" />
+    <ClCompile Include="Src\Input\XInput.cpp" />
     <ClCompile Include="Src\Interpolator\Interpolator.cpp" />
     <ClCompile Include="Src\Shape\Circle.cpp" />
     <ClCompile Include="Src\Shape\Geometry\BoxGeometry.cpp" />

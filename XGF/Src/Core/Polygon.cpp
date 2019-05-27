@@ -1,4 +1,5 @@
 #include "../../Include/Polygon.hpp"
+#include "../../Include/Logger.hpp"
 #include <math.h>
 #include "../../Include/Texture.hpp"
 
@@ -81,6 +82,12 @@ namespace XGF
 	{
 		auto i = std::accumulate(binders.begin(), binders.end(), 0u, [](unsigned i, std::shared_ptr<PolygonPleBinder> binder)
 		{
+#ifdef _DEBUG
+				if (binder->GetActualCount() == 0) 
+				{
+					XGF_Error(Render, "binder actual count is zero");
+				}
+#endif
 			return binder->GetActualCount() * binder->SizeOf() + i;
 		});
 		return i;
@@ -90,8 +97,8 @@ namespace XGF
 	PolygonPleIndex::PolygonPleIndex(int n)
 	{
 		mIndex = new Index[n];
-		mCount = n;
-		mMemCount = n;
+		mCount = 0;
+		mCapacity = n;
 	}
 	Index PolygonPleIndex::Get(int n) const
 	{
@@ -101,6 +108,11 @@ namespace XGF
 	Index& PolygonPleIndex::Get(int n)
 	{
 		return mIndex[n];
+	}
+
+	void PolygonPleIndex::SetFullActualCount()
+	{
+		mCount = mCapacity;
 	}
 
 	PolygonPleIndex::~PolygonPleIndex()
@@ -117,13 +129,18 @@ namespace XGF
 
 	void PolygonPleIndex::SetActualCount(int count)
 	{
-		XGF_ASSERT(mCount <= mMemCount);
+		XGF_ASSERT(mCount <= mCapacity);
 		mCount = count;
 	}
 
 	int PolygonPleIndex::GetActualCount() const
 	{
 		return mCount;
+	}
+
+	int PolygonPleIndex::GetCapacity() const
+	{
+		return mCapacity;
 	}
 
 	PolygonPleIndex::PolygonPleIndex(const PolygonPleIndex & tb)
@@ -134,12 +151,28 @@ namespace XGF
 		memcpy(this->mIndex, tb.mIndex, sizeof(Index) * mCount);
 	}
 
-	void PolygonPleIndex::ShrinkTo(int count)
+	PolygonPleBinder::PolygonPleBinder(int capacity): mCapacity(capacity)
 	{
-		XGF_ASSERT(mCount >= count);
-		if(mCount >= count)
-		{
-			mCount = count;
-		}
+		
+	}
+	void PolygonPleBinder::SetActualCount(int c)
+	{
+		mCount = c;
+	}
+	int PolygonPleBinder::GetActualCount() const
+	{
+		return mCount;
+	}
+	int PolygonPleBinder::GetCapacity() const
+	{
+		return mCapacity;
+	}
+	void PolygonPleBinder::SetFullActualCount()
+	{
+		mCount = mCapacity;
+	}
+	void PolygonPleBinder::SetCapacity(int capacity)
+	{
+		mCapacity = capacity;
 	}
 }

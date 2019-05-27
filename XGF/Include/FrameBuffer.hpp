@@ -29,6 +29,9 @@ namespace XGF
 		Texture* GetTexture(int index) const;
 
 		Texture* GetDepthStencilTexture() const;
+
+		int GetWidth() const;
+		int GetHeight() const;
 	private:
 		void InitializeDepthView(D3D11_TEXTURE2D_DESC & desc, DepthStencilFormat depthStencilFormat, int msaaQuality, bool depthStencilViewTexture);
 
@@ -41,7 +44,6 @@ namespace XGF
 
 		int mWidth, mHeight;
 
-		D3D11_VIEWPORT mViewport;
 	};
 
 };

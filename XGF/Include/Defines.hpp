@@ -1,8 +1,5 @@
 #pragma once
-#ifdef _DEBUG
-#define _XGF_DEBUG_ALLOC
-#define XGF_DEBUG_SHADER
-#endif
+#include "Config.hpp"
 
 #ifdef _XGF_DEBUG_ALLOC
 #define _CRTDBG_MAP_ALLOC  
@@ -18,6 +15,8 @@
 #include <memory>
 #include <unordered_map>
 #include <map>
+
+
 #define  DEPRECATED(str) __declspec(deprecated(str))
 
 namespace XGF

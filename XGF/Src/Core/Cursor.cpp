@@ -22,6 +22,7 @@ namespace XGF
 		mRenderState.GetBlendState().GetRenderTarget(0).SetDestBlendAlpha(Blend::ONE);
 		mBbrg.AddBinder(mRc.mPolygon);
 		mBbrg.AddBinder(mPtBinder);
+		mPtBinder->SetFullActualCount();
 		mSize.x = 16;
 		mSize.y = 16;
 		mIsShow = false;
@@ -45,7 +46,7 @@ namespace XGF
 			mPtBinder->GetData(2).x = mPtBinder->GetData(3).x = 1.f;
 			mPtBinder->GetData(1).y = mPtBinder->GetData(2).y = 1.f;
 			mPtBinder->GetData(3).y = mPtBinder->GetData(0).y = 0.f;
-
+			
 			mRc.SetZ(0.1f);
 			mRenderResource->SetTexture<PixelShader>(0, mTexture);
 			Context::Current().QueryRenderer().Commit(RenderGroupType::Normal, DefaultRenderCommand::MakeRenderCommand(mBbrg, *mRc.mPolygonPleIndex.get()

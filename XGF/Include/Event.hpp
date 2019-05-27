@@ -36,6 +36,7 @@ namespace XGF {
 	{
 		KeyDown,
 		KeyUp,
+		Char,
 	};
 	typedef int CustomEventId;
 
@@ -88,6 +89,18 @@ namespace XGF {
 		int GetDataInt(unsigned int index) const
 		{
 			return GetData<int>(index);
+		}
+		long long GetDataLogLong(unsigned int index) const
+		{
+			return GetData<long long>(index);
+		}
+		long GetDataLong(unsigned int index) const
+		{
+			return GetData<long>(index);
+		}
+		long GetDataMousePosition(unsigned int index) const
+		{
+			return GetData<long>(index);
 		}
 		float GetDataFloat(unsigned int index) const
 		{

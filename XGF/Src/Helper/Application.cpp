@@ -185,18 +185,13 @@ namespace XGF
 		switch (message)
 		{
 		case WM_INPUT:
-		case WM_IME_SETCONTEXT:
-		case WM_IME_STARTCOMPOSITION:
-		case WM_IME_ENDCOMPOSITION:
-		case WM_IME_COMPOSITION:
-		case WM_IME_NOTIFY:
+		case WM_INPUT_DEVICE_CHANGE:
 		case WM_CHAR:
-		case WM_KEYDOWN:
-
+		case WM_MOUSEMOVE:
 			app = WndAppMap.find(hWnd)->second;
 			if (app != nullptr)
 			{
-				return app->GetFramework().OnInputMessage(message, wParam, lParam);
+				return app->GetFramework().OnInputMessage(hWnd, message, wParam, lParam);
 			}
 			break;
 		case WM_DESTROY:
@@ -207,13 +202,14 @@ namespace XGF
 				WndAppMap.erase(hWnd);
 			}
 			PostQuitMessage(0);
-			break;
+			return 0;
 		case WM_ACTIVATE:
 			app = WndAppMap.find(hWnd)->second;
 			if (app != nullptr)
 			{
 				app->GetRenderThread().PostEvent(SystemEventId::Activate, { LOWORD(wParam) != WA_INACTIVE});
 				app->GetGameThread().PostEvent(SystemEventId::Activate, { LOWORD(wParam) != WA_INACTIVE });
+				return 0;
 			}
 			break;
 		case WM_SIZE:
@@ -235,13 +231,17 @@ namespace XGF
 					app->SetSizeEventFlag(flag + 1);
 				}
 			}
+			return 0;
 		}
 		break;
 		case WM_CREATE:
 		{
 			app = (Application *)((CREATESTRUCT*)lParam)->lpCreateParams;
 			if (app != nullptr)
+			{
 				WndAppMap.insert(std::make_pair(hWnd, app));
+				return 0;
+			}
 			break;
 		}
 		case WM_SETCURSOR:
@@ -280,6 +280,7 @@ namespace XGF
 					XGF_Debug(Application, "Send CloseMessage to System");
 					app->GetGameThread().PostEvent(SystemEventId::Close, { wParam != 0 });
 				}
+				return 0;
 			}
 			break;
 		case WM_ENTERMENULOOP:
@@ -289,6 +290,7 @@ namespace XGF
 			if (app != nullptr)
 			{
 				app->GetFramework().GetInputManager().OnActivate(!wParam);
+				return 0;
 			}
 			break;
 		}
@@ -308,12 +310,11 @@ namespace XGF
 					SetCursor(app->GetSysCursor());
 				}
 			}
-
-			break;
+			return 0;
 		}
 		default:
-			return DefWindowProc(hWnd, message, wParam, lParam);
+			break;
 		}
-		return 0;
+		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 }
