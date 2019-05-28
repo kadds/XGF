@@ -26,6 +26,14 @@ namespace XGF
 		{
 		}
 		ViewPort() {}
+		bool operator == (const ViewPort& rc) const
+		{
+			return rc.left == left && rc.width == width && rc.top == top && rc.height == height && minDepth == rc.minDepth && maxDepth == rc.maxDepth;
+		}
+		bool operator != (const ViewPort& rc) const
+		{
+			return !operator ==(rc);
+		}
 	};
 	struct Rect
 	{
@@ -36,6 +44,10 @@ namespace XGF
 		bool operator == (const Rect& rc) const
 		{
 			return rc.left == left && rc.right == right && rc.top == top && rc.bottom == bottom;
+		}
+		bool operator != (const Rect& rc) const
+		{
+			return !operator ==(rc);
 		}
 	};
 
@@ -435,12 +447,13 @@ namespace XGF
 		int Query4xMsaaQuality() const;
 		bool CanEnable4xMsaa() const;
 		bool IsDisplayMode(DisplayMode displayMode) const;
-		void SetViewPorts(const std::vector<ViewPort> & viewports);
-		void SetScissorRectangle(const std::vector<Rect> & rects);
+		void SetViewPorts(const ViewPort * viewports, unsigned int count);
+		void SetScissorRectangle(const Rect* rects, unsigned int count);
 
 		void OnReSize(UINT cx, UINT cy);
 	protected:
 		void SetFullViewPort(int cx = -1, int cy = -1);
+
 
 		IDXGIFactory2 * mFactory2 = nullptr;
 		IDXGIFactory1 * mFactory1 = nullptr;

@@ -16,50 +16,83 @@ namespace XGF
 
 	DefaultRenderCommand* DefaultRenderCommand::MakeRenderCommand(const BindingBridge& bbr, const PolygonPleIndex& index, const RenderStage& renderStage, unsigned indexStart, unsigned vertexStart, unsigned drawCount)
 	{
+		auto & allocator = Context::Current().QueryRenderer().GetCurrentResource().GetAllocator();
 		const unsigned memsize = static_cast<unsigned>(bbr.GetAllPolygonPleMemSize());
-		std::shared_ptr<char[]> vertices = std::shared_ptr<char[]>(new char[memsize]);
-		std::shared_ptr<Index[]> indices = std::shared_ptr<Index[]>(new Index[index.GetActualCount()]);
-
-		auto cmd = new DefaultRenderCommand(vertices, bbr.GetBinder(0)->GetActualCount(), memsize, vertexStart, indices, index.GetActualCount(), indexStart, renderStage, drawCount);
+		char* vertices = allocator.NewArray<char>(memsize);
+		Index* indices = allocator.NewArray<Index>(index.GetActualCount());
+		auto cmd = allocator.New<DefaultRenderCommand>(vertices, bbr.GetBinder(0)->GetActualCount(), memsize, vertexStart, indices, index.GetActualCount(), indexStart, renderStage, drawCount);
 		unsigned int start = 0u;
 		unsigned int chunk = renderStage.GetRenderResource()->GetShader<VertexShader>()->GetStrideAllSizeAtSlot(0);
 		const unsigned int* stride = renderStage.GetRenderResource()->GetShader<VertexShader>()->GetStride();
 		for (int i = 0; i < bbr.Count(); i++)
 		{
-			bbr.GetBinder(i)->CopyTo(vertices.get() + start, chunk);
+			bbr.GetBinder(i)->CopyTo(vertices + start, chunk);
 			start += stride[i];
 		}
-		index.CopyTo(indices.get(), 0);
+		index.CopyTo(indices, 0);
 		return cmd;
+	}
+	template<typename TShader>
+	void BindBuffer(GDI* gdi, unsigned index, GpuBuffer& buffer, RawRenderStage& renderStage)
+	{
+		static_assert(false, "null shader type");
+	}
+	template<>
+	void BindBuffer<VertexShader>(GDI* gdi, unsigned index, GpuBuffer& buffer, RawRenderStage& renderStage)
+	{
+		gdi->GetDeviceContext()->VSSetConstantBuffers(renderStage.GetShader<VertexShader>()->GetCBufferSlot(index), 1, &buffer.buffer);
+	}
+	template<>
+	void BindBuffer<PixelShader>(GDI* gdi, unsigned index, GpuBuffer& buffer, RawRenderStage& renderStage)
+	{
+		gdi->GetDeviceContext()->PSSetConstantBuffers(renderStage.GetShader<PixelShader>()->GetCBufferSlot(index), 1, &buffer.buffer);
+	}
+	template<>
+	void BindBuffer<GeometryShader>(GDI* gdi, unsigned index, GpuBuffer& buffer, RawRenderStage& renderStage)
+	{
+		gdi->GetDeviceContext()->GSSetConstantBuffers(renderStage.GetShader<GeometryShader>()->GetCBufferSlot(index), 1, &buffer.buffer);
+	}
+
+	template<typename TShader>
+	void BindConstantBuffer(RawRenderStage & renderStage)
+	{
+		auto shader = renderStage.GetShader<TShader>();
+		if (!shader) return;
+		auto& context = Context::Current();
+		auto& gdi = context.QueryGraphicsDeviceInterface();
+		auto& renderer = context.QueryRenderer();
+		auto cb = renderStage.GetConstantBuffer<TShader>();
+		auto start = 0;
+		for (unsigned i = 0; i < shader->GetCBufferCount(); i++)
+		{
+			auto buffer = renderer.GetCurrentRenderResource().QueryUnusedGpuConstantBuffer(shader->GetCBufferSize(i));
+			gdi.CopyToBuffer(buffer, (void *)(cb + start));
+			BindBuffer<TShader>(&gdi, i, buffer, renderStage);
+			start += shader->GetCBufferSize(i);
+		}
 	}
 
 
 	void DefaultRenderCommand::Exec(GDI & gdi, FrameBuffer & frameBuffer)
 	{
 		unsigned int offset[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT]{ 0 };
-
+		
 		mRenderStage.BindStage();
-		if (!mRenderStage.GetConstantBuffer<VertexShader>().empty())
-			for (unsigned i = 0; i < mRenderStage.GetShader<VertexShader>()->GetCBufferCount(); i++)
-				BindConstantBuffer<VertexShader>(i);
-		if (!mRenderStage.GetConstantBuffer<PixelShader>().empty())
-			for (unsigned i = 0; i < mRenderStage.GetShader<PixelShader>()->GetCBufferCount(); i++)
-				BindConstantBuffer<PixelShader>(i);
-		if (!mRenderStage.GetConstantBuffer<GeometryShader>().empty())
-			for (unsigned i = 0; i < mRenderStage.GetShader<GeometryShader>()->GetCBufferCount(); i++)
-				BindConstantBuffer<GeometryShader>(i);
+		BindConstantBuffer<VertexShader>(mRenderStage);
+		BindConstantBuffer<PixelShader>(mRenderStage);
+		BindConstantBuffer<GeometryShader>(mRenderStage);
 
 
 		auto vertexBuffer = Context::Current().QueryRenderer().GetCurrentRenderResource().QueryUnusedGpuVertexBuffer(mVertexSize);
 		auto stride = mRenderStage.GetShader<VertexShader>()->GetStrideAllSizeAtSlot(0);
 		gdi.GetDeviceContext()->IASetVertexBuffers(0, 1, &vertexBuffer.buffer, &stride, offset);
-		memcpy_s(gdi.Map(vertexBuffer), mVertexSize, mVertices.get(), mVertexSize);
+		memcpy_s(gdi.Map(vertexBuffer), mVertexSize, mVertices, mVertexSize);
 		gdi.UnMap(vertexBuffer);
 		if (mIndexCount > 0)
 		{
 			auto indexBuffer = Context::Current().QueryRenderer().GetCurrentRenderResource().QueryUnusedGpuIndexBuffer(mIndexCount);
-			gdi.GetDeviceContext()->IASetIndexBuffer(indexBuffer.buffer, DXGI_FORMAT_R32_UINT, 0);
-			memcpy_s(gdi.Map(indexBuffer), sizeof(Index) * mIndexCount, mIndices.get(), sizeof(Index) * mIndexCount);
+			gdi.GetDeviceContext()->IASetIndexBuffer(indexBuffer.buffer, sizeof(Index) > 2 ? DXGI_FORMAT_R32_UINT : DXGI_FORMAT_R16_UINT, 0);
+			memcpy_s(gdi.Map(indexBuffer), sizeof(Index) * mIndexCount, mIndices, sizeof(Index) * mIndexCount);
 			gdi.UnMap(indexBuffer);
 			gdi.GetDeviceContext()->DrawIndexed(mDrawCount, mIndexStart, mVertexStart);
 		}
@@ -86,13 +119,6 @@ namespace XGF
 
 	void RenderTargetPass::Clear()
 	{
-		for (auto& renderQueue : mRenderQueues)
-		{
-			for (auto command : renderQueue.commands)
-			{
-				delete command;
-			}
-		}
 		mRenderQueues.clear();
 	}
 
@@ -119,6 +145,11 @@ namespace XGF
 		mPassStack.push(static_cast<unsigned>(mPass.size()) - 1);
 	}
 
+	FrameMemoryAllocator& RendererFrameResource::GetAllocator()
+	{
+		return mAllocator;
+	}
+
 	FrameBuffer* RendererFrameResource::Pop()
 	{
 		auto & r = mPass[mPassStack.top()];
@@ -128,6 +159,9 @@ namespace XGF
 
 	void RendererFrameResource::NewFrame()
 	{
+		mAllocator.FreeAll();
+		mOtherResource.clear();
+
 		mVertices.insert(mVertices.end(), mVerticesUsed.begin(), mVerticesUsed.end());
 		mVerticesUsed.clear();
 
@@ -321,6 +355,11 @@ namespace XGF
 		}
 	}
 
+	FrameMemoryAllocator& Renderer::GetRenderAllocator()
+	{
+		return GetCurrentRenderResource().GetAllocator();
+	}
+
 	void Renderer::DrawCommands()
 	{
 		auto & context = Context::Current();
@@ -456,6 +495,11 @@ namespace XGF
 		return mResource[(mIndexOfResource + 1) % 2];
 	}
 
+	FrameMemoryAllocator& Renderer::GetAllocator()
+	{
+		return GetCurrentResource().GetAllocator();
+	}
+
 	void Renderer::Commit(RenderGroupType groupType, RenderCommand* cmd)
 	{
 		cmd->SetRenderIndex(GetCurrentResource().NextRenderIndex());
@@ -557,6 +601,10 @@ namespace XGF
 		}
 	}
     #pragma region cache gpu constant buffer
+	void* & RendererFrameResource::GetOtherResource(size_t id)
+	{
+		return mOtherResource[id];
+	}
 	GpuBuffer RendererFrameResource::QueryUnusedGpuIndexBuffer(unsigned count)
 	{
 		auto & idx = mIndices;
@@ -641,84 +689,101 @@ namespace XGF
 
 	ClearRenderCommand * ClearRenderCommand::MakeRenderCommand(const Color & clearColor, bool clearDepth)
 	{
-		return new ClearRenderCommand(clearColor, true, clearDepth);
+		auto & allocator = Context::Current().QueryRenderer().GetCurrentResource().GetAllocator();
+		return allocator.New<ClearRenderCommand>(clearColor, true, clearDepth);
 	}
 	ClearRenderCommand * ClearRenderCommand::MakeRenderCommand(bool clearDepth)
 	{
-		return new ClearRenderCommand(Color(0.f, 0.f, 0.f, 0.f), false, clearDepth);
+		auto& allocator = Context::Current().QueryRenderer().GetCurrentResource().GetAllocator();
+		return allocator.New<ClearRenderCommand>(Color(0.f, 0.f, 0.f, 0.f), false, clearDepth);
+	}
+
+	SubRenderCommand::SubRenderCommand(std::vector<RenderCommand*>&& commands)
+	{
+		mCommandCount = commands.size();
+		mCommands = Context::Current().QueryRenderer().GetCurrentResource().GetAllocator().NewArray<RenderCommand *>(commands.size());
+		memcpy(mCommands, commands.data(), commands.size() * sizeof(RenderCommand *));
 	}
 
 	SubRenderCommand::~SubRenderCommand()
 	{
-		for (auto it : mCommands)
-		{
-			delete it;
-		}
 	}
 
 	void SubRenderCommand::Exec(GDI& gdi, FrameBuffer& frameBuffer)
 	{
-		for(auto it : mCommands)
+		for(int i = 0; i < mCommandCount; i++)
 		{
-			it->Exec(gdi, frameBuffer);
+			mCommands[i]->Exec(gdi, frameBuffer);
 		}
 	}
 
 	SubRenderCommand* SubRenderCommand::MakeRenderCommand(std::vector<RenderCommand*>&& commands)
 	{
-		return new SubRenderCommand(std::move(commands));
+		auto& allocator = Context::Current().QueryRenderer().GetCurrentResource().GetAllocator();
+		return allocator.New<SubRenderCommand>(std::move(commands));
 	}
-
+	typedef std::unordered_map<BufferSharedKey, BufferSharedData, BufferSharedKeyHash, std::equal_to<BufferSharedKey>,
+		FrameMemorySTLAllocator<std::pair<const BufferSharedKey, BufferSharedData>>> BufferMap;
 	void BufferSharedRenderCommand::NewId(BufferSharedKey key)
 	{
-		auto it = map.find(key);
-		if (it == map.end())
+		auto& res = Context::Current().QueryRenderer().GetCurrentResource();
+		auto*& map =
+			(BufferMap * &)res.GetOtherResource(typeid(BufferSharedRenderCommand).hash_code());
+		if (map == nullptr)
+		{
+			map = res.GetAllocator().New<BufferMap>();
+		}
+		auto it = map->find(key);
+		if (it == map->end())
 		{
 			auto& bbr = key.bbr;
 			auto& index = key.index;
 			auto& vs = key.vs;
 			const unsigned memsize = static_cast<unsigned>(bbr.GetAllPolygonPleMemSize());
-			std::shared_ptr<char[]> vertices = std::shared_ptr<char[]>(new char[memsize]);
-			std::shared_ptr<Index[]> indices = std::shared_ptr<Index[]>(new Index[index.GetActualCount()]);
+			char * vertices = res.GetAllocator().NewArray<char>(memsize);
+			Index * indices = res.GetAllocator().NewArray<Index>(index.GetActualCount());
 
 			unsigned int start = 0u;
 			unsigned int chunk = vs.GetStrideAllSizeAtSlot(0);
 			const unsigned int* stride = vs.GetStride();
 			for (int i = 0; i < bbr.Count(); i++)
 			{
-				bbr.GetBinder(i)->CopyTo(vertices.get() + start, chunk);
+				bbr.GetBinder(i)->CopyTo(vertices + start, chunk);
 				start += stride[i];
 			}
-			index.CopyTo(indices.get(), 0);
+			index.CopyTo(indices, 0);
 
-			map.emplace(key, BufferSharedData(vertices, indices));
+			map->emplace(key, BufferSharedData(vertices, indices));
 		}
 
 	}
 	BufferSharedData BufferSharedRenderCommand::Get(BufferSharedKey key)
 	{
-		auto it = map.find(key);
-		if (it == map.end())
+		auto * & map = 
+			(BufferMap *&)Context::Current().QueryRenderer().GetCurrentResource().GetOtherResource(typeid(BufferSharedRenderCommand).hash_code());
+		if (map == nullptr)
+		{
+			XGF_Error(Render, "Null BufferShadredData. Please call StartBaseRenderCommand before MakeRenderCommand");
+		}
+		auto it = map->find(key);
+		if (it == map->end())
 		{
 			XGF_Error(Render, "Null BufferShadredData. Please call StartBaseRenderCommand before MakeRenderCommand");
 		}
 		return it->second;
 	}
-	std::unordered_map<BufferSharedKey, BufferSharedData, BufferSharedKeyHash> BufferSharedRenderCommand::map;
 
-	void BufferSharedRenderCommand::ClearAllData()
-	{
-		map.clear();
-	}
+
 	void BufferSharedRenderCommand::StartBaseRenderCommand(const BindingBridge& bbr, const PolygonPleIndex& index, const VertexShader & vs)
 	{
 		NewId(BufferSharedKey(bbr, index, vs));
 	}
 	BufferSharedRenderCommand* BufferSharedRenderCommand::MakeRenderCommand(const BindingBridge& bbr, const PolygonPleIndex& index, const RenderStage& renderStage, unsigned indexStart, unsigned vertexStart, unsigned drawCount)
 	{
+		auto& allocator = Context::Current().QueryRenderer().GetCurrentResource().GetAllocator();
 		auto data = Get(BufferSharedKey(bbr, index, *renderStage.GetRenderResource()->GetShader<VertexShader>()));
 		const unsigned memsize = static_cast<unsigned>(bbr.GetAllPolygonPleMemSize());
-		auto * cmd = new BufferSharedRenderCommand(data.mVertices, bbr.GetBinder(0)->GetActualCount(), memsize, vertexStart, data.mIndices, index.GetActualCount(), indexStart, renderStage, drawCount);
+		auto * cmd = allocator.New<BufferSharedRenderCommand>(data.mVertices, bbr.GetBinder(0)->GetActualCount(), memsize, vertexStart, data.mIndices, index.GetActualCount(), indexStart, renderStage, drawCount);
 		return cmd;
 	}
 }

@@ -8,6 +8,7 @@
 #include "../../Include/Shader.hpp"
 #include "../../Include/ScreenGrab.h"
 #include <wincodec.h>
+#include "../../Include/Renderer.hpp"
 
 namespace XGF
 {
@@ -25,14 +26,26 @@ namespace XGF
 		return mTextureResource.GetTexture2D();
 	}
 
-	unsigned Texture::GetWidth() const
+	void Texture::GetSize(int& width, int& height)
 	{
-		return mTextureResource.GetWidth();
+		if (GetTextureResource().GetTexture2D())
+		{
+			D3D11_TEXTURE2D_DESC desc;
+			GetTextureResource().GetTexture2D()->GetDesc(&desc);
+			width = desc.Width;
+			height = desc.Height;
+		}
 	}
 
-	unsigned Texture::GetHeight() const
+	TextureFormat Texture::GetFormat()
 	{
-		return mTextureResource.GetHeight();
+		if (GetTextureResource().GetTexture2D())
+		{
+			D3D11_TEXTURE2D_DESC desc;
+			GetTextureResource().GetTexture2D()->GetDesc(&desc);
+			return desc.Format;
+		}
+		return TextureFormat::DXGI_FORMAT_UNKNOWN;
 	}
 
 	bool Texture::SaveAs(ImageType type, const std::string& path)
@@ -88,45 +101,25 @@ namespace XGF
 		return mTextureResource;
 	}
 
-
-	DynamicTexture::DynamicTexture(unsigned width, unsigned height, TextureFormat format, char * ptr, int pitch, int slicePitch): mPtr(ptr)
+	void Texture::UpdateTexture(char * ptr, const Rectangle & rect)
 	{
-		GetTextureResource().Create(width, height, format, ptr, pitch, slicePitch);
-	}
-
-	void DynamicTexture::UpdateDirtyRectangle(const Rectangle & rect)
-	{
-		mDirtyRectangle = Rectangle::Union(rect, mDirtyRectangle);
-	}
-
-	void DynamicTexture::ClearDirtyRectangle()
-	{
-		mDirtyRectangle.width = 0;
-		mDirtyRectangle.height = 0;
-		mDirtyRectangle.x = 0;
-		mDirtyRectangle.y = 0;
-	}
-
-	const Rectangle& DynamicTexture::GetDirtyRectangle() const
-	{
-		return mDirtyRectangle;
-	}
-
-	void DynamicTexture::UpdateTexture()
-	{
-		auto * dc = Context::Current().QueryGraphicsDeviceInterface().GetDeviceContext();
-		auto & rect = GetDirtyRectangle();
-		if (rect.width <= 0 || rect.height <= 0) return;
-		D3D11_BOX box;
-		box.left = rect.x;
-		box.right = rect.x + rect.width;
-		box.top = rect.y;
-		box.bottom = rect.y + rect.height;
-		box.front = 0;
-		box.back = 1;
-		// here update dirty rectangle
-		dc->UpdateSubresource(GetRawTexture2D(), 0, &box, mPtr, GetWidth(), 0);
-		ClearDirtyRectangle();
+		Context::Current().QueryRenderer().AppendBeforeDrawCallbackOnce([rect, ptr, this](Renderer* r)
+			{
+				auto* dc = Context::Current().QueryGraphicsDeviceInterface().GetDeviceContext();
+				if (rect.width <= 0 || rect.height <= 0) return;
+				D3D11_BOX box;
+				box.left = rect.x;
+				box.right = rect.x + rect.width;
+				box.top = rect.y;
+				box.bottom = rect.y + rect.height;
+				box.front = 0;
+				box.back = 1;
+				int width, height;
+				GetSize(width, height);
+				// here update dirty rectangle
+				dc->UpdateSubresource(GetRawTexture2D(), 0, &box, ptr, width, 0);
+			});
+		
 	}
 
 
@@ -145,24 +138,21 @@ namespace XGF
 		texture2d = nullptr;
 	}
 
-	bool TextureResource::Load(void * mem, size_t size)
+	bool Texture::Load(void * mem, size_t size)
 	{
 		auto& gdi = Context::Current().QueryGraphicsDeviceInterface();
-		if (FAILED(DirectX::CreateDDSTextureFromMemory(gdi.GetDevice(), (uint8_t *)mem, size, (ID3D11Resource **)&texture2d, &shaderResourceView)))
+		if (FAILED(DirectX::CreateDDSTextureFromMemory(gdi.GetDevice(), (uint8_t *)mem, size, (ID3D11Resource **)&GetTextureResource().texture2d, &GetTextureResource().shaderResourceView)))
 		{
-			if (FAILED(DirectX::CreateWICTextureFromMemory(gdi.GetDevice(), (uint8_t *)mem, size, (ID3D11Resource **)&texture2d, &shaderResourceView)))
+			if (FAILED(DirectX::CreateWICTextureFromMemory(gdi.GetDevice(), (uint8_t *)mem, size, (ID3D11Resource **)& GetTextureResource().texture2d, &GetTextureResource().shaderResourceView)))
 			{
 				return false;
 			}
 		}
-		D3D11_TEXTURE2D_DESC desc;
-		texture2d->GetDesc(&desc);
-		width = desc.Width;
-		height = desc.Height;
+		mHasLoad = true;
 		return true;
 	}
 
-	bool TextureResource::Load(std::wstring fullPath)
+	bool Texture::Load(std::wstring fullPath)
 	{
 		std::ifstream inFile;
 		inFile.open(fullPath, std::ios::binary);
@@ -182,33 +172,28 @@ namespace XGF
 		return false;
 	}
 
-	void TextureResource::Create(unsigned width, unsigned height, TextureFormat format, char* ptr, int pitch, int slicePitch)
+	bool Texture::Load(ID3D11ShaderResourceView* srv, ID3D11Texture2D* texture2D)
+	{
+		GetTextureResource().shaderResourceView = srv;
+		GetTextureResource().texture2d = texture2D;
+		mHasLoad = true;
+		return true;
+	}
+
+	void Texture::Create(unsigned width, unsigned height, TextureFormat format, char* ptr, int pitch, int slicePitch)
 	{
 		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
 		auto srv = gdi.CreateRenderableTexture(width, height, format, ptr, pitch, slicePitch);
 		ID3D11Resource * resource;
 		srv->GetResource(&resource);
-		shaderResourceView = srv;
-		texture2d = static_cast<ID3D11Texture2D*>(resource);
-		this->width = width;
-		this->height = height;
+		GetTextureResource().shaderResourceView = srv;
+		GetTextureResource().texture2d = static_cast<ID3D11Texture2D*>(resource);
+		mHasLoad = true;
 	}
 
-	void TextureResource::SetTexture2D(ID3D11Texture2D* t2d)
+	bool Texture::HasLoad() const
 	{
-		if(texture2d)
-		{
-			texture2d->Release();
-		}
-		texture2d = t2d;
+		return mHasLoad;
 	}
 
-	void TextureResource::SetSRV(ID3D11ShaderResourceView* srv)
-	{
-		if(shaderResourceView)
-		{
-			shaderResourceView->Release();
-		}
-		shaderResourceView = srv;
-	}
 };

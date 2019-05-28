@@ -6,6 +6,22 @@ namespace XGF
 	class ShaderManager;
 	class XGFramework;
 	class Renderer;
+	class FrameMemoryAllocator;
+	class Context;
+	class ContextData
+	{
+	private:
+		friend class Context;
+		bool mIsRenderThread;
+		int mTag;
+		void* mExtraInfo;
+		bool IsRenderThread();
+		void SetIsRenderThread(bool isRenderThread);
+	public:
+		ContextData();
+		void* GetExtraInfo() const;
+		void SetExtraInfo(void * info);
+	};
 	class Context
 	{
 	static int ContextTLSSlot;
@@ -15,13 +31,18 @@ namespace XGF
 		~Context();
 
 		GDI& QueryGraphicsDeviceInterface() const;
-
 		ShaderManager& QueryShaderManager() const;
 
 		Asyn& QueryGameThread() const;
 		Asyn& QueryRenderThread() const;
 		XGFramework& QueryFramework() const;
 		Renderer& QueryRenderer() const;
+		FrameMemoryAllocator& QueryGameThreadFrameAllocator() const;
+		FrameMemoryAllocator& QueryRenderThreadFrameAllocator() const;
+		FrameMemoryAllocator& QueryFrameAllocator() const;
+		ContextData& QueryContextData() const;
+		bool IsCurrentRenderThread() const;
+		void TagToRenderThread();
 		static Context& Current();
 		static Context & MakeContext(GDI* gdi, XGFramework * framework, Asyn * gameThread, Asyn * renderThread, Renderer * renderer, ShaderManager* shaderManager);
 		static void ClearContext(Context & context);
@@ -44,5 +65,7 @@ namespace XGF
 		void * mLPVOID;
 		bool mIsJoin;
 
+		ContextData* mContextData;
+		void* mRawContextData;
 	};
 }

@@ -165,7 +165,10 @@ namespace XGF::UI
 		mPointBinder->SetActualCount(draw_data->TotalVtxCount);
 		mTextureBinder->SetActualCount(draw_data->TotalVtxCount);
 		mColorBinder->SetActualCount(draw_data->TotalVtxCount);
-
+		if (draw_data->TotalIdxCount == 0 || draw_data->TotalVtxCount == 0)
+		{
+			return;
+		}
 		int indexStart = 0;
 		int vertexStart = 0;
 		for (int n = 0; n < draw_data->CmdListsCount; n++)
@@ -188,6 +191,8 @@ namespace XGF::UI
 			vertexStart += vtxCount;
 			indexStart += cmd_list->IdxBuffer.Size;
 		}
+
+		BufferSharedRenderCommand::StartBaseRenderCommand(mBindingBridge, *mIndexBinder.get(), *mRenderResource.GetShader<VertexShader>());
 		indexStart = 0;
 		vertexStart = 0;
 		ImVec4 lastRect;
@@ -315,7 +320,7 @@ namespace XGF::UI
 		
 		mTextures.emplace_back();
 		Texture& texture = mTextures.back();
-		texture.GetTextureResource().Create(fwidth, fheight, TextureFormat::DXGI_FORMAT_R8G8B8A8_UNORM, (char*)pixels, fwidth * 4);
+		texture.Create(fwidth, fheight, TextureFormat::DXGI_FORMAT_R8G8B8A8_UNORM, (char*)pixels, fwidth * 4);
 
 		// Store our identifier
 		io.Fonts->TexID = (ImTextureID)(mTextures.size() - 1);
@@ -350,7 +355,7 @@ namespace XGF::UI
 		auto& renderer = context.QueryRenderer();
 
 		renderer.Commit(RenderGroupType::Normal,
-			DefaultRenderCommand::MakeRenderCommand(mBindingBridge, *mIndexBinder.get(), RenderStage(mRenderState, mRenderResource), indexStart, vertexStart, drawCount));
+			BufferSharedRenderCommand::MakeRenderCommand(mBindingBridge, *mIndexBinder.get(), RenderStage(mRenderState, mRenderResource), indexStart, vertexStart, drawCount));
 	}
 }
 

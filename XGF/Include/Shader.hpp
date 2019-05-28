@@ -43,6 +43,7 @@ namespace XGF
 		virtual void Shutdown() = 0;
 		void ReflectStage(ID3D11ShaderReflection *reflector);
 		unsigned int GetCBufferSize(unsigned int index);
+		unsigned int GetCBufferAllSize() const;
 		unsigned int GetCBufferCount();
 		unsigned int GetCBufferSlot(unsigned int index);
 		unsigned int GetSamplerStateCount();
@@ -58,6 +59,7 @@ namespace XGF
 		std::vector<UAVInfo> mUAVInfo;
 		std::vector<TextureInfo> mTexture2D;
 		std::vector<SamplerInfo> mSamplerState;
+		unsigned int mAllCBufferSize;
 	private:
 		std::string mName;
 		DisableCopyAndAssign(Shader)
@@ -200,7 +202,7 @@ namespace XGF
 	class  StageConstantBuffer
 	{
 	public:
-		std::shared_ptr<char > ptr;
+		std::shared_ptr<char> ptr;
 		size_t size;
 		StageConstantBuffer(unsigned size);
 		StageConstantBuffer(const StageConstantBuffer& scb);
@@ -428,12 +430,17 @@ namespace XGF
 		RawRasterizerState mRasterizerState;
 		RawBlendState mBlendState;
 		RawDepthStencilState mDepthStencilState;
-		std::vector<RawSamplerState> mVSSamplerState, mPSSamplerState, mGSSamplerState;
-		std::vector<StageConstantBuffer> mVSCBuffer, mPSCBuffer, mGSCBuffer;
-		std::vector<Texture *> mVSTexture, mPSTexture, mGSTexture;
+
+		RawSamplerState * mVSSamplerState, * mPSSamplerState, * mGSSamplerState;
+		char * mVSCBuffer, * mPSCBuffer, * mGSCBuffer;
+		Texture * mVSTexture, * mPSTexture, * mGSTexture;
 		TopologyMode mTopologyMode;
-		std::vector<Rect> mScissorRects;
-		std::vector<ViewPort> mViewPorts;
+
+		Rect * mScissorRects;
+		ViewPort * mViewPorts;
+		unsigned char mViewPortCount, mScissorRectCount;
+
+
 		RawRenderStage(const RenderStage& ss);
 
 		void BindStage();
@@ -441,63 +448,63 @@ namespace XGF
 
 #pragma region  template of shaders
 		template<typename TShader>
-		std::vector<StageConstantBuffer> & GetConstantBuffer()
+		char* GetConstantBuffer()
 		{
 			static_assert(false, "null shader type");
 		}
 		template<>
-		std::vector<StageConstantBuffer> & GetConstantBuffer<VertexShader>()
+		char * GetConstantBuffer<VertexShader>()
 		{
 			return mVSCBuffer;
 		}
 		template<>
-		std::vector<StageConstantBuffer> & GetConstantBuffer<PixelShader>()
+		char* GetConstantBuffer<PixelShader>()
 		{
 			return mPSCBuffer;
 		}
 		template<>
-		std::vector<StageConstantBuffer> & GetConstantBuffer<GeometryShader>()
+		char* GetConstantBuffer<GeometryShader>()
 		{
 			return mGSCBuffer;
 		}
 		template<typename TShader>
-		std::vector<Texture *> & GetTexture()
+		Texture * GetTexture()
 		{
 			static_assert(false, "null shader type");
 		}
 		template<>
-		std::vector<Texture *> & GetTexture<VertexShader>()
+		Texture * GetTexture<VertexShader>()
 		{
 			return mVSTexture;
 		}
 		template<>
-		std::vector<Texture *> & GetTexture<PixelShader>()
+		Texture * GetTexture<PixelShader>()
 		{
 			return mPSTexture;
 		}
 		template<>
-		std::vector<Texture *> & GetTexture<GeometryShader>()
+		Texture * GetTexture<GeometryShader>()
 		{
 			return mGSTexture;
 		}
 
 		template<typename TShader>
-		std::vector<RawSamplerState> & GetSamplerState()
+		RawSamplerState * GetSamplerState()
 		{
 			static_assert(false, "null shader type");
 		}
 		template<>
-		std::vector<RawSamplerState> & GetSamplerState<VertexShader>()
+		RawSamplerState * GetSamplerState<VertexShader>()
 		{
 			return mVSSamplerState;
 		}
 		template<>
-		std::vector<RawSamplerState> & GetSamplerState<PixelShader>()
+		RawSamplerState * GetSamplerState<PixelShader>()
 		{
 			return mPSSamplerState;
 		}
 		template<>
-		std::vector<RawSamplerState> & GetSamplerState<GeometryShader>()
+		RawSamplerState * GetSamplerState<GeometryShader>()
 		{
 			return mGSSamplerState;
 		}

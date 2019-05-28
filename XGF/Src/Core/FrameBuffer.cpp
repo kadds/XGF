@@ -47,11 +47,7 @@ namespace XGF
 
 			XGF_Error_Check(Render, gdi.GetDevice()->CreateTexture2D(&textureDesc, NULL, &texture), "Create Texture2D Failed");
 			PutDebugString(texture);
-			auto renderTarget = std::make_unique<Texture>();
-			renderTarget->GetTextureResource().SetTexture2D(texture);
-			renderTarget->GetTextureResource().SetWidth(textureWidth);
-			renderTarget->GetTextureResource().SetHeight(textureHeight);
-			Initialize(textureDesc, std::move(renderTarget), msaaQuality);
+			Initialize(textureDesc, texture, msaaQuality);
 		}
 		InitializeDepthView(textureDesc, depthStencilFormat, textureDesc.SampleDesc.Quality, depthStencilViewTexture);
 
@@ -64,11 +60,7 @@ namespace XGF
 		mHeight = textureDesc.Height;
 		mWidth = textureDesc.Width;
 		renderTargetTexture->AddRef();
-		auto renderTarget = std::make_unique<Texture>();
-		renderTarget->GetTextureResource().SetTexture2D(renderTargetTexture);
-		renderTarget->GetTextureResource().SetWidth(mWidth);
-		renderTarget->GetTextureResource().SetHeight(mHeight);
-		Initialize(textureDesc, std::move(renderTarget), textureDesc.SampleDesc.Quality);
+		Initialize(textureDesc, renderTargetTexture, textureDesc.SampleDesc.Quality);
 		InitializeDepthView(textureDesc, depthStencilFormat, textureDesc.SampleDesc.Quality, false);
 	}
 
@@ -78,7 +70,7 @@ namespace XGF
 	}
 
 
-	void FrameBuffer::Initialize(D3D11_TEXTURE2D_DESC& desc, std::unique_ptr<Texture> texture, int msaaQuality)
+	void FrameBuffer::Initialize(D3D11_TEXTURE2D_DESC& desc, ID3D11Texture2D * texture, int msaaQuality)
 	{
 		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
 		D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
@@ -91,8 +83,10 @@ namespace XGF
 		renderTargetViewDesc.Texture2D.MipSlice = 0;
 		int i = 0;
 		ID3D11RenderTargetView * renderTargetView;
-		XGF_Error_Check(Render, gdi.GetDevice()->CreateRenderTargetView(texture->GetRawTexture2D(), &renderTargetViewDesc, &renderTargetView), "Create Rendertarget Failed");
+		XGF_Error_Check(Render, gdi.GetDevice()->CreateRenderTargetView(texture, &renderTargetViewDesc, &renderTargetView), "Create Rendertarget Failed");
 		PutDebugString(renderTargetView);
+
+		auto renderTarget = std::make_unique<Texture>();
 		
 		if (desc.BindFlags & D3D11_BIND_SHADER_RESOURCE)
 		{
@@ -104,11 +98,13 @@ namespace XGF
 			shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
 			shaderResourceViewDesc.Texture2D.MipLevels = 1;
 			ID3D11ShaderResourceView * srv = 0;
-			XGF_Error_Check(Render, gdi.GetDevice()->CreateShaderResourceView(texture->GetRawTexture2D(), &shaderResourceViewDesc, &srv), "Create SRV Failed");
+			XGF_Error_Check(Render, gdi.GetDevice()->CreateShaderResourceView(texture, &shaderResourceViewDesc, &srv), "Create SRV Failed");
 			PutDebugString(srv);
-			texture->GetTextureResource().SetSRV(srv);
+			renderTarget->Load(srv, texture);
 		}
-		mRenderTarget.push_back(std::make_pair(std::move(texture), renderTargetView));
+		else 
+			renderTarget->Load(nullptr, texture);
+		mRenderTarget.push_back(std::make_pair(std::move(renderTarget), renderTargetView));
 	}
 
 	void FrameBuffer::Shutdown()
@@ -224,7 +220,6 @@ namespace XGF
 		PutDebugString(tex2d);
 		
 		mDepthStencilTexture = std::make_unique<Texture>();
-		mDepthStencilTexture->GetTextureResource().SetTexture2D(tex2d);
 		if (depthStencilViewTexture)
 		{
 			
@@ -245,8 +240,10 @@ namespace XGF
 			ID3D11ShaderResourceView * srv = 0;
 			XGF_Error_Check(Render, gdi.GetDevice()->CreateShaderResourceView(tex2d, &shaderResourceViewDesc, &srv), "Create SRV Failed");
 			PutDebugString(srv);
-			mDepthStencilTexture->GetTextureResource().SetSRV(srv);
+			mDepthStencilTexture->Load(srv, tex2d);
 		}
+		else
+			mDepthStencilTexture->Load(nullptr, tex2d);
 
 		memset(&depthStencilViewDesc, 0, sizeof(depthStencilViewDesc));
 		switch (depthFormat) {

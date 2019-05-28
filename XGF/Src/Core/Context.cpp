@@ -1,6 +1,9 @@
 #include "./../../Include/Context.hpp"
 #include <Windows.h>
 #include "../../Include/Logger.hpp"
+#include "../../Include/Renderer.hpp"
+#include "../../Include/Asyn.hpp"
+
 #ifdef new
 #undef  new
 #endif
@@ -44,6 +47,40 @@ namespace XGF
 		return *mRenderer;
 	}
 
+	FrameMemoryAllocator& Context::QueryGameThreadFrameAllocator() const
+	{
+		return mRenderer->GetAllocator();
+	}
+
+	FrameMemoryAllocator& Context::QueryRenderThreadFrameAllocator() const
+	{
+		return mRenderer->GetRenderAllocator();
+	}
+
+	FrameMemoryAllocator& Context::QueryFrameAllocator() const
+	{
+		if (IsCurrentRenderThread())
+		{
+			return QueryRenderThreadFrameAllocator();
+		}
+		return QueryGameThreadFrameAllocator();
+	}
+
+	ContextData& Context::QueryContextData() const
+	{
+		return *mContextData;
+	}
+
+	bool Context::IsCurrentRenderThread() const
+	{
+		return mContextData->IsRenderThread();
+	}
+
+	void Context::TagToRenderThread()
+	{
+		mContextData->SetIsRenderThread(true);
+	}
+
 	Context& Context::Current()
 	{
 		return *(Context *)TlsGetValue(ContextTLSSlot);
@@ -59,13 +96,20 @@ namespace XGF
 		realContext->mLPVOID = context;
 		realContext->mIsJoin = false;
 		TlsSetValue(ContextTLSSlot, realContext);
+
+		void * contextData = (void*)LocalAlloc(LPTR, sizeof(ContextData) + sizeof(int));
+		realContext->mContextData = new (contextData) ContextData();
+		realContext->mRawContextData = contextData;
+
 		return *realContext;
 	}
 
 	void Context::ClearContext(Context & context)
 	{
 		void * p = context.mLPVOID;
+		void* data = context.mRawContextData;
 		context.~Context();
+		LocalFree(data);
 		LocalFree(p);
 	}
 	void Context::JoinContext(Context & mainContext)
@@ -77,6 +121,10 @@ namespace XGF
 		realContext->mIsJoin = true;
 		realContext->mLPVOID = context;
 		TlsSetValue(ContextTLSSlot, realContext);
+
+		void* contextData = (void*)LocalAlloc(LPTR, sizeof(ContextData) + sizeof(int));
+		realContext->mContextData = new (contextData) ContextData();
+		realContext->mRawContextData = contextData;
 	}
 	void Context::DetachContext()
 	{
@@ -105,5 +153,24 @@ namespace XGF
 										mFramework(framework), mRenderThread(renderThread), mRenderer(renderer)
 
 	{
+	}
+	bool ContextData::IsRenderThread()
+	{
+		return mIsRenderThread;
+	}
+	void ContextData::SetIsRenderThread(bool isRenderThread)
+	{
+		mIsRenderThread = isRenderThread;
+	}
+	ContextData::ContextData(): mExtraInfo(nullptr), mTag(0), mIsRenderThread(false)
+	{
+	}
+	void* ContextData::GetExtraInfo() const
+	{
+		return mExtraInfo;
+	}
+	void ContextData::SetExtraInfo(void* info)
+	{
+		mExtraInfo = info;
 	}
 }

@@ -43,13 +43,13 @@ namespace XGF
 				Texture * texture = new Texture();
 				if (it.inMemory)
 				{
-					if (texture->GetTextureResource().Load( it.mem, it.memSize))
+					if (texture->Load( it.mem, it.memSize))
 						okCount++;
 				}
 				else
 				{
 					Tools::GetPathBy(it.name.c_str(), buffer, MAX_PATH);
-					if (texture->GetTextureResource().Load( buffer))
+					if (texture->Load( buffer))
 						okCount++;
 				}
 				if (texture->GetRawTexture() != nullptr)
@@ -78,13 +78,13 @@ namespace XGF
 			Texture * texture = new Texture();
 			if (it.inMemory)
 			{
-				if (texture->GetTextureResource().Load(it.mem, it.memSize))
+				if (texture->Load(it.mem, it.memSize))
 					okCount++;
 			}
 			else
 			{
 				Tools::GetPathBy(it.name.c_str(), buffer, MAX_PATH);
-				if (texture->GetTextureResource().Load( buffer))
+				if (texture->Load( buffer))
 					okCount++;
 			}
 			if (texture->GetRawTexture() != nullptr)

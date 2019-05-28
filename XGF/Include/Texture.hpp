@@ -13,33 +13,10 @@ namespace XGF
 	private:
 		ID3D11ShaderResourceView * shaderResourceView;
 		ID3D11Texture2D * texture2d;
-		unsigned width, height;
-		TextureFormat mFormat;
 	public:
 		TextureResource();
 		~TextureResource();
 
-		bool Load(void * mem, size_t size);
-		bool Load(std::wstring fullPath);
-		void Create(unsigned width, unsigned height, TextureFormat format, char* ptr, int pitch, int slicePitch = 0);
-		void SetTexture2D(ID3D11Texture2D * t2d);
-		void SetSRV(ID3D11ShaderResourceView * srv);
-		unsigned GetHeight() const
-		{
-			return height;
-		}
-		unsigned GetWidth() const
-		{
-			return width;
-		}
-		void SetWidth(unsigned w)
-		{
-			width = w;
-		}
-		void SetHeight(unsigned h)
-		{
-			height = h;
-		}
 		ID3D11Texture2D * GetTexture2D() const
 		{
 			return texture2d;
@@ -48,6 +25,7 @@ namespace XGF
 		{
 			return shaderResourceView;
 		}
+		friend class Texture;
 	};
 
 	class Texture
@@ -59,36 +37,25 @@ namespace XGF
 		TextureResource& GetTextureResource();
 		ID3D11ShaderResourceView* GetRawTexture() const;
 		ID3D11Texture2D * GetRawTexture2D() const;
-		unsigned GetWidth() const;
-
-		unsigned GetHeight() const;
-		virtual void UpdateTexture() {};
+		void GetSize(int& width, int& height);
+		TextureFormat GetFormat();
+		void UpdateTexture(char *ptr, const Rectangle& rect);
 		enum class ImageType
 		{
 			DDS,
 			PNG,
 			JPEG,
 			BMP,
-
 		};
 		bool SaveAs(ImageType type, const std::string& path);
+		bool Load(void* mem, size_t size);
+		bool Load(std::wstring fullPath);
+		bool Load(ID3D11ShaderResourceView* srv, ID3D11Texture2D* texture2D);
+		void Create(unsigned width, unsigned height, TextureFormat format, char* ptr, int pitch, int slicePitch = 0);
+		bool HasLoad() const;
 	private:
 		TextureResource mTextureResource;
+		bool mHasLoad;
 	};
-	class DynamicTexture: public Texture
-	{
-	public:
-		friend class Renderer;		
-		DynamicTexture(unsigned width, unsigned height, TextureFormat format, char* ptr, int pitch, int slicePitch);
-
-		void UpdateDirtyRectangle(const Rectangle& rect);
-		void ClearDirtyRectangle();
-		const Rectangle& GetDirtyRectangle() const;
-		virtual void UpdateTexture() override;
-	private:
-		Rectangle mDirtyRectangle;
-		char * mPtr;
-	};
-
 
 };

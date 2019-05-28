@@ -4,6 +4,7 @@
 #include <numeric>
 #include "../../Include/Context.hpp"
 #include "../../Include/Texture.hpp"
+#include "../../Include/Renderer.hpp"
 
 namespace XGF {
 	Shader::Shader()
@@ -16,6 +17,7 @@ namespace XGF {
 	}
 	void Shader::ReflectStage(ID3D11ShaderReflection * reflector)
 	{
+		mAllCBufferSize = 0;
 		D3D11_SHADER_DESC shaderDesc;
 		reflector->GetDesc(&shaderDesc);
 		//constant Buffer
@@ -49,6 +51,7 @@ namespace XGF {
 					if (strcmp(mCBufferInfo[i].name.c_str(), bdec.Name) == 0)
 					{
 						mCBufferInfo[i].slot = bdec.BindPoint;
+						mAllCBufferSize += mCBufferInfo[i].size;
 						break;
 					}
 				}
@@ -93,6 +96,10 @@ namespace XGF {
 	unsigned int Shader::GetCBufferSize(unsigned int index)
 	{
 		return mCBufferInfo[index].size;
+	}
+	unsigned int Shader::GetCBufferAllSize() const
+	{
+		return mAllCBufferSize;
 	}
 	unsigned int Shader::GetCBufferCount()
 	{
@@ -614,59 +621,55 @@ namespace XGF {
 			dev->GSSetShader(0, 0, 0);
 		dev->IASetInputLayout(vs->mInputLayout);
 		dev->IASetPrimitiveTopology(mTopologyMode);
-		ID3D11ShaderResourceView * tex;
-		if (!mVSTexture.empty())
-			for (unsigned i = 0; i < vs->GetTextureCount(); i++)
-				if (mVSTexture[i] != nullptr)
-				{
-					mVSTexture[i]->UpdateTexture();
-					tex = mVSTexture[i]->GetRawTexture();
-					dev->VSSetShaderResources(vs->GetTextureSlot(i), 1, &tex);
-				}
-				else { XGF_Warn(Shader, "Invalid texture in vs"); }
-		if (!mPSTexture.empty())
-			for (unsigned i = 0; i < ps->GetTextureCount(); i++)
-				if (mPSTexture[i] != nullptr)
-				{
-					mPSTexture[i]->UpdateTexture();
-					tex = mPSTexture[i]->GetRawTexture();
-					dev->PSSetShaderResources(ps->GetTextureSlot(i), 1, &tex);
-				}
-				else { XGF_Warn(Shader, "Invalid texture in ps"); }
-		if (!mGSTexture.empty())
-			for (unsigned i = 0; i < gs->GetTextureCount(); i++)
-				if (mGSTexture[i] != nullptr)
-				{
-					mGSTexture[i]->UpdateTexture();
-					tex = mGSTexture[i]->GetRawTexture();
-					dev->GSSetShaderResources(gs->GetTextureSlot(i), 1, &tex);
-				}
-				else { XGF_Warn(Shader, "Invalid texture in gs"); }
-		gdi.SetBlendState(mBlendState);
-
-		ID3D11SamplerState *sps;
-		if (!mVSSamplerState.empty())
-			for (unsigned i = 0; i < vs->GetSamplerStateCount(); i++)
-			{
-				sps = mVSSamplerState[i].GetPtr<ID3D11SamplerState>();
-				dev->VSSetSamplers(vs->GetSamplerStateSlot(i), 1, &sps);
-			}
-		if (!mPSSamplerState.empty())
+		ID3D11SamplerState* sps;
+		for (unsigned i = 0; i < vs->GetSamplerStateCount(); i++)
+		{
+			sps = mVSSamplerState[i].GetPtr<ID3D11SamplerState>();
+			dev->VSSetSamplers(vs->GetSamplerStateSlot(i), 1, &sps);
+		}
+		if (ps)
 			for (unsigned i = 0; i < ps->GetSamplerStateCount(); i++)
 			{
 				sps = mPSSamplerState[i].GetPtr<ID3D11SamplerState>();
 				dev->PSSetSamplers(ps->GetSamplerStateSlot(i), 1, &sps);
 			}
-		if (!mGSSamplerState.empty())
+		if (gs)
 			for (unsigned i = 0; i < gs->GetSamplerStateCount(); i++)
 			{
 				sps = mGSSamplerState[i].GetPtr<ID3D11SamplerState>();
 				dev->GSSetSamplers(gs->GetSamplerStateSlot(i), 1, &sps);
 			}
+		ID3D11ShaderResourceView * tex;
+		for (unsigned i = 0; i < vs->GetTextureCount(); i++)
+			if (mVSTexture[i].HasLoad())
+			{
+				tex = mVSTexture[i].GetRawTexture();
+				dev->VSSetShaderResources(vs->GetTextureSlot(i), 1, &tex);
+			}
+			else { XGF_Warn(Shader, "Invalid texture in vs"); }
+		if (ps)
+			for (unsigned i = 0; i < ps->GetTextureCount(); i++)
+				if (mPSTexture[i].HasLoad())
+				{
+					tex = mPSTexture[i].GetRawTexture();
+					dev->PSSetShaderResources(ps->GetTextureSlot(i), 1, &tex);
+				}
+				else { XGF_Warn(Shader, "Invalid texture in ps"); }
+		if (gs)
+			for (unsigned i = 0; i < gs->GetTextureCount(); i++)
+				if (mGSTexture[i].HasLoad())
+				{
+					tex = mGSTexture[i].GetRawTexture();
+					dev->GSSetShaderResources(gs->GetTextureSlot(i), 1, &tex);
+				}
+				else { XGF_Warn(Shader, "Invalid texture in gs"); }
+		gdi.SetBlendState(mBlendState);
+
+		
 		gdi.SetDepthStencilState(mDepthStencilState);
 		gdi.SetRasterizerState(mRasterizerState);
-		gdi.SetScissorRectangle(mScissorRects);
-		gdi.SetViewPorts(mViewPorts);
+		gdi.SetScissorRectangle(mScissorRects, mScissorRectCount);
+		gdi.SetViewPorts(mViewPorts, mViewPortCount);
 	}
 
 	void RawRenderStage::UnBindStage()
@@ -676,18 +679,17 @@ namespace XGF {
 
 		auto dev = gdi.GetDeviceContext();
 		dev->VSSetShader(0, 0, 0);
-		if (!mVSTexture.empty())
-			for (unsigned i = 0; i < vs->GetTextureCount(); i++)
-				if (mVSTexture[i] != nullptr)
-					dev->VSSetShaderResources(vs->GetTextureSlot(i), 1, (ID3D11ShaderResourceView **)(&null));
 
-		if (!mPSTexture.empty())
+		for (unsigned i = 0; i < vs->GetTextureCount(); i++)
+			if (mVSTexture[i].HasLoad())
+				dev->VSSetShaderResources(vs->GetTextureSlot(i), 1, (ID3D11ShaderResourceView **)(&null));
+		if (ps)
 			for (unsigned i = 0; i < ps->GetTextureCount(); i++)
-				if (mPSTexture[i] != nullptr)
+				if (mPSTexture[i].HasLoad())
 					dev->PSSetShaderResources(ps->GetTextureSlot(i), 1, (ID3D11ShaderResourceView **)(&null));
-		if (!mGSTexture.empty())
+		if (gs)
 			for (unsigned i = 0; i < gs->GetTextureCount(); i++)
-				if (mGSTexture[i] != nullptr)
+				if (mGSTexture[i].HasLoad())
 					dev->GSSetShaderResources(gs->GetTextureSlot(i), 1, (ID3D11ShaderResourceView **)(&null));
 
 		if (ps != nullptr)
@@ -696,42 +698,125 @@ namespace XGF {
 			dev->GSSetShader(0, 0, 0);
 
 	}
-
-	RawRenderStage::RawRenderStage(const RenderStage& ss) : mVSSamplerState(ss.GetRenderResource()->GetSamplerState<VertexShader>().size())
-		, mPSSamplerState(ss.GetRenderResource()->GetSamplerState<PixelShader>().size())
-		, mGSSamplerState(ss.GetRenderResource()->GetSamplerState<GeometryShader>().size())
-		, mVSCBuffer(ss.GetRenderResource()->GetConstantBuffer<VertexShader>())
-		, mPSCBuffer(ss.GetRenderResource()->GetConstantBuffer<PixelShader>())
-		, mGSCBuffer(ss.GetRenderResource()->GetConstantBuffer<GeometryShader>())
-		, mVSTexture(ss.GetRenderResource()->GetTexture<VertexShader>())
-		, mPSTexture(ss.GetRenderResource()->GetTexture<PixelShader>())
-		, mGSTexture(ss.GetRenderResource()->GetTexture<GeometryShader>()),
+	template <typename TShader>
+	void CopyConstantBuffer(char *& out, RenderResource & res, FrameMemoryAllocator & allocator)
+	{
+		auto& shader = *res.GetShader<TShader>();
+		if (&shader == nullptr)
+		{
+			out = 0;
+			return;
+		}
+		auto buffer = res.GetConstantBuffer<TShader>();
+#ifdef _DEBUG
+		if (shader.GetCBufferCount() != buffer.size())
+			XGF_Error(Render, "Buffer count is different from the count defined in shader.");
+#endif
+		if (shader.GetCBufferCount() > 0)
+		{
+			out = (char*)allocator.NewMem(shader.GetCBufferAllSize());
+			char* bf = out;
+			for (int i = 0; i < shader.GetCBufferCount(); i++)
+			{
+#ifdef _DEBUG
+				if (shader.GetCBufferSize(i) != buffer[i].GetSize())
+					XGF_Error(Render, "Buffer size is different from the size defined in shader.");
+#endif
+				memcpy(bf, buffer[i].GetBufferPoint(), shader.GetCBufferSize(i));
+				bf += shader.GetCBufferSize(i);
+			}
+		}
+		else
+			out = 0;
+	}
+	template <typename TShader>
+	void CopySamplerState(RawSamplerState *& out, RenderResource& res, FrameMemoryAllocator& allocator)
+	{
+		auto& shader = *res.GetShader<TShader>();
+		if (&shader == nullptr) 
+		{
+			out = 0;
+			return;
+		}
+		auto& gdi = Context::Current().QueryGraphicsDeviceInterface();
+		auto states = res.GetSamplerState<TShader>();
+#ifdef _DEBUG
+		if (shader.GetSamplerStateCount() != states.size())
+			XGF_Error(Render, "SamplerState count is different from the count defined in shader.");
+#endif
+		if (shader.GetSamplerStateCount() > 0)
+		{
+			out = allocator.NewArray<RawSamplerState>(shader.GetSamplerStateCount());
+			RawSamplerState* bf = out;
+			for (int i = 0; i < shader.GetSamplerStateCount(); i++)
+			{
+				*bf = gdi.GetSamplerState(states[i]);
+				bf++;
+			}
+		}
+		else
+			out = 0;
+	}
+	template <typename TShader>
+	void CopyTexture(Texture *& out, RenderResource& res, FrameMemoryAllocator& allocator)
+	{
+		auto& shader = *res.GetShader<TShader>();
+		if (&shader == nullptr) 
+		{
+			out = 0;
+			return;
+		}
+		auto textures = res.GetTexture<TShader>();
+#ifdef _DEBUG
+		if (shader.GetTextureCount() != textures.size())
+			XGF_Error(Render, "Texture count is different from the count defined in shader.");
+#endif
+		if (shader.GetTextureCount() > 0)
+		{
+			out = allocator.NewArray<Texture>(shader.GetTextureCount());
+			Texture* bf = out;
+			for (int i = 0; i < shader.GetTextureCount(); i++)
+			{
+				*bf = *textures[i];
+				bf++;
+			}
+		}
+		else
+			out = 0;
+	}
+	RawRenderStage::RawRenderStage(const RenderStage& ss) : 
 		mTopologyMode(ss.GetRenderState()->GetTopologyMode())
 		, vs(ss.GetRenderResource()->GetShader<VertexShader>())
 		, ps(ss.GetRenderResource()->GetShader<PixelShader>())
 		, gs(ss.GetRenderResource()->GetShader<GeometryShader>())
-		, mScissorRects(ss.GetRenderState()->GetScissorRects())
-		, mViewPorts(ss.GetRenderState()->GetViewPorts())
 	{
+		auto& allocator = Context::Current().QueryRenderer().GetCurrentResource().GetAllocator();
 		auto& gdi = Context::Current().QueryGraphicsDeviceInterface();
 		mRasterizerState = gdi.GetRasterizerState(ss.GetRenderState()->GetRasterizerState());
 		mDepthStencilState = gdi.GetDepthStencilState(ss.GetRenderState()->GetDepthStencilState());
 		mBlendState = gdi.GetBlendState(ss.GetRenderState()->GetBlendState());
-		int i = 0;
-		for(auto & it : ss.GetRenderResource()->GetSamplerState<VertexShader>())
-		{
-			mVSSamplerState[i++] = gdi.GetSamplerState(it);
-		}
-		i = 0;
-		for (auto & it : ss.GetRenderResource()->GetSamplerState<PixelShader>())
-		{
-			mPSSamplerState[i++] = gdi.GetSamplerState(it);
-		}
-		i = 0;
-		for (auto & it : ss.GetRenderResource()->GetSamplerState<GeometryShader>())
-		{
-			mGSSamplerState[i++] = gdi.GetSamplerState(it);
-		}
+		auto & res = *ss.GetRenderResource();
+		auto& state = *ss.GetRenderState();
+		CopyConstantBuffer<VertexShader>(mVSCBuffer, res, allocator);
+		CopyConstantBuffer<PixelShader>(mPSCBuffer, res, allocator);
+		CopyConstantBuffer<GeometryShader>(mGSCBuffer, res, allocator);
+
+		CopySamplerState<VertexShader>(mVSSamplerState, res, allocator);
+		CopySamplerState<PixelShader>(mPSSamplerState, res, allocator);
+		CopySamplerState<GeometryShader>(mGSSamplerState, res, allocator);
+
+		CopyTexture<VertexShader>(mVSTexture, res, allocator);
+		CopyTexture<PixelShader>(mPSTexture, res, allocator);
+		CopyTexture<GeometryShader>(mGSTexture, res, allocator);
+
+		mScissorRectCount = (unsigned char)state.GetScissorRects().size();
+		mScissorRects = allocator.NewArray<Rect>(mScissorRectCount);
+		memcpy(mScissorRects, state.GetScissorRects().data(), mScissorRectCount * sizeof(Rect));
+
+		mViewPortCount = (unsigned char)state.GetViewPorts().size();
+		mViewPorts = allocator.NewArray<ViewPort>(mViewPortCount);
+		memcpy(mViewPorts, state.GetViewPorts().data(), mViewPortCount * sizeof(ViewPort));
+
 	}
 
 	//void ComputeGPU::Initialize(ComputeShader * cs, unsigned int buffersize)

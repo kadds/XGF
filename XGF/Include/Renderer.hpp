@@ -6,6 +6,7 @@
 #include <mutex>
 #include "Context.hpp"
 #include <unordered_map>
+#include "MemoryAllocator.hpp"
 
 namespace XGF
 {
@@ -63,6 +64,7 @@ namespace XGF
 	class RendererFrameResource
 	{
 	private:
+		FrameMemoryAllocator mAllocator;
 		std::list<GpuBuffer> mVertices, mIndices;
 		std::list<GpuBuffer> mVerticesUsed, mIndicesUsed;
 		std::list<GpuBuffer> mConstantBuffer, mConstantBufferUsed;
@@ -70,13 +72,13 @@ namespace XGF
 		std::stack<unsigned> mPassStack;
 		unsigned int mRenderIndex;
 		bool mRenderedFlag;
-
+		std::unordered_map<size_t, void*> mOtherResource;
 	public:
 		unsigned int NextRenderIndex();
 		std::vector<RenderTargetPass>& GetAllPasses();
 		RenderTargetPass& GetCurrentPass();
 		void Push(FrameBuffer* frameBuffer);
-
+		FrameMemoryAllocator& GetAllocator();
 		FrameBuffer* Pop();
 
 		bool HasRenderedFlag() const
@@ -97,6 +99,8 @@ namespace XGF
 		}
 		void NewFrame();
 		void ClearAll();
+		// id: use typeId here
+		void * & GetOtherResource(size_t id);
 		GpuBuffer QueryUnusedGpuIndexBuffer(unsigned count);
 		GpuBuffer QueryUnusedGpuVertexBuffer(unsigned size);
 		GpuBuffer QueryUnusedGpuConstantBuffer(unsigned size);
@@ -160,8 +164,14 @@ namespace XGF
 		bool IsRenderEnd() const;
 
 		void WaitFrame();
-
+		// resource that game thread using.
+		RendererFrameResource& GetCurrentResource();
+		// resource that render thread using.
 		RendererFrameResource& GetCurrentRenderResource();
+
+		FrameMemoryAllocator& GetAllocator();
+		FrameMemoryAllocator& GetRenderAllocator();
+
 	private:
 		void DrawCommands();
 		void BeforeDraw();
@@ -180,8 +190,6 @@ namespace XGF
 		std::vector<std::tuple<DrawCallback, bool>> mBeforeDrawCallbackTemp;
 		std::vector<DrawCallback> mAfterDrawCallback;
 		std::vector<std::tuple<DrawCallback, bool>> mAfterDrawCallbackTemp;
-
-		RendererFrameResource& GetCurrentResource();
 
 		int GetNextResourceIndex() const;
 
@@ -210,10 +218,11 @@ namespace XGF
 	class SubRenderCommand final : public RenderCommand
 	{
 	private:
-		std::vector<RenderCommand *> mCommands;
+		RenderCommand ** mCommands;
+		unsigned int mCommandCount;
 
 	public:
-		SubRenderCommand(std::vector<RenderCommand *> && commands): mCommands(std::move(commands)) {  }
+		SubRenderCommand(std::vector<RenderCommand*>&& commands);
 		~SubRenderCommand();
 		void Exec(GDI& gdi, FrameBuffer& frameBuffer) override;
 		template<typename Head, typename...TArgs>
@@ -232,7 +241,7 @@ namespace XGF
 		{
 			std::vector<RenderCommand *> commands(sizeof...(args));
 			UnpackCommands(&commands[0], std::forward<TArgs>(args));
-			return new SubRenderCommand(std::move(commands));
+			return Context::Current().QueryRenderer().GetCurrentResource().GetAllocator().New<SubRenderCommand>(std::move(commands));
 		}
 
 		static SubRenderCommand* MakeRenderCommand(std::vector<RenderCommand *>&& commands);
@@ -242,51 +251,19 @@ namespace XGF
 	{
 	private:
 		RawRenderStage mRenderStage;
-		std::shared_ptr<char[]> mVertices;
+		char * mVertices;
 		unsigned int mVertexCount;
 		unsigned int mVertexStart;
 
-		std::shared_ptr<Index[]> mIndices;
+		Index* mIndices;
 		unsigned int mIndexCount;
 		unsigned int mIndexStart;
 		unsigned mVertexSize;
 
 		unsigned mDrawCount;
-	private:
-		template<typename TShader>
-		void BindBuffer(GDI * gdi, unsigned index, GpuBuffer & buffer)
-		{
-			static_assert(false, "null shader type");
-		}
-		template<>
-		void BindBuffer<VertexShader>(GDI * gdi, unsigned index, GpuBuffer & buffer)
-		{
-			gdi->GetDeviceContext()->VSSetConstantBuffers(mRenderStage.GetShader<VertexShader>()->GetCBufferSlot(index), 1, &buffer.buffer);
-		}
-		template<>
-		void BindBuffer<PixelShader>(GDI * gdi, unsigned index, GpuBuffer & buffer)
-		{
-			gdi->GetDeviceContext()->PSSetConstantBuffers(mRenderStage.GetShader<PixelShader>()->GetCBufferSlot(index), 1, &buffer.buffer);
-		}
-		template<>
-		void BindBuffer<GeometryShader>(GDI * gdi, unsigned index, GpuBuffer & buffer)
-		{
-			gdi->GetDeviceContext()->GSSetConstantBuffers(mRenderStage.GetShader<GeometryShader>()->GetCBufferSlot(index), 1, &buffer.buffer);
-		}
+		
 	public:
-		template<typename TShader>
-		void BindConstantBuffer(unsigned index)
-		{
-			auto & context = Context::Current();
-			auto & gdi = context.QueryGraphicsDeviceInterface();
-			auto & renderer = context.QueryRenderer();
-			auto & cb = mRenderStage.GetConstantBuffer<TShader>();
-			auto buffer = renderer.GetCurrentRenderResource().QueryUnusedGpuConstantBuffer(mRenderStage.GetShader<TShader>()->GetCBufferSize(index));
-			gdi.CopyToBuffer(buffer, cb[index].GetBufferPoint());
-			BindBuffer<TShader>(&gdi, index, buffer);
-		}
-
-		DefaultRenderCommand(std::shared_ptr<char[]> vertices, unsigned int vertexCount, unsigned vertexSize, unsigned vertexStart, std::shared_ptr<Index[]> indices, unsigned int indexCount, unsigned indexStart, const RenderStage& renderStage, unsigned drawCount) :
+		DefaultRenderCommand(char * vertices, unsigned int vertexCount, unsigned vertexSize, unsigned vertexStart, Index* indices, unsigned int indexCount, unsigned indexStart, const RenderStage& renderStage, unsigned drawCount) :
 			mVertices(vertices), mVertexCount(vertexCount), mVertexSize(vertexSize), mIndices(indices), mIndexCount(indexCount), mRenderStage(renderStage), mIndexStart(indexStart), mVertexStart(vertexStart), mDrawCount(drawCount){  };
 		static DefaultRenderCommand* MakeRenderCommand(const BindingBridge& bbr, const PolygonPleIndex& index,
 			const RenderStage& renderStage);
@@ -297,9 +274,9 @@ namespace XGF
 	};
 	struct BufferSharedData
 	{
-		std::shared_ptr<char[]> mVertices;
-		std::shared_ptr<Index[]> mIndices;
-		BufferSharedData(std::shared_ptr<char[]> vertices, std::shared_ptr<Index[]> indices): mVertices(vertices), mIndices(indices)
+		char* mVertices;
+		Index* mIndices;
+		BufferSharedData(char* vertices, Index* indices): mVertices(vertices), mIndices(indices)
 		{
 		}
 	};
@@ -323,21 +300,19 @@ namespace XGF
 		result_type operator()(argument_type const& s) const
 		{
 			const std::hash<size_t> intHash;
-			result_type hash = intHash((size_t)&s.bbr) ^ (intHash((size_t)&s.index) << 1);
+			result_type hash = intHash((size_t)&s.bbr) ^ ((intHash((size_t)&s.index) ^ (intHash((size_t)&s.vs)) << 1 ) << 1);
 			return hash;
 		}
 	};
 	class BufferSharedRenderCommand : public DefaultRenderCommand
 	{
 	private:
-		static std::unordered_map<BufferSharedKey, BufferSharedData, BufferSharedKeyHash> map;
 		static void NewId(BufferSharedKey key);
 		static BufferSharedData Get(BufferSharedKey key);
-		static void ClearAllData();
 		friend class Renderer;
 	public:
 		
-		BufferSharedRenderCommand(std::shared_ptr<char[]> vertices, unsigned int vertexCount, unsigned vertexSize, unsigned vertexStart, std::shared_ptr<Index[]> indices, unsigned int indexCount, unsigned indexStart, const RenderStage& renderStage, unsigned drawCount)
+		BufferSharedRenderCommand(char * vertices, unsigned int vertexCount, unsigned vertexSize, unsigned vertexStart, Index * indices, unsigned int indexCount, unsigned indexStart, const RenderStage& renderStage, unsigned drawCount)
 			: DefaultRenderCommand (vertices, vertexCount, vertexSize, vertexStart, indices, indexCount, indexStart, renderStage, drawCount) {  };
 		static void StartBaseRenderCommand(const BindingBridge& bbr, const PolygonPleIndex& index, const VertexShader & vs);
 		static BufferSharedRenderCommand* MakeRenderCommand(const BindingBridge& bbr, const PolygonPleIndex& index, const RenderStage& renderStage, unsigned indexStart, unsigned vertexStart, unsigned drawCount);

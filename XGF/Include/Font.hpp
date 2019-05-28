@@ -50,13 +50,16 @@ namespace XGF
 		std::unique_ptr<char> mFileBuffer;
 		size_t mFileSize;
 	private:
+		void BindRenderer();
 		long ReadFileToBuffer(const std::wstring & name);
 		void CloseFileBuffer();
 		std::unordered_map<wchar_t, PosSize*> map;
 		unsigned            mBufferWidth;
 		unsigned            mBufferHeight;
-		std::unique_ptr<DynamicTexture> mTexture;
+		std::unique_ptr<Texture> mTexture;
 		std::unique_ptr<char[]> mBuffer;
+		Rectangle mDirtyRectangle;
+		bool mDirty;
 		std::string mName;
 	};
 

@@ -4,6 +4,7 @@
 #include "../../Include/Tools.hpp"
 #include <fstream>  
 #include "../../Include/Context.hpp"
+#include "../../Include/Renderer.hpp"
 
 namespace XGF
 {
@@ -33,11 +34,13 @@ namespace XGF
 		mBuffer = std::unique_ptr<char[]>(new char[mBufferWidth*mBufferHeight]);
 		memset(mBuffer.get(), 0, sizeof(char)*mBufferWidth*mBufferHeight);
 		error = FT_New_Face(pFTLib, Tools::WcharToChar(name.c_str(), name.length() + 1).c_str(), 0, &pFTFace);
-		mTexture = std::make_unique<DynamicTexture>(mBufferWidth, mBufferHeight, DXGI_FORMAT_A8_UNORM, mBuffer.get(), mBufferWidth, 0);
+		mTexture = std::make_unique<Texture>();
+		mTexture->Create(mBufferWidth, mBufferHeight, DXGI_FORMAT_A8_UNORM, mBuffer.get(), mBufferWidth, 0);
 		if (!error)
 		{
 			FT_Select_Charmap(pFTFace, FT_ENCODING_UNICODE);
 			FT_Set_Pixel_Sizes(pFTFace, fontSize, fontSize);
+			BindRenderer();
 			return true;
 		}
 		else
@@ -48,6 +51,7 @@ namespace XGF
 			{
 				FT_Select_Charmap(pFTFace, FT_ENCODING_UNICODE);
 				FT_Set_Pixel_Sizes(pFTFace, fontSize, fontSize);
+				BindRenderer();
 				return true;
 			}
 			XGF_Error(Application, "File can't open!", Tools::WcharToChar(name.c_str(), name.length() + 1).c_str());
@@ -55,6 +59,20 @@ namespace XGF
 		}
 	}
 	
+	void Font::BindRenderer()
+	{
+		std::string sys_name = fmt::format("font_callback_{}", (size_t)this);
+		Context::Current().QueryRenderer().AppendBeforeDrawCallback(sys_name, [this](Renderer* r)
+			{
+				while (mDirty)
+				{
+					mTexture->UpdateTexture(mBuffer.get(), mDirtyRectangle);
+					mDirtyRectangle = Rectangle(0.f, 0.f, 0.f, 0.f);
+					mDirty = false;
+				}
+			});
+	}
+
 	long Font::ReadFileToBuffer(const std::wstring& name)
 	{
 		auto e = Tools::LoadFromFile(name);
@@ -65,6 +83,8 @@ namespace XGF
 
 	void Font::Shutdown()
 	{
+		std::string sys_name = fmt::format("font_callback_{}", (size_t)this);
+		Context::Current().QueryRenderer().RemoveBeforeDrawCallback(sys_name);
 		if (pFTFace)
 			FT_Done_Face(pFTFace);
 		if (pFTLib)
@@ -127,7 +147,8 @@ namespace XGF
 		result->vy = static_cast<float>(-slot->bitmap_top + ascender);
 		map.insert(std::pair<wchar_t, PosSize  *>(ch, result));
 		FT_Done_Glyph(glyph);
-		mTexture->UpdateDirtyRectangle(Rectangle(left, top, bitmap.width, bitmap.rows));
+		mDirtyRectangle = Rectangle::Union(mDirtyRectangle, Rectangle(left, top, bitmap.width, bitmap.rows));
+		mDirty = true;
 		return result;
 	}
 

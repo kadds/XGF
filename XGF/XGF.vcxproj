@@ -82,6 +82,7 @@
     <ClInclude Include="Include\Material\PhongMaterial.hpp" />
     <ClInclude Include="Include\Material\LightMaterial.hpp" />
     <ClInclude Include="Include\Material\PhysicsMaterial.hpp" />
+    <ClInclude Include="Include\MemoryAllocator.hpp" />
     <ClInclude Include="Include\Mesh.hpp" />
     <ClInclude Include="Include\MeshRenderer.hpp" />
     <ClInclude Include="Include\OrthoCamera.hpp" />
@@ -139,6 +140,7 @@
     <ClCompile Include="Src\Core\Font.cpp" />
     <ClCompile Include="Src\Core\FPSCamera.cpp" />
     <ClCompile Include="Src\Core\GDI.cpp" />
+    <ClCompile Include="Src\Core\MemoryAllocator.cpp" />
     <ClCompile Include="Src\Core\OrthoCamera.cpp" />
     <ClCompile Include="Src\Core\PerspectiveCamera.cpp" />
     <ClCompile Include="Src\Core\Polygon.cpp" />

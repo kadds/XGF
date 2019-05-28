@@ -9,7 +9,7 @@ using namespace XGF;
 #define _CRTDBG_MAP_ALLOC  
 #include <stdlib.h>  
 #include <crtdbg.h>  
-#define new  new(_CLIENT_BLOCK, __FILE__, __LINE__)  
+//#define new  new(_CLIENT_BLOCK, __FILE__, __LINE__)  
 
 int RunGame(HINSTANCE hInstance);
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,

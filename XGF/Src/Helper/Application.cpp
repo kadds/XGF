@@ -118,6 +118,7 @@ namespace XGF
 		Tools::SetCurrentThreadName("Render Thread");
 		SetThreadAffinityMask(GetCurrentThread(), 2);
 		Context::JoinContext(*context);
+		Context::Current().TagToRenderThread();
 		ShaderManager & shaderManager = context->QueryShaderManager();
 
 		context->QueryRenderer().Create();

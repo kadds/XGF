@@ -360,6 +360,9 @@
     <ClInclude Include="Include\InputDefinitions.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Include\MemoryAllocator.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\UI\Button.cpp">
@@ -625,6 +628,9 @@
     </ClCompile>
     <ClCompile Include="Src\Input\InputDefinitions.cpp">
       <Filter>源文件\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\MemoryAllocator.cpp">
+      <Filter>源文件\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

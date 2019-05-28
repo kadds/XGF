@@ -35,7 +35,7 @@ namespace XGF
 	private:
 		void InitializeDepthView(D3D11_TEXTURE2D_DESC & desc, DepthStencilFormat depthStencilFormat, int msaaQuality, bool depthStencilViewTexture);
 
-		void Initialize(D3D11_TEXTURE2D_DESC & desc, std::unique_ptr<Texture> texture, int msaaQuality);
+		void Initialize(D3D11_TEXTURE2D_DESC & desc, ID3D11Texture2D* texture, int msaaQuality);
 
 		ID3D11DepthStencilView * mDepthStencilView;
 		std::unique_ptr<Texture> mDepthStencilTexture;

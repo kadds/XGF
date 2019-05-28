@@ -838,16 +838,32 @@ namespace XGF
 	{
 		return mDisplayMode == displayMode;
 	}
-	void GDI::SetViewPorts(const std::vector<ViewPort>& viewports)
+	void GDI::SetViewPorts(const ViewPort* viewports, unsigned int count)
 	{
-		if (viewports.empty())
+		if (count == 0)
 		{
 			SetFullViewPort();
 		}
 		else
 		{
-			mViewports = viewports;
-			mDeviceContext->RSSetViewports((UINT)viewports.size(), (const D3D11_VIEWPORT*)viewports.data());
+			if (mViewports.size() == count)
+			{
+				for (int i = 0; i < count; i++)
+				{
+					if (mViewports[i] != viewports[i])
+					{
+						goto set;
+					}
+				}
+				return;
+			}
+			set:
+			mDeviceContext->RSSetViewports(count, (const D3D11_VIEWPORT*)viewports);
+			mViewports.resize(count);
+			for (int i = 0; i < count; i++)
+			{
+				mViewports[i] = viewports[i];
+			}
 		}
 	}
 	void GDI::SetFullViewPort(int cx, int cy)
@@ -860,12 +876,25 @@ namespace XGF
 		mViewports[0] = { 0.f, 0.f, (float)cx, (float)cy, 0.f, 1.f };;
 		mDeviceContext->RSSetViewports((UINT)mViewports.size(), (const D3D11_VIEWPORT*)mViewports.data());
 	}
-	void GDI::SetScissorRectangle(const std::vector<Rect> & rects)
+	void GDI::SetScissorRectangle(const Rect * rects, unsigned int count)
 	{
-		if (mScissorRects != rects)
+		if (mScissorRects.size() == count)
 		{
-			mDeviceContext->RSSetScissorRects(rects.size(), (const D3D11_RECT *) rects.data());
-			mScissorRects = rects;
+			for (int i = 0; i < count; i++)
+			{
+				if (mScissorRects[i] != rects[i])
+				{
+					goto set;
+				}
+			}
+			return;
+		}
+	set:
+		mDeviceContext->RSSetScissorRects(count, (const D3D11_RECT*)rects);
+		mScissorRects.resize(count);
+		for (int i = 0; i < count; i++)
+		{
+			mScissorRects[i] = rects[i];
 		}
 	}
 }
