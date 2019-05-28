@@ -50,7 +50,31 @@ namespace XGF
 		Transparent,
 		Foreground,
 	};
-	
+
+	struct CommonPtrKey
+	{
+		const void* ptr;
+		const size_t size;
+		bool operator==(const CommonPtrKey& c) const
+		{
+			return ptr == c.ptr && size == c.size;
+		}
+		CommonPtrKey(void* ptr, size_t size) : ptr(ptr), size(size)
+		{
+		}
+	};
+	struct CommonPtrKeyHash
+	{
+		typedef CommonPtrKey argument_type;
+		typedef std::size_t result_type;
+		result_type operator()(argument_type const& s) const
+		{
+			const std::hash<size_t> intHash;
+			result_type hash = intHash(s.size) ^ ((intHash((size_t)s.ptr)) << 1);
+			return hash;
+		}
+	};
+
 	struct RenderTargetPass
 	{
 		RenderTargetPass(FrameBuffer * target) : mRenderQueues(4), mTarget(target){  }
@@ -64,10 +88,15 @@ namespace XGF
 	class RendererFrameResource
 	{
 	private:
+		typedef std::unordered_map<CommonPtrKey, GpuBuffer, CommonPtrKeyHash,
+			std::equal_to<CommonPtrKey>, FrameMemorySTLAllocator<std::pair<const CommonPtrKey, GpuBuffer>>>
+			GpuBufferCachedMap;
 		FrameMemoryAllocator mAllocator;
 		std::list<GpuBuffer> mVertices, mIndices;
 		std::list<GpuBuffer> mVerticesUsed, mIndicesUsed;
 		std::list<GpuBuffer> mConstantBuffer, mConstantBufferUsed;
+		GpuBufferCachedMap * mGpuBufferCachedMap;
+
 		std::vector<RenderTargetPass> mPass;
 		std::stack<unsigned> mPassStack;
 		unsigned int mRenderIndex;
@@ -98,12 +127,20 @@ namespace XGF
 			return !mPass.empty();
 		}
 		void NewFrame();
-		void ClearAll();
+		void Initialize();
+		void Shutdown();
 		// id: use typeId here
 		void * & GetOtherResource(size_t id);
-		GpuBuffer QueryUnusedGpuIndexBuffer(unsigned count);
-		GpuBuffer QueryUnusedGpuVertexBuffer(unsigned size);
-		GpuBuffer QueryUnusedGpuConstantBuffer(unsigned size);
+		GpuBuffer QueryUnusedGpuIndexBuffer(size_t count);
+		GpuBuffer QueryUnusedGpuVertexBuffer(size_t size);
+		GpuBuffer QueryUnusedGpuConstantBuffer(size_t size);
+
+		GpuBuffer QueryAvailableGpuIndexBuffer(void* ptr, size_t size);
+		GpuBuffer QueryAvailableGpuVertexBuffer(void* ptr, size_t size);
+		GpuBuffer QueryAvailableGpuConstantBuffer(void* ptr, size_t size);
+
+		GpuBuffer FindGpuBufferCached(void* ptr, size_t size);
+		void SaveGpuBufferCached(void* ptr, size_t size, GpuBuffer buffer);
 		RendererFrameResource(): mRenderedFlag(false){  }
 	};
 
@@ -117,6 +154,7 @@ namespace XGF
 
 		DrawCallback(RendererDrawCallbackFunc func, const std::string & name, int callCount): callCount(callCount), func(func), name(name) {  }
 	};
+	
 	class Renderer
 	{
 	public:

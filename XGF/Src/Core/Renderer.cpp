@@ -65,7 +65,7 @@ namespace XGF
 		auto start = 0;
 		for (unsigned i = 0; i < shader->GetCBufferCount(); i++)
 		{
-			auto buffer = renderer.GetCurrentRenderResource().QueryUnusedGpuConstantBuffer(shader->GetCBufferSize(i));
+			auto buffer = renderer.GetCurrentRenderResource().QueryAvailableGpuConstantBuffer((void*)(cb + start), shader->GetCBufferSize(i));
 			gdi.CopyToBuffer(buffer, (void *)(cb + start));
 			BindBuffer<TShader>(&gdi, i, buffer, renderStage);
 			start += shader->GetCBufferSize(i);
@@ -82,15 +82,15 @@ namespace XGF
 		BindConstantBuffer<PixelShader>(mRenderStage);
 		BindConstantBuffer<GeometryShader>(mRenderStage);
 
-
-		auto vertexBuffer = Context::Current().QueryRenderer().GetCurrentRenderResource().QueryUnusedGpuVertexBuffer(mVertexSize);
+		
+		auto vertexBuffer = Context::Current().QueryRenderer().GetCurrentRenderResource().QueryAvailableGpuVertexBuffer(mVertices, mVertexSize);
 		auto stride = mRenderStage.GetShader<VertexShader>()->GetStrideAllSizeAtSlot(0);
 		gdi.GetDeviceContext()->IASetVertexBuffers(0, 1, &vertexBuffer.buffer, &stride, offset);
 		memcpy_s(gdi.Map(vertexBuffer), mVertexSize, mVertices, mVertexSize);
 		gdi.UnMap(vertexBuffer);
 		if (mIndexCount > 0)
 		{
-			auto indexBuffer = Context::Current().QueryRenderer().GetCurrentRenderResource().QueryUnusedGpuIndexBuffer(mIndexCount);
+			auto indexBuffer = Context::Current().QueryRenderer().GetCurrentRenderResource().QueryAvailableGpuIndexBuffer(mIndices, mIndexCount);
 			gdi.GetDeviceContext()->IASetIndexBuffer(indexBuffer.buffer, sizeof(Index) > 2 ? DXGI_FORMAT_R32_UINT : DXGI_FORMAT_R16_UINT, 0);
 			memcpy_s(gdi.Map(indexBuffer), sizeof(Index) * mIndexCount, mIndices, sizeof(Index) * mIndexCount);
 			gdi.UnMap(indexBuffer);
@@ -159,7 +159,15 @@ namespace XGF
 
 	void RendererFrameResource::NewFrame()
 	{
+		if (mGpuBufferCachedMap)
+		{
+			mGpuBufferCachedMap->clear();
+			mGpuBufferCachedMap->~GpuBufferCachedMap();
+		}
+		
 		mAllocator.FreeAll();
+		mGpuBufferCachedMap = mAllocator.New<GpuBufferCachedMap>();
+
 		mOtherResource.clear();
 
 		mVertices.insert(mVertices.end(), mVerticesUsed.begin(), mVerticesUsed.end());
@@ -176,13 +184,17 @@ namespace XGF
 		}
 		mPass.clear();
 		
-		while (mPassStack.empty())
+		while (!mPassStack.empty())
 			mPassStack.pop();
 		
 		mRenderIndex = 0;
 	}
 
-	void RendererFrameResource::ClearAll()
+	void RendererFrameResource::Initialize()
+	{
+	}
+
+	void RendererFrameResource::Shutdown()
 	{
 		for (auto & pass : mPass)
 		{
@@ -256,17 +268,17 @@ namespace XGF
 		mLooping = false;
 		mLooped = false;
 		mDrawing = false;
+		mResource[0].Initialize();
+		mResource[1].Initialize();
 	}
 
 	void Renderer::Destroy()
 	{
-		for (auto & resource : mResource)
-		{
-			resource.ClearAll();
-		}
-
+		mResource[0].Shutdown();
+		mResource[1].Shutdown();
 		auto & gdi = Context::Current().QueryGraphicsDeviceInterface();
 		gdi.Destroy();
+		
 	}
 
 
@@ -529,6 +541,8 @@ namespace XGF
 		auto & context = Context::Current();
 		auto & thread = context.QueryRenderThread();
 		auto & gameThread = context.QueryGameThread();
+		ClearResource(GetNextResourceIndex());
+		ClearResource(GetCurrentResourceIndex());
 		mFrameRateLimiter.TickStand();
 		bool exit = false;
 		bool frameExit = false;
@@ -605,7 +619,7 @@ namespace XGF
 	{
 		return mOtherResource[id];
 	}
-	GpuBuffer RendererFrameResource::QueryUnusedGpuIndexBuffer(unsigned count)
+	GpuBuffer RendererFrameResource::QueryUnusedGpuIndexBuffer(size_t count)
 	{
 		auto & idx = mIndices;
 		auto & idxused = mIndicesUsed;
@@ -625,7 +639,7 @@ namespace XGF
 		return p;
 	}
 
-	GpuBuffer RendererFrameResource::QueryUnusedGpuVertexBuffer(unsigned size)
+	GpuBuffer RendererFrameResource::QueryUnusedGpuVertexBuffer(size_t size)
 	{
 		auto & vet = mVertices;
 		auto & vetused = mVerticesUsed;
@@ -644,7 +658,7 @@ namespace XGF
 		return p;
 	}
 
-	GpuBuffer RendererFrameResource::QueryUnusedGpuConstantBuffer(unsigned size)
+	GpuBuffer RendererFrameResource::QueryUnusedGpuConstantBuffer(size_t size)
 	{
 		auto & cb = mConstantBuffer;
 		auto & cbused = mConstantBufferUsed;
@@ -662,6 +676,50 @@ namespace XGF
 		auto p = Context::Current().QueryGraphicsDeviceInterface().CreateConstantBuffer(size);
 		cbused.push_back(p);
 		return p;
+	}
+	GpuBuffer RendererFrameResource::QueryAvailableGpuIndexBuffer(void* ptr, size_t size)
+	{
+		auto buffer = FindGpuBufferCached(ptr, size);
+		if (buffer.buffer != nullptr)
+		{
+			return buffer;
+		}
+		auto buf = QueryUnusedGpuIndexBuffer(size);
+		SaveGpuBufferCached(ptr, size, buf);
+		return buf;
+	}
+	GpuBuffer RendererFrameResource::QueryAvailableGpuVertexBuffer(void* ptr, size_t size)
+	{
+		auto buffer = FindGpuBufferCached(ptr, size);
+		if (buffer.buffer != nullptr)
+		{
+			return buffer;
+		}
+		auto buf = QueryUnusedGpuVertexBuffer(size);
+		SaveGpuBufferCached(ptr, size, buf);
+		return buf;
+	}
+	GpuBuffer RendererFrameResource::QueryAvailableGpuConstantBuffer(void* ptr, size_t size)
+	{
+		auto buffer = FindGpuBufferCached(ptr, size);
+		if (buffer.buffer != nullptr)
+		{
+			return buffer;
+		}
+		auto buf = QueryUnusedGpuConstantBuffer(size);
+		SaveGpuBufferCached(ptr, size, buf);
+		return buf;
+	}
+	GpuBuffer RendererFrameResource::FindGpuBufferCached(void* ptr, size_t size)
+	{
+		auto it = mGpuBufferCachedMap->find(CommonPtrKey(ptr, size));
+		if (it == mGpuBufferCachedMap->end())
+			return GpuBuffer(0, 0);
+		return it->second;
+	}
+	void RendererFrameResource::SaveGpuBufferCached(void* ptr, size_t size, GpuBuffer buffer)
+	{
+		(*mGpuBufferCachedMap)[CommonPtrKey(ptr, size)] = buffer;
 	}
     #pragma endregion 
 

@@ -67,7 +67,7 @@ namespace XGF
 				while (mDirty)
 				{
 					mTexture->UpdateTexture(mBuffer.get(), mDirtyRectangle);
-					mDirtyRectangle = Rectangle(0.f, 0.f, 0.f, 0.f);
+					mDirtyRectangle = Rectangle(0, 0, 0, 0);
 					mDirty = false;
 				}
 			});

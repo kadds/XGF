@@ -371,8 +371,9 @@ namespace XGF
 	struct GpuBuffer
 	{
 		ID3D11Buffer * buffer;
-		unsigned int size;
-		GpuBuffer(ID3D11Buffer * b, unsigned int s) : buffer(b), size(s) {  };
+		size_t size;
+		GpuBuffer(ID3D11Buffer * b, size_t s) : buffer(b), size(s) {  };
+		GpuBuffer() {}
 	};
 	enum class GpuBufferType
 	{

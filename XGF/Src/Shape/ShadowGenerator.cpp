@@ -16,14 +16,14 @@ namespace XGF::Shape
 	void ShadowMapGenerator::Initialize(int width, int height)
 	{
 		mFrameBuffer.Initialize(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DepthStencilFormat::Depth24FloatStencil8Uint, 0, 0, true);
-		mRenderState.GetViewPorts()[0] = ViewPort(0.f, 0.f, mFrameBuffer.GetWidth(), mFrameBuffer.GetHeight(), 0.f, 1.f);
+		mRenderState.GetViewPorts()[0] = ViewPort(0.f, 0.f, (float)mFrameBuffer.GetWidth(), (float)mFrameBuffer.GetHeight(), 0.f, 1.f);
 	}
 
 	void ShadowMapGenerator::Config(int width, int height)
 	{
 		mFrameBuffer.Shutdown();
 		mFrameBuffer.Initialize(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DepthStencilFormat::Depth24FloatStencil8Uint, 0, 0, true);
-		mRenderState.GetViewPorts()[0] = ViewPort(0.f, 0.f, mFrameBuffer.GetWidth(), mFrameBuffer.GetHeight(), 0.f, 1.f);
+		mRenderState.GetViewPorts()[0] = ViewPort(0.f, 0.f, (float)mFrameBuffer.GetWidth(), (float)mFrameBuffer.GetHeight(), 0.f, 1.f);
 	}
 	Texture * ShadowMapGenerator::Generate(CastShadowAbleLight * light, const std::vector<Mesh*>& meshs, const LightShadowMatrix & wvp)
 	{
